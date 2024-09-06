@@ -3,9 +3,15 @@ from pathlib import Path
 
 from setuptools import setup
 
+root_dir = Path(__file__).parent
+with open(root_dir / "README.md", encoding='utf-8') as f:
+    readme = f.read()
+
 setup(
     name="pdf2zh",
-    description="Latex PDF Translater",
+    long_description=readme,
+    long_description_content_type="text/markdown",
+    description="Latex PDF Translator",
     license="MIT",
     author="Byaidu",
     author_email="byaidux@gmail.com",
