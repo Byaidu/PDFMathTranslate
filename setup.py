@@ -4,7 +4,7 @@ from pathlib import Path
 from setuptools import setup
 
 setup(
-    name="PDFMathTranslate",
+    name="pdf2zh",
     description="Latex PDF Translater",
     license="MIT",
     author="Byaidu",
@@ -13,7 +13,7 @@ setup(
     setuptools_git_versioning={
         "enabled": True,
     },
-    setup_requires=["setuptools-git-versioning<3"],
+    setup_requires=["setuptools-git-versioning"],
     packages=["pdf2zh"],
     install_requires=[
         "charset-normalizer >= 2.0.0",

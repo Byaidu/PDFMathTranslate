@@ -364,7 +364,7 @@ class TextConverter(PDFConverter[AnyIO]):
             vlen=[]
             ops=""
             def vflag(fontname): # 匹配公式（和角标）字体
-                return re.match('.*\+(CM.*|MS.*|.*0700|.*0500)',fontname)
+                return re.match(r'.*\+(CM.*|MS.*|.*0700|.*0500)',fontname)
             for child in item:
                 if isinstance(child, LTChar):
                     if not vflag(child.fontname) or (vstk and child.x0<vstk[-1].x1-ltpage.width/3): # 公式结束或公式换行截断
@@ -457,7 +457,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             # print(cstk,tx,x,rt,y)
                             ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{"".join(["%04x" % ord(c) for c in cstk])}>] TJ T* '
                         break
-                    vy_regex=re.match('\$\s*v([\d\s]*)\$',new[ptr:]) # 匹配 $vn$ 公式标记
+                    vy_regex=re.match(r'\$\s*v([\d\s]*)\$',new[ptr:]) # 匹配 $vn$ 公式标记
                     if vy_regex: # 加载公式
                         vid=int(vy_regex.group(1).replace(' ',''))
                         ptr+=len(vy_regex.group(0))
@@ -482,13 +482,13 @@ class TextConverter(PDFConverter[AnyIO]):
                     if vy_regex: # 插入公式
                         fix=0
                         if fcur!=None: # 段落内公式修正
-                            if re.match('.*\+(CMEX.*)',var[vid][0].fontname) and var[vid][0].cid in [80,88,112]: # 根式与大小求和
+                            if re.match(r'.*\+(CMEX.*)',var[vid][0].fontname) and var[vid][0].cid in [80,88,112]: # 根式与大小求和
                                 fix=var[vid][0].size*0.85
-                            if re.match('.*\+(CMSY.*)',var[vid][0].fontname) and var[vid][0].cid in [112]: # 根式
+                            if re.match(r'.*\+(CMSY.*)',var[vid][0].fontname) and var[vid][0].cid in [112]: # 根式
                                 fix=var[vid][0].size*0.85
-                            if re.match('.*\+(MSAM.*)',var[vid][0].fontname) and var[vid][0].cid in [97]: # 特殊上标
+                            if re.match(r'.*\+(MSAM.*)',var[vid][0].fontname) and var[vid][0].cid in [97]: # 特殊上标
                                 fix=var[vid][0].size*0.85
-                            if re.match('.*\+(CMR.*)',var[vid][0].fontname) and var[vid][0].cid in [94,126]: # 特殊上标
+                            if re.match(r'.*\+(CMR.*)',var[vid][0].fontname) and var[vid][0].cid in [94,126]: # 特殊上标
                                 fix=var[vid][0].size*0.25
                         for vch in var[vid]:
                             vc=chr(vch.cid) # vch.get_text()
