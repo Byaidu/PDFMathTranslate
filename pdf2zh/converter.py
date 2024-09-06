@@ -482,12 +482,12 @@ class TextConverter(PDFConverter[AnyIO]):
                             fcur_='china-ss'
                         adv=self.fontmap[fcur_].char_width(ord(ch))*size
                         ptr+=1
-                    if fcur_!=fcur or vy_regex or x+adv>rt+size: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界
+                    if fcur_!=fcur or vy_regex or x+adv>rt: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界
                         if cstk:
                             # print(cstk,tx,x,rt,y)
                             ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{"".join(["%04x" % ord(c) for c in cstk])}>] TJ '
                             cstk=''
-                    if lb and x+adv>rt+size: # 到达右边界且原文段落存在换行
+                    if lb and x+adv>rt: # 到达右边界且原文段落存在换行
                         x=lt
                         y-=size*1.5
                     if vy_regex: # 插入公式
