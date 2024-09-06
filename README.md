@@ -2,7 +2,7 @@
 
 <p align="center">
   <!-- PyPI -->
-  <a href="https://pypi.org/project/mathtranslate/">
+  <a href="https://pypi.org/project/pdf2zh/">
     <img src="https://img.shields.io/pypi/v/pdf2zh"/>
   </a>
   <!-- License -->
