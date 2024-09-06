@@ -1,8 +1,17 @@
 # PDFMathTranslate
 
-Latex PDF 翻译及双语对照，保留公式和图表排版
+<p align="center">
+  <!-- PyPI -->
+  <a href="https://pypi.org/project/mathtranslate/">
+    <img src="https://img.shields.io/pypi/v/pdf2zh"/>
+  </a>
+  <!-- License -->
+  <a href="./LICENSE">
+    <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/>
+  </a>
+</p>
 
-![image](https://github.com/user-attachments/assets/cf22b296-757f-4e66-874d-e1104e85f9ff)
+Latex PDF 翻译及双语对照，保留公式和图表排版
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
