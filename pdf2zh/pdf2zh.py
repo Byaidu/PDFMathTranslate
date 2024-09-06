@@ -71,6 +71,7 @@ def extract_text(
         for page in doc_en:
             page.insert_font('china-ss')
         doc_en.save('output-en.pdf')
+        page_count=doc_en.page_count
 
         # for fname in files:
         with open('output-en.pdf', "rb") as fp:

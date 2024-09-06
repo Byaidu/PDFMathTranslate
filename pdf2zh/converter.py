@@ -438,12 +438,12 @@ class TextConverter(PDFConverter[AnyIO]):
             print('\n==========[VSTACK]==========\n')
             for id,v in enumerate(var):
                 l=v[-1].x1-v[0].x0
-                print(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])}> $v{id}$ = {"".join([ch.get_text() for ch in v])}')
+                print(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])} > $v{id}$ = {"".join([ch.get_text() for ch in v])}')
                 vlen.append(l)
             print('\n==========[SSTACK]==========\n')
             hash_key=cache.deterministic_hash("PDFMathTranslate")
-            if cache.is_cached(hash_key):
-                print('Cache is found')
+            # if cache.is_cached(hash_key):
+            #     print('Cache is found')
             cache.create_cache(hash_key)
             @retry
             def worker(s): # 多线程翻译
@@ -459,7 +459,7 @@ class TextConverter(PDFConverter[AnyIO]):
                 return new
             # tqdm with concurrent.futures.ThreadPoolExecutor()
             with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-                news = list(tqdm.auto.tqdm(executor.map(worker, sstk), total=len(sstk)))
+                news = list(tqdm.auto.tqdm(executor.map(worker, sstk), total=len(sstk), position=1))
             for id,new in enumerate(news):
                 x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6];cstk='';fcur=fcur_=None
                 tx=x
@@ -531,10 +531,10 @@ class TextConverter(PDFConverter[AnyIO]):
             ops=f'BT {ops}ET '
             return ops
 
-        if self.showpageno:
-            self.write_text("Page %s\n" % ltpage.pageid)
+        # if self.showpageno:
+        #     self.write_text("Page %s\n" % ltpage.pageid)
         ops=render(ltpage)
-        self.write_text("\f")
+        # self.write_text("\f")
         return ops
 
     # Some dummy functions to save memory/CPU when all that is wanted

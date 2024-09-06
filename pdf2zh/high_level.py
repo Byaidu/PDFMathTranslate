@@ -4,6 +4,7 @@ import logging
 import sys
 from io import StringIO
 from typing import Any, BinaryIO, Container, Iterator, Optional, cast
+import tqdm
 from pdf2zh.pdfcompiler import pdf_compile
 
 from pdf2zh.converter import (
@@ -38,6 +39,7 @@ def extract_text_to_fp(
     strip_control: bool = False,
     debug: bool = False,
     disable_caching: bool = False,
+    page_count: int = 0,
     **kwargs: Any,
 ) -> None:
     """Parses text from inf-file and writes to outfp file-like object.
@@ -132,13 +134,13 @@ def extract_text_to_fp(
     assert device is not None
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     obj_patch={}
-    for page in PDFPage.get_pages(
+    for page in tqdm.auto.tqdm(PDFPage.get_pages(
         inf,
         page_numbers,
         maxpages=maxpages,
         password=password,
         caching=not disable_caching,
-    ):
+    ), total=page_count, position=0):
         page.rotate = (page.rotate + rotation) % 360
         page_objid,ops_full=interpreter.process_page(page)
         obj_patch[page_objid]=ops_full
