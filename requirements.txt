@@ -1,5 +1,0 @@
-"charset-normalizer >= 2.0.0",
-"cryptography >= 36.0.0",
-"mtranslate"
-"pymupdf"
-"tqdm"

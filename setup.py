@@ -23,6 +23,7 @@ setup(
         "mtranslate",
         "pymupdf",
         "tqdm",
+        "tenacity",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

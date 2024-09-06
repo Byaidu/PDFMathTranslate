@@ -18,6 +18,7 @@ import concurrent.futures
 import mtranslate as translator
 import unicodedata
 import tqdm.auto
+from tenacity import retry
 from pdf2zh import cache
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C")
@@ -444,6 +445,7 @@ class TextConverter(PDFConverter[AnyIO]):
             if cache.is_cached(hash_key):
                 print('Cache is found')
             cache.create_cache(hash_key)
+            @retry
             def worker(s): # 多线程翻译
                 if re.search('[A-Za-z]',s):
                     hash_key_paragraph = cache.deterministic_hash(s)
