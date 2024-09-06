@@ -359,8 +359,11 @@ class TextConverter(PDFConverter[AnyIO]):
             rt=None
             sstk=[]
             vstk=[]
+            vlstk=[]
             pstk=[]
+            lstk=[]
             var=[]
+            varl=[]
             vlen=[]
             ops=""
             def vflag(fontname): # 匹配公式（和角标）字体
@@ -372,18 +375,20 @@ class TextConverter(PDFConverter[AnyIO]):
                             sstk[-1]+=f'$v{len(var)}$'
                             # print(f'$v{len(var)}$',end='')
                             var.append(vstk)
+                            varl.append(vlstk)
                             vstk=[]
+                            vlstk=[]
                     if not vstk: # 非公式或是公式开头
                         if xt and child.y1 >= xt.y0 - child.size*0.6:
                             if False and (child.size>xt.size*1.2 or child.size<xt.size*0.8): # 字体分离（处理角标有误，更新pstk会导致段落断开）
                                 lt,rt=child,child
                                 sstk.append("")
-                                pstk.append([child.y0,child.x0,child.x0,child.size,child.font,False])
+                                pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                                 # print(f'\n\n[TEXT D] {(child.y0,child.x0,child.size)}')
                             elif child.x0 > xt.x1 + child.size*2: # 行内分离
                                 lt,rt=child,child
                                 sstk.append("")
-                                pstk.append([child.y0,child.x0,child.x0,child.size,child.font,False])
+                                pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                                 # print(f'\n\n[TEXT A] {(child.y0,child.x0,child.size)}')
                             elif child.x0 > xt.x1 + 1: # 行内空格
                                 sstk[-1]+=' '
@@ -392,41 +397,47 @@ class TextConverter(PDFConverter[AnyIO]):
                                 if child.x0 < lt.x0 - child.size*2 or child.x0 > lt.x0 + child.size*1: # 基于初始位置的行间分离
                                     lt,rt=child,child
                                     sstk.append("")
-                                    pstk.append([child.y0,child.x0,child.x0,child.size,child.font,False])
+                                    pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                                     # print(f'\n\n[TEXT B] {(child.y0,child.x0,child.size)}')
                                 else: # 换行空格
                                     sstk[-1]+=' '
-                                    pstk[-1][5]=True # 标记原文段落存在换行
+                                    pstk[-1][6]=True # 标记原文段落存在换行
                                     # print(' ',end='')
                         else: # 基于纵向距离的行间分离
                             lt,rt=child,child
                             sstk.append("")
-                            pstk.append([child.y0,child.x0,child.x0,child.size,child.font,False])
+                            pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                             # print(f'\n\n[TEXT C] {(child.y0,child.x0,child.size)}')
                     if not vflag(child.fontname): # 文字入栈
                         sstk[-1]+=child.get_text()
                         # print(child.get_text(),end='')
-                        if vflag(pstk[-1][4].fontname): # 公式开头，后续接文字，需要校正字体
-                            pstk[-1][4]=child.font
+                        if vflag(pstk[-1][5].fontname): # 公式开头，后续接文字，需要校正字体
+                            pstk[-1][5]=child.font
                     else: # 公式入栈
                         vstk.append(child)
                     xt=child
                     # 更新左右边界
                     if child.x0<lt.x0:
-                        pstk[-1][1]=child.x0
+                        pstk[-1][2]=child.x0
                         lt=child
                     if child.x1>rt.x1:
-                        pstk[-1][2]=child.x1
+                        pstk[-1][3]=child.x1
                         rt=child
-                elif isinstance(child, LTFigure):
+                elif isinstance(child, LTFigure): # 图表
                     # print(f'\n\n[FIGURE] {child.name}')
                     pass
+                elif isinstance(child, LTLine): # 线条
+                    if vstk: # 公式环境
+                        vlstk.append(child)
+                    else:
+                        lstk.append(child)
                 else:
-                    assert False
+                    # print(child)
+                    pass
             print('\n==========[VSTACK]==========\n')
             for id,v in enumerate(var):
                 l=v[-1].x1-v[0].x0
-                print(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname}> $v{id}$ = {"".join([ch.get_text() for ch in v])}')
+                print(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])}> $v{id}$ = {"".join([ch.get_text() for ch in v])}')
                 vlen.append(l)
             print('\n==========[SSTACK]==========\n')
             hash_key=cache.deterministic_hash("PDFMathTranslate")
@@ -448,14 +459,14 @@ class TextConverter(PDFConverter[AnyIO]):
             with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
                 news = list(tqdm.auto.tqdm(executor.map(worker, sstk), total=len(sstk)))
             for id,new in enumerate(news):
-                lt=x=pstk[id][1];y=pstk[id][0];rt=pstk[id][2];ptr=0;size=pstk[id][3];font=pstk[id][4];lb=pstk[id][5];cstk='';fcur=fcur_=None
+                x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6];cstk='';fcur=fcur_=None
                 tx=x
                 while True:
                     # print(new,ptr)
                     if ptr==len(new): # 到达段落结尾
                         if cstk:
                             # print(cstk,tx,x,rt,y)
-                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{"".join(["%04x" % ord(c) for c in cstk])}>] TJ T* '
+                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{"".join(["%04x" % ord(c) for c in cstk])}>] TJ '
                         break
                     vy_regex=re.match(r'\$\s*v([\d\s]*)\$',new[ptr:]) # 匹配 $vn$ 公式标记
                     if vy_regex: # 加载公式
@@ -474,7 +485,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if fcur_!=fcur or vy_regex or x+adv>rt+size: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界
                         if cstk:
                             # print(cstk,tx,x,rt,y)
-                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{"".join(["%04x" % ord(c) for c in cstk])}>] TJ T* '
+                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{"".join(["%04x" % ord(c) for c in cstk])}>] TJ '
                             cstk=''
                     if lb and x+adv>rt+size: # 到达右边界且原文段落存在换行
                         x=lt
@@ -495,8 +506,11 @@ class TextConverter(PDFConverter[AnyIO]):
                             vc=vc.replace('\\','\\0134')
                             vc=vc.replace('(','\\050')
                             vc=vc.replace(')','\\051')
-                            ops+=f"/{vch.font.fontid} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm ({vc}) Tj T* "
+                            ops+=f"/{vch.font.fontid} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm ({vc}) Tj "
                             # print(vc,vch,vch.x0,vch.x1,vch.y0,vch.y1)
+                        for l in varl[vid]:
+                            ops+=f"ET q 1 0 0 1 {l.pts[0][0]+x-var[vid][0].x0} {l.pts[0][1]+fix+y-var[vid][0].y0} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
+                            pass
                     else: # 插入文字缓冲区
                         if not cstk:
                             tx=x
@@ -508,7 +522,10 @@ class TextConverter(PDFConverter[AnyIO]):
                             cstk+=ch
                     fcur=fcur_
                     x+=adv
-                print("<",' '.join([f'{j:.1f}' for j in pstk[id][:4]]),pstk[id][4].fontname,pstk[id][5],">",new)
+                print("<",' '.join([f'{j:.1f}' for j in pstk[id][:5]]),pstk[id][5].fontname,pstk[id][6],">",new)
+            for l in lstk:
+                ops+=f"ET q 1 0 0 1 {l.pts[0][0]} {l.pts[0][1]} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
+                pass
             ops=f'BT {ops}ET '
             return ops
 
@@ -525,15 +542,15 @@ class TextConverter(PDFConverter[AnyIO]):
         if self.imagewriter is not None:
             PDFConverter.render_image(self, name, stream)
 
-    def paint_path(
-        self,
-        gstate: PDFGraphicState,
-        stroke: bool,
-        fill: bool,
-        evenodd: bool,
-        path: Sequence[PathSegment],
-    ) -> None:
-        pass
+    # def paint_path(
+    #     self,
+    #     gstate: PDFGraphicState,
+    #     stroke: bool,
+    #     fill: bool,
+    #     evenodd: bool,
+    #     path: Sequence[PathSegment],
+    # ) -> None:
+    #     pass
 
 
 class HTMLConverter(PDFConverter[AnyIO]):

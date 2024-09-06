@@ -1026,7 +1026,7 @@ class PDFPageInterpreter:
                         log.debug("exec: %s %r", name, args)
                         if len(args) == nargs:
                             func(*args)
-                            if not name in ['TJ','Tj','Tm','Td','Tf','BT','ET']:
+                            if not name in ['TJ','Tj','Tm','Td','Tf','BT','ET','l']:
                                 p=" ".join([str(x).replace("\'","") for x in args])
                                 ops+=f'{p} {name} '
                     else:
