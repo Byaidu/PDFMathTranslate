@@ -141,7 +141,8 @@ class Type1FontHeaderParser(PSStackParser[int]):
             try:
                 self._cid2unicode[cid] = name2unicode(cast(str, name))
             except KeyError as e:
-                log.debug(str(e))
+                # log.debug(str(e))
+                pass
         return self._cid2unicode
 
     def do_keyword(self, pos: int, token: PSKeyword) -> None:

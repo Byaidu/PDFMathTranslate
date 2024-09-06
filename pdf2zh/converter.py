@@ -272,7 +272,7 @@ class PDFLayoutAnalyzer(PDFTextDevice):
         return item.adv
 
     def handle_undefined_char(self, font: PDFFont, cid: int) -> str:
-        log.debug("undefined: %r, %r", font, cid)
+        # log.debug("undefined: %r, %r", font, cid)
         return "(cid:%d)" % cid
 
     def receive_layout(self, ltpage: LTPage) -> None:
@@ -435,12 +435,12 @@ class TextConverter(PDFConverter[AnyIO]):
                 else:
                     # print(child)
                     pass
-            print('\n==========[VSTACK]==========\n')
+            log.debug('\n==========[VSTACK]==========\n')
             for id,v in enumerate(var):
                 l=v[-1].x1-v[0].x0
-                print(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])} > $v{id}$ = {"".join([ch.get_text() for ch in v])}')
+                log.debug(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])} > $v{id}$ = {"".join([ch.get_text() for ch in v])}')
                 vlen.append(l)
-            print('\n==========[SSTACK]==========\n')
+            log.debug('\n==========[SSTACK]==========\n')
             hash_key=cache.deterministic_hash("PDFMathTranslate")
             # if cache.is_cached(hash_key):
             #     print('Cache is found')
@@ -459,7 +459,8 @@ class TextConverter(PDFConverter[AnyIO]):
                 return new
             # tqdm with concurrent.futures.ThreadPoolExecutor()
             with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-                news = list(tqdm.auto.tqdm(executor.map(worker, sstk), total=len(sstk), position=1))
+                # news = list(tqdm.auto.tqdm(executor.map(worker, sstk), total=len(sstk), position=1))
+                news = list(executor.map(worker, sstk))
             for id,new in enumerate(news):
                 x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6];cstk='';fcur=fcur_=None
                 tx=x
@@ -524,7 +525,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             cstk+=ch
                     fcur=fcur_
                     x+=adv
-                print("<",' '.join([f'{j:.1f}' for j in pstk[id][:5]]),pstk[id][5].fontname,pstk[id][6],">",new)
+                log.debug(f"< {' '.join([f'{j:.1f}' for j in pstk[id][:5]])} {pstk[id][5].fontname} {pstk[id][6]} > {new}")
             for l in lstk:
                 ops+=f"ET q 1 0 0 1 {l.pts[0][0]} {l.pts[0][1]} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
                 pass

@@ -207,7 +207,7 @@ class PDFResourceManager:
         if objid and objid in self._cached_fonts:
             font = self._cached_fonts[objid]
         else:
-            log.debug("get_font: create: objid=%r, spec=%r", objid, spec)
+            # log.debug("get_font: create: objid=%r, spec=%r", objid, spec)
             if settings.STRICT:
                 if spec["Type"] is not LITERAL_FONT:
                     raise PDFFontError("Type is not /Font")
@@ -394,7 +394,7 @@ class PDFPageInterpreter:
                 return PREDEFINED_COLORSPACE.get(name)
 
         for k, v in dict_value(resources).items():
-            log.debug("Resource: %r: %r", k, v)
+            # log.debug("Resource: %r: %r", k, v)
             if k == "Font":
                 for fontid, spec in dict_value(v).items():
                     objid = None
@@ -929,7 +929,7 @@ class PDFPageInterpreter:
             if settings.STRICT:
                 raise PDFInterpreterError("Undefined xobject id: %r" % xobjid)
             return
-        log.debug("Processing xobj: %r", xobj)
+        # log.debug("Processing xobj: %r", xobj)
         subtype = xobj.get("Subtype")
         if subtype is LITERAL_FORM and "BBox" in xobj:
             interpreter = self.dup()
@@ -959,7 +959,7 @@ class PDFPageInterpreter:
             pass
 
     def process_page(self, page: PDFPage) -> None:
-        log.debug("Processing page: %r", page)
+        # log.debug("Processing page: %r", page)
         (x0, y0, x1, y1) = page.mediabox
         if page.rotate == 90:
             ctm = (0, -1, 1, 0, -y0, x1)
@@ -990,12 +990,12 @@ class PDFPageInterpreter:
 
         This method may be called recursively.
         """
-        log.debug(
-            "render_contents: resources=%r, streams=%r, ctm=%r",
-            resources,
-            streams,
-            ctm,
-        )
+        # log.debug(
+        #     "render_contents: resources=%r, streams=%r, ctm=%r",
+        #     resources,
+        #     streams,
+        #     ctm,
+        # )
         self.init_resources(resources)
         self.init_state(ctm)
         return self.execute(list_value(streams))
@@ -1023,14 +1023,14 @@ class PDFPageInterpreter:
                     nargs = func.__code__.co_argcount - 1
                     if nargs:
                         args = self.pop(nargs)
-                        log.debug("exec: %s %r", name, args)
+                        # log.debug("exec: %s %r", name, args)
                         if len(args) == nargs:
                             func(*args)
                             if not name in ['TJ','Tj','Tm','Td','Tf','BT','ET','l']:
                                 p=" ".join([str(x).replace("\'","") for x in args])
                                 ops+=f'{p} {name} '
                     else:
-                        log.debug("exec: %s", name)
+                        # log.debug("exec: %s", name)
                         func()
                         ops+=f'{name} '
                 elif settings.STRICT:

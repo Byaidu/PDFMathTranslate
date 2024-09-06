@@ -93,7 +93,7 @@ class CMap(CMapBase):
         copy(self.code2cid, cmap.code2cid)
 
     def decode(self, code: bytes) -> Iterator[int]:
-        log.debug("decode: %r, %r", self, code)
+        # log.debug("decode: %r, %r", self, code)
         d = self.code2cid
         for i in iter(code):
             if i in d:
@@ -150,7 +150,7 @@ class UnicodeMap(CMapBase):
         return "<UnicodeMap: %s>" % self.attrs.get("CMapName")
 
     def get_unichr(self, cid: int) -> str:
-        log.debug("get_unichr: %r, %r", self, cid)
+        # log.debug("get_unichr: %r, %r", self, cid)
         return self.cid2unichr[cid]
 
     def dump(self, out: TextIO = sys.stdout) -> None:
@@ -161,7 +161,7 @@ class UnicodeMap(CMapBase):
 class IdentityUnicodeMap(UnicodeMap):
     def get_unichr(self, cid: int) -> str:
         """Interpret character id as unicode codepoint"""
-        log.debug("get_unichr: %r, %r", self, cid)
+        # log.debug("get_unichr: %r, %r", self, cid)
         return chr(cid)
 
 
@@ -233,7 +233,7 @@ class CMapDB:
     def _load_data(cls, name: str) -> Any:
         name = name.replace("\0", "")
         filename = "%s.pickle.gz" % name
-        log.debug("loading: %r", name)
+        # log.debug("loading: %r", name)
         cmap_paths = (
             os.environ.get("CMAP_PATH", "/usr/share/pdf2zh/"),
             os.path.join(os.path.dirname(__file__), "cmap"),

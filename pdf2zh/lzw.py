@@ -90,13 +90,13 @@ class LZWDecoder:
                 break
             yield x
 
-            logger.debug(
-                "nbits=%d, code=%d, output=%r, table=%r",
-                self.nbits,
-                code,
-                x,
-                self.table[258:],
-            )
+            # logger.debug(
+            #     "nbits=%d, code=%d, output=%r, table=%r",
+            #     self.nbits,
+            #     code,
+            #     x,
+            #     self.table[258:],
+            # )
 
 
 def lzwdecode(data: bytes) -> bytes:

@@ -121,6 +121,7 @@ class EncodingDB:
                     try:
                         cid2unicode[cid] = name2unicode(cast(str, x.name))
                     except (KeyError, ValueError) as e:
-                        log.debug(str(e))
+                        # log.debug(str(e))
+                        pass
                     cid += 1
         return cid2unicode

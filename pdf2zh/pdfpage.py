@@ -126,12 +126,12 @@ class PDFPage:
                 object_type = object_properties.get("type")
 
             if object_type is LITERAL_PAGES and "Kids" in object_properties:
-                log.debug("Pages: Kids=%r", object_properties["Kids"])
+                # log.debug("Pages: Kids=%r", object_properties["Kids"])
                 for child in list_value(object_properties["Kids"]):
                     yield from depth_first_search(child, object_properties, visited)
 
             elif object_type is LITERAL_PAGE:
-                log.debug("Page: %r", object_properties)
+                # log.debug("Page: %r", object_properties)
                 yield (object_id, object_properties)
 
         try:

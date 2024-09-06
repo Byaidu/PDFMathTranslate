@@ -110,13 +110,13 @@ def create_parser() -> argparse.ArgumentParser:
     #     action="version",
     #     version=f"pdf2zh.six v{pdf2zh.__version__}",
     # )
-    # parser.add_argument(
-    #     "--debug",
-    #     "-d",
-    #     default=False,
-    #     action="store_true",
-    #     help="Use debug logging level.",
-    # )
+    parser.add_argument(
+        "--debug",
+        "-d",
+        default=False,
+        action="store_true",
+        help="Use debug logging level.",
+    )
     # parser.add_argument(
     #     "--disable-caching",
     #     "-C",
