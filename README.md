@@ -1,6 +1,13 @@
 # PDFMathTranslate
 
-Latex PDF 翻译及双语对照，保留公式和图标排版
+Latex PDF 翻译及双语对照，保留公式和图表排版
+
+![image](https://github.com/user-attachments/assets/cf22b296-757f-4e66-874d-e1104e85f9ff)
+
+![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
+
+![image](https://github.com/user-attachments/assets/25086601-c90a-40e3-bf30-1556f2f919ec)
+
 
 ## 安装
 
