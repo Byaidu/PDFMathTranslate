@@ -504,6 +504,8 @@ class TextConverter(PDFConverter[AnyIO]):
                                 fix=var[vid][0].size*0.85
                             if re.match(r'.*\+(CMR.*)',var[vid][0].fontname) and var[vid][0].cid in [94,126]: # 特殊上标
                                 fix=var[vid][0].size*0.25
+                            if re.match(r'.*\+(CM.*)7',var[vid][0].fontname): # 修正分式
+                                fix=var[vid][0].size*0.55
                         for vch in var[vid]:
                             vc=chr(vch.cid) # vch.get_text()
                             vc=vc.replace('\\','\\0134')
