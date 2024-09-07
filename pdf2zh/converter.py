@@ -368,7 +368,7 @@ class TextConverter(PDFConverter[AnyIO]):
             vlen=[]
             ops=""
             def vflag(fontname): # 匹配公式（和角标）字体
-                return re.match(r'.*\+(CM.*|MS.*|.*0700|.*0500)',fontname)
+                return re.match(r'.*\+(CM.*|MS.*|XY.*|.*0700|.*0500)',fontname)
             ptr=0
             item=list(item)
             while ptr<len(item):
@@ -383,7 +383,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             vstk=[]
                             vlstk=[]
                     if not vstk: # 非公式或是公式开头
-                        if xt and child.y1 >= xt.y0 - child.size*0.6:
+                        if xt and child.y1 > xt.y0 - child.size*0.6 and child.y0 < xt.y1:
                             if False and (child.size>xt.size*1.2 or child.size<xt.size*0.8): # 字体分离（处理角标有误，更新pstk会导致段落断开）
                                 lt,rt=child,child
                                 sstk.append("")
@@ -455,7 +455,7 @@ class TextConverter(PDFConverter[AnyIO]):
                 ptr+=1
             log.debug('\n==========[VSTACK]==========\n')
             for id,v in enumerate(var):
-                l=v[-1].x1-v[0].x0
+                l=max([vch.x1 for vch in v])-v[0].x0
                 log.debug(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])} > $v{id}$ = {"".join([ch.get_text() for ch in v])}')
                 vlen.append(l)
             log.debug('\n==========[SSTACK]==========\n')
