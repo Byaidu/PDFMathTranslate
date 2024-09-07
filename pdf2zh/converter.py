@@ -369,7 +369,10 @@ class TextConverter(PDFConverter[AnyIO]):
             ops=""
             def vflag(fontname): # 匹配公式（和角标）字体
                 return re.match(r'.*\+(CM.*|MS.*|.*0700|.*0500)',fontname)
-            for child in item:
+            ptr=0
+            item=list(item)
+            while ptr<len(item):
+                child=item[ptr]
                 if isinstance(child, LTChar):
                     if not vflag(child.fontname) or (vstk and child.x0<vstk[-1].x1-ltpage.width/3): # 公式结束或公式换行截断
                         if vstk: # 公式出栈
@@ -416,6 +419,20 @@ class TextConverter(PDFConverter[AnyIO]):
                             pstk[-1][5]=child.font
                     else: # 公式入栈
                         vstk.append(child)
+                        if re.match(r'.*\+(CMEX.*)',child.fontname) and child.cid in [40]: # 大括号
+                            # ops+=f"ET q 1 0 0 1 0 {child.y0} cm [] 0 d 0 J 1 w 0 0 m {ltpage.width} 0 l S Q BT "
+                            # ops+=f"ET q 1 0 0 1 0 {child.y0-child.size*3} cm [] 0 d 0 J 1 w 0 0 m {ltpage.width} 0 l S Q BT "
+                            while ptr+1<len(item):
+                                child_=item[ptr+1]
+                                if isinstance(child_, LTChar):
+                                    # print(child_.y0,child.y0-child.size*3,child_.y1,child.y0)
+                                    if child_.y0>child.y0-child.size*3 and child_.y1<child.y0:
+                                        vstk.append(child_)
+                                    else:
+                                        break
+                                elif isinstance(child_, LTLine): # 线条
+                                    vlstk.append(child_)
+                                ptr+=1
                     xt=child
                     # 更新左右边界
                     if child.x0<lt.x0:
@@ -428,13 +445,14 @@ class TextConverter(PDFConverter[AnyIO]):
                     # print(f'\n\n[FIGURE] {child.name}')
                     pass
                 elif isinstance(child, LTLine): # 线条
-                    if vstk: # 公式环境
+                    if vstk and child.x1-child.x0<ltpage.width/3: # 公式环境
                         vlstk.append(child)
                     else:
                         lstk.append(child)
                 else:
                     # print(child)
                     pass
+                ptr+=1
             log.debug('\n==========[VSTACK]==========\n')
             for id,v in enumerate(var):
                 l=v[-1].x1-v[0].x0
