@@ -383,7 +383,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             vstk=[]
                             vlstk=[]
                     if not vstk: # 非公式或是公式开头
-                        if xt and child.y1 > xt.y0 - child.size*0.6 and child.y0 < xt.y1:
+                        if xt and child.y1 > xt.y0 - child.size*0.6 and child.y0 < pstk[-1][0]+pstk[-1][4]:
                             if False and (child.size>xt.size*1.2 or child.size<xt.size*0.8): # 字体分离（处理角标有误，更新pstk会导致段落断开）
                                 lt,rt=child,child
                                 sstk.append("")
