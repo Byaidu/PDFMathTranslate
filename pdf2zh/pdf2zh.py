@@ -79,11 +79,12 @@ def extract_text(
 
         doc_zh = pymupdf.open('output-zh.pdf')
         doc_dual = pymupdf.open()
-        for id in range(len(doc_en)):
-            doc_dual.insert_pdf(doc_en,id,id)
-            doc_dual.insert_pdf(doc_zh,id,id)
-        doc_zh.save(f'{filename}-zh.pdf')
-        doc_dual.save(f'{filename}-dual.pdf')
+        doc_dual.insert_file(doc_en)
+        doc_dual.insert_file(doc_zh)
+        for id in range(page_count):
+            doc_dual.move_page(page_count+id,id*2+1)
+        doc_zh.save(f'{filename}-zh.pdf',deflate=1,)
+        doc_dual.save(f'{filename}-dual.pdf',deflate=1)
         doc_en.close()
         doc_zh.close()
         doc_dual.close()
