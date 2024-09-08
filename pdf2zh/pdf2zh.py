@@ -68,24 +68,23 @@ def extract_text(
         filename = os.path.splitext(os.path.basename(file))[0]
 
         doc_en = pymupdf.open(file)
+        page_count=doc_en.page_count
         for page in doc_en:
             page.insert_font('china-ss')
         doc_en.save('output-en.pdf')
-        page_count=doc_en.page_count
+        doc_en.close()
 
         # for fname in files:
         with open('output-en.pdf', "rb") as fp:
             pdf2zh.high_level.extract_text_to_fp(fp, **locals())
 
         doc_zh = pymupdf.open('output-zh.pdf')
-        doc_dual = pymupdf.open()
-        doc_dual.insert_file(doc_en)
+        doc_dual = pymupdf.open('output-en.pdf')
         doc_dual.insert_file(doc_zh)
         for id in range(page_count):
             doc_dual.move_page(page_count+id,id*2+1)
-        doc_zh.save(f'{filename}-zh.pdf',deflate=1,)
+        doc_zh.save(f'{filename}-zh.pdf',deflate=1)
         doc_dual.save(f'{filename}-dual.pdf',deflate=1)
-        doc_en.close()
         doc_zh.close()
         doc_dual.close()
 
