@@ -265,7 +265,8 @@ class PDFContentParser(PSStackParser[Union[PSKeyword, PDFStream]]):
             else:
                 raise PSEOF("Unexpected EOF, file truncated?")
             self.fp = BytesIO(strm.get_data())
-            # print('STREAM DATA',strm.get_data())
+            if log.isEnabledFor(logging.DEBUG):
+                log.debug(f'STREAM DATA {strm.get_data()}')
 
     def seek(self, pos: int) -> None:
         self.fillfp()
@@ -683,7 +684,9 @@ class PDFPageInterpreter:
             if settings.STRICT:
                 raise PDFInterpreterError("No colorspace specified!")
             n = 1
-        self.graphicstate.scolor = cast(Color, self.pop(n))
+        args=self.pop(n)
+        self.graphicstate.scolor = cast(Color, args)
+        return args
 
     def do_scn(self) -> None:
         """Set color for nonstroking operations"""
@@ -693,15 +696,17 @@ class PDFPageInterpreter:
             if settings.STRICT:
                 raise PDFInterpreterError("No colorspace specified!")
             n = 1
-        self.graphicstate.ncolor = cast(Color, self.pop(n))
+        args=self.pop(n)
+        self.graphicstate.ncolor = cast(Color, args)
+        return args
 
     def do_SC(self) -> None:
         """Set color for stroking operations"""
-        self.do_SCN()
+        return self.do_SCN()
 
     def do_sc(self) -> None:
         """Set color for nonstroking operations"""
-        self.do_scn()
+        return self.do_scn()
 
     def do_sh(self, name: object) -> None:
         """Paint area defined by shading pattern"""
@@ -975,9 +980,10 @@ class PDFPageInterpreter:
         ops_new=self.device.end_page(page)
         page_objid=page.contents[0].objid
         ops_full=f'{page_objid} 0 obj\n<<>>stream\n{ops_new}{ops_base}\nendstream\nendobj\n' # ops_base 可能有副作用，所以先输出 ops_new
-        # print('OP_BASE',ops_base)
-        # print('OP_NEW',ops_new)
-        # print('OP_FULL',ops_full)
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug(f'OP_BASE {ops_base}')
+            log.debug(f'OP_NEW {ops_new}')
+            log.debug(f'OP_FULL {ops_full}')
         return page_objid,ops_full
 
     def render_contents(
@@ -1031,8 +1037,11 @@ class PDFPageInterpreter:
                                 ops+=f'{p} {name} '
                     else:
                         # log.debug("exec: %s", name)
-                        func()
-                        ops+=f'{name} '
+                        targs=func()
+                        if targs==None:
+                            targs=[]
+                        p=" ".join([str(x).replace("\'","") for x in targs])
+                        ops+=f'{p} {name} '
                 elif settings.STRICT:
                     error_msg = "Unknown operator: %r" % name
                     raise PDFInterpreterError(error_msg)

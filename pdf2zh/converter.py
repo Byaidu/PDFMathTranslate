@@ -501,8 +501,8 @@ class TextConverter(PDFConverter[AnyIO]):
                 else:
                     return "".join(["%02x" % ord(c) for c in cstk])
             for id,new in enumerate(news):
-                x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6];cstk='';fcur=fcur_=None
-                tx=x
+                tx=x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6];cstk='';fcur=fcur_=None
+                log.debug(f"< {y} {x} {lt} {rt} {size} {font.fontname} {lb} > {sstk[id]} | {new}")
                 while True:
                     # print(new,ptr)
                     if ptr==len(new): # 到达段落结尾
@@ -514,7 +514,10 @@ class TextConverter(PDFConverter[AnyIO]):
                     if vy_regex: # 加载公式
                         vid=int(vy_regex.group(1).replace(' ',''))
                         ptr+=len(vy_regex.group(0))
-                        adv=vlen[vid]
+                        if vid<len(vlen):
+                            adv=vlen[vid]
+                        else:
+                            continue # 翻译器可能会自动补个越界的公式标记
                     else: # 加载文字
                         ch=new[ptr]
                         # cid=self.china.decode(ch.encode())
@@ -535,7 +538,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if vy_regex: # 插入公式
                         fix=0
                         if fcur!=None: # 段落内公式修正
-                            if re.match(r'.*\+(CMEX.*)',var[vid][0].fontname) and var[vid][0].cid in [80,88,112,33]: # 根式、积分与大小求和
+                            if re.match(r'.*\+(CMEX.*)',var[vid][0].fontname) and var[vid][0].cid in [80,88,112,33,82]: # 根式、积分与大小求和
                                 fix=var[vid][0].size*0.85
                             if re.match(r'.*\+(CMSY.*)',var[vid][0].fontname) and var[vid][0].cid in [112]: # 根式
                                 fix=var[vid][0].size*0.85
@@ -563,7 +566,6 @@ class TextConverter(PDFConverter[AnyIO]):
                             cstk+=ch
                     fcur=fcur_
                     x+=adv
-                log.debug(f"< {' '.join([f'{j:.1f}' for j in pstk[id][:5]])} {pstk[id][5].fontname} {pstk[id][6]} > {new}")
             for l in lstk:
                 ops+=f"ET q 1 0 0 1 {l.pts[0][0]} {l.pts[0][1]} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
                 pass
