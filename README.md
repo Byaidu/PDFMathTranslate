@@ -11,7 +11,7 @@
   </a>
 </p>
 
-Latex PDF 翻译及双语对照，保留公式和图表排版
+基于字体规则的 Latex PDF 翻译及双语对照，保留公式和图表排版
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
@@ -37,7 +37,13 @@ pdf2zh example.pdf
 ### 翻译部分文档
 
 ```bash
-pdf2zh example.pdf --page-numbers 1 2 3
+pdf2zh example.pdf -p 1 2 3
+```
+
+### 使用正则表达式指定需要保留样式的公式字体和字符
+
+```bash
+pdf2zh BDA3.pdf -f ".*\+(CM[^R].*|MS.*|XY.*|.*0700|.*0500)" -c "(\(|\||=|\u02dc|\u02c6|\u2248|\u223c|\u221d|\u0393|\d|\)|\+)"
 ```
 
 ## 致谢
