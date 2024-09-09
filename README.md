@@ -37,7 +37,7 @@ pdf2zh example.pdf
 ### 翻译部分文档
 
 ```bash
-pdf2zh example.pdf --page-numbers 1 2 3
+pdf2zh example.pdf -p 1 2 3
 ```
 
 ### 使用正则表达式指定需要保留样式的公式字体和字符
