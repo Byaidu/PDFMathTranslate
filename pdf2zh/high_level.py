@@ -40,6 +40,9 @@ def extract_text_to_fp(
     debug: bool = False,
     disable_caching: bool = False,
     page_count: int = 0,
+    vfont: str = "",
+    vchar: str = "",
+    thread: int = 0,
     **kwargs: Any,
 ) -> None:
     """Parses text from inf-file and writes to outfp file-like object.
@@ -91,6 +94,9 @@ def extract_text_to_fp(
             codec=codec,
             laparams=laparams,
             imagewriter=imagewriter,
+            vfont=vfont,
+            vchar=vchar,
+            thread=thread,
         )
 
     elif output_type == "xml":

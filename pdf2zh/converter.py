@@ -49,7 +49,7 @@ from pdf2zh.layout import (
 from pdf2zh.pdfcolor import PDFColorSpace
 from pdf2zh.pdfdevice import PDFTextDevice
 from pdf2zh.pdfexceptions import PDFValueError
-from pdf2zh.pdffont import PDFFont, PDFUnicodeNotDefined
+from pdf2zh.pdffont import PDFFont, PDFUnicodeNotDefined, PDFCIDFont
 from pdf2zh.pdfinterp import PDFGraphicState, PDFResourceManager
 from pdf2zh.pdfpage import PDFPage
 from pdf2zh.pdftypes import PDFStream
@@ -341,10 +341,16 @@ class TextConverter(PDFConverter[AnyIO]):
         laparams: Optional[LAParams] = None,
         showpageno: bool = False,
         imagewriter: Optional[ImageWriter] = None,
+        vfont: str = None,
+        vchar: str = None,
+        thread: int = 0,
     ) -> None:
         super().__init__(rsrcmgr, outfp, codec=codec, pageno=pageno, laparams=laparams)
         self.showpageno = showpageno
         self.imagewriter = imagewriter
+        self.vfont = vfont
+        self.vchar = vchar
+        self.thread=thread
 
     def write_text(self, text: str) -> None:
         text = utils.compatible_encode_method(text, self.codec, "ignore")
@@ -367,14 +373,17 @@ class TextConverter(PDFConverter[AnyIO]):
             varl=[]
             vlen=[]
             ops=""
-            def vflag(fontname): # 匹配公式（和角标）字体
-                return re.match(r'.*\+(CM.*|MS.*|XY.*|.*0700|.*0500)',fontname)
+            def vflag(font,char): # 匹配公式（和角标）字体
+                if self.vfont:
+                    return re.match(self.vfont,font) or (self.vchar and re.match(self.vchar,char))
+                else:
+                    return re.match(r'.*\+(CM.*|MS.*|XY.*|.*0700|.*0500)',font)
             ptr=0
             item=list(item)
             while ptr<len(item):
                 child=item[ptr]
                 if isinstance(child, LTChar):
-                    if not vflag(child.fontname) or (vstk and child.x0<vstk[-1].x1-ltpage.width/3): # 公式结束或公式换行截断
+                    if ptr==len(item)-1 or not vflag(child.fontname,child.get_text()) or (vstk and child.x0<vstk[-1].x1-ltpage.width/3): # 公式结束或公式换行截断
                         if vstk: # 公式出栈
                             sstk[-1]+=f'$v{len(var)}$'
                             # print(f'$v{len(var)}$',end='')
@@ -382,6 +391,9 @@ class TextConverter(PDFConverter[AnyIO]):
                             varl.append(vlstk)
                             vstk=[]
                             vlstk=[]
+                            if ptr==len(item)-1 and vflag(child.fontname,child.get_text()):
+                                var[-1].append(child)
+                                break
                     if not vstk: # 非公式或是公式开头
                         if xt and child.y1 > xt.y0 - child.size*0.6 and child.y0 < pstk[-1][0]+pstk[-1][4]:
                             if False and (child.size>xt.size*1.2 or child.size<xt.size*0.8): # 字体分离（处理角标有误，更新pstk会导致段落断开）
@@ -412,10 +424,10 @@ class TextConverter(PDFConverter[AnyIO]):
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                             # print(f'\n\n[TEXT C] {(child.y0,child.x0,child.size)}')
-                    if not vflag(child.fontname): # 文字入栈
+                    if not vflag(child.fontname,child.get_text()): # 文字入栈
                         sstk[-1]+=child.get_text()
                         # print(child.get_text(),end='')
-                        if vflag(pstk[-1][5].fontname): # 公式开头，后续接文字，需要校正字体
+                        if vflag(pstk[-1][5].fontname,''): # 公式开头，后续接文字，需要校正字体
                             pstk[-1][5]=child.font
                     else: # 公式入栈
                         vstk.append(child)
@@ -465,20 +477,29 @@ class TextConverter(PDFConverter[AnyIO]):
             cache.create_cache(hash_key)
             @retry
             def worker(s): # 多线程翻译
-                if re.search('[A-Za-z]',s):
-                    hash_key_paragraph = cache.deterministic_hash(s)
-                    new = cache.load_paragraph(hash_key, hash_key_paragraph)
-                    if new is None:
-                        new=translator.translate(s,'zh-CN','en')
-                        new=remove_control_characters(new)
-                        cache.write_paragraph(hash_key, hash_key_paragraph, new)
-                else:
-                    new=s
-                return new
+                try:
+                    if re.search('[A-Za-z]',s):
+                        hash_key_paragraph = cache.deterministic_hash(s)
+                        new = cache.load_paragraph(hash_key, hash_key_paragraph)
+                        if new is None:
+                            new=translator.translate(s,'zh-CN','en')
+                            new=remove_control_characters(new)
+                            cache.write_paragraph(hash_key, hash_key_paragraph, new)
+                    else:
+                        new=s
+                    return new
+                except BaseException as e:
+                    log.exception(e,exc_info=False)
+                    raise e
             # tqdm with concurrent.futures.ThreadPoolExecutor()
-            with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.thread) as executor:
                 # news = list(tqdm.auto.tqdm(executor.map(worker, sstk), total=len(sstk), position=1))
                 news = list(executor.map(worker, sstk))
+            def raw_string(fcur,cstk):
+                if isinstance(self.fontmap[fcur],PDFCIDFont):
+                    return "".join(["%04x" % ord(c) for c in cstk])
+                else:
+                    return "".join(["%02x" % ord(c) for c in cstk])
             for id,new in enumerate(news):
                 x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6];cstk='';fcur=fcur_=None
                 tx=x
@@ -487,7 +508,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if ptr==len(new): # 到达段落结尾
                         if cstk:
                             # print(cstk,tx,x,rt,y)
-                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{"".join(["%04x" % ord(c) for c in cstk])}>] TJ '
+                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
                         break
                     vy_regex=re.match(r'\$\s*v([\d\s]*)\$',new[ptr:]) # 匹配 $vn$ 公式标记
                     if vy_regex: # 加载公式
@@ -506,7 +527,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if fcur_!=fcur or vy_regex or x+adv>rt: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界
                         if cstk:
                             # print(cstk,tx,x,rt,y)
-                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{"".join(["%04x" % ord(c) for c in cstk])}>] TJ '
+                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
                             cstk=''
                     if lb and x+adv>rt: # 到达右边界且原文段落存在换行
                         x=lt
@@ -514,7 +535,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if vy_regex: # 插入公式
                         fix=0
                         if fcur!=None: # 段落内公式修正
-                            if re.match(r'.*\+(CMEX.*)',var[vid][0].fontname) and var[vid][0].cid in [80,88,112]: # 根式与大小求和
+                            if re.match(r'.*\+(CMEX.*)',var[vid][0].fontname) and var[vid][0].cid in [80,88,112,33]: # 根式、积分与大小求和
                                 fix=var[vid][0].size*0.85
                             if re.match(r'.*\+(CMSY.*)',var[vid][0].fontname) and var[vid][0].cid in [112]: # 根式
                                 fix=var[vid][0].size*0.85
@@ -525,11 +546,8 @@ class TextConverter(PDFConverter[AnyIO]):
                             if re.match(r'.*\+(CM.*)7',var[vid][0].fontname): # 修正分式
                                 fix=var[vid][0].size*0.55
                         for vch in var[vid]:
-                            vc=chr(vch.cid) # vch.get_text()
-                            vc=vc.replace('\\','\\0134')
-                            vc=vc.replace('(','\\050')
-                            vc=vc.replace(')','\\051')
-                            ops+=f"/{vch.font.fontid} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm ({vc}) Tj "
+                            vc=chr(vch.cid)
+                            ops+=f"/{vch.font.fontid} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm [<{raw_string(vch.font.fontid,vc)}>] TJ "
                             # print(vc,vch,vch.x0,vch.x1,vch.y0,vch.y1)
                         for l in varl[vid]:
                             ops+=f"ET q 1 0 0 1 {l.pts[0][0]+x-var[vid][0].x0} {l.pts[0][1]+fix+y-var[vid][0].y0} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "

@@ -974,7 +974,7 @@ class PDFPageInterpreter:
         self.device.fontmap=self.fontmap # hack
         ops_new=self.device.end_page(page)
         page_objid=page.contents[0].objid
-        ops_full=f'{page_objid} 0 obj\n<<>>stream\n{ops_base}{ops_new}\nendstream\nendobj\n'
+        ops_full=f'{page_objid} 0 obj\n<<>>stream\n{ops_new}{ops_base}\nendstream\nendobj\n' # ops_base 可能有副作用，所以先输出 ops_new
         # print('OP_BASE',ops_base)
         # print('OP_NEW',ops_new)
         # print('OP_FULL',ops_full)
@@ -1026,7 +1026,7 @@ class PDFPageInterpreter:
                         # log.debug("exec: %s %r", name, args)
                         if len(args) == nargs:
                             func(*args)
-                            if not name in ['TJ','Tj','Tm','Td','Tf','BT','ET','l']:
+                            if not name in ['TJ','Tj','Tm','Tf','l']:
                                 p=" ".join([str(x).replace("\'","") for x in args])
                                 ops+=f'{p} {name} '
                     else:

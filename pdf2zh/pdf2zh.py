@@ -45,6 +45,9 @@ def extract_text(
     output_dir: Optional[str] = None,
     debug: bool = False,
     disable_caching: bool = False,
+    vfont: str = "",
+    vchar: str = "",
+    thread: int = 0,
     **kwargs: Any,
 ) -> AnyIO:
     if not files:
@@ -104,12 +107,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="One or more paths to PDF files.",
     )
 
-    # parser.add_argument(
-    #     "--version",
-    #     "-v",
-    #     action="version",
-    #     version=f"pdf2zh.six v{pdf2zh.__version__}",
-    # )
+    parser.add_argument(
+        "--version",
+        "-v",
+        action="version",
+        version=f"pdf2zh v{pdf2zh.__version__}",
+    )
     parser.add_argument(
         "--debug",
         "-d",
@@ -131,6 +134,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parse_params.add_argument(
         "--page-numbers",
+        "-p",
         type=int,
         default=None,
         nargs="+",
@@ -157,6 +161,27 @@ def create_parser() -> argparse.ArgumentParser:
         type=str,
         default="",
         help="The password to use for decrypting PDF file.",
+    )
+    parse_params.add_argument(
+        "--vfont",
+        "-f",
+        type=str,
+        default="",
+        help="The regex to math font name of formula.",
+    )
+    parse_params.add_argument(
+        "--vchar",
+        "-c",
+        type=str,
+        default="",
+        help="The regex to math character of formula.",
+    )
+    parse_params.add_argument(
+        "--thread",
+        "-t",
+        type=int,
+        default=4,
+        help="The number of threads to execute translation.",
     )
     # parse_params.add_argument(
     #     "--rotation",
