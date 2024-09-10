@@ -350,7 +350,7 @@ class TextConverter(PDFConverter[AnyIO]):
         self.imagewriter = imagewriter
         self.vfont = vfont
         self.vchar = vchar
-        self.thread=thread
+        self.thread = thread
 
     def write_text(self, text: str) -> None:
         text = utils.compatible_encode_method(text, self.codec, "ignore")
@@ -375,12 +375,17 @@ class TextConverter(PDFConverter[AnyIO]):
             ops=""
             def vflag(font,char): # 匹配公式（和角标）字体
                 if self.vfont:
-                    return re.match(self.vfont,font) or (self.vchar and re.match(self.vchar,char))
+                    if re.match(self.vfont,font):
+                        return True
                 else:
-                    return re.match(r'.*\+(CM.*|MS.*|XY.*|.*0700|.*0500)',font)
+                    if re.match(r'.*\+(CM.*|MS.*|XY.*|.*0700|.*0500)',font):
+                        return True
+                if self.vchar and re.match(self.vchar,char):
+                    return True
+                return False
             ptr=0
             item=list(item)
-            while ptr<len(item):
+            while ptr<len(item): # 识别文字和公式
                 child=item[ptr]
                 if isinstance(child, LTChar):
                     if ptr==len(item)-1 or not vflag(child.fontname,child.get_text()) or (vstk and child.x0<vstk[-1].x1-ltpage.width/3): # 公式结束或公式换行截断
@@ -391,7 +396,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             varl.append(vlstk)
                             vstk=[]
                             vlstk=[]
-                            if ptr==len(item)-1 and vflag(child.fontname,child.get_text()):
+                            if ptr==len(item)-1 and vflag(child.fontname,child.get_text()): # 文档以公式结尾
                                 var[-1].append(child)
                                 break
                     if not vstk: # 非公式或是公式开头
@@ -436,13 +441,13 @@ class TextConverter(PDFConverter[AnyIO]):
                             # ops+=f"ET q 1 0 0 1 0 {child.y0-child.size*3} cm [] 0 d 0 J 1 w 0 0 m {ltpage.width} 0 l S Q BT "
                             while ptr+1<len(item):
                                 child_=item[ptr+1]
-                                if isinstance(child_, LTChar):
+                                if isinstance(child_, LTChar): # 公式字符
                                     # print(child_.y0,child.y0-child.size*3,child_.y1,child.y0)
                                     if child_.y0>child.y0-child.size*3 and child_.y1<child.y0:
                                         vstk.append(child_)
                                     else:
                                         break
-                                elif isinstance(child_, LTLine): # 线条
+                                elif isinstance(child_, LTLine): # 公式线条
                                     vlstk.append(child_)
                                 ptr+=1
                     xt=child
@@ -457,9 +462,9 @@ class TextConverter(PDFConverter[AnyIO]):
                     # print(f'\n\n[FIGURE] {child.name}')
                     pass
                 elif isinstance(child, LTLine): # 线条
-                    if vstk and child.x1-child.x0<ltpage.width/3: # 公式环境
+                    if vstk and child.x1-child.x0<ltpage.width/3: # 公式线条
                         vlstk.append(child)
-                    else:
+                    else: # 全局线条
                         lstk.append(child)
                 else:
                     # print(child)
@@ -495,12 +500,12 @@ class TextConverter(PDFConverter[AnyIO]):
             with concurrent.futures.ThreadPoolExecutor(max_workers=self.thread) as executor:
                 # news = list(tqdm.auto.tqdm(executor.map(worker, sstk), total=len(sstk), position=1))
                 news = list(executor.map(worker, sstk))
-            def raw_string(fcur,cstk):
+            def raw_string(fcur,cstk): # 编码字符串
                 if isinstance(self.fontmap[fcur],PDFCIDFont):
                     return "".join(["%04x" % ord(c) for c in cstk])
                 else:
                     return "".join(["%02x" % ord(c) for c in cstk])
-            for id,new in enumerate(news):
+            for id,new in enumerate(news): # 排版文字和公式
                 tx=x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6];cstk='';fcur=fcur_=None
                 log.debug(f"< {y} {x} {lt} {rt} {size} {font.fontname} {lb} > {sstk[id]} | {new}")
                 while True:
@@ -548,11 +553,11 @@ class TextConverter(PDFConverter[AnyIO]):
                                 fix=var[vid][0].size*0.25
                             if re.match(r'.*\+(CM.*)7',var[vid][0].fontname): # 修正分式
                                 fix=var[vid][0].size*0.55
-                        for vch in var[vid]:
+                        for vch in var[vid]: # 排版公式字符
                             vc=chr(vch.cid)
                             ops+=f"/{vch.font.fontid} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm [<{raw_string(vch.font.fontid,vc)}>] TJ "
                             # print(vc,vch,vch.x0,vch.x1,vch.y0,vch.y1)
-                        for l in varl[vid]:
+                        for l in varl[vid]: # 排版公式线条
                             ops+=f"ET q 1 0 0 1 {l.pts[0][0]+x-var[vid][0].x0} {l.pts[0][1]+fix+y-var[vid][0].y0} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
                             pass
                     else: # 插入文字缓冲区
@@ -566,7 +571,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             cstk+=ch
                     fcur=fcur_
                     x+=adv
-            for l in lstk:
+            for l in lstk: # 排版全局线条
                 ops+=f"ET q 1 0 0 1 {l.pts[0][0]} {l.pts[0][1]} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
                 pass
             ops=f'BT {ops}ET '
