@@ -148,8 +148,10 @@ def extract_text_to_fp(
         caching=not disable_caching,
     ), total=page_count, position=0):
         page.rotate = (page.rotate + rotation) % 360
-        page_objid,ops_full=interpreter.process_page(page)
-        obj_patch[page_objid]=ops_full
+        page_objids,ops_full=interpreter.process_page(page)
+        obj_patch[page_objids[0]]=ops_full
+        for objid in range(1,len(page_objids)):
+            obj_patch[page_objids[objid]]=f'{page_objids[objid]} 0 obj\n<<>>\nendobj\n'
 
     # 用最后一页的page来解析doc
     objs=[]

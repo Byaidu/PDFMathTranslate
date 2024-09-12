@@ -978,13 +978,13 @@ class PDFPageInterpreter:
         ops_base=self.render_contents(page.resources, page.contents, ctm=ctm)
         self.device.fontmap=self.fontmap # hack
         ops_new=self.device.end_page(page)
-        page_objid=page.contents[0].objid
-        ops_full=f'{page_objid} 0 obj\n<<>>stream\n{ops_new}{ops_base}\nendstream\nendobj\n' # ops_base 可能有副作用，所以先输出 ops_new
+        page_objids=[i.objid for i in page.contents]
+        ops_full=f'{page_objids[0]} 0 obj\n<<>>stream\n{ops_new}{ops_base}\nendstream\nendobj\n' # ops_base 可能有副作用，所以先输出 ops_new
         if log.isEnabledFor(logging.DEBUG):
             log.debug(f'OP_BASE {ops_base}')
             log.debug(f'OP_NEW {ops_new}')
             log.debug(f'OP_FULL {ops_full}')
-        return page_objid,ops_full
+        return page_objids,ops_full
 
     def render_contents(
         self,
