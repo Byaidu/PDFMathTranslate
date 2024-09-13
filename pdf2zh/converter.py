@@ -483,7 +483,7 @@ class TextConverter(PDFConverter[AnyIO]):
             @retry
             def worker(s): # 多线程翻译
                 try:
-                    if re.search('[A-Za-z]',s):
+                    if re.search('[a-z]',s):
                         hash_key_paragraph = cache.deterministic_hash(s)
                         new = cache.load_paragraph(hash_key, hash_key_paragraph)
                         if new is None:
@@ -529,7 +529,10 @@ class TextConverter(PDFConverter[AnyIO]):
                         if font.char_width(ord(ch)):
                             fcur_=font.fontid
                         else:
-                            fcur_='china-ss'
+                            if ch==' ':
+                                fcur_='helv' # 半角空格
+                            else:
+                                fcur_='china-ss'
                         adv=self.fontmap[fcur_].char_width(ord(ch))*size
                         ptr+=1
                     if fcur_!=fcur or vy_regex or x+adv>rt: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界
