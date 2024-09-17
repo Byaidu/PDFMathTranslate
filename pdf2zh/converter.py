@@ -400,7 +400,7 @@ class TextConverter(PDFConverter[AnyIO]):
                                 var[-1].append(child)
                                 break
                     if not vstk: # 非公式或是公式开头
-                        if xt and child.y1 > xt.y0 - child.size*0.6 and child.y0 < pstk[-1][0]+pstk[-1][4]:
+                        if xt and child.y1 > xt.y0 - child.size*0.5 and child.y0 < xt.y1 + child.size:
                             if False and (child.size>xt.size*1.2 or child.size<xt.size*0.8): # 字体分离（处理角标有误，更新pstk会导致段落断开）
                                 lt,rt=child,child
                                 sstk.append("")
@@ -414,7 +414,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             elif child.x0 > xt.x1 + 1: # 行内空格
                                 sstk[-1]+=' '
                                 # print(' ',end='')
-                            elif child.x0 < xt.x0:
+                            elif child.x1 < xt.x0: # 换行，这里需要考虑一下字母修饰符的情况
                                 if child.x0 < lt.x0 - child.size*2 or child.x0 > lt.x0 + child.size*1: # 基于初始位置的行间分离
                                     lt,rt=child,child
                                     sstk.append("")
@@ -483,7 +483,7 @@ class TextConverter(PDFConverter[AnyIO]):
             @retry
             def worker(s): # 多线程翻译
                 try:
-                    if re.search('[a-z]',s):
+                    if sum(map(str.islower,s))>1:
                         hash_key_paragraph = cache.deterministic_hash(s)
                         new = cache.load_paragraph(hash_key, hash_key_paragraph)
                         if new is None:

@@ -30,7 +30,7 @@ def extract_text_to_fp(
     codec: str = "utf-8",
     laparams: Optional[LAParams] = None,
     maxpages: int = 0,
-    page_numbers: Optional[Container[int]] = None,
+    pages: Optional[Container[int]] = None,
     password: str = "",
     scale: float = 1.0,
     rotation: int = 0,
@@ -140,13 +140,17 @@ def extract_text_to_fp(
     assert device is not None
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     obj_patch={}
+    if pages:
+        total_pages=len(pages)
+    else:
+        total_pages=page_count
     for page in tqdm.auto.tqdm(PDFPage.get_pages(
         inf,
-        page_numbers,
+        pages,
         maxpages=maxpages,
         password=password,
         caching=not disable_caching,
-    ), total=page_count, position=0):
+    ), total=total_pages, position=0):
         page.rotate = (page.rotate + rotation) % 360
         page_objids,ops_full=interpreter.process_page(page)
         obj_patch[page_objids[0]]=ops_full

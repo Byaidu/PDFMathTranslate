@@ -37,7 +37,7 @@ def extract_text(
     codec: str = "utf-8",
     strip_control: bool = False,
     maxpages: int = 0,
-    page_numbers: Optional[Container[int]] = None,
+    pages: Optional[Container[int]] = None,
     password: str = "",
     scale: float = 1.0,
     rotation: int = 0,
@@ -134,12 +134,10 @@ def create_parser() -> argparse.ArgumentParser:
         description="Used during PDF parsing",
     )
     parse_params.add_argument(
-        "--page-numbers",
+        "--pages",
         "-p",
-        type=int,
-        default=None,
-        nargs="+",
-        help="A space-seperated list of page numbers to parse.",
+        type=str,
+        help="The list of page numbers to parse.",
     )
     # parse_params.add_argument(
     #     "--pagenos",
@@ -352,8 +350,15 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
     #         all_texts=parsed_args.all_texts,
     #     )
 
-    if parsed_args.page_numbers:
-        parsed_args.page_numbers = {x - 1 for x in parsed_args.page_numbers}
+    if parsed_args.pages:
+        pages = []
+        for p in parsed_args.pages.split(","):
+            if "-" in p:
+                start, end = p.split("-")
+                pages.extend(range(int(start) - 1, int(end)))
+            else:
+                pages.append(int(p) - 1)
+        parsed_args.pages = pages
 
     # if parsed_args.pagenos:
     #     parsed_args.page_numbers = {int(x) - 1 for x in parsed_args.pagenos.split(",")}
