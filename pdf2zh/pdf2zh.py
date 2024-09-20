@@ -10,6 +10,8 @@ import sys
 from typing import Any, Container, Iterable, List, Optional
 import pymupdf
 import layoutparser as lp
+import tempfile
+import urllib.request
 
 import pdf2zh.high_level
 from pdf2zh.layout import LAParams
@@ -66,8 +68,11 @@ def extract_text(
     # else:
     #     outfp = open(outfile, "wb")
     outfp: AnyIO = sys.stdout
-
-    model = lp.AutoLayoutModel("lp://efficientdet/MFD/tf_efficientdet_d0")
+    pth = os.path.join(tempfile.gettempdir(), 'mfd-tf_efficientdet_d0.pth.tar')
+    if not os.path.exists(pth):
+        print('Downloading...')
+        urllib.request.urlretrieve("https://www.dropbox.com/s/dkr22iux7thlhel/mfd-tf_efficientdet_d0.pth.tar?dl=1",pth)
+    model = lp.EfficientDetLayoutModel("lp://efficientdet/MFD/tf_efficientdet_d0",pth)
 
     for file in files:
 

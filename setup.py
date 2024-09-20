@@ -24,6 +24,8 @@ setup(
         "pymupdf",
         "tqdm",
         "tenacity",
+        "layoutparser",
+        "numpy",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
