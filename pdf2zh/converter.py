@@ -377,12 +377,12 @@ class TextConverter(PDFConverter[AnyIO]):
             ops=""
             def vflag(font,char): # 匹配公式（和角标）字体
                 if self.vfont:
-                    if re.search(self.vfont,font):
+                    if re.match(self.vfont,font):
                         return True
                 else:
-                    if re.search(r'(CM|MS|XY|MT|BL|0700|0500|Italic)',font):
+                    if re.match(r'.*+(CM.*|MS.*|XY.*|MT.*|BL.*|.*0700|.*0500|.*Italic)',font):
                         return True
-                if self.vchar and re.search(self.vchar,char):
+                if self.vchar and re.match(self.vchar,char):
                     return True
                 return False
             ptr=0
@@ -400,8 +400,8 @@ class TextConverter(PDFConverter[AnyIO]):
                         if child.x1>b.x_1 and child.x0<b.x_2 and child.y1>ltpage.height-b.y_2 and child.y0<ltpage.height-b.y_1:
                             cur_v=True
                             ind_v=True
-                            # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_2),(b.x_2,ltpage.height-b.y_2)))
-                            # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_1),(b.x_2,ltpage.height-b.y_1)))
+                            lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_2),(b.x_2,ltpage.height-b.y_2)))
+                            lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_1),(b.x_2,ltpage.height-b.y_1)))
                             break
                     if ptr==len(item)-1 or not cur_v or (ind_v and not xt_ind) or (vstk and child.x0<vstk[-1].x1-ltpage.width/3): # 公式结束或公式换行截断
                         if vstk: # 公式出栈
