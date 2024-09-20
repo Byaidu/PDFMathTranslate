@@ -11,7 +11,7 @@
   </a>
 </p>
 
-基于字体规则的 Latex PDF 翻译及双语对照，保留公式和图表排版
+基于字体规则和深度学习的 Latex PDF 翻译及双语对照，保留公式和图表排版
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
@@ -45,12 +45,8 @@ pdf2zh example.pdf -p 1-3,5
 注：从 `\ufb00` 开始是英文风格连字
 
 ```bash
-pdf2zh BDA3.pdf -f ".*\+(CM[^RT].*|MS.*|XY.*|.*0700|.*0500)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
+pdf2zh BDA3.pdf -f "(CM[^RT]|MS|XY|MT|BL|0700|0500|Italic)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
-
-## TODO
-
-- 基于 DiT 的独立公式及图表排版优化
 
 ## 致谢
 
@@ -59,3 +55,5 @@ pdf2zh BDA3.pdf -f ".*\+(CM[^RT].*|MS.*|XY.*|.*0700|.*0500)" -c "(\(|\||\)|\+|=|
 文档解析：[pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 
 多线程翻译：[MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
+
+排版解析：[LayoutParser](https://github.com/Layout-Parser/layout-parser)
