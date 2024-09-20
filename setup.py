@@ -18,13 +18,13 @@ setup(
     url="https://github.com/Byaidu/PDFMathTranslate",
     packages=["pdf2zh"],
     install_requires=[
-        "charset-normalizer >= 2.0.0",
-        "cryptography >= 36.0.0",
+        "charset-normalizer",
+        "cryptography",
         "mtranslate",
         "pymupdf",
         "tqdm",
         "tenacity",
-        "layoutparser",
+        "layoutparser[effdet]",
         "numpy",
     ],
     classifiers=[
