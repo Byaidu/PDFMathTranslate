@@ -45,7 +45,7 @@ pdf2zh example.pdf -p 1-3,5
 注：从 `\ufb00` 开始是英文风格连字
 
 ```bash
-pdf2zh BDA3.pdf -f "(CM[^RT]|MS|XY|MT|BL|0700|0500|Italic)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
+pdf2zh BDA3.pdf -f ".*+(CM[^RT].*|MS.*|XY.*|MT.*|BL.*|.*0700|.*0500|.*Italic)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
 
 ## 致谢
