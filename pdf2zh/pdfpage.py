@@ -61,6 +61,7 @@ class PDFPage:
         """
         self.doc = doc
         self.pageid = pageid
+        self.pageno = 0
         self.attrs = dict_value(attrs)
         self.label = label
         self.lastmod = resolve1(self.attrs.get("LastModified"))
@@ -187,6 +188,7 @@ class PDFPage:
                 log.warning(warning_msg)
         # Process each page contained in the document.
         for pageno, page in enumerate(cls.create_pages(doc)):
+            page.pageno=pageno
             if pagenos and (pageno not in pagenos):
                 continue
             yield page

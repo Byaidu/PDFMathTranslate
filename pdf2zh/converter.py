@@ -89,7 +89,7 @@ class PDFLayoutAnalyzer(PDFTextDevice):
         (x0, y0) = apply_matrix_pt(ctm, (x0, y0))
         (x1, y1) = apply_matrix_pt(ctm, (x1, y1))
         mediabox = (0, 0, abs(x0 - x1), abs(y0 - y1))
-        self.cur_item = LTPage(self.pageno, mediabox)
+        self.cur_item = LTPage(page.pageno, mediabox)
 
     def end_page(self, page: PDFPage):
         assert not self._stack, str(len(self._stack))
@@ -344,6 +344,7 @@ class TextConverter(PDFConverter[AnyIO]):
         vfont: str = None,
         vchar: str = None,
         thread: int = 0,
+        layout = {},
     ) -> None:
         super().__init__(rsrcmgr, outfp, codec=codec, pageno=pageno, laparams=laparams)
         self.showpageno = showpageno
@@ -351,6 +352,7 @@ class TextConverter(PDFConverter[AnyIO]):
         self.vfont = vfont
         self.vchar = vchar
         self.thread = thread
+        self.layout = layout
 
     def write_text(self, text: str) -> None:
         text = utils.compatible_encode_method(text, self.codec, "ignore")
@@ -375,20 +377,33 @@ class TextConverter(PDFConverter[AnyIO]):
             ops=""
             def vflag(font,char): # 匹配公式（和角标）字体
                 if self.vfont:
-                    if re.match(self.vfont,font):
+                    if re.search(self.vfont,font):
                         return True
                 else:
-                    if re.match(r'.*\+(CM.*|MS.*|XY.*|.*0700|.*0500)',font):
+                    if re.search(r'(CM|MS|XY|MT|BL|0700|0500|Italic)',font):
                         return True
-                if self.vchar and re.match(self.vchar,char):
+                if self.vchar and re.search(self.vchar,char):
                     return True
                 return False
             ptr=0
             item=list(item)
+            xt_ind=False
             while ptr<len(item): # 识别文字和公式
                 child=item[ptr]
                 if isinstance(child, LTChar):
-                    if ptr==len(item)-1 or not vflag(child.fontname,child.get_text()) or (vstk and child.x0<vstk[-1].x1-ltpage.width/3): # 公式结束或公式换行截断
+                    cur_v=False
+                    ind_v=False
+                    if vflag(child.fontname,child.get_text()):
+                        cur_v=True
+                    for box in self.layout[ltpage.pageid]: # 独立公式
+                        b=box.block
+                        if child.x1>b.x_1 and child.x0<b.x_2 and child.y1>ltpage.height-b.y_2 and child.y0<ltpage.height-b.y_1:
+                            cur_v=True
+                            ind_v=True
+                            # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_2),(b.x_2,ltpage.height-b.y_2)))
+                            # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_1),(b.x_2,ltpage.height-b.y_1)))
+                            break
+                    if ptr==len(item)-1 or not cur_v or (ind_v and not xt_ind) or (vstk and child.x0<vstk[-1].x1-ltpage.width/3): # 公式结束或公式换行截断
                         if vstk: # 公式出栈
                             sstk[-1]+=f'$v{len(var)}$'
                             # print(f'$v{len(var)}$',end='')
@@ -396,11 +411,11 @@ class TextConverter(PDFConverter[AnyIO]):
                             varl.append(vlstk)
                             vstk=[]
                             vlstk=[]
-                            if ptr==len(item)-1 and vflag(child.fontname,child.get_text()): # 文档以公式结尾
+                            if ptr==len(item)-1 and cur_v: # 文档以公式结尾
                                 var[-1].append(child)
                                 break
                     if not vstk: # 非公式或是公式开头
-                        if xt and child.y1 > xt.y0 - child.size*0.5 and child.y0 < xt.y1 + child.size:
+                        if not ind_v and xt and child.y1 > xt.y0 - child.size*0.5 and child.y0 < xt.y1 + child.size: # 非独立公式且位于同段落
                             if False and (child.size>xt.size*1.2 or child.size<xt.size*0.8): # 字体分离（处理角标有误，更新pstk会导致段落断开）
                                 lt,rt=child,child
                                 sstk.append("")
@@ -429,7 +444,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                             # print(f'\n\n[TEXT C] {(child.y0,child.x0,child.size)}')
-                    if not vflag(child.fontname,child.get_text()): # 文字入栈
+                    if not cur_v: # 文字入栈
                         sstk[-1]+=child.get_text()
                         # print(child.get_text(),end='')
                         if vflag(pstk[-1][5].fontname,''): # 公式开头，后续接文字，需要校正字体
@@ -451,6 +466,7 @@ class TextConverter(PDFConverter[AnyIO]):
                                     vlstk.append(child_)
                                 ptr+=1
                     xt=child
+                    xt_ind=ind_v
                     # 更新左右边界
                     if child.x0<lt.x0:
                         pstk[-1][2]=child.x0
@@ -575,8 +591,8 @@ class TextConverter(PDFConverter[AnyIO]):
                     fcur=fcur_
                     x+=adv
             for l in lstk: # 排版全局线条
-                ops+=f"ET q 1 0 0 1 {l.pts[0][0]} {l.pts[0][1]} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
-                pass
+                if l.linewidth<5: # hack
+                    ops+=f"ET q 1 0 0 1 {l.pts[0][0]} {l.pts[0][1]} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
             ops=f'BT {ops}ET '
             return ops
 

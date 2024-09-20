@@ -9,6 +9,7 @@ import os
 import sys
 from typing import Any, Container, Iterable, List, Optional
 import pymupdf
+import layoutparser as lp
 
 import pdf2zh.high_level
 from pdf2zh.layout import LAParams
@@ -66,6 +67,8 @@ def extract_text(
     #     outfp = open(outfile, "wb")
     outfp: AnyIO = sys.stdout
 
+    model = lp.AutoLayoutModel("lp://efficientdet/MFD/tf_efficientdet_d0")
+
     for file in files:
 
         filename = os.path.splitext(os.path.basename(file))[0]
@@ -76,12 +79,13 @@ def extract_text(
             page.insert_font('china-ss')
             page.insert_font('helv')
         doc_en.save('output-en.pdf')
-        doc_en.close()
+        # doc_en.close()
 
         # for fname in files:
         with open('output-en.pdf', "rb") as fp:
             pdf2zh.high_level.extract_text_to_fp(fp, **locals())
 
+        doc_en.close()
         doc_zh = pymupdf.open('output-zh.pdf')
         doc_dual = pymupdf.open('output-en.pdf')
         doc_dual.insert_file(doc_zh)

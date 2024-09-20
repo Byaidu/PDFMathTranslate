@@ -21,6 +21,7 @@ from pdf2zh.pdfexceptions import PDFValueError
 from pdf2zh.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdf2zh.pdfpage import PDFPage
 from pdf2zh.utils import AnyIO, FileOrName, open_filename
+import numpy as np
 
 
 def extract_text_to_fp(
@@ -43,6 +44,8 @@ def extract_text_to_fp(
     vfont: str = "",
     vchar: str = "",
     thread: int = 0,
+    doc_en = None,
+    model = None,
     **kwargs: Any,
 ) -> None:
     """Parses text from inf-file and writes to outfp file-like object.
@@ -83,6 +86,7 @@ def extract_text_to_fp(
 
     rsrcmgr = PDFResourceManager(caching=not disable_caching)
     device: Optional[PDFDevice] = None
+    layout={}
 
     if output_type != "text" and outfp == sys.stdout:
         outfp = sys.stdout.buffer
@@ -97,6 +101,7 @@ def extract_text_to_fp(
             vfont=vfont,
             vchar=vchar,
             thread=thread,
+            layout=layout,
         )
 
     elif output_type == "xml":
@@ -151,6 +156,11 @@ def extract_text_to_fp(
         password=password,
         caching=not disable_caching,
     ), total=total_pages, position=0):
+        pix = doc_en[page.pageno].get_pixmap()
+        image = np.fromstring(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
+        page_layout=model.detect(image)
+        layout[page.pageno]=page_layout
+        # print(page.number,page_layout)
         page.rotate = (page.rotate + rotation) % 360
         page_objids,ops_full=interpreter.process_page(page)
         obj_patch[page_objids[0]]=ops_full
