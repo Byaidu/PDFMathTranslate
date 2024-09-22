@@ -90,6 +90,7 @@ class PDFLayoutAnalyzer(PDFTextDevice):
         (x1, y1) = apply_matrix_pt(ctm, (x1, y1))
         mediabox = (0, 0, abs(x0 - x1), abs(y0 - y1))
         self.cur_item = LTPage(page.pageno, mediabox)
+        self.cur_item.cropbox=page.cropbox
 
     def end_page(self, page: PDFPage):
         assert not self._stack, str(len(self._stack))
@@ -374,20 +375,25 @@ class TextConverter(PDFConverter[AnyIO]):
             var=[]
             varl=[]
             vlen=[]
-            ops=""
+            ops=f"1 0 0 1 {ltpage.cropbox[0]} {ltpage.cropbox[1]} cm 0 Tc " # 重置渲染状态
             def vflag(font,char): # 匹配公式（和角标）字体
                 if self.vfont:
                     if re.match(self.vfont,font):
                         return True
                 else:
-                    if re.match(r'.*\+(CM.*|MS.*|XY.*|MT.*|BL.*|.*0700|.*0500|.*Italic)',font):
+                    if re.match(r'.*\+(CM.*|MS.*|XY.*|MT.*|BL.*|RM.*|.*0700|.*0500|.*Italic|.*Symbol)',font):
                         return True
-                if self.vchar and re.match(self.vchar,char):
-                    return True
+                if self.vchar:
+                    if re.match(self.vchar,char):
+                        return True
+                else:
+                    if re.match(r'\d',char):
+                        return True
                 return False
             ptr=0
             item=list(item)
             xt_ind=False
+            v_max=ltpage.width/4 # 行内公式最大宽度
             while ptr<len(item): # 识别文字和公式
                 child=item[ptr]
                 if isinstance(child, LTChar):
@@ -403,7 +409,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_2),(b.x_2,ltpage.height-b.y_2)))
                             # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_1),(b.x_2,ltpage.height-b.y_1)))
                             break
-                    if ptr==len(item)-1 or not cur_v or (ind_v and not xt_ind) or (vstk and child.x0<vstk[-1].x1-ltpage.width/3): # 公式结束或公式换行截断
+                    if ptr==len(item)-1 or not cur_v or (ind_v and not xt_ind) or (vstk and abs(child.x0-xt.x0)>v_max and not ind_v): # 公式结束或公式换行截断
                         if vstk: # 公式出栈
                             sstk[-1]+=f'$v{len(var)}$'
                             var.append(vstk)
@@ -466,7 +472,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     # print(f'\n\n[FIGURE] {child.name}')
                     pass
                 elif isinstance(child, LTLine): # 线条
-                    if vstk and child.x1-child.x0<ltpage.width/3: # 公式线条
+                    if vstk and abs(child.x0-xt.x0)<v_max and child.x1-child.x0<v_max and child.y0==child.y1 or xt_ind: # 公式线条
                         vlstk.append(child)
                     else: # 全局线条
                         lstk.append(child)
