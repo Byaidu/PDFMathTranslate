@@ -64,6 +64,7 @@ from pdf2zh.utils import (
     enc,
     make_compat_str,
     mult_matrix,
+    matrix_scale,
 )
 
 log = logging.getLogger(__name__)
@@ -178,7 +179,7 @@ class PDFLayoutAnalyzer(PDFTextDevice):
                 # Note: 'ml', in conditional above, is a frequent anomaly
                 # that we want to support.
                 line = LTLine(
-                    gstate.linewidth,
+                    gstate.linewidth*matrix_scale(self.ctm),
                     pts[0],
                     pts[1],
                     stroke,
@@ -200,7 +201,7 @@ class PDFLayoutAnalyzer(PDFTextDevice):
                 ) or (y0 == y1 and x1 == x2 and y2 == y3 and x3 == x0)
                 if is_closed_loop and has_square_coordinates:
                     rect = LTRect(
-                        gstate.linewidth,
+                        gstate.linewidth*matrix_scale(self.ctm),
                         (*pts[0], *pts[2]),
                         stroke,
                         fill,
@@ -213,7 +214,7 @@ class PDFLayoutAnalyzer(PDFTextDevice):
                     self.cur_item.add(rect)
                 else:
                     curve = LTCurve(
-                        gstate.linewidth,
+                        gstate.linewidth*matrix_scale(self.ctm),
                         pts,
                         stroke,
                         fill,
@@ -226,7 +227,7 @@ class PDFLayoutAnalyzer(PDFTextDevice):
                     self.cur_item.add(curve)
             else:
                 curve = LTCurve(
-                    gstate.linewidth,
+                    gstate.linewidth*matrix_scale(self.ctm),
                     pts,
                     stroke,
                     fill,
@@ -370,10 +371,12 @@ class TextConverter(PDFConverter[AnyIO]):
             sstk=[]
             vstk=[]
             vlstk=[]
+            vfix=0
             pstk=[]
             lstk=[]
             var=[]
             varl=[]
+            varf=[]
             vlen=[]
             ops=f"1 0 0 1 {ltpage.cropbox[0]} {ltpage.cropbox[1]} cm 0 Tc " # 重置渲染状态
             def vflag(font,char): # 匹配公式（和角标）字体
@@ -381,13 +384,13 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vfont,font):
                         return True
                 else:
-                    if re.match(r'.*\+(CM.*|MS.*|XY.*|MT.*|BL.*|RM.*|.*0700|.*0500|.*Italic|.*Symbol)',font):
+                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|.*0700|.*0500|.*Italic|.*Symbol)',font):
                         return True
                 if self.vchar:
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if re.match(r'\d',char):
+                    if re.match(r'(\d|=|[\u0080-\ufaff])',char):
                         return True
                 return False
             ptr=0
@@ -399,7 +402,8 @@ class TextConverter(PDFConverter[AnyIO]):
                 if isinstance(child, LTChar):
                     cur_v=False
                     ind_v=False
-                    if vflag(child.fontname,child.get_text()): # 识别公式和字符
+                    fontname=child.fontname.split('+')[-1]
+                    if vflag(fontname,child.get_text()): # 识别公式和字符
                         cur_v=True
                     for box in self.layout[ltpage.pageid]: # 识别独立公式
                         b=box.block
@@ -411,11 +415,18 @@ class TextConverter(PDFConverter[AnyIO]):
                             break
                     if ptr==len(item)-1 or not cur_v or (ind_v and not xt_ind) or (vstk and abs(child.x0-xt.x0)>v_max and not ind_v): # 公式结束或公式换行截断
                         if vstk: # 公式出栈
+                            sstk_bak=sstk[-1]
+                            vfix_bak=vfix
                             sstk[-1]+=f'$v{len(var)}$'
+                            if child.x0>max([vch.x0 for vch in vstk]) and child.y0<vstk[0].y0 and not cur_v and vstk[0].y0-child.y0<child.size: # 行内公式修正
+                                vfix=vstk[0].y0-child.y0
+                                # print(vfix,vstk[0].get_text(),sstk[-1][-20:],''.join([t.get_text() for t in item[ptr:ptr+20]]))
                             var.append(vstk)
                             varl.append(vlstk)
+                            varf.append(vfix)
                             vstk=[]
                             vlstk=[]
+                            vfix=0
                             if ptr==len(item)-1 and cur_v: # 文档以公式结尾
                                 var[-1].append(child)
                                 break
@@ -435,30 +446,36 @@ class TextConverter(PDFConverter[AnyIO]):
                                 else: # 换行空格
                                     sstk[-1]+=' '
                                     pstk[-1][6]=True # 标记原文段落存在换行
+                            
+                            if child.x0>xt.x0 and child.y0>xt.y0 and cur_v and child.y0-xt.y0<xt.size: # 行内公式修正
+                                vfix=child.y0-xt.y0
                         else: # 基于纵向距离的行间分离
                             lt,rt=child,child
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
+                    if not cur_v and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式
+                        if sstk: # 没有重开段落
+                            if child.size<pstk[-1][4]*0.9: # 公式内文字，考虑浮点误差
+                                cur_v=True
+                                if sstk[-1][-1]=='$': # 公式被错误打断（如果公式换行结尾会是空格），这里需要还原状态
+                                    sstk[-1]=sstk_bak
+                                    vfix=vfix_bak
+                                    vstk=var.pop()
+                                    vlstk=varl.pop()
+                                    varf.pop()
+                                # else:
+                                #     print(sstk[-1])
+                                #     print(f'break {child.get_text()}')
+                            elif child.size>pstk[-1][4]: # 更新正文字体
+                                pstk[-1][4]=child.size
+                                pstk[-1][5]=child.font
                     if not cur_v: # 文字入栈
                         sstk[-1]+=child.get_text()
-                        if vflag(pstk[-1][5].fontname,''): # 公式开头，后续接文字，需要校正字体
+                        if vflag(pstk[-1][5].fontname.split('+')[-1],''): # 公式开头，后续接文字，需要校正字体
+                            pstk[-1][4]=child.size
                             pstk[-1][5]=child.font
                     else: # 公式入栈
                         vstk.append(child)
-                        # if re.match(r'.*\+(CMEX.*)',child.fontname) and child.cid in [40]: # 大括号
-                        #     # ops+=f"ET q 1 0 0 1 0 {child.y0} cm [] 0 d 0 J 1 w 0 0 m {ltpage.width} 0 l S Q BT "
-                        #     # ops+=f"ET q 1 0 0 1 0 {child.y0-child.size*3} cm [] 0 d 0 J 1 w 0 0 m {ltpage.width} 0 l S Q BT "
-                        #     while ptr+1<len(item):
-                        #         child_=item[ptr+1]
-                        #         if isinstance(child_, LTChar): # 公式字符
-                        #             # print(child_.y0,child.y0-child.size*3,child_.y1,child.y0)
-                        #             if child_.y0>child.y0-child.size*3 and child_.y1<child.y0:
-                        #                 vstk.append(child_)
-                        #             else:
-                        #                 break
-                        #         elif isinstance(child_, LTLine): # 公式线条
-                        #             vlstk.append(child_)
-                        #         ptr+=1
                     xt=child
                     xt_ind=ind_v
                     # 更新左右边界
@@ -529,35 +546,28 @@ class TextConverter(PDFConverter[AnyIO]):
                             continue # 翻译器可能会自动补个越界的公式标记
                     else: # 加载文字
                         ch=new[ptr]
-                        if font.char_width(ord(ch)):
+                        # if font.char_width(ord(ch)):
+                        if font.widths.get(ord(ch)):
                             fcur_=font.fontid
                         else:
                             if ch==' ':
                                 fcur_='helv' # 半角空格
                             else:
                                 fcur_='china-ss'
+                        # print(font.fontid,fcur_,ch,font.char_width(ord(ch)))
                         adv=self.fontmap[fcur_].char_width(ord(ch))*size
                         ptr+=1
-                    if fcur_!=fcur or vy_regex or x+adv>rt: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界
+                    if fcur_!=fcur or vy_regex or x+adv>rt+0.1*size: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界（可能一整行都被符号化，这里需要考虑浮点误差）
                         if cstk:
                             ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
                             cstk=''
-                    if lb and x+adv>rt: # 到达右边界且原文段落存在换行
+                    if lb and x+adv>rt+0.1*size: # 到达右边界且原文段落存在换行
                         x=lt
                         y-=size*1.5
                     if vy_regex: # 插入公式
                         fix=0
                         if fcur!=None: # 段落内公式修正
-                            if re.match(r'.*\+(CMEX.*)',var[vid][0].fontname) and var[vid][0].cid in [80,88,112,33,82]: # 根式、积分与大小求和
-                                fix=var[vid][0].size*0.85
-                            if re.match(r'.*\+(CMSY.*)',var[vid][0].fontname) and var[vid][0].cid in [112]: # 根式
-                                fix=var[vid][0].size*0.85
-                            if re.match(r'.*\+(MSAM.*)',var[vid][0].fontname) and var[vid][0].cid in [97]: # 特殊上标
-                                fix=var[vid][0].size*0.85
-                            if re.match(r'.*\+(CMR.*)',var[vid][0].fontname) and var[vid][0].cid in [94,126]: # 特殊上标
-                                fix=var[vid][0].size*0.25
-                            if re.match(r'.*\+(CM.*)7',var[vid][0].fontname): # 修正分式
-                                fix=var[vid][0].size*0.55
+                            fix=varf[vid]
                         for vch in var[vid]: # 排版公式字符
                             vc=chr(vch.cid)
                             ops+=f"/{vch.font.fontid} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm [<{raw_string(vch.font.fontid,vc)}>] TJ "
