@@ -372,6 +372,7 @@ class TextConverter(PDFConverter[AnyIO]):
             vstk=[]
             vlstk=[]
             vfix=0
+            vbkt=0
             pstk=[]
             lstk=[]
             var=[]
@@ -390,7 +391,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if re.match(r'(\d|=|[\u0080-\ufaff])',char):
+                    if re.match(r'(\d|\+|=|[\u0080-\ufaff])',char): # 很神奇，加号对应 CMR，但是减号对应 CMSY
                         return True
                 return False
             ptr=0
@@ -413,14 +414,21 @@ class TextConverter(PDFConverter[AnyIO]):
                             # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_2),(b.x_2,ltpage.height-b.y_2)))
                             # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_1),(b.x_2,ltpage.height-b.y_1)))
                             break
+                    if not cur_v and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，修正括号匹配
+                        if vstk and child.get_text()=='(':
+                            cur_v=True
+                            vbkt+=1
+                        if vbkt and child.get_text()==')':
+                            cur_v=True
+                            vbkt-=1
                     if ptr==len(item)-1 or not cur_v or (ind_v and not xt_ind) or (vstk and abs(child.x0-xt.x0)>v_max and not ind_v): # 公式结束或公式换行截断
                         if vstk: # 公式出栈
                             sstk_bak=sstk[-1]
                             vfix_bak=vfix
                             sstk[-1]+=f'$v{len(var)}$'
-                            if child.x0>max([vch.x0 for vch in vstk]) and child.y0<vstk[0].y0 and not cur_v and vstk[0].y0-child.y0<child.size: # 行内公式修正
+                            if child.x0>max([vch.x0 for vch in vstk]) and child.y0<vstk[0].y0 and not cur_v and vstk[0].y0-child.y0<child.size: # 行内公式修正，这里要考虑正好换行的情况
                                 vfix=vstk[0].y0-child.y0
-                                # print(vfix,vstk[0].get_text(),sstk[-1][-20:],''.join([t.get_text() for t in item[ptr:ptr+20]]))
+                                # print(sstk[-1],vfix)
                             var.append(vstk)
                             varl.append(vlstk)
                             varf.append(vfix)
@@ -447,8 +455,9 @@ class TextConverter(PDFConverter[AnyIO]):
                                     sstk[-1]+=' '
                                     pstk[-1][6]=True # 标记原文段落存在换行
                             
-                            if child.x0>xt.x0 and child.y0>xt.y0 and cur_v and child.y0-xt.y0<xt.size: # 行内公式修正
+                            if child.x0>xt.x0 and child.y0>xt.y0 and cur_v: # and child.y0-xt.y0<xt.size: # 行内公式修正，前面已经判定过位于同一段落，所以不需要限制 y 范围
                                 vfix=child.y0-xt.y0
+                                # print(sstk[-1],vfix)
                         else: # 基于纵向距离的行间分离
                             lt,rt=child,child
                             sstk.append("")
@@ -550,8 +559,8 @@ class TextConverter(PDFConverter[AnyIO]):
                         if font.widths.get(ord(ch)):
                             fcur_=font.fontid
                         else:
-                            if ch==' ':
-                                fcur_='helv' # 半角空格
+                            if re.match(r'[\u0000-\u007f]',ch): # 半角符号
+                                fcur_='helv'
                             else:
                                 fcur_='china-ss'
                         # print(font.fontid,fcur_,ch,font.char_width(ord(ch)))
