@@ -421,7 +421,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         if vbkt and child.get_text()==')':
                             cur_v=True
                             vbkt-=1
-                    if ptr==len(item)-1 or not cur_v or (ind_v and not xt_ind) or (vstk and abs(child.x0-xt.x0)>v_max and not ind_v): # 公式结束或公式换行截断
+                    if not cur_v or (ind_v and not xt_ind) or (vstk and abs(child.x0-xt.x0)>v_max and not ind_v): # 公式结束或公式换行截断
                         if vstk: # 公式出栈
                             sstk_bak=sstk[-1]
                             vfix_bak=vfix
@@ -435,9 +435,6 @@ class TextConverter(PDFConverter[AnyIO]):
                             vstk=[]
                             vlstk=[]
                             vfix=0
-                            if ptr==len(item)-1 and cur_v: # 文档以公式结尾
-                                var[-1].append(child)
-                                break
                     if not vstk: # 非公式或是公式开头
                         if not ind_v and xt and child.y1 > xt.y0 - child.size*0.5 and child.y0 < xt.y1 + child.size: # 非独立公式且位于同段落
                             if child.x0 > xt.x1 + child.size*2: # 行内分离
@@ -506,6 +503,12 @@ class TextConverter(PDFConverter[AnyIO]):
                     # print(child)
                     pass
                 ptr+=1
+            # 处理结尾
+            if vstk: # 公式出栈
+                sstk[-1]+=f'$v{len(var)}$'
+                var.append(vstk)
+                varl.append(vlstk)
+                varf.append(vfix)
             log.debug('\n==========[VSTACK]==========\n')
             for id,v in enumerate(var):
                 l=max([vch.x1 for vch in v])-v[0].x0
