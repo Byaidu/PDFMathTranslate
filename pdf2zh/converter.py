@@ -391,7 +391,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if re.match(r'(\d|\+|=|[\u0080-\ufaff])',char): # 很神奇，加号对应 CMR，但是减号对应 CMSY
+                    if re.match(r'(\d|\+|=|[\u0370-\ufaff])',char): # 很神奇，加号对应 CMR，但是减号对应 CMSY
                         return True
                 return False
             ptr=0
@@ -549,6 +549,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
                         break
                     vy_regex=re.match(r'\$\s*v([\d\s]*)\$',new[ptr:]) # 匹配 $vn$ 公式标记
+                    mod=False
                     if vy_regex: # 加载公式
                         vid=int(vy_regex.group(1).replace(' ',''))
                         ptr+=len(vy_regex.group(0))
@@ -568,6 +569,9 @@ class TextConverter(PDFConverter[AnyIO]):
                                 fcur_='china-ss'
                         # print(font.fontid,fcur_,ch,font.char_width(ord(ch)))
                         adv=self.fontmap[fcur_].char_width(ord(ch))*size
+                        if unicodedata.category(ch) in ['Lm','Sk','Mn']: # 文字修饰符
+                            # print(f'mod {ch} {ord(ch)} {fcur_}')
+                            mod=True
                         ptr+=1
                     if fcur_!=fcur or vy_regex or x+adv>rt+0.1*size: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界（可能一整行都被符号化，这里需要考虑浮点误差）
                         if cstk:
@@ -596,6 +600,10 @@ class TextConverter(PDFConverter[AnyIO]):
                         else:
                             cstk+=ch
                     fcur=fcur_
+                    if mod: # 文字修饰符
+                        ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
+                        cstk=''
+                        adv=0
                     x+=adv
             for l in lstk: # 排版全局线条
                 if l.linewidth<5: # hack
