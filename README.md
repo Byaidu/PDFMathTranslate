@@ -52,7 +52,7 @@ pdf2zh BDA3.pdf -f "(CM[^RT].*|MS.*|XY.*|MT.*|BL.*|.*0700|.*0500|.*Italic)" -c "
 
 Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
-Document parsing: [pdfminer.six](https://github.com/pdfminer/pdfminer.six)
+Document parsing: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 
 Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
