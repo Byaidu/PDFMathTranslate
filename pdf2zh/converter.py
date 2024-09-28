@@ -391,7 +391,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if re.match(r'(\d|\+|=|[\u0370-\ufaff])',char): # 很神奇，加号对应 CMR，但是减号对应 CMSY
+                    if re.match(r'(\d|\+|=|[\u0080-\ufaff])',char): # 很神奇，加号对应 CMR，但是减号对应 CMSY
                         return True
                 return False
             ptr=0
@@ -557,6 +557,8 @@ class TextConverter(PDFConverter[AnyIO]):
                             adv=vlen[vid]
                         else:
                             continue # 翻译器可能会自动补个越界的公式标记
+                        if len(var[vid])==1 and unicodedata.category(var[vid][0].get_text()[0]) in ['Lm','Sk','Mn']: # 文字修饰符，get_text 可能返回 cid，这里截断一下
+                            mod=True
                     else: # 加载文字
                         ch=new[ptr]
                         # if font.char_width(ord(ch)):
@@ -569,9 +571,6 @@ class TextConverter(PDFConverter[AnyIO]):
                                 fcur_='china-ss'
                         # print(font.fontid,fcur_,ch,font.char_width(ord(ch)))
                         adv=self.fontmap[fcur_].char_width(ord(ch))*size
-                        if unicodedata.category(ch) in ['Lm','Sk','Mn']: # 文字修饰符
-                            # print(f'mod {ch} {ord(ch)} {fcur_}')
-                            mod=True
                         ptr+=1
                     if fcur_!=fcur or vy_regex or x+adv>rt+0.1*size: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界（可能一整行都被符号化，这里需要考虑浮点误差）
                         if cstk:
@@ -599,11 +598,9 @@ class TextConverter(PDFConverter[AnyIO]):
                                 cstk+=ch
                         else:
                             cstk+=ch
-                    fcur=fcur_
                     if mod: # 文字修饰符
-                        ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
-                        cstk=''
                         adv=0
+                    fcur=fcur_
                     x+=adv
             for l in lstk: # 排版全局线条
                 if l.linewidth<5: # hack
