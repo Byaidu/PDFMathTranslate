@@ -365,27 +365,29 @@ class TextConverter(PDFConverter[AnyIO]):
 
     def receive_layout(self, ltpage: LTPage):
         def render(item: LTItem) -> None:
-            xt=None
-            lt=None
-            rt=None
-            sstk=[]
-            vstk=[]
-            vlstk=[]
-            vfix=0
-            vbkt=0
-            pstk=[]
-            lstk=[]
-            var=[]
-            varl=[]
-            varf=[]
-            vlen=[]
+            xt=None # 上一个字符
+            lt=None # 段落左边界
+            rt=None # 段落右边界
+            sstk=[] # 段落文字栈
+            vstk=[] # 公式符号组
+            vlstk=[] # 公式线条组
+            vfix=0 # 公式纵向偏移
+            vbkt=0 # 段落公式括号计数
+            pstk=[] # 段落属性栈
+            lstk=[] # 全局线条栈
+            var=[] # 公式符号组栈
+            varl=[] # 公式线条组栈
+            varf=[] # 公式纵向偏移栈
+            vlen=[] # 公式宽度栈
+            xt_ind=False # 上一个字符是否属于独立公式
+            v_max=ltpage.width/4 # 行内公式最大宽度
             ops=f"1 0 0 1 {ltpage.cropbox[0]} {ltpage.cropbox[1]} cm 0 Tc " # 重置渲染状态
             def vflag(font,char): # 匹配公式（和角标）字体
                 if self.vfont:
                     if re.match(self.vfont,font):
                         return True
                 else:
-                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|.*0700|.*0500|.*Italic|.*Symbol)',font):
+                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LMMono.*|.*0700|.*0500|.*Italic|.*Symbol)',font):
                         return True
                 if self.vchar:
                     if re.match(self.vchar,char):
@@ -396,8 +398,6 @@ class TextConverter(PDFConverter[AnyIO]):
                 return False
             ptr=0
             item=list(item)
-            xt_ind=False
-            v_max=ltpage.width/4 # 行内公式最大宽度
             while ptr<len(item): # 识别文字和公式
                 child=item[ptr]
                 if isinstance(child, LTChar):
@@ -414,7 +414,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_2),(b.x_2,ltpage.height-b.y_2)))
                             # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_1),(b.x_2,ltpage.height-b.y_1)))
                             break
-                    if not cur_v and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，修正括号匹配
+                    if not cur_v and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，判定括号组是否属于公式
                         if vstk and child.get_text()=='(':
                             cur_v=True
                             vbkt+=1
@@ -510,7 +510,7 @@ class TextConverter(PDFConverter[AnyIO]):
                 varl.append(vlstk)
                 varf.append(vfix)
             log.debug('\n==========[VSTACK]==========\n')
-            for id,v in enumerate(var):
+            for id,v in enumerate(var): # 计算公式宽度
                 l=max([vch.x1 for vch in v])-v[0].x0
                 log.debug(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])} > $v{id}$ = {"".join([ch.get_text() for ch in v])}')
                 vlen.append(l)
@@ -520,9 +520,9 @@ class TextConverter(PDFConverter[AnyIO]):
             @retry
             def worker(s): # 多线程翻译
                 try:
-                    if sum(map(str.islower,s))>1:
+                    if sum(map(str.islower,s))>1: # 包含小写字母
                         hash_key_paragraph = cache.deterministic_hash(s)
-                        new = cache.load_paragraph(hash_key, hash_key_paragraph)
+                        new = cache.load_paragraph(hash_key, hash_key_paragraph) # 查询缓存
                         if new is None:
                             new=translator.translate(s,'zh-CN','en')
                             new=remove_control_characters(new)
@@ -536,12 +536,14 @@ class TextConverter(PDFConverter[AnyIO]):
             with concurrent.futures.ThreadPoolExecutor(max_workers=self.thread) as executor:
                 news = list(executor.map(worker, sstk))
             def raw_string(fcur,cstk): # 编码字符串
-                if isinstance(self.fontmap[fcur],PDFCIDFont):
+                if isinstance(self.fontmap[fcur],PDFCIDFont): # 判断编码长度
                     return "".join(["%04x" % ord(c) for c in cstk])
                 else:
                     return "".join(["%02x" % ord(c) for c in cstk])
             for id,new in enumerate(news): # 排版文字和公式
-                tx=x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6];cstk='';fcur=fcur_=None
+                tx=x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6] # 段落属性
+                cstk='' # 单行文字栈
+                fcur=fcur_=None # 单行字体
                 log.debug(f"< {y} {x} {lt} {rt} {size} {font.fontname} {lb} > {sstk[id]} | {new}")
                 while True:
                     if ptr==len(new): # 到达段落结尾
@@ -549,7 +551,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
                         break
                     vy_regex=re.match(r'\$\s*v([\d\s]*)\$',new[ptr:]) # 匹配 $vn$ 公式标记
-                    mod=False
+                    mod=False # 当前公式是否为文字修饰符
                     if vy_regex: # 加载公式
                         vid=int(vy_regex.group(1).replace(' ',''))
                         ptr+=len(vy_regex.group(0))
@@ -562,13 +564,19 @@ class TextConverter(PDFConverter[AnyIO]):
                     else: # 加载文字
                         ch=new[ptr]
                         # if font.char_width(ord(ch)):
-                        if font.widths.get(ord(ch)):
-                            fcur_=font.fontid
-                        else:
+                        fcur_=None
+                        try:
+                            # 1.有些字体会设置非 0 缺省宽度，所以这里直接查一下宽度字典
+                            # 2.有些字体不使用标准 unicode 编码，这里校验一下
+                            if font.widths.get(ord(ch)) and font.to_unichr(ord(ch))==ch:
+                                fcur_=font.fontid # 原字体
+                        except:
+                            pass
+                        if fcur_==None:
                             if re.match(r'[\u0000-\u007f]',ch): # 半角符号
-                                fcur_='helv'
+                                fcur_='tiro' # 默认英文字体
                             else:
-                                fcur_='china-ss'
+                                fcur_='china-ss' # 默认中文字体
                         # print(font.fontid,fcur_,ch,font.char_width(ord(ch)))
                         adv=self.fontmap[fcur_].char_width(ord(ch))*size
                         ptr+=1
@@ -581,7 +589,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         y-=size*1.5
                     if vy_regex: # 插入公式
                         fix=0
-                        if fcur!=None: # 段落内公式修正
+                        if fcur!=None: # 段落内公式修正纵向偏移
                             fix=varf[vid]
                         for vch in var[vid]: # 排版公式字符
                             vc=chr(vch.cid)
@@ -590,7 +598,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             if l.linewidth<5: # hack
                                 ops+=f"ET q 1 0 0 1 {l.pts[0][0]+x-var[vid][0].x0} {l.pts[0][1]+fix+y-var[vid][0].y0} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
                     else: # 插入文字缓冲区
-                        if not cstk:
+                        if not cstk: # 单行开头
                             tx=x
                             if x==lt and ch==' ': # 消除段落换行空格
                                 adv=0
