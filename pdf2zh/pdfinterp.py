@@ -979,7 +979,7 @@ class PDFPageInterpreter:
         self.device.fontmap=self.fontmap # hack
         ops_new=self.device.end_page(page)
         page_objids=[i.objid for i in page.contents]
-        ops_full=f'{page_objids[0]} 0 obj\n<<>>stream\n{ops_base}{ops_new}\nendstream\nendobj\n' # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面
+        ops_full=f'{page_objids[0]} 0 obj\n<<>>stream\nq {ops_base}Q {ops_new}\nendstream\nendobj\n' # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
         if log.isEnabledFor(logging.DEBUG):
             log.debug(f'OP_BASE {ops_base}')
             log.debug(f'OP_NEW {ops_new}')

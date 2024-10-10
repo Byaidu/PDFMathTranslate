@@ -380,14 +380,16 @@ class TextConverter(PDFConverter[AnyIO]):
             varf=[] # 公式纵向偏移栈
             vlen=[] # 公式宽度栈
             xt_ind=False # 上一个字符是否属于独立公式
-            v_max=ltpage.width/4 # 行内公式最大宽度
-            ops=f"1 0 0 1 {ltpage.cropbox[0]} {ltpage.cropbox[1]} cm 0 Tc " # 重置渲染状态
+            vmax=ltpage.width/4 # 行内公式最大宽度
+            ops="" # 渲染结果
             def vflag(font,char): # 匹配公式（和角标）字体
+                if re.match(r'\(cid:',char):
+                    return True
                 if self.vfont:
                     if re.match(self.vfont,font):
                         return True
                 else:
-                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LMMono.*|.*0700|.*0500|.*Italic|.*Symbol)',font):
+                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LINE.*|LMMono.*|.*0700|.*0500|.*Italic|.*Symbol)',font):
                         return True
                 if self.vchar:
                     if re.match(self.vchar,char):
@@ -408,20 +410,20 @@ class TextConverter(PDFConverter[AnyIO]):
                         cur_v=True
                     for box in self.layout[ltpage.pageid]: # 识别独立公式
                         b=box.block
-                        if child.x1>b.x_1 and child.x0<b.x_2 and child.y1>ltpage.height-b.y_2 and child.y0<ltpage.height-b.y_1:
+                        if child.x1>b.x_1+ltpage.cropbox[0] and child.x0<b.x_2+ltpage.cropbox[0] and child.y1>ltpage.height-(b.y_2+ltpage.cropbox[1]) and child.y0<ltpage.height-(b.y_1+ltpage.cropbox[1]): # 图像识别的坐标是裁剪之后的，所以需要补偿回去
                             cur_v=True
                             ind_v=True
-                            # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_2),(b.x_2,ltpage.height-b.y_2)))
-                            # lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_1),(b.x_2,ltpage.height-b.y_1)))
+                            # lstk.append(LTLine(1,(b.x_1+ltpage.cropbox[0],ltpage.height-(b.y_2+ltpage.cropbox[1])),(b.x_2+ltpage.cropbox[0],ltpage.height-(b.y_2+ltpage.cropbox[1]))))
+                            # lstk.append(LTLine(1,(b.x_1+ltpage.cropbox[0],ltpage.height-(b.y_1+ltpage.cropbox[1])),(b.x_2+ltpage.cropbox[0],ltpage.height-(b.y_1+ltpage.cropbox[1]))))
                             break
-                    if not cur_v and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，判定括号组是否属于公式
+                    if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，判定括号组是否属于公式
                         if vstk and child.get_text()=='(':
                             cur_v=True
                             vbkt+=1
                         if vbkt and child.get_text()==')':
                             cur_v=True
                             vbkt-=1
-                    if not cur_v or (ind_v and not xt_ind) or (vstk and abs(child.x0-xt.x0)>v_max and not ind_v): # 公式结束或公式换行截断
+                    if not cur_v or (ind_v and not xt_ind) or (vstk and (abs(child.x0-xt.x0)>vmax or abs(child.y0-xt.y0)>vmax) and not ind_v): # 公式结束或公式换行截断
                         if vstk: # 公式出栈
                             sstk_bak=sstk[-1]
                             vfix_bak=vfix
@@ -459,7 +461,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             lt,rt=child,child
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
-                    if not cur_v and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式
+                    if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式
                         if sstk: # 没有重开段落
                             if child.size<pstk[-1][4]*0.9: # 公式内文字，考虑浮点误差
                                 cur_v=True
@@ -469,9 +471,6 @@ class TextConverter(PDFConverter[AnyIO]):
                                     vstk=var.pop()
                                     vlstk=varl.pop()
                                     varf.pop()
-                                # else:
-                                #     print(sstk[-1])
-                                #     print(f'break {child.get_text()}')
                             elif child.size>pstk[-1][4]: # 更新正文字体
                                 pstk[-1][4]=child.size
                                 pstk[-1][5]=child.font
@@ -495,7 +494,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     # print(f'\n\n[FIGURE] {child.name}')
                     pass
                 elif isinstance(child, LTLine): # 线条
-                    if vstk and abs(child.x0-xt.x0)<v_max and child.x1-child.x0<v_max and child.y0==child.y1 or xt_ind: # 公式线条
+                    if vstk and abs(child.x0-xt.x0)<vmax and child.x1-child.x0<vmax and child.y0==child.y1 or xt_ind: # 公式线条
                         vlstk.append(child)
                     else: # 全局线条
                         lstk.append(child)
@@ -550,14 +549,14 @@ class TextConverter(PDFConverter[AnyIO]):
                         if cstk:
                             ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
                         break
-                    vy_regex=re.match(r'\$\s*v([\d\s]*)\$',new[ptr:]) # 匹配 $vn$ 公式标记
+                    vy_regex=re.match(r'\$?\s*v([\d\s]+)\$',new[ptr:]) # 匹配 $vn$ 公式标记，前面的 $ 有的时候会被丢掉
                     mod=False # 当前公式是否为文字修饰符
                     if vy_regex: # 加载公式
-                        vid=int(vy_regex.group(1).replace(' ',''))
                         ptr+=len(vy_regex.group(0))
-                        if vid<len(vlen):
+                        try:
+                            vid=int(vy_regex.group(1).replace(' ',''))
                             adv=vlen[vid]
-                        else:
+                        except:
                             continue # 翻译器可能会自动补个越界的公式标记
                         if len(var[vid])==1 and unicodedata.category(var[vid][0].get_text()[0]) in ['Lm','Sk','Mn']: # 文字修饰符，get_text 可能返回 cid，这里截断一下
                             mod=True
