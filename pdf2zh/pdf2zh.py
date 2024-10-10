@@ -51,6 +51,8 @@ def extract_text(
     vfont: str = "",
     vchar: str = "",
     thread: int = 0,
+    lang_in: str = "",
+    lang_out: str = "",
     **kwargs: Any,
 ) -> AnyIO:
     if not files:
@@ -151,6 +153,20 @@ def create_parser() -> argparse.ArgumentParser:
         type=str,
         default="",
         help="The regex to math character of formula.",
+    )
+    parse_params.add_argument(
+        "--lang-in",
+        "-li",
+        type=str,
+        default="en",
+        help="The code of source language.",
+    )
+    parse_params.add_argument(
+        "--lang-out",
+        "-lo",
+        type=str,
+        default="zh-CN",
+        help="The code of target language.",
     )
     parse_params.add_argument(
         "--thread",

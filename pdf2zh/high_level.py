@@ -46,6 +46,8 @@ def extract_text_to_fp(
     thread: int = 0,
     doc_en = None,
     model = None,
+    lang_in: str = "",
+    lang_out: str = "",
     **kwargs: Any,
 ) -> None:
     """Parses text from inf-file and writes to outfp file-like object.
@@ -102,6 +104,8 @@ def extract_text_to_fp(
             vchar=vchar,
             thread=thread,
             layout=layout,
+            lang_in=lang_in,
+            lang_out=lang_out,
         )
 
     elif output_type == "xml":

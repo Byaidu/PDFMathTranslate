@@ -347,6 +347,8 @@ class TextConverter(PDFConverter[AnyIO]):
         vchar: str = None,
         thread: int = 0,
         layout = {},
+        lang_in: str = "",
+        lang_out: str = "",
     ) -> None:
         super().__init__(rsrcmgr, outfp, codec=codec, pageno=pageno, laparams=laparams)
         self.showpageno = showpageno
@@ -355,6 +357,8 @@ class TextConverter(PDFConverter[AnyIO]):
         self.vchar = vchar
         self.thread = thread
         self.layout = layout
+        self.lang_in = lang_in
+        self.lang_out = lang_out
 
     def write_text(self, text: str) -> None:
         text = utils.compatible_encode_method(text, self.codec, "ignore")
@@ -520,10 +524,10 @@ class TextConverter(PDFConverter[AnyIO]):
             def worker(s): # 多线程翻译
                 try:
                     if sum(map(str.islower,s))>1: # 包含小写字母
-                        hash_key_paragraph = cache.deterministic_hash(s)
+                        hash_key_paragraph = cache.deterministic_hash((s,self.lang_in,self.lang_out))
                         new = cache.load_paragraph(hash_key, hash_key_paragraph) # 查询缓存
                         if new is None:
-                            new=translator.translate(s,'zh-CN','en')
+                            new=translator.translate(s,self.lang_out,self.lang_in)
                             new=remove_control_characters(new)
                             cache.write_paragraph(hash_key, hash_key_paragraph, new)
                     else:
