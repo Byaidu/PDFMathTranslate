@@ -462,7 +462,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                     if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式
-                        if sstk: # 没有重开段落
+                        if sstk[-1]: # 没有重开段落
                             if child.size<pstk[-1][4]*0.9: # 公式内文字，考虑浮点误差
                                 cur_v=True
                                 if sstk[-1][-1]=='$': # 公式被错误打断（如果公式换行结尾会是空格），这里需要还原状态
