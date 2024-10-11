@@ -412,6 +412,9 @@ class TextConverter(PDFConverter[AnyIO]):
                     fontname=child.fontname.split('+')[-1]
                     if vflag(fontname,child.get_text()): # 识别公式和字符
                         cur_v=True
+                    if child.matrix[:4]!=(1,0,0,1): # 非水平段落
+                        cur_v=True
+                        ind_v=True
                     for box in self.layout[ltpage.pageid]: # 识别独立公式
                         b=box.block
                         if child.x1>b.x_1+ltpage.cropbox[0] and child.x0<b.x_2+ltpage.cropbox[0] and child.y1>ltpage.height-(b.y_2+ltpage.cropbox[1]) and child.y0<ltpage.height-(b.y_1+ltpage.cropbox[1]): # 图像识别的坐标是裁剪之后的，所以需要补偿回去
