@@ -15,8 +15,7 @@ PDF scientific paper translation and bilingual comparison based on font rules an
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
-![image](https://github.com/user-attachments/assets/25086601-c90a-40e3-bf30-1556f2f919ec)
-
+![image](https://github.com/user-attachments/assets/98e35c7c-00e2-45ef-aedf-eb0b2266eccf)
 
 ## Installation
 
@@ -26,7 +25,7 @@ pip install pdf2zh
 
 ## Usage
 
-Execute the translation command in the command line to generate the Chinese document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory.
+Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory.
 
 ### Translate the entire document
 
