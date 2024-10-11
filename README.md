@@ -15,7 +15,7 @@ PDF scientific paper translation and bilingual comparison based on font rules an
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
-![image](https://github.com/user-attachments/assets/98e35c7c-00e2-45ef-aedf-eb0b2266eccf)
+![image](https://github.com/user-attachments/assets/0e6d7e44-18cd-443a-8a84-db99edf2c268)
 
 ## Installation
 
