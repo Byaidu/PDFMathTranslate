@@ -442,7 +442,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             vlstk=[]
                             vfix=0
                     if not vstk: # 非公式或是公式开头
-                        if not ind_v and xt and child.y1 > xt.y0 - child.size*0.5 and child.y0 < xt.y1 + child.size: # 非独立公式且位于同段落
+                        if not ind_v and xt and child.y1 > xt.y0 - child.size*0.45 and child.y0 < xt.y1 + child.size: # 非独立公式且位于同段落
                             if child.x0 > xt.x1 + child.size*2: # 行内分离
                                 lt,rt=child,child
                                 sstk.append("")
@@ -465,7 +465,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             lt,rt=child,child
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
-                    if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式
+                    if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式。因为经常会有 CMR 以外的其他小角标比如 d_model，所以这里不锁字体
                         if sstk[-1]: # 没有重开段落
                             if child.size<pstk[-1][4]*0.9: # 公式内文字，考虑浮点误差
                                 cur_v=True
@@ -480,7 +480,7 @@ class TextConverter(PDFConverter[AnyIO]):
                                 pstk[-1][5]=child.font
                     if not cur_v: # 文字入栈
                         sstk[-1]+=child.get_text()
-                        if vflag(pstk[-1][5].fontname.split('+')[-1],''): # 公式开头，后续接文字，需要校正字体
+                        if vflag(pstk[-1][5].fontname.split('+')[-1],'') or re.match(r'(.*Medi|.*Bold)',pstk[-1][5].fontname.split('+')[-1],re.IGNORECASE): # 公式或粗体开头，后续接文字，需要校正字体
                             pstk[-1][4]=child.size
                             pstk[-1][5]=child.font
                     else: # 公式入栈
