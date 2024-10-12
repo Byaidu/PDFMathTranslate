@@ -454,7 +454,7 @@ class TextConverter(PDFConverter[AnyIO]):
                                 pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                             elif child.x0 > xt.x1 + 1: # 行内空格
                                 sstk[-1]+=' '
-                            elif child.x1 < xt.x0 and not (child.size<pstk[-1][4]*0.9 and xt.size<pstk[-1][4]*0.9): # 换行，这里需要考虑一下字母修饰符的情况，小字体不换行解决分式问题
+                            elif child.x1 < xt.x0 and not (child.size<pstk[-1][4]*0.9 and xt.size<pstk[-1][4]*0.9 and abs(child.x0-xt.x0)<vmax): # 换行，这里需要考虑一下字母修饰符的情况，小字体不换行解决分式问题
                                 if child.x0 < lt.x0 - child.size*2 or child.x0 > lt.x0 + child.size*1: # 基于初始位置的行间分离
                                     lt,rt=child,child
                                     sstk.append("")
