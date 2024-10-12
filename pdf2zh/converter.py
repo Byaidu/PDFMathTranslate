@@ -399,7 +399,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if re.match(r'(\d|\+|=|[\u0080-\u2017]|[\u2020-\ufaff])',char): # 过滤半角字符、风格连字以及 unicode 引号。公式加号和等号对应 CMR 而且不会出现在正文，公式减号对应 CMSY 不用考虑
+                    if re.match(r'([\u0080-\u2017]|[\u2020-\ufaff])',char): # 过滤半角字符、风格连字以及 unicode 引号
                         return True
                 return False
             ptr=0
@@ -421,8 +421,9 @@ class TextConverter(PDFConverter[AnyIO]):
                         if child.x1>b.x_1+ltpage.cropbox[0] and child.x0<b.x_2+ltpage.cropbox[0] and child.y1>ltpage.height-(b.y_2+ltpage.cropbox[1]) and child.y0<ltpage.height-(b.y_1+ltpage.cropbox[1]): # 图像识别的坐标是裁剪之后的，所以需要补偿回去
                             cur_v=True
                             ind_v=True
-                            # lstk.append(LTLine(1,(b.x_1+ltpage.cropbox[0],ltpage.height-(b.y_2+ltpage.cropbox[1])),(b.x_2+ltpage.cropbox[0],ltpage.height-(b.y_2+ltpage.cropbox[1]))))
-                            # lstk.append(LTLine(1,(b.x_1+ltpage.cropbox[0],ltpage.height-(b.y_1+ltpage.cropbox[1])),(b.x_2+ltpage.cropbox[0],ltpage.height-(b.y_1+ltpage.cropbox[1]))))
+                            if log.isEnabledFor(logging.DEBUG):
+                                lstk.append(LTLine(1,(b.x_1+ltpage.cropbox[0],ltpage.height-(b.y_2+ltpage.cropbox[1])),(b.x_2+ltpage.cropbox[0],ltpage.height-(b.y_2+ltpage.cropbox[1]))))
+                                lstk.append(LTLine(1,(b.x_1+ltpage.cropbox[0],ltpage.height-(b.y_1+ltpage.cropbox[1])),(b.x_2+ltpage.cropbox[0],ltpage.height-(b.y_1+ltpage.cropbox[1]))))
                             break
                     if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，判定括号组是否属于公式
                         if vstk and child.get_text()=='(':
@@ -431,7 +432,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         if vbkt and child.get_text()==')':
                             cur_v=True
                             vbkt-=1
-                    if not cur_v or (ind_v and not xt_ind) or (vstk and (abs(child.x0-xt.x0)>vmax or abs(child.y0-xt.y0)>vmax) and not ind_v): # 公式结束或公式换行截断
+                    if not cur_v or (ind_v ^ xt_ind) or (vstk and (abs(child.x0-xt.x0)>vmax or abs(child.y0-xt.y0)>vmax) and not ind_v): # 公式结束、独立公式边界或公式换行截断
                         if vstk: # 公式出栈
                             sstk_bak=sstk[-1]
                             vfix_bak=vfix
@@ -446,7 +447,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             vlstk=[]
                             vfix=0
                     if not vstk: # 非公式或是公式开头
-                        if not ind_v and xt and child.y1 > xt.y0 - child.size*0.45 and child.y0 < xt.y1 + child.size: # 非独立公式且位于同段落
+                        if not (ind_v ^ xt_ind) and xt and child.y1 > xt.y0 - child.size*0.45 and child.y0 < xt.y1 + child.size: # 非独立公式边界且位于同段落，事实上不存在 ind_v 与 xt_ind 同真但 vstk 被出栈清空的情况，所以这里用 or 也是可以的
                             if child.x0 > xt.x1 + child.size*2: # 行内分离
                                 lt,rt=child,child
                                 sstk.append("")
@@ -461,33 +462,30 @@ class TextConverter(PDFConverter[AnyIO]):
                                 else: # 换行空格
                                     sstk[-1]+=' '
                                     pstk[-1][6]=True # 标记原文段落存在换行
-                            
-                            if child.x0>xt.x0 and child.y0>xt.y0 and cur_v: # and child.y0-xt.y0<xt.size: # 行内公式修正，前面已经判定过位于同一段落，所以不需要限制 y 范围
-                                vfix=child.y0-xt.y0
-                                # print(sstk[-1],vfix)
                         else: # 基于纵向距离的行间分离
                             lt,rt=child,child
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                     if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式。因为经常会有 CMR 以外的其他小角标比如 d_model，所以这里不锁字体
-                        if sstk[-1]: # 没有重开段落
-                            if child.size<pstk[-1][4]*0.9: # 公式内文字，考虑浮点误差
-                                cur_v=True
-                                if sstk[-1][-1]=='$': # 公式被错误打断（如果公式换行结尾会是空格），这里需要还原状态
-                                    sstk[-1]=sstk_bak
-                                    vfix=vfix_bak
-                                    vstk=var.pop()
-                                    vlstk=varl.pop()
-                                    varf.pop()
-                            elif child.size>pstk[-1][4]: # 更新正文字体
-                                pstk[-1][4]=child.size
-                                pstk[-1][5]=child.font
+                        if child.size<pstk[-1][4]*0.9: # and sstk[-1]: # 公式内文字，考虑浮点误差，如果比段落字体小，说明肯定没有重开段落，不需要再判断一次
+                            cur_v=True
+                            if sstk[-1][-1]=='$': # 结尾是 $ 说明触发了上面的出栈，公式被错误打断（如果公式换行结尾会是空格），这里需要还原状态
+                                sstk[-1]=sstk_bak
+                                vfix=vfix_bak
+                                vstk=var.pop()
+                                vlstk=varl.pop()
+                                varf.pop()
                     if not cur_v: # 文字入栈
-                        sstk[-1]+=child.get_text()
-                        if vflag(pstk[-1][5].fontname.split('+')[-1],'') or re.match(r'(.*Medi|.*Bold)',pstk[-1][5].fontname.split('+')[-1],re.IGNORECASE): # 公式或粗体开头，后续接文字，需要校正字体
+                        if child.size>pstk[-1][4]*1.1 or vflag(pstk[-1][5].fontname.split('+')[-1],'') or re.match(r'(.*Medi|.*Bold)',pstk[-1][5].fontname.split('+')[-1],re.IGNORECASE): # 小字体、公式或粗体开头，后续接文字，需要校正字体
+                            pstk[-1][0]-=child.size-pstk[-1][4]
                             pstk[-1][4]=child.size
                             pstk[-1][5]=child.font
+                        sstk[-1]+=child.get_text()
                     else: # 公式入栈
+                        # 可能是 CMR 角标，需要在完全确定 cur_v 之后再计算修正
+                        if not vstk and sstk[-1]: # 公式开头，不是段落开头
+                            if child.x0>xt.x0 and child.y0>xt.y0: # and cur_v: # and child.y0-xt.y0<xt.size: # 行内公式修正，前面已经判定过位于同一段落，所以不需要限制 y 范围
+                                vfix=child.y0-xt.y0
                         vstk.append(child)
                     xt=child
                     xt_ind=ind_v
@@ -547,6 +545,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     return "".join(["%04x" % ord(c) for c in cstk])
                 else:
                     return "".join(["%02x" % ord(c) for c in cstk])
+            _x,_y=0,0
             for id,new in enumerate(news): # 排版文字和公式
                 tx=x=pstk[id][1];y=pstk[id][0];lt=pstk[id][2];rt=pstk[id][3];ptr=0;size=pstk[id][4];font=pstk[id][5];lb=pstk[id][6] # 段落属性
                 cstk='' # 单行文字栈
@@ -601,6 +600,9 @@ class TextConverter(PDFConverter[AnyIO]):
                         for vch in var[vid]: # 排版公式字符
                             vc=chr(vch.cid)
                             ops+=f"/{vch.font.fontid} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm [<{raw_string(vch.font.fontid,vc)}>] TJ "
+                            if log.isEnabledFor(logging.DEBUG):
+                                lstk.append(LTLine(0.1,(_x,_y),(x+vch.x0-var[vid][0].x0,fix+y+vch.y0-var[vid][0].y0)))
+                                _x,_y=x+vch.x0-var[vid][0].x0,fix+y+vch.y0-var[vid][0].y0
                         for l in varl[vid]: # 排版公式线条
                             if l.linewidth<5: # hack
                                 ops+=f"ET q 1 0 0 1 {l.pts[0][0]+x-var[vid][0].x0} {l.pts[0][1]+fix+y-var[vid][0].y0} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
@@ -617,6 +619,9 @@ class TextConverter(PDFConverter[AnyIO]):
                         adv=0
                     fcur=fcur_
                     x+=adv
+                    if log.isEnabledFor(logging.DEBUG):
+                        lstk.append(LTLine(0.1,(_x,_y),(x,y)))
+                        _x,_y=x,y
             for l in lstk: # 排版全局线条
                 if l.linewidth<5: # hack
                     ops+=f"ET q 1 0 0 1 {l.pts[0][0]} {l.pts[0][1]} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "

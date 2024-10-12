@@ -265,8 +265,8 @@ class PDFContentParser(PSStackParser[Union[PSKeyword, PDFStream]]):
             else:
                 raise PSEOF("Unexpected EOF, file truncated?")
             self.fp = BytesIO(strm.get_data())
-            if log.isEnabledFor(logging.DEBUG):
-                log.debug(f'STREAM DATA {strm.get_data()}')
+            # if log.isEnabledFor(logging.DEBUG):
+            #     log.debug(f'STREAM DATA {strm.get_data()}')
 
     def seek(self, pos: int) -> None:
         self.fillfp()
@@ -980,10 +980,10 @@ class PDFPageInterpreter:
         ops_new=self.device.end_page(page)
         page_objids=[i.objid for i in page.contents]
         ops_full=f'{page_objids[0]} 0 obj\n<<>>stream\nq {ops_base}Q {ops_new}\nendstream\nendobj\n' # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug(f'OP_BASE {ops_base}')
-            log.debug(f'OP_NEW {ops_new}')
-            log.debug(f'OP_FULL {ops_full}')
+        # if log.isEnabledFor(logging.DEBUG):
+        #     log.debug(f'OP_BASE {ops_base}')
+        #     log.debug(f'OP_NEW {ops_new}')
+        #     log.debug(f'OP_FULL {ops_full}')
         return page_objids,ops_full
 
     def render_contents(
