@@ -437,7 +437,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             sstk_bak=sstk[-1]
                             vfix_bak=vfix
                             sstk[-1]+=f'$v{len(var)}$'
-                            if child.x0>max([vch.x0 for vch in vstk]) and child.y0<vstk[0].y0 and not cur_v and vstk[0].y0-child.y0<child.size: # 行内公式修正，这里要考虑正好换行的情况
+                            if child.x0>max([vch.x0 for vch in vstk]) and child.y0<vstk[0].y1 and not cur_v and vstk[0].y0-child.y0<child.size: # 行内公式修正，这里要考虑正好换行的情况
                                 vfix=vstk[0].y0-child.y0
                                 # print(sstk[-1],vfix)
                             var.append(vstk)
@@ -447,7 +447,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             vlstk=[]
                             vfix=0
                     if not vstk: # 非公式或是公式开头
-                        if not (ind_v ^ xt_ind) and xt and child.y1 > xt.y0 - child.size*0.45 and child.y0 < xt.y1 + child.size: # 非独立公式边界且位于同段落，事实上不存在 ind_v 与 xt_ind 同真但 vstk 被出栈清空的情况，所以这里用 or 也是可以的
+                        if not (ind_v ^ xt_ind) and xt and child.y1 > xt.y0 - min(child.size,xt.size)*0.45 and child.y0 < xt.y1 + min(child.size,xt.size): # 非独立公式边界且位于同段落，事实上不存在 ind_v 与 xt_ind 同真但 vstk 被出栈清空的情况，所以这里用 or 也是可以的
                             if child.x0 > xt.x1 + child.size*2: # 行内分离
                                 lt,rt=child,child
                                 sstk.append("")
@@ -482,9 +482,9 @@ class TextConverter(PDFConverter[AnyIO]):
                             pstk[-1][5]=child.font
                         sstk[-1]+=child.get_text()
                     else: # 公式入栈
-                        # 可能是 CMR 角标，需要在完全确定 cur_v 之后再计算修正
+                        # 可能是 CMR 角标，需要在完全确定 cur_v 之后再计算修正，有些下角标可能需要向下的修正
                         if not vstk and sstk[-1]: # 公式开头，不是段落开头
-                            if child.x0>xt.x0 and child.y0>xt.y0: # and cur_v: # and child.y0-xt.y0<xt.size: # 行内公式修正，前面已经判定过位于同一段落，所以不需要限制 y 范围
+                            if child.x0>xt.x0 and child.y1>xt.y0: # and cur_v: # and child.y0-xt.y0<xt.size: # 行内公式修正，前面已经判定过位于同一段落，所以不需要限制 y 范围
                                 vfix=child.y0-xt.y0
                         vstk.append(child)
                     xt=child
