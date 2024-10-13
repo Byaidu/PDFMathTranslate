@@ -399,7 +399,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if re.match(r'([\u0080-\u2017]|[\u2020-\ufaff])',char): # 过滤半角字符、风格连字以及 unicode 引号
+                    if re.match(r'(\+|=|[\u0080-\u2017]|[\u2020-\ufaff])',char): # 过滤半角字符、风格连字以及 unicode 引号。公式加号和等号对应 CMR 而且不会出现在正文，公式减号对应 CMSY 不用考虑
                         return True
                 return False
             ptr=0
