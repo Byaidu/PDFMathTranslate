@@ -393,7 +393,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vfont,font):
                         return True
                 else:
-                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LINE.*|LMMono.*|.*0700|.*0500|.*Ital|.*Symbol|.*math)',font):
+                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LINE.*|LMMono.*|rsfs.*|txsy.*|.*0700|.*0500|.*Ital|.*Sym|.*math)',font):
                         return True
                 if self.vchar:
                     if re.match(self.vchar,char):
