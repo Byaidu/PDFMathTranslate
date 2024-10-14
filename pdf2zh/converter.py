@@ -393,7 +393,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vfont,font):
                         return True
                 else:
-                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LINE.*|LMMono.*|.*0700|.*0500|.*Italic|.*Symbol)',font):
+                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LINE.*|LMMono.*|.*0700|.*0500|.*Ital|.*Symbol|.*math)',font):
                         return True
                 if self.vchar:
                     if re.match(self.vchar,char):
@@ -452,9 +452,9 @@ class TextConverter(PDFConverter[AnyIO]):
                                 lt,rt=child,child
                                 sstk.append("")
                                 pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
-                            elif child.x0 > xt.x1 + 1: # 行内空格
+                            elif child.x0 > xt.x1 + 1 and not (child.size<pstk[-1][4]*0.9): # 行内空格，小字体不加空格，因为可能会影响到下面的还原操作
                                 sstk[-1]+=' '
-                            elif child.x1 < xt.x0 and not (child.size<pstk[-1][4]*0.9 and xt.size<pstk[-1][4]*0.9 and abs(child.x0-xt.x0)<vmax): # 换行，这里需要考虑一下字母修饰符的情况，小字体不换行解决分式问题
+                            elif child.x1 < xt.x0 and not (child.size<pstk[-1][4]*0.9 and xt.size<pstk[-1][4]*0.9 and abs(child.x0-xt.x0)<vmax): # 换行，这里需要考虑一下字母修饰符的情况，连续小字体不换行解决分式问题
                                 if child.x0 < lt.x0 - child.size*2 or child.x0 > lt.x0 + child.size*1: # 基于初始位置的行间分离
                                     lt,rt=child,child
                                     sstk.append("")
@@ -469,6 +469,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式。因为经常会有 CMR 以外的其他小角标比如 d_model，所以这里不锁字体
                         if child.size<pstk[-1][4]*0.9: # and sstk[-1]: # 公式内文字，考虑浮点误差，如果比段落字体小，说明肯定没有重开段落，不需要再判断一次
                             cur_v=True
+                            # 这里应该保证行内公式不要被空格随意打断变成两个连着的公式标记，要不然根据 xt 计算 vfix 修正的策略就不对了
                             if sstk[-1][-1]=='$': # 结尾是 $ 说明触发了上面的出栈，公式被错误打断（如果公式换行结尾会是空格），这里需要还原状态
                                 sstk[-1]=sstk_bak
                                 vfix=vfix_bak
