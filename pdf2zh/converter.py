@@ -372,6 +372,7 @@ class TextConverter(PDFConverter[AnyIO]):
             xt=None # 上一个字符
             lt=None # 段落左边界
             rt=None # 段落右边界
+            dt=None # 段落下边界
             sstk=[] # 段落文字栈
             vstk=[] # 公式符号组
             vlstk=[] # 公式线条组
@@ -393,7 +394,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vfont,font):
                         return True
                 else:
-                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LINE.*|LMMono.*|rsfs.*|txsy.*|.*0700|.*0500|.*Ital|.*Sym|.*math)',font):
+                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LINE.*|rsfs.*|txsy.*|.*0700|.*0500|.*Mono|.*Ital|.*Sym|.*math)',font):
                         return True
                 if self.vchar:
                     if re.match(self.vchar,char):
@@ -436,6 +437,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         if vstk: # 公式出栈
                             sstk_bak=sstk[-1]
                             vfix_bak=vfix
+                            lt_bak,rt_bak,dt_bak=lt,rt,dt
                             sstk[-1]+=f'$v{len(var)}$'
                             if child.x0>max([vch.x0 for vch in vstk]) and child.y0<vstk[0].y1 and not cur_v and vstk[0].y0-child.y0<child.size: # 行内公式修正，这里要考虑正好换行的情况
                                 vfix=vstk[0].y0-child.y0
@@ -447,23 +449,23 @@ class TextConverter(PDFConverter[AnyIO]):
                             vlstk=[]
                             vfix=0
                     if not vstk: # 非公式或是公式开头
-                        if not (ind_v ^ xt_ind) and xt and child.y1 > xt.y0 - min(child.size,xt.size)*0.45 and child.y0 < xt.y1 + min(child.size,xt.size): # 非独立公式边界且位于同段落，事实上不存在 ind_v 与 xt_ind 同真但 vstk 被出栈清空的情况，所以这里用 or 也是可以的
+                        if not (ind_v ^ xt_ind) and xt and child.y1 > dt.y0 - min(child.size,xt.size)*0.45 and child.y0 < xt.y1 + min(child.size,xt.size): # 非独立公式边界且位于同段落，事实上不存在 ind_v 与 xt_ind 同真但 vstk 被出栈清空的情况，所以这里用 or 也是可以的
                             if child.x0 > xt.x1 + child.size*2: # 行内分离
-                                lt,rt=child,child
+                                lt,rt,dt=child,child,child
                                 sstk.append("")
                                 pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                             elif child.x0 > xt.x1 + 1 and not (child.size<pstk[-1][4]*0.9): # 行内空格，小字体不加空格，因为可能会影响到下面的还原操作
                                 sstk[-1]+=' '
                             elif child.x1 < xt.x0 and not (child.size<pstk[-1][4]*0.9 and xt.size<pstk[-1][4]*0.9 and abs(child.x0-xt.x0)<vmax): # 换行，这里需要考虑一下字母修饰符的情况，连续小字体不换行解决分式问题
                                 if child.x0 < lt.x0 - child.size*2 or child.x0 > lt.x0 + child.size*1: # 基于初始位置的行间分离
-                                    lt,rt=child,child
+                                    lt,rt,dt=child,child,child
                                     sstk.append("")
                                     pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                                 else: # 换行空格
                                     sstk[-1]+=' '
                                     pstk[-1][6]=True # 标记原文段落存在换行
                         else: # 基于纵向距离的行间分离
-                            lt,rt=child,child
+                            lt,rt,dt=child,child,child
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                     if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式。因为经常会有 CMR 以外的其他小角标比如 d_model，所以这里不锁字体
@@ -476,11 +478,21 @@ class TextConverter(PDFConverter[AnyIO]):
                                 vstk=var.pop()
                                 vlstk=varl.pop()
                                 varf.pop()
+                                lt,rt,dt=lt_bak,rt_bak,dt_bak
                     if not cur_v: # 文字入栈
                         if child.size>pstk[-1][4]*1.1 or vflag(pstk[-1][5].fontname.split('+')[-1],'') or re.match(r'(.*Medi|.*Bold)',pstk[-1][5].fontname.split('+')[-1],re.IGNORECASE): # 小字体、公式或粗体开头，后续接文字，需要校正字体
                             pstk[-1][0]-=child.size-pstk[-1][4]
                             pstk[-1][4]=child.size
                             pstk[-1][5]=child.font
+                        # 更新段落边界
+                        if child.x0<lt.x0:
+                            pstk[-1][2]=child.x0
+                            lt=child
+                        if child.x1>rt.x1:
+                            pstk[-1][3]=child.x1
+                            rt=child
+                        if child.y0<dt.y0:
+                            dt=child
                         sstk[-1]+=child.get_text()
                     else: # 公式入栈
                         # 可能是 CMR 角标，需要在完全确定 cur_v 之后再计算修正，有些下角标可能需要向下的修正
@@ -490,13 +502,6 @@ class TextConverter(PDFConverter[AnyIO]):
                         vstk.append(child)
                     xt=child
                     xt_ind=ind_v
-                    # 更新左右边界
-                    if child.x0<lt.x0:
-                        pstk[-1][2]=child.x0
-                        lt=child
-                    if child.x1>rt.x1:
-                        pstk[-1][3]=child.x1
-                        rt=child
                 elif isinstance(child, LTFigure): # 图表
                     # print(f'\n\n[FIGURE] {child.name}')
                     pass
@@ -530,6 +535,16 @@ class TextConverter(PDFConverter[AnyIO]):
                         hash_key_paragraph = cache.deterministic_hash((s,self.lang_in,self.lang_out))
                         new = cache.load_paragraph(hash_key, hash_key_paragraph) # 查询缓存
                         if new is None:
+                            # import ollama
+                            # response = ollama.chat(model='llama3.2', messages=[
+                            #     {
+                            #         'role': 'system',
+                            #         'content':
+                            #             'You are a professional translation engine, please translate the text into a colloquial, professional, elegant and fluent content, without the style of machine translation. You must only translate the text content, never interpret it.',
+                            #     },
+                            #     { 'role': 'user', 'content': f'Translate into {self.lang_out}:\n"\n{s}\n"' },
+                            # ])
+                            # new=response['message']['content']
                             new=translator.translate(s,self.lang_out,self.lang_in)
                             new=remove_control_characters(new)
                             cache.write_paragraph(hash_key, hash_key_paragraph, new)
@@ -593,7 +608,8 @@ class TextConverter(PDFConverter[AnyIO]):
                             cstk=''
                     if lb and x+adv>rt+0.1*size: # 到达右边界且原文段落存在换行
                         x=lt
-                        y-=size*1.5
+                        lang_space={'zh-CN':1.4,'zh-TW':1.4,'ja':1.1,'ko':1.2}
+                        y-=size*lang_space.get(self.lang_out,1.4)
                     if vy_regex: # 插入公式
                         fix=0
                         if fcur!=None: # 段落内公式修正纵向偏移
