@@ -62,3 +62,13 @@ Document parsing: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
 Layout parsing: [LayoutParser](https://github.com/Layout-Parser/layout-parser)
+
+## Star History
+
+<a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
+ </picture>
+</a>
