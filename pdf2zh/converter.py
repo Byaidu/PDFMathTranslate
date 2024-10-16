@@ -91,7 +91,6 @@ class PDFLayoutAnalyzer(PDFTextDevice):
         (x1, y1) = apply_matrix_pt(ctm, (x1, y1))
         mediabox = (0, 0, abs(x0 - x1), abs(y0 - y1))
         self.cur_item = LTPage(page.pageno, mediabox)
-        self.cur_item.cropbox=page.cropbox
 
     def end_page(self, page: PDFPage):
         assert not self._stack, str(len(self._stack))
@@ -419,12 +418,12 @@ class TextConverter(PDFConverter[AnyIO]):
                         # print(child.get_text(),child.matrix[:4])
                     for box in self.layout[ltpage.pageid]: # 识别独立公式
                         b=box.block
-                        if child.x1>b.x_1+ltpage.cropbox[0] and child.x0<b.x_2+ltpage.cropbox[0] and child.y1>ltpage.height-(b.y_2+ltpage.cropbox[1]) and child.y0<ltpage.height-(b.y_1+ltpage.cropbox[1]): # 图像识别的坐标是裁剪之后的，所以需要补偿回去
+                        if child.x1>b.x_1 and child.x0<b.x_2 and child.y1>ltpage.height-b.y_2 and child.y0<ltpage.height-b.y_1: # 图像识别的坐标是裁剪之后的，所以需要补偿回去
                             cur_v=True
                             ind_v=True
                             if log.isEnabledFor(logging.DEBUG):
-                                lstk.append(LTLine(1,(b.x_1+ltpage.cropbox[0],ltpage.height-(b.y_2+ltpage.cropbox[1])),(b.x_2+ltpage.cropbox[0],ltpage.height-(b.y_2+ltpage.cropbox[1]))))
-                                lstk.append(LTLine(1,(b.x_1+ltpage.cropbox[0],ltpage.height-(b.y_1+ltpage.cropbox[1])),(b.x_2+ltpage.cropbox[0],ltpage.height-(b.y_1+ltpage.cropbox[1]))))
+                                lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_2),(b.x_2,ltpage.height-b.y_2)))
+                                lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_1),(b.x_2,ltpage.height-b.y_1)))
                             break
                     if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，判定括号组是否属于公式
                         if vstk and child.get_text()=='(':
