@@ -46,6 +46,7 @@ from pdf2zh.utils import (
     Rect,
     choplist,
     mult_matrix,
+    apply_matrix_pt,
 )
 
 log = logging.getLogger(__name__)
@@ -566,8 +567,18 @@ class PDFPageInterpreter:
 
     def do_S(self) -> None:
         """Stroke path"""
-        self.device.paint_path(self.graphicstate, True, False, False, self.curpath)
-        self.curpath = []
+        def is_black(color: Color) -> bool:
+            if isinstance(color, Tuple):
+                return sum(color)==0
+            else:
+                return color==0
+        if len(self.curpath)==2 and self.curpath[0][0]=='m' and self.curpath[1][0]=='l' and apply_matrix_pt(self.ctm,self.curpath[0][-2:])[1]==apply_matrix_pt(self.ctm,self.curpath[1][-2:])[1] and is_black(self.graphicstate.scolor): # 独立直线，水平，黑色
+            # print(apply_matrix_pt(self.ctm,self.curpath[0][-2:]),apply_matrix_pt(self.ctm,self.curpath[1][-2:]),self.graphicstate.scolor)
+            self.device.paint_path(self.graphicstate, True, False, False, self.curpath)
+            self.curpath = []
+            return 'n'
+        else:
+            self.curpath = []
 
     def do_s(self) -> None:
         """Close and stroke path"""
@@ -576,7 +587,7 @@ class PDFPageInterpreter:
 
     def do_f(self) -> None:
         """Fill path using nonzero winding number rule"""
-        self.device.paint_path(self.graphicstate, False, True, False, self.curpath)
+        # self.device.paint_path(self.graphicstate, False, True, False, self.curpath)
         self.curpath = []
 
     def do_F(self) -> None:
@@ -584,17 +595,17 @@ class PDFPageInterpreter:
 
     def do_f_a(self) -> None:
         """Fill path using even-odd rule"""
-        self.device.paint_path(self.graphicstate, False, True, True, self.curpath)
+        # self.device.paint_path(self.graphicstate, False, True, True, self.curpath)
         self.curpath = []
 
     def do_B(self) -> None:
         """Fill and stroke path using nonzero winding number rule"""
-        self.device.paint_path(self.graphicstate, True, True, False, self.curpath)
+        # self.device.paint_path(self.graphicstate, True, True, False, self.curpath)
         self.curpath = []
 
     def do_B_a(self) -> None:
         """Fill and stroke path using even-odd rule"""
-        self.device.paint_path(self.graphicstate, True, True, True, self.curpath)
+        # self.device.paint_path(self.graphicstate, True, True, True, self.curpath)
         self.curpath = []
 
     def do_b(self) -> None:
@@ -1033,7 +1044,7 @@ class PDFPageInterpreter:
                         # log.debug("exec: %s %r", name, args)
                         if len(args) == nargs:
                             func(*args)
-                            if not name in ['TJ','Tj','Tm','Tf','l']:
+                            if not name in ['TJ','Tj','Tm','Tf']:
                                 p=" ".join([str(x).replace("\'","") for x in args])
                                 ops+=f'{p} {name} '
                     else:

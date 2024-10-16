@@ -418,7 +418,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         # print(child.get_text(),child.matrix[:4])
                     for box in self.layout[ltpage.pageid]: # 识别独立公式
                         b=box.block
-                        if child.x1>b.x_1 and child.x0<b.x_2 and child.y1>ltpage.height-b.y_2 and child.y0<ltpage.height-b.y_1: # 图像识别的坐标是裁剪之后的，所以需要补偿回去
+                        if child.x1>b.x_1 and child.x0<b.x_2 and child.y1>ltpage.height-b.y_2 and child.y0<ltpage.height-b.y_1:
                             cur_v=True
                             ind_v=True
                             if log.isEnabledFor(logging.DEBUG):
@@ -483,15 +483,6 @@ class TextConverter(PDFConverter[AnyIO]):
                             pstk[-1][0]-=child.size-pstk[-1][4]
                             pstk[-1][4]=child.size
                             pstk[-1][5]=child.font
-                        # 更新段落边界
-                        if child.x0<lt.x0:
-                            pstk[-1][2]=child.x0
-                            lt=child
-                        if child.x1>rt.x1:
-                            pstk[-1][3]=child.x1
-                            rt=child
-                        if child.y0<dt.y0:
-                            dt=child
                         sstk[-1]+=child.get_text()
                     else: # 公式入栈
                         # 可能是 CMR 角标，需要在完全确定 cur_v 之后再计算修正，有些下角标可能需要向下的修正
@@ -499,6 +490,15 @@ class TextConverter(PDFConverter[AnyIO]):
                             if child.x0>xt.x0 and child.y1>xt.y0: # and cur_v: # and child.y0-xt.y0<xt.size: # 行内公式修正，前面已经判定过位于同一段落，所以不需要限制 y 范围
                                 vfix=child.y0-xt.y0
                         vstk.append(child)
+                    # 更新段落边界，段落内换行之后可能是公式开头，如果不更新 dt 后面换行检测会出错
+                    if child.x0<lt.x0:
+                        pstk[-1][2]=child.x0
+                        lt=child
+                    if child.x1>rt.x1:
+                        pstk[-1][3]=child.x1
+                        rt=child
+                    if child.y0<dt.y0:
+                        dt=child
                     xt=child
                     xt_ind=ind_v
                 elif isinstance(child, LTFigure): # 图表
