@@ -86,7 +86,8 @@ class PDFLayoutAnalyzer(PDFTextDevice):
         self._stack: List[LTLayoutContainer] = []
 
     def begin_page(self, page: PDFPage, ctm: Matrix) -> None:
-        (x0, y0, x1, y1) = page.mediabox
+        # (x0, y0, x1, y1) = page.mediabox
+        (x0, y0, x1, y1) = page.cropbox
         (x0, y0) = apply_matrix_pt(ctm, (x0, y0))
         (x1, y1) = apply_matrix_pt(ctm, (x1, y1))
         mediabox = (0, 0, abs(x0 - x1), abs(y0 - y1))
@@ -407,8 +408,8 @@ class TextConverter(PDFConverter[AnyIO]):
             while ptr<len(item): # 识别文字和公式
                 child=item[ptr]
                 if isinstance(child, LTChar):
-                    cur_v=False
-                    ind_v=False
+                    cur_v=False # 公式
+                    ind_v=False # 独立公式
                     fontname=child.fontname.split('+')[-1]
                     if vflag(fontname,child.get_text()): # 识别公式和字符
                         cur_v=True
