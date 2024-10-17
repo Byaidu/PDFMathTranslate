@@ -572,7 +572,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         if cstk:
                             ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
                         break
-                    vy_regex=re.match(r'\$?\s*v([\d\s]+)\$',new[ptr:]) # 匹配 $vn$ 公式标记，前面的 $ 有的时候会被丢掉
+                    vy_regex=re.match(r'\$?\s*v([\d\s]+)\$',new[ptr:],re.IGNORECASE) # 匹配 $vn$ 公式标记，前面的 $ 有的时候会被丢掉
                     mod=False # 当前公式是否为文字修饰符
                     if vy_regex: # 加载公式
                         ptr+=len(vy_regex.group(0))
