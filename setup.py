@@ -20,7 +20,7 @@ setup(
     install_requires=[
         "charset-normalizer",
         "cryptography",
-        "mtranslate",
+        "requests",
         "pymupdf",
         "tqdm",
         "tenacity",

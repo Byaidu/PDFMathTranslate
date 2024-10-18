@@ -15,7 +15,8 @@ from typing import (
     cast,
 )
 import concurrent.futures
-import mtranslate as translator
+import html
+import requests
 import unicodedata
 import tqdm.auto
 from tenacity import retry
@@ -69,6 +70,20 @@ from pdf2zh.utils import (
 
 log = logging.getLogger(__name__)
 
+class Translator:
+    def __init__(self):
+        self.session = requests.Session()
+        self.base_link = "http://translate.google.com/m"
+        self.headers = {'User-Agent':'Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)'}
+    
+    def translate(self, to_translate, to_language="auto", from_language="auto"):
+        response = self.session.get(self.base_link, params={'tl':to_language,'sl':from_language,'q':to_translate}, headers=self.headers)
+        re_result = re.findall(r'(?s)class="(?:t0|result-container)">(.*?)<', response.text)
+        if len(re_result) == 0:
+            result = ""
+        else:
+            result = html.unescape(re_result[0])
+        return result
 
 class PDFLayoutAnalyzer(PDFTextDevice):
     cur_item: LTLayoutContainer
@@ -359,6 +374,7 @@ class TextConverter(PDFConverter[AnyIO]):
         self.layout = layout
         self.lang_in = lang_in
         self.lang_out = lang_out
+        self.translator=Translator()
 
     def write_text(self, text: str) -> None:
         text = utils.compatible_encode_method(text, self.codec, "ignore")
@@ -545,7 +561,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             #     { 'role': 'user', 'content': f'Translate into {self.lang_out}:\n"\n{s}\n"' },
                             # ])
                             # new=response['message']['content']
-                            new=translator.translate(s,self.lang_out,self.lang_in)
+                            new=self.translator.translate(s,self.lang_out,self.lang_in)
                             new=remove_control_characters(new)
                             cache.write_paragraph(hash_key, hash_key_paragraph, new)
                     else:
