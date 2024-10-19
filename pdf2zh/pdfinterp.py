@@ -2,6 +2,7 @@ import logging
 import re
 from io import BytesIO
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union, cast
+import numpy as np
 
 from pdf2zh import settings
 from pdf2zh.casting import safe_float
@@ -961,16 +962,20 @@ class PDFPageInterpreter:
             else:
                 resources = self.resources.copy()
             self.device.begin_figure(xobjid, bbox, matrix)
+            ctm=mult_matrix(matrix, self.ctm)
             ops_base=interpreter.render_contents(
                 resources,
                 [xobj],
-                ctm=mult_matrix(matrix, self.ctm),
+                ctm=ctm,
             )
+            ctm_inv=np.linalg.inv(np.array(ctm[:4]).reshape(2,2))
             self.device.fontmap=interpreter.fontmap # hack
             try: # 有的时候 form 字体加不上这里会烂掉
                 ops_new=self.device.end_figure(xobjid)
-                xobjid=self.xobjmap[xobjid].objid
-                self.obj_patch[xobjid]=f'q {ops_base}Q 1 0 0 1 {-self.ctm[4]} {-self.ctm[5]} cm {ops_new}'
+                pos_inv=-np.mat(ctm[4:])*ctm_inv
+                a,b,c,d=ctm_inv.reshape(4).tolist()
+                e,f=pos_inv.tolist()[0]
+                self.obj_patch[self.xobjmap[xobjid].objid]=f'q {ops_base}Q {a} {b} {c} {d} {e} {f} cm {ops_new}'
             except:
                 pass
         elif subtype is LITERAL_IMAGE and "Width" in xobj and "Height" in xobj:

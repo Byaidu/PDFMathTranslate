@@ -5,7 +5,6 @@ import sys
 from io import StringIO
 from typing import Any, BinaryIO, Container, Iterator, Optional, cast
 import tqdm
-from pdf2zh.pdfcompiler import pdf_compile
 
 from pdf2zh.converter import (
     HOCRConverter,
