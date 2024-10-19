@@ -120,12 +120,14 @@ class PDFLayoutAnalyzer(PDFTextDevice):
     def begin_figure(self, name: str, bbox: Rect, matrix: Matrix) -> None:
         self._stack.append(self.cur_item)
         self.cur_item = LTFigure(name, bbox, mult_matrix(matrix, self.ctm))
+        self.cur_item.pageid = self._stack[-1].pageid
 
     def end_figure(self, _: str) -> None:
         fig = self.cur_item
         assert isinstance(self.cur_item, LTFigure), str(type(self.cur_item))
         self.cur_item = self._stack.pop()
         self.cur_item.add(fig)
+        return self.receive_layout(fig)
 
     def render_image(self, name: str, stream: PDFStream) -> None:
         assert isinstance(self.cur_item, LTFigure), str(type(self.cur_item))
@@ -429,7 +431,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     fontname=child.fontname.split('+')[-1]
                     if vflag(fontname,child.get_text()): # 识别公式和字符
                         cur_v=True
-                    if child.matrix[:4]==(0,1,-1,0): # 竖直段落
+                    if child.matrix[0]==0 and child.matrix[3]==0: # 竖直段落
                         cur_v=True
                         ind_v=True
                         # print(child.get_text(),child.matrix[:4])
@@ -519,7 +521,6 @@ class TextConverter(PDFConverter[AnyIO]):
                     xt=child
                     xt_ind=ind_v
                 elif isinstance(child, LTFigure): # 图表
-                    # print(f'\n\n[FIGURE] {child.name}')
                     pass
                 elif isinstance(child, LTLine): # 线条
                     if vstk and abs(child.x0-xt.x0)<vmax and child.x1-child.x0<vmax and child.y0==child.y1 or xt_ind: # 公式线条

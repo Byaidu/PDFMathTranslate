@@ -367,12 +367,13 @@ class PDFPageInterpreter:
     Reference: PDF Reference, Appendix A, Operator Summary
     """
 
-    def __init__(self, rsrcmgr: PDFResourceManager, device: PDFDevice) -> None:
+    def __init__(self, rsrcmgr: PDFResourceManager, device: PDFDevice, obj_patch) -> None:
         self.rsrcmgr = rsrcmgr
         self.device = device
+        self.obj_patch = obj_patch
 
     def dup(self) -> "PDFPageInterpreter":
-        return self.__class__(self.rsrcmgr, self.device)
+        return self.__class__(self.rsrcmgr, self.device, self.obj_patch)
 
     def init_resources(self, resources: Dict[object, object]) -> None:
         """Prepare the fonts and XObjects listed in the Resource attribute."""
@@ -960,12 +961,18 @@ class PDFPageInterpreter:
             else:
                 resources = self.resources.copy()
             self.device.begin_figure(xobjid, bbox, matrix)
-            interpreter.render_contents(
+            ops_base=interpreter.render_contents(
                 resources,
                 [xobj],
                 ctm=mult_matrix(matrix, self.ctm),
             )
-            self.device.end_figure(xobjid)
+            self.device.fontmap=interpreter.fontmap # hack
+            try: # 有的时候 form 字体加不上这里会烂掉
+                ops_new=self.device.end_figure(xobjid)
+                xobjid=self.xobjmap[xobjid].objid
+                self.obj_patch[xobjid]=f'q {ops_base}Q 1 0 0 1 {-self.ctm[4]} {-self.ctm[5]} cm {ops_new}'
+            except:
+                pass
         elif subtype is LITERAL_IMAGE and "Width" in xobj and "Height" in xobj:
             self.device.begin_figure(xobjid, (0, 0, 1, 1), MATRIX_IDENTITY)
             self.device.render_image(xobjid, xobj)
@@ -993,12 +1000,9 @@ class PDFPageInterpreter:
         ops_new=self.device.end_page(page)
         page_objids=[i.objid for i in page.contents]
         # 上面渲染的时候会根据 cropbox 减掉页面偏移得到真实坐标，这里输出的时候需要用 cm 把页面偏移加回来
-        ops_full=f'{page_objids[0]} 0 obj\n<<>>stream\nq {ops_base}Q 1 0 0 1 {x0} {y0} cm {ops_new}\nendstream\nendobj\n' # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
-        # if log.isEnabledFor(logging.DEBUG):
-        #     log.debug(f'OP_BASE {ops_base}')
-        #     log.debug(f'OP_NEW {ops_new}')
-        #     log.debug(f'OP_FULL {ops_full}')
-        return page_objids,ops_full
+        self.obj_patch[page_objids[0]]=f'q {ops_base}Q 1 0 0 1 {x0} {y0} cm {ops_new}' # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
+        for objid in range(1,len(page_objids)):
+            self.obj_patch[page_objids[objid]]=''
 
     def render_contents(
         self,

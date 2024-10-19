@@ -76,17 +76,32 @@ def extract_text(
 
         doc_en = pymupdf.open(file)
         page_count=doc_en.page_count
+        font_list=['china-ss','tiro']
+        font_id={}
         for page in doc_en:
-            page.insert_font('china-ss')
-            page.insert_font('tiro')
-        doc_en.save('output-en.pdf')
+            for font in font_list:
+                font_id[font]=page.insert_font(font)
+        xreflen = doc_en.xref_length()
+        for xref in range(1, xreflen):
+            font_res=doc_en.xref_get_key(xref,'Resources/Font')
+            if font_res[0]=='dict':
+                for font in font_list:
+                    font_exist=doc_en.xref_get_key(xref,f'Resources/Font/{font}')
+                    if font_exist[0]=='null':
+                        try:
+                            doc_en.xref_set_key(xref,f'Resources/Font/{font}',f'{font_id[font]} 0 R')
+                        except:
+                            pass
+        doc_en.save(f'{filename}-en.pdf')
 
-        with open('output-en.pdf', "rb") as fp:
-            pdf2zh.high_level.extract_text_to_fp(fp, **locals())
+        with open(f'{filename}-en.pdf', "rb") as fp:
+            obj_patch:dict=pdf2zh.high_level.extract_text_to_fp(fp, **locals())
 
-        doc_en.close()
-        doc_zh = pymupdf.open('output-zh.pdf')
-        doc_dual = pymupdf.open('output-en.pdf')
+        for obj_id,ops_full in obj_patch.items():
+            doc_en.update_stream(obj_id,ops_full.encode())
+
+        doc_zh = doc_en
+        doc_dual = pymupdf.open(f'{filename}-en.pdf')
         doc_dual.insert_file(doc_zh)
         for id in range(page_count):
             doc_dual.move_page(page_count+id,id*2+1)
@@ -95,8 +110,7 @@ def extract_text(
         doc_zh.close()
         doc_dual.close()
 
-        os.remove('output-en.pdf')
-        os.remove('output-zh.pdf')
+        os.remove(f'{filename}-en.pdf')
 
     return
 

@@ -147,8 +147,8 @@ def extract_text_to_fp(
         raise PDFValueError(msg)
 
     assert device is not None
-    interpreter = PDFPageInterpreter(rsrcmgr, device)
     obj_patch={}
+    interpreter = PDFPageInterpreter(rsrcmgr, device, obj_patch)
     if pages:
         total_pages=len(pages)
     else:
@@ -166,32 +166,10 @@ def extract_text_to_fp(
         layout[page.pageno]=page_layout
         # print(page.number,page_layout)
         page.rotate = (page.rotate + rotation) % 360
-        page_objids,ops_full=interpreter.process_page(page)
-        obj_patch[page_objids[0]]=ops_full
-        for objid in range(1,len(page_objids)):
-            obj_patch[page_objids[objid]]=f'{page_objids[objid]} 0 obj\n<<>>\nendobj\n'
-
-    # 用最后一页的page来解析doc
-    objs=[]
-    trailer=page.doc.xrefs[0].get_trailer()
-    for objid in range(1,trailer['Size']):
-        if objid in page.doc.xrefs[0].offsets:
-            (_, start, _) = page.doc.xrefs[0].get_pos(objid)
-            fp=page.doc._parser.fp
-            end, _=page.doc._getobj_parse(start,objid)
-            fp.seek(start)
-            raw=fp.read(end-start)
-            objs.append(raw)
-        else:
-            # print(f'OBJ {objid} missing')
-            objs.append(b'')
-    # 更新页面内容
-    for id,ops in obj_patch.items():
-        objs[id-1]=ops.encode()
-    # 编译文档
-    pdf_compile('output-zh.pdf',objs,trailer)
+        interpreter.process_page(page)
 
     device.close()
+    return obj_patch
 
 
 def extract_text(
