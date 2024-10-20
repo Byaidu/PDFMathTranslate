@@ -412,7 +412,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vfont,font):
                         return True
                 else:
-                    if re.match(r'(CM[^R].*|MS.*|XY.*|MT.*|BL.*|RM.*|EU.*|LINE.*|rsfs.*|txsy.*|.*0700|.*0500|.*Mono|.*Ital|.*Sym|.*math)',font):
+                    if re.match(r'(CM[^R]|MS|XY|MT|BL|RM|EU|LA|LINE|TeX-|rsfs|txsy|wasy|.*Mono|.*Code|.*Ital|.*Sym)',font):
                         return True
                 if self.vchar:
                     if re.match(self.vchar,char):

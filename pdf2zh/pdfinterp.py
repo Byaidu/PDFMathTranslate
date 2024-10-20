@@ -968,10 +968,10 @@ class PDFPageInterpreter:
                 [xobj],
                 ctm=ctm,
             )
-            ctm_inv=np.linalg.inv(np.array(ctm[:4]).reshape(2,2))
-            self.device.fontmap=interpreter.fontmap # hack
             try: # 有的时候 form 字体加不上这里会烂掉
+                self.device.fontmap=interpreter.fontmap # hack
                 ops_new=self.device.end_figure(xobjid)
+                ctm_inv=np.linalg.inv(np.array(ctm[:4]).reshape(2,2))
                 pos_inv=-np.mat(ctm[4:])*ctm_inv
                 a,b,c,d=ctm_inv.reshape(4).tolist()
                 e,f=pos_inv.tolist()[0]
