@@ -15,6 +15,7 @@ from typing import (
     cast,
 )
 import concurrent.futures
+import numpy as np
 import html
 import requests
 import unicodedata
@@ -434,16 +435,14 @@ class TextConverter(PDFConverter[AnyIO]):
                     if child.matrix[0]==0 and child.matrix[3]==0: # 竖直段落
                         cur_v=True
                         ind_v=True
-                        # print(child.get_text(),child.matrix[:4])
-                    for box in self.layout[ltpage.pageid]: # 识别独立公式
-                        b=box.block
-                        if child.x1>b.x_1 and child.x0<b.x_2 and child.y1>ltpage.height-b.y_2 and child.y0<ltpage.height-b.y_1:
-                            cur_v=True
-                            ind_v=True
-                            if log.isEnabledFor(logging.DEBUG):
-                                lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_2),(b.x_2,ltpage.height-b.y_2)))
-                                lstk.append(LTLine(1,(b.x_1,ltpage.height-b.y_1),(b.x_2,ltpage.height-b.y_1)))
-                            break
+                    layout=self.layout[ltpage.pageid]
+                    x0,y0,x1,y1=int(child.x0),int(ltpage.height-child.y0),int(child.x1),int(ltpage.height-child.y1)
+                    h,w=layout.shape
+                    y0=np.clip(y0,0,h-1);y1=np.clip(y1,0,h-1)
+                    x0=np.clip(x0,0,w-1);x1=np.clip(x1,0,w-1)
+                    if layout[y0,x0] or layout[y0,x1] or layout[y1,x0] or layout[y1,x1]: # 识别图表和独立公式
+                        cur_v=True
+                        ind_v=True
                     if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，判定括号组是否属于公式
                         if vstk and child.get_text()=='(':
                             cur_v=True
@@ -548,25 +547,12 @@ class TextConverter(PDFConverter[AnyIO]):
             @retry
             def worker(s): # 多线程翻译
                 try:
-                    if sum(map(str.islower,s))>1: # 包含小写字母
-                        hash_key_paragraph = cache.deterministic_hash((s,self.lang_in,self.lang_out))
-                        new = cache.load_paragraph(hash_key, hash_key_paragraph) # 查询缓存
-                        if new is None:
-                            # import ollama
-                            # response = ollama.chat(model='llama3.2', messages=[
-                            #     {
-                            #         'role': 'system',
-                            #         'content':
-                            #             'You are a professional translation engine, please translate the text into a colloquial, professional, elegant and fluent content, without the style of machine translation. You must only translate the text content, never interpret it.',
-                            #     },
-                            #     { 'role': 'user', 'content': f'Translate into {self.lang_out}:\n"\n{s}\n"' },
-                            # ])
-                            # new=response['message']['content']
-                            new=self.translator.translate(s,self.lang_out,self.lang_in)
-                            new=remove_control_characters(new)
-                            cache.write_paragraph(hash_key, hash_key_paragraph, new)
-                    else:
-                        new=s
+                    hash_key_paragraph = cache.deterministic_hash((s,self.lang_in,self.lang_out))
+                    new = cache.load_paragraph(hash_key, hash_key_paragraph) # 查询缓存
+                    if new is None:
+                        new=self.translator.translate(s,self.lang_out,self.lang_in)
+                        new=remove_control_characters(new)
+                        cache.write_paragraph(hash_key, hash_key_paragraph, new)
                     return new
                 except BaseException as e:
                     log.exception(e,exc_info=False)

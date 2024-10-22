@@ -24,7 +24,7 @@ setup(
         "pymupdf",
         "tqdm",
         "tenacity",
-        "layoutparser[effdet]",
+        "doclayout-yolo",
         "numpy",
     ],
     classifiers=[

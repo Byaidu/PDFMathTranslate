@@ -161,8 +161,17 @@ def extract_text_to_fp(
     ), total=total_pages, position=0):
         pix = doc_en[page.pageno].get_pixmap()
         image = np.fromstring(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
-        page_layout=model.detect(image)
-        layout[page.pageno]=page_layout
+        page_layout=model.predict(image)[0]
+        # kdtree 是不可能 kdtree 的，不如直接渲染成图片，用空间换时间
+        box=np.zeros((pix.height, pix.width))
+        h,w=box.shape
+        for d in page_layout.boxes:
+            if page_layout.names[int(d.cls)] in ['abandon','figure','table','isolate_formula','formula_caption']:
+                x0,y0,x1,y1=[int(i) for i in d.xyxy.squeeze().long()]
+                y0=np.clip(y0,0,h-1);y1=np.clip(y1,0,h-1)
+                x0=np.clip(x0,0,w-1);x1=np.clip(x1,0,w-1)
+                box[y0:y1,x0:x1]=1
+        layout[page.pageno]=box
         # print(page.number,page_layout)
         page.rotate = (page.rotate + rotation) % 360
         interpreter.process_page(page)

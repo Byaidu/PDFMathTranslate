@@ -59,9 +59,11 @@ Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
 Document parsing: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 
+Document extraction: [MinerU](https://github.com/opendatalab/MinerU)
+
 Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
-Layout parsing: [LayoutParser](https://github.com/Layout-Parser/layout-parser)
+Layout parsing: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
 ## Star History
 

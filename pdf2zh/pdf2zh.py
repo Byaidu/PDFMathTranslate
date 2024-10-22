@@ -9,7 +9,7 @@ import os
 import sys
 from typing import Any, Container, Iterable, List, Optional
 import pymupdf
-import layoutparser as lp
+import doclayout_yolo
 import tempfile
 import urllib.request
 
@@ -19,6 +19,8 @@ from pdf2zh.pdfexceptions import PDFValueError
 from pdf2zh.utils import AnyIO
 
 logging.basicConfig()
+
+doclayout_yolo.utils.LOGGER.setLevel(logging.WARNING)
 
 OUTPUT_TYPES = ((".htm", "html"), (".html", "html"), (".xml", "xml"), (".tag", "tag"))
 
@@ -64,11 +66,11 @@ def extract_text(
                 output_type = alttype
 
     outfp: AnyIO = sys.stdout
-    pth = os.path.join(tempfile.gettempdir(), 'mfd-tf_efficientdet_d0.pth.tar')
+    pth = os.path.join(tempfile.gettempdir(), 'doclayout_yolo_docstructbench_imgsz1024.pt')
     if not os.path.exists(pth):
         print('Downloading...')
-        urllib.request.urlretrieve("https://www.dropbox.com/s/dkr22iux7thlhel/mfd-tf_efficientdet_d0.pth.tar?dl=1",pth)
-    model = lp.EfficientDetLayoutModel("lp://efficientdet/MFD/tf_efficientdet_d0",pth)
+        urllib.request.urlretrieve("https://huggingface.co/juliozhao/DocLayout-YOLO-DocStructBench/resolve/main/doclayout_yolo_docstructbench_imgsz1024.pt",pth)
+    model = doclayout_yolo.YOLOv10(pth)
 
     for file in files:
 
