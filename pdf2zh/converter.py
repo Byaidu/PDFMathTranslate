@@ -436,10 +436,18 @@ class TextConverter(PDFConverter[AnyIO]):
                         cur_v=True
                         ind_v=True
                     layout=self.layout[ltpage.pageid]
-                    x0,y0,x1,y1=int(child.x0),int(ltpage.height-child.y0),int(child.x1),int(ltpage.height-child.y1)
-                    h,w=layout.shape
+                    h,w=layout.shape # ltpage.height 可能是 fig 里面的高度，这里统一用 layout.shape
+                    x0,y0,x1,y1=int(child.x0),int(h-child.y0),int(child.x1),int(h-child.y1)
                     y0=np.clip(y0,0,h-1);y1=np.clip(y1,0,h-1)
                     x0=np.clip(x0,0,w-1);x1=np.clip(x1,0,w-1)
+                    # if child.get_text()=='2':
+                    #     from PIL import Image, ImageDraw
+                    #     img=Image.fromarray(layout*255)
+                    #     img=img.convert('RGB')
+                    #     draw=ImageDraw.Draw(img)
+                    #     draw.rectangle([(x0,y1),(x1,y0)],ImageDraw.ImageColor.colormap['red'],ImageDraw.ImageColor.colormap['red'])
+                    #     img.show()
+                    #     input()
                     if layout[y0,x0] or layout[y0,x1] or layout[y1,x0] or layout[y1,x1]: # 识别图表和独立公式
                         cur_v=True
                         ind_v=True
