@@ -78,10 +78,11 @@ class Translator:
         self.headers = {'User-Agent':'Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)'}
     
     def translate(self, to_translate, to_language="auto", from_language="auto"):
+        to_translate=to_translate[:5000] # Max Length
         response = self.session.get(self.base_link, params={'tl':to_language,'sl':from_language,'q':to_translate}, headers=self.headers)
         re_result = re.findall(r'(?s)class="(?:t0|result-container)">(.*?)<', response.text)
         if len(re_result) == 0:
-            result = ""
+            raise ValueError('Empty translation result')
         else:
             result = html.unescape(re_result[0])
         return result
@@ -389,9 +390,6 @@ class TextConverter(PDFConverter[AnyIO]):
     def receive_layout(self, ltpage: LTPage):
         def render(item: LTItem) -> None:
             xt=None # 上一个字符
-            lt=None # 段落左边界
-            rt=None # 段落右边界
-            dt=None # 段落下边界
             sstk=[] # 段落文字栈
             vstk=[] # 公式符号组
             vlstk=[] # 公式线条组
@@ -403,7 +401,7 @@ class TextConverter(PDFConverter[AnyIO]):
             varl=[] # 公式线条组栈
             varf=[] # 公式纵向偏移栈
             vlen=[] # 公式宽度栈
-            xt_ind=False # 上一个字符是否属于独立公式
+            xt_cls=-1 # 上一个字符是否属于独立公式
             vmax=ltpage.width/4 # 行内公式最大宽度
             ops="" # 渲染结果
             def vflag(font,char): # 匹配公式（和角标）字体
@@ -428,45 +426,27 @@ class TextConverter(PDFConverter[AnyIO]):
                 child=item[ptr]
                 if isinstance(child, LTChar):
                     cur_v=False # 公式
-                    ind_v=False # 独立公式
                     fontname=child.fontname.split('+')[-1]
-                    if vflag(fontname,child.get_text()): # 识别公式和字符
-                        cur_v=True
-                    if child.matrix[0]==0 and child.matrix[3]==0: # 竖直段落
-                        cur_v=True
-                        ind_v=True
                     layout=self.layout[ltpage.pageid]
                     h,w=layout.shape # ltpage.height 可能是 fig 里面的高度，这里统一用 layout.shape
-                    x0,y0,x1,y1=int(child.x0),int(h-child.y0),int(child.x1),int(h-child.y1)
-                    y0=np.clip(y0,0,h-1);y1=np.clip(y1,0,h-1)
-                    x0=np.clip(x0,0,w-1);x1=np.clip(x1,0,w-1)
-                    # if child.get_text()=='2':
-                    #     from PIL import Image, ImageDraw
-                    #     img=Image.fromarray(layout*255)
-                    #     img=img.convert('RGB')
-                    #     draw=ImageDraw.Draw(img)
-                    #     draw.rectangle([(x0,y1),(x1,y0)],ImageDraw.ImageColor.colormap['red'],ImageDraw.ImageColor.colormap['red'])
-                    #     img.show()
-                    #     input()
-                    if layout[y0,x0] or layout[y0,x1] or layout[y1,x0] or layout[y1,x1]: # 识别图表和独立公式
+                    cx,cy=np.clip(int(child.x0),0,w-1),np.clip(int(child.y0),0,h-1)
+                    cls=layout[cy,cx]
+                    # if log.isEnabledFor(logging.DEBUG):
+                    #     ops+=f'ET [] 0 d 0 J 0.1 w {child.x0} {child.y0} {child.x1-child.x0} {child.y1-child.y0} re S Q BT '
+                    if cls==0 or (cls==xt_cls and child.size<pstk[-1][4]*0.8) or vflag(fontname,child.get_text()) or (child.matrix[0]==0 and child.matrix[3]==0):
                         cur_v=True
-                        ind_v=True
-                    if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，判定括号组是否属于公式
+                    if not cur_v: # 判定括号组是否属于公式
                         if vstk and child.get_text()=='(':
                             cur_v=True
                             vbkt+=1
                         if vbkt and child.get_text()==')':
                             cur_v=True
                             vbkt-=1
-                    if not cur_v or (ind_v ^ xt_ind) or (vstk and (abs(child.x0-xt.x0)>vmax or abs(child.y0-xt.y0)>vmax) and not ind_v): # 公式结束、独立公式边界或公式换行截断
+                    if not cur_v or cls!=xt_cls or (abs(child.x0-xt.x0)>vmax and cls!=0): # 公式结束、段落边界、公式换行
                         if vstk: # 公式出栈
-                            sstk_bak=sstk[-1]
-                            vfix_bak=vfix
-                            lt_bak,rt_bak,dt_bak=lt,rt,dt
                             sstk[-1]+=f'$v{len(var)}$'
-                            if child.x0>max([vch.x0 for vch in vstk]) and child.y0<vstk[0].y1 and not cur_v and vstk[0].y0-child.y0<child.size: # 行内公式修正，这里要考虑正好换行的情况
+                            if not cur_v and cls==xt_cls and child.x0>max([vch.x0 for vch in vstk]): # and child.y1>vstk[0].y0: # 段落内公式转文字，行内公式修正
                                 vfix=vstk[0].y0-child.y0
-                                # print(sstk[-1],vfix)
                             var.append(vstk)
                             varl.append(vlstk)
                             varf.append(vfix)
@@ -474,63 +454,38 @@ class TextConverter(PDFConverter[AnyIO]):
                             vlstk=[]
                             vfix=0
                     if not vstk: # 非公式或是公式开头
-                        if not (ind_v ^ xt_ind) and xt and child.y1 > dt.y0 - min(child.size,xt.size)*0.45 and child.y0 < xt.y1 + min(child.size,xt.size): # 非独立公式边界且位于同段落，事实上不存在 ind_v 与 xt_ind 同真但 vstk 被出栈清空的情况，所以这里用 or 也是可以的
-                            if child.x0 > xt.x1 + child.size*2: # 行内分离
-                                lt,rt,dt=child,child,child
-                                sstk.append("")
-                                pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
-                            elif child.x0 > xt.x1 + 1 and not (child.size<pstk[-1][4]*0.9): # 行内空格，小字体不加空格，因为可能会影响到下面的还原操作
+                        if cls==xt_cls: # 同一段落
+                            if child.x0 > xt.x1 + 1: # 行内空格
                                 sstk[-1]+=' '
-                            elif child.x1 < xt.x0 and not (child.size<pstk[-1][4]*0.9 and xt.size<pstk[-1][4]*0.9 and abs(child.x0-xt.x0)<vmax): # 换行，这里需要考虑一下字母修饰符的情况，连续小字体不换行解决分式问题
-                                if child.x0 < lt.x0 - child.size*2 or child.x0 > lt.x0 + child.size*1: # 基于初始位置的行间分离
-                                    lt,rt,dt=child,child,child
-                                    sstk.append("")
-                                    pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
-                                else: # 换行空格
-                                    sstk[-1]+=' '
-                                    pstk[-1][6]=True # 标记原文段落存在换行
-                        else: # 基于纵向距离的行间分离
-                            lt,rt,dt=child,child,child
+                            elif child.x1 < xt.x0: # 换行空格
+                                sstk[-1]+=' '
+                                pstk[-1][6]=True # 标记原文段落存在换行
+                        else:
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
-                    if not cur_v: #and re.match(r'CMR',fontname): # 根治正文 CMR 字体的懒狗编译器，这里先排除一下独立公式。因为经常会有 CMR 以外的其他小角标比如 d_model，所以这里不锁字体
-                        if child.size<pstk[-1][4]*0.9: # and sstk[-1]: # 公式内文字，考虑浮点误差，如果比段落字体小，说明肯定没有重开段落，不需要再判断一次
-                            cur_v=True
-                            # 这里应该保证行内公式不要被空格随意打断变成两个连着的公式标记，要不然根据 xt 计算 vfix 修正的策略就不对了
-                            if sstk[-1][-1]=='$': # 结尾是 $ 说明触发了上面的出栈，公式被错误打断（如果公式换行结尾会是空格），这里需要还原状态
-                                sstk[-1]=sstk_bak
-                                vfix=vfix_bak
-                                vstk=var.pop()
-                                vlstk=varl.pop()
-                                varf.pop()
-                                lt,rt,dt=lt_bak,rt_bak,dt_bak
                     if not cur_v: # 文字入栈
-                        if child.size>pstk[-1][4]*1.1 or vflag(pstk[-1][5].fontname.split('+')[-1],'') or re.match(r'(.*Medi|.*Bold)',pstk[-1][5].fontname.split('+')[-1],re.IGNORECASE): # 小字体、公式或粗体开头，后续接文字，需要校正字体
+                        if child.size>pstk[-1][4]/0.8 or vflag(pstk[-1][5].fontname.split('+')[-1],'') or re.match(r'(.*Medi|.*Bold)',pstk[-1][5].fontname.split('+')[-1],re.IGNORECASE): # 小字体、公式或粗体开头，后续接文字，需要校正字体
                             pstk[-1][0]-=child.size-pstk[-1][4]
                             pstk[-1][4]=child.size
                             pstk[-1][5]=child.font
                         sstk[-1]+=child.get_text()
                     else: # 公式入栈
-                        # 可能是 CMR 角标，需要在完全确定 cur_v 之后再计算修正，有些下角标可能需要向下的修正
-                        if not vstk and sstk[-1]: # 公式开头，不是段落开头
-                            if child.x0>xt.x0 and child.y1>xt.y0: # and cur_v: # and child.y0-xt.y0<xt.size: # 行内公式修正，前面已经判定过位于同一段落，所以不需要限制 y 范围
-                                vfix=child.y0-xt.y0
+                        if not vstk and cls==xt_cls and child.x0>xt.x0: # and child.y1>xt.y0: # 段落内文字转公式，行内公式修正
+                            vfix=child.y0-xt.y0
                         vstk.append(child)
-                    # 更新段落边界，段落内换行之后可能是公式开头，如果不更新 dt 后面换行检测会出错
-                    if child.x0<lt.x0:
-                        pstk[-1][2]=child.x0
-                        lt=child
-                    if child.x1>rt.x1:
-                        pstk[-1][3]=child.x1
-                        rt=child
-                    if child.y0<dt.y0:
-                        dt=child
+                    # 更新段落边界，段落内换行之后可能是公式开头
+                    pstk[-1][2]=min(pstk[-1][2],child.x0)
+                    pstk[-1][3]=max(pstk[-1][3],child.x1)
                     xt=child
-                    xt_ind=ind_v
+                    xt_cls=cls
                 elif isinstance(child, LTFigure): # 图表
                     pass
                 elif isinstance(child, LTLine): # 线条
-                    if vstk and abs(child.x0-xt.x0)<vmax and child.x1-child.x0<vmax and child.y0==child.y1 or xt_ind: # 公式线条
+                    layout=self.layout[ltpage.pageid]
+                    h,w=layout.shape # ltpage.height 可能是 fig 里面的高度，这里统一用 layout.shape
+                    cx,cy=np.clip(int(child.x0),0,w-1),np.clip(int(child.y0),0,h-1)
+                    cls=layout[cy,cx]
+                    if vstk and cls==xt_cls: # 公式线条
                         vlstk.append(child)
                     else: # 全局线条
                         lstk.append(child)
@@ -619,7 +574,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             cstk=''
                     if lb and x+adv>rt+0.1*size: # 到达右边界且原文段落存在换行
                         x=lt
-                        lang_space={'zh-CN':1.4,'zh-TW':1.4,'ja':1.1,'ko':1.2}
+                        lang_space={'zh-CN':1.4,'zh-TW':1.4,'ja':1.1,'ko':1.2,'en':1.2}
                         y-=size*lang_space.get(self.lang_out,1.4)
                     if vy_regex: # 插入公式
                         fix=0
