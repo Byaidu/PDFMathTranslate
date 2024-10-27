@@ -417,7 +417,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if re.match(r'(\+|=)',char) or (char and unicodedata.category(char[0]) in ['Lm','Sk','Mn']): # 公式加号和等号对应 CMR 而且不会出现在正文，公式减号对应 CMSY 不用考虑
+                    if char and unicodedata.category(char[0]) in ['Lm','Mn','Sk','Sm']:
                         return True
                 return False
             ptr=0
@@ -547,7 +547,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             adv=vlen[vid]
                         except:
                             continue # 翻译器可能会自动补个越界的公式标记
-                        if len(var[vid])==1 and unicodedata.category(var[vid][0].get_text()[0]) in ['Lm','Sk','Mn']: # 文字修饰符，get_text 可能返回 cid，这里截断一下
+                        if len(var[vid])==1 and unicodedata.category(var[vid][0].get_text()[0]) in ['Lm','Mn','Sk']: # 文字修饰符，get_text 可能返回 cid，这里截断一下
                             mod=True
                     else: # 加载文字
                         ch=new[ptr]
