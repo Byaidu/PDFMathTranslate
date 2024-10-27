@@ -417,7 +417,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if re.match(r'(\+|=|[\u0080-\u2017]|[\u2020-\ufaff])',char): # 过滤半角字符、风格连字以及 unicode 引号。公式加号和等号对应 CMR 而且不会出现在正文，公式减号对应 CMSY 不用考虑
+                    if re.match(r'(\+|=)',char) or (char and unicodedata.category(char[0]) in ['Lm','Sk','Mn']): # 公式加号和等号对应 CMR 而且不会出现在正文，公式减号对应 CMSY 不用考虑
                         return True
                 return False
             ptr=0
@@ -554,17 +554,17 @@ class TextConverter(PDFConverter[AnyIO]):
                         # if font.char_width(ord(ch)):
                         fcur_=None
                         try:
-                            # 1.有些字体会设置非 0 缺省宽度，所以这里直接查一下宽度字典
-                            # 2.有些字体不使用标准 unicode 编码，这里校验一下
                             if font.widths.get(ord(ch)) and font.to_unichr(ord(ch))==ch:
                                 fcur_=font.fontid # 原字体
                         except:
                             pass
-                        if fcur_==None:
-                            if re.match(r'[\u0000-\u007f]',ch): # 半角符号
+                        try:
+                            if fcur_==None and self.fontmap['tiro'].to_unichr(ord(ch))==ch:
                                 fcur_='tiro' # 默认英文字体
-                            else:
-                                fcur_='china-ss' # 默认中文字体
+                        except:
+                            pass
+                        if fcur_==None:
+                            fcur_='china-ss' # 默认中文字体
                         # print(font.fontid,fcur_,ch,font.char_width(ord(ch)))
                         adv=self.fontmap[fcur_].char_width(ord(ch))*size
                         ptr+=1
@@ -574,8 +574,8 @@ class TextConverter(PDFConverter[AnyIO]):
                             cstk=''
                     if lb and x+adv>rt+0.1*size: # 到达右边界且原文段落存在换行
                         x=lt
-                        lang_space={'zh-CN':1.4,'zh-TW':1.4,'ja':1.1,'ko':1.2,'en':1.2}
-                        y-=size*lang_space.get(self.lang_out,1.4)
+                        lang_space={'zh-CN':1.4,'zh-TW':1.4,'ja':1.1,'ko':1.2,'en':1.2,'it':1.0}
+                        y-=size*lang_space.get(self.lang_out,1.2)
                     if vy_regex: # 插入公式
                         fix=0
                         if fcur!=None: # 段落内公式修正纵向偏移
