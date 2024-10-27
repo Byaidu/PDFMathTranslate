@@ -401,7 +401,7 @@ class TextConverter(PDFConverter[AnyIO]):
             varl=[] # 公式线条组栈
             varf=[] # 公式纵向偏移栈
             vlen=[] # 公式宽度栈
-            xt_cls=-1 # 上一个字符是否属于独立公式
+            xt_cls=-1 # 上一个字符所属段落
             vmax=ltpage.width/4 # 行内公式最大宽度
             ops="" # 渲染结果
             def vflag(font,char): # 匹配公式（和角标）字体
@@ -417,7 +417,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if char and unicodedata.category(char[0]) in ['Lm','Mn','Sk','Sm']:
+                    if char and char!=' ' and unicodedata.category(char[0]) in ['Lm','Mn','Sk','Sm','Zl','Zp','Zs']: # 文字修饰符、数学符号、分隔符号
                         return True
                 return False
             ptr=0
@@ -547,7 +547,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             adv=vlen[vid]
                         except:
                             continue # 翻译器可能会自动补个越界的公式标记
-                        if len(var[vid])==1 and unicodedata.category(var[vid][0].get_text()[0]) in ['Lm','Mn','Sk']: # 文字修饰符，get_text 可能返回 cid，这里截断一下
+                        if len(var[vid])==1 and unicodedata.category(var[vid][0].get_text()[0]) in ['Lm','Mn','Sk']: # 文字修饰符
                             mod=True
                     else: # 加载文字
                         ch=new[ptr]
