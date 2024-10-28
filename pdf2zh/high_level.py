@@ -161,7 +161,10 @@ def extract_text_to_fp(
     ), total=total_pages, position=0):
         pix = doc_en[page.pageno].get_pixmap()
         image = np.fromstring(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
-        page_layout=model.predict(image)[0]
+        page_layout=model.predict(
+            image,
+            imgsz=int(pix.height/32)*32,
+        )[0]
         # kdtree 是不可能 kdtree 的，不如直接渲染成图片，用空间换时间
         box=np.ones((pix.height, pix.width))
         h,w=box.shape
