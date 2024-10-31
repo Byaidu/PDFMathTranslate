@@ -70,7 +70,7 @@ def extract_text(
     pth = os.path.join(tempfile.gettempdir(), 'doclayout_yolo_docstructbench_imgsz1024.pt')
     if not os.path.exists(pth):
         print('Downloading...')
-        urllib.request.urlretrieve("https://huggingface.co/juliozhao/DocLayout-YOLO-DocStructBench/resolve/main/doclayout_yolo_docstructbench_imgsz1024.pt",pth)
+        urllib.request.urlretrieve("http://huggingface.co/juliozhao/DocLayout-YOLO-DocStructBench/resolve/main/doclayout_yolo_docstructbench_imgsz1024.pt",pth)
     model = doclayout_yolo.YOLOv10(pth)
 
     for file in files:
