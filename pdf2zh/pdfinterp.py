@@ -380,6 +380,7 @@ class PDFPageInterpreter:
         """Prepare the fonts and XObjects listed in the Resource attribute."""
         self.resources = resources
         self.fontmap: Dict[object, PDFFont] = {}
+        self.fontid: Dict[PDFFont, object] = {}
         self.xobjmap = {}
         self.csmap: Dict[str, PDFColorSpace] = PREDEFINED_COLORSPACE.copy()
         if not resources:
@@ -406,7 +407,7 @@ class PDFPageInterpreter:
                         objid = spec.objid
                     spec = dict_value(spec)
                     self.fontmap[fontid] = self.rsrcmgr.get_font(objid, spec)
-                    self.fontmap[fontid].fontid=fontid # hack
+                    self.fontid[self.fontmap[fontid]]=fontid
             elif k == "ColorSpace":
                 for csid, spec in dict_value(v).items():
                     colorspace = get_colorspace(resolve1(spec))
@@ -969,7 +970,8 @@ class PDFPageInterpreter:
                 ctm=ctm,
             )
             try: # 有的时候 form 字体加不上这里会烂掉
-                self.device.fontmap=interpreter.fontmap # hack
+                self.device.fontid=interpreter.fontid
+                self.device.fontmap=interpreter.fontmap
                 ops_new=self.device.end_figure(xobjid)
                 ctm_inv=np.linalg.inv(np.array(ctm[:4]).reshape(2,2))
                 pos_inv=-np.mat(ctm[4:])*ctm_inv
@@ -1001,7 +1003,8 @@ class PDFPageInterpreter:
             ctm = (1, 0, 0, 1, -x0, -y0)
         self.device.begin_page(page, ctm)
         ops_base=self.render_contents(page.resources, page.contents, ctm=ctm)
-        self.device.fontmap=self.fontmap # hack
+        self.device.fontid=self.fontid
+        self.device.fontmap=self.fontmap
         ops_new=self.device.end_page(page)
         page_objids=[i.objid for i in page.contents]
         # 上面渲染的时候会根据 cropbox 减掉页面偏移得到真实坐标，这里输出的时候需要用 cm 把页面偏移加回来

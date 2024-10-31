@@ -555,7 +555,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         fcur_=None
                         try:
                             if font.widths.get(ord(ch)) and font.to_unichr(ord(ch))==ch:
-                                fcur_=font.fontid # 原字体
+                                fcur_=self.fontid[font] # 原字体
                         except:
                             pass
                         try:
@@ -565,7 +565,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             pass
                         if fcur_==None:
                             fcur_='china-ss' # 默认中文字体
-                        # print(font.fontid,fcur_,ch,font.char_width(ord(ch)))
+                        # print(self.fontid[font],fcur_,ch,font.char_width(ord(ch)))
                         adv=self.fontmap[fcur_].char_width(ord(ch))*size
                         ptr+=1
                     if fcur_!=fcur or vy_regex or x+adv>rt+0.1*size: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界（可能一整行都被符号化，这里需要考虑浮点误差）
@@ -582,7 +582,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             fix=varf[vid]
                         for vch in var[vid]: # 排版公式字符
                             vc=chr(vch.cid)
-                            ops+=f"/{vch.font.fontid} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm [<{raw_string(vch.font.fontid,vc)}>] TJ "
+                            ops+=f"/{self.fontid[vch.font]} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm [<{raw_string(self.fontid[vch.font],vc)}>] TJ "
                             if log.isEnabledFor(logging.DEBUG):
                                 lstk.append(LTLine(0.1,(_x,_y),(x+vch.x0-var[vid][0].x0,fix+y+vch.y0-var[vid][0].y0)))
                                 _x,_y=x+vch.x0-var[vid][0].x0,fix+y+vch.y0-var[vid][0].y0
