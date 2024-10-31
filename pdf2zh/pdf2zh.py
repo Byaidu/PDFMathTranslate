@@ -55,6 +55,7 @@ def extract_text(
     thread: int = 0,
     lang_in: str = "",
     lang_out: str = "",
+    service: str = "",
     **kwargs: Any,
 ) -> AnyIO:
     if not files:
@@ -184,6 +185,13 @@ def create_parser() -> argparse.ArgumentParser:
         type=str,
         default="zh-CN",
         help="The code of target language.",
+    )
+    parse_params.add_argument(
+        "--service",
+        "-s",
+        type=str,
+        default="google",
+        help="The service to use for translating.",
     )
     parse_params.add_argument(
         "--thread",

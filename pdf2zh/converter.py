@@ -16,12 +16,10 @@ from typing import (
 )
 import concurrent.futures
 import numpy as np
-import html
-import requests
 import unicodedata
-import tqdm.auto
 from tenacity import retry
 from pdf2zh import cache
+from pdf2zh.translator import BaseTranslator, GoogleTranslator, OllamaTranslator
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C")
 
@@ -70,22 +68,6 @@ from pdf2zh.utils import (
 )
 
 log = logging.getLogger(__name__)
-
-class Translator:
-    def __init__(self):
-        self.session = requests.Session()
-        self.base_link = "http://translate.google.com/m"
-        self.headers = {'User-Agent':'Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)'}
-    
-    def translate(self, to_translate, to_language="auto", from_language="auto"):
-        to_translate=to_translate[:5000] # Max Length
-        response = self.session.get(self.base_link, params={'tl':to_language,'sl':from_language,'q':to_translate}, headers=self.headers)
-        re_result = re.findall(r'(?s)class="(?:t0|result-container)">(.*?)<', response.text)
-        if len(re_result) == 0:
-            raise ValueError('Empty translation result')
-        else:
-            result = html.unescape(re_result[0])
-        return result
 
 class PDFLayoutAnalyzer(PDFTextDevice):
     cur_item: LTLayoutContainer
@@ -368,6 +350,7 @@ class TextConverter(PDFConverter[AnyIO]):
         layout = {},
         lang_in: str = "",
         lang_out: str = "",
+        service: str = "",
     ) -> None:
         super().__init__(rsrcmgr, outfp, codec=codec, pageno=pageno, laparams=laparams)
         self.showpageno = showpageno
@@ -376,9 +359,10 @@ class TextConverter(PDFConverter[AnyIO]):
         self.vchar = vchar
         self.thread = thread
         self.layout = layout
-        self.lang_in = lang_in
-        self.lang_out = lang_out
-        self.translator=Translator()
+        if service=='google':
+            self.translator: BaseTranslator = GoogleTranslator(service,lang_out,lang_in)
+        else:
+            self.translator: BaseTranslator = OllamaTranslator(service,lang_out,lang_in)
 
     def write_text(self, text: str) -> None:
         text = utils.compatible_encode_method(text, self.codec, "ignore")
@@ -510,10 +494,10 @@ class TextConverter(PDFConverter[AnyIO]):
             @retry
             def worker(s): # 多线程翻译
                 try:
-                    hash_key_paragraph = cache.deterministic_hash((s,self.lang_in,self.lang_out))
+                    hash_key_paragraph = cache.deterministic_hash((s,str(self.translator)))
                     new = cache.load_paragraph(hash_key, hash_key_paragraph) # 查询缓存
                     if new is None:
-                        new=self.translator.translate(s,self.lang_out,self.lang_in)
+                        new=self.translator.translate(s)
                         new=remove_control_characters(new)
                         cache.write_paragraph(hash_key, hash_key_paragraph, new)
                     return new
@@ -575,7 +559,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if lb and x+adv>rt+0.1*size: # 到达右边界且原文段落存在换行
                         x=lt
                         lang_space={'zh-CN':1.4,'zh-TW':1.4,'ja':1.1,'ko':1.2,'en':1.2,'it':1.1}
-                        y-=size*lang_space.get(self.lang_out,1.2)
+                        y-=size*lang_space.get(self.translator.lang_out,1.2)
                     if vy_regex: # 插入公式
                         fix=0
                         if fcur!=None: # 段落内公式修正纵向偏移

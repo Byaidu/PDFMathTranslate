@@ -45,6 +45,12 @@ pdf2zh example.pdf -p 1-3,5
 pdf2zh example.pdf -li en -lo ja
 ```
 
+### Translate with Ollama
+
+```bash
+pdf2zh example.pdf -s gemma2
+```
+
 ### Use regex to specify formula fonts and characters that need to be preserved
 
 Hint: Starting from `\ufb00` is English style ligature.

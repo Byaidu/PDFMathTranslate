@@ -26,6 +26,7 @@ setup(
         "tenacity",
         "doclayout-yolo",
         "numpy",
+        "ollama",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -47,6 +47,7 @@ def extract_text_to_fp(
     model = None,
     lang_in: str = "",
     lang_out: str = "",
+    service: str = "",
     **kwargs: Any,
 ) -> None:
     """Parses text from inf-file and writes to outfp file-like object.
@@ -105,6 +106,7 @@ def extract_text_to_fp(
             layout=layout,
             lang_in=lang_in,
             lang_out=lang_out,
+            service=service,
         )
 
     elif output_type == "xml":
@@ -152,7 +154,7 @@ def extract_text_to_fp(
         total_pages=len(pages)
     else:
         total_pages=page_count
-    for page in tqdm.auto.tqdm(PDFPage.get_pages(
+    for page in tqdm.tqdm(PDFPage.get_pages(
         inf,
         pages,
         maxpages=maxpages,
