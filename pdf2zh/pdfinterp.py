@@ -1058,15 +1058,15 @@ class PDFPageInterpreter:
                         # log.debug("exec: %s %r", name, args)
                         if len(args) == nargs:
                             func(*args)
-                            if not name in ['TJ','Tj','Tm','Tf']:
-                                p=" ".join([str(x).replace("\'","") for x in args])
+                            if not (name[0]=='T' or name in ['"',"'",'EI']): # 过滤 T 系列文字指令，因为 EI 的参数是 obj 所以也需要过滤（只在少数文档中画横线时使用）
+                                p=" ".join([f'{x:f}' if isinstance(x,float) else str(x).replace("\'","") for x in args])
                                 ops+=f'{p} {name} '
                     else:
                         # log.debug("exec: %s", name)
                         targs=func()
                         if targs==None:
                             targs=[]
-                        p=" ".join([str(x).replace("\'","") for x in targs])
+                        p=" ".join([f'{x:f}' if isinstance(x,float) else str(x).replace("\'","") for x in targs])
                         ops+=f'{p} {name} '
                 elif settings.STRICT:
                     error_msg = "Unknown operator: %r" % name

@@ -416,7 +416,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     cx,cy=np.clip(int(child.x0),0,w-1),np.clip(int(child.y0),0,h-1)
                     cls=layout[cy,cx]
                     # if log.isEnabledFor(logging.DEBUG):
-                    #     ops+=f'ET [] 0 d 0 J 0.1 w {child.x0} {child.y0} {child.x1-child.x0} {child.y1-child.y0} re S Q BT '
+                    #     ops+=f'ET [] 0 d 0 J 0.1 w {child.x0:f} {child.y0:f} {child.x1-child.x0:f} {child.y1-child.y0:f} re S Q BT '
                     if cls==0 or (cls==xt_cls and child.size<pstk[-1][4]*0.8) or vflag(fontname,child.get_text()) or (child.matrix[0]==0 and child.matrix[3]==0):
                         cur_v=True
                     if not cur_v: # 判定括号组是否属于公式
@@ -520,7 +520,7 @@ class TextConverter(PDFConverter[AnyIO]):
                 while True:
                     if ptr==len(new): # 到达段落结尾
                         if cstk:
-                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
+                            ops+=f'/{fcur} {size:f} Tf 1 0 0 1 {tx:f} {y:f} Tm [<{raw_string(fcur,cstk)}>] TJ '
                         break
                     vy_regex=re.match(r'\$?\s*v([\d\s]+)\$',new[ptr:],re.IGNORECASE) # 匹配 $vn$ 公式标记，前面的 $ 有的时候会被丢掉
                     mod=False # 当前公式是否为文字修饰符
@@ -554,7 +554,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         ptr+=1
                     if fcur_!=fcur or vy_regex or x+adv>rt+0.1*size: # 输出文字缓冲区：1.字体更新 2.插入公式 3.到达右边界（可能一整行都被符号化，这里需要考虑浮点误差）
                         if cstk:
-                            ops+=f'/{fcur} {size} Tf 1 0 0 1 {tx} {y} Tm [<{raw_string(fcur,cstk)}>] TJ '
+                            ops+=f'/{fcur} {size:f} Tf 1 0 0 1 {tx:f} {y:f} Tm [<{raw_string(fcur,cstk)}>] TJ '
                             cstk=''
                     if lb and x+adv>rt+0.1*size: # 到达右边界且原文段落存在换行
                         x=lt
@@ -566,13 +566,13 @@ class TextConverter(PDFConverter[AnyIO]):
                             fix=varf[vid]
                         for vch in var[vid]: # 排版公式字符
                             vc=chr(vch.cid)
-                            ops+=f"/{self.fontid[vch.font]} {vch.size} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0} {fix+y+vch.y0-var[vid][0].y0} Tm [<{raw_string(self.fontid[vch.font],vc)}>] TJ "
+                            ops+=f"/{self.fontid[vch.font]} {vch.size:f} Tf 1 0 0 1 {x+vch.x0-var[vid][0].x0:f} {fix+y+vch.y0-var[vid][0].y0:f} Tm [<{raw_string(self.fontid[vch.font],vc)}>] TJ "
                             if log.isEnabledFor(logging.DEBUG):
                                 lstk.append(LTLine(0.1,(_x,_y),(x+vch.x0-var[vid][0].x0,fix+y+vch.y0-var[vid][0].y0)))
                                 _x,_y=x+vch.x0-var[vid][0].x0,fix+y+vch.y0-var[vid][0].y0
                         for l in varl[vid]: # 排版公式线条
                             if l.linewidth<5: # hack
-                                ops+=f"ET q 1 0 0 1 {l.pts[0][0]+x-var[vid][0].x0} {l.pts[0][1]+fix+y-var[vid][0].y0} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
+                                ops+=f"ET q 1 0 0 1 {l.pts[0][0]+x-var[vid][0].x0:f} {l.pts[0][1]+fix+y-var[vid][0].y0:f} cm [] 0 d 0 J {l.linewidth:f} w 0 0 m {l.pts[1][0]-l.pts[0][0]:f} {l.pts[1][1]-l.pts[0][1]:f} l S Q BT "
                     else: # 插入文字缓冲区
                         if not cstk: # 单行开头
                             tx=x
@@ -591,7 +591,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         _x,_y=x,y
             for l in lstk: # 排版全局线条
                 if l.linewidth<5: # hack
-                    ops+=f"ET q 1 0 0 1 {l.pts[0][0]} {l.pts[0][1]} cm [] 0 d 0 J {l.linewidth} w 0 0 m {l.pts[1][0]-l.pts[0][0]} {l.pts[1][1]-l.pts[0][1]} l S Q BT "
+                    ops+=f"ET q 1 0 0 1 {l.pts[0][0]:f} {l.pts[0][1]:f} cm [] 0 d 0 J {l.linewidth:f} w 0 0 m {l.pts[1][0]-l.pts[0][0]:f} {l.pts[1][1]-l.pts[0][1]:f} l S Q BT "
             ops=f'BT {ops}ET '
             return ops
         ops=render(ltpage)
