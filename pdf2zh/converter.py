@@ -417,7 +417,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     cls=layout[cy,cx]
                     # if log.isEnabledFor(logging.DEBUG):
                     #     ops+=f'ET [] 0 d 0 J 0.1 w {child.x0:f} {child.y0:f} {child.x1-child.x0:f} {child.y1-child.y0:f} re S Q BT '
-                    if cls==0 or (cls==xt_cls and child.size<pstk[-1][4]*0.8) or vflag(fontname,child.get_text()) or (child.matrix[0]==0 and child.matrix[3]==0):
+                    if cls==0 or (cls==xt_cls and child.size<pstk[-1][4]*0.75) or vflag(fontname,child.get_text()) or (child.matrix[0]==0 and child.matrix[3]==0):
                         cur_v=True
                     if not cur_v: # 判定括号组是否属于公式
                         if vstk and child.get_text()=='(':
@@ -448,7 +448,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             sstk.append("")
                             pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False])
                     if not cur_v: # 文字入栈
-                        if child.size>pstk[-1][4]/0.8 or vflag(pstk[-1][5].fontname.split('+')[-1],'') or re.match(r'(.*Medi|.*Bold)',pstk[-1][5].fontname.split('+')[-1],re.IGNORECASE): # 小字体、公式或粗体开头，后续接文字，需要校正字体
+                        if child.size>pstk[-1][4]/0.75 or vflag(pstk[-1][5].fontname.split('+')[-1],'') or re.match(r'(.*Medi|.*Bold)',pstk[-1][5].fontname.split('+')[-1],re.IGNORECASE): # 小字体、公式或粗体开头，后续接文字，需要校正字体
                             pstk[-1][0]-=child.size-pstk[-1][4]
                             pstk[-1][4]=child.size
                             pstk[-1][5]=child.font
