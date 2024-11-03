@@ -558,8 +558,8 @@ class TextConverter(PDFConverter[AnyIO]):
                             cstk=''
                     if lb and x+adv>rt+0.1*size: # 到达右边界且原文段落存在换行
                         x=lt
-                        lang_space={'zh-CN':1.4,'zh-TW':1.4,'ja':1.1,'ko':1.2,'en':1.2,'it':1.1}
-                        y-=size*lang_space.get(self.translator.lang_out,1.2)
+                        lang_space={'zh-CN':1.4,'zh-TW':1.4,'ja':1.1,'ko':1.2,'en':1.2} # CJK
+                        y-=size*lang_space.get(self.translator.lang_out,1.1) # 小语种大多适配 1.1
                     if vy_regex: # 插入公式
                         fix=0
                         if fcur!=None: # 段落内公式修正纵向偏移
