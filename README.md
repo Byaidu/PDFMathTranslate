@@ -51,6 +51,8 @@ pdf2zh example.pdf -li en -lo ja
 
 ### Translate with Ollama
 
+See [Ollama](https://github.com/ollama/ollama).
+
 ```bash
 pdf2zh example.pdf -s gemma2
 ```
