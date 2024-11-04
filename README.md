@@ -11,17 +11,13 @@
   </a>
 </p>
 
-PDF scientific paper translation and bilingual comparison based on font rules and deep learning, preserving formula and figure layout.
+PDF scientific paper translation and bilingual comparison.
 
 - Retain formulas and charts.
 
 - Preserve table of contents.
 
 - Support multiple translation services.
-
-![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
-
-![image](https://github.com/user-attachments/assets/0e6d7e44-18cd-443a-8a84-db99edf2c268)
 
 ## Installation
 
@@ -64,6 +60,12 @@ pdf2zh example.pdf -s gemma2
 ```bash
 pdf2zh BDA3.pdf -f "(CM[^RT].*|MS.*|XY.*|MT.*|BL.*|.*0700|.*0500|.*Italic)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
+
+## Preview
+
+![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
+
+![image](https://github.com/user-attachments/assets/0e6d7e44-18cd-443a-8a84-db99edf2c268)
 
 ## Acknowledgement
 
