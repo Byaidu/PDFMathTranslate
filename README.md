@@ -13,6 +13,12 @@
 
 PDF scientific paper translation and bilingual comparison based on font rules and deep learning, preserving formula and figure layout.
 
+- Retain formulas and charts.
+
+- Preserve table of contents.
+
+- Support multiple translation services.
+
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
 ![image](https://github.com/user-attachments/assets/0e6d7e44-18cd-443a-8a84-db99edf2c268)
@@ -41,6 +47,8 @@ pdf2zh example.pdf -p 1-3,5
 
 ### Translate with the specified language
 
+See [Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages).
+
 ```bash
 pdf2zh example.pdf -li en -lo ja
 ```
@@ -52,8 +60,6 @@ pdf2zh example.pdf -s gemma2
 ```
 
 ### Use regex to specify formula fonts and characters that need to be preserved
-
-Hint: Starting from `\ufb00` is English style ligature.
 
 ```bash
 pdf2zh BDA3.pdf -f "(CM[^RT].*|MS.*|XY.*|MT.*|BL.*|.*0700|.*0500|.*Italic)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
