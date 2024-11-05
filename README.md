@@ -13,11 +13,11 @@
 
 PDF scientific paper translation and bilingual comparison.
 
-- Retain formulas and charts.
+- 📊 Retain formulas and charts.
 
-- Preserve table of contents.
+- 📄 Preserve table of contents.
 
-- Support multiple translation services.
+- 🌐 Support multiple translation services.
 
 ## Installation
 
