@@ -69,6 +69,8 @@ pdf2zh BDA3.pdf -f "(CM[^RT].*|MS.*|XY.*|MT.*|BL.*|.*0700|.*0500|.*Italic)" -c "
 
 ![image](https://github.com/user-attachments/assets/0e6d7e44-18cd-443a-8a84-db99edf2c268)
 
+![image](https://github.com/user-attachments/assets/5fe6af83-2f5b-47b1-9dd1-4aee6bc409de)
+
 ## Acknowledgement
 
 Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
