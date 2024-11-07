@@ -21,6 +21,8 @@ PDF scientific paper translation and bilingual comparison.
 
 ## Installation
 
+Require Python version >=3.8, <=3.11
+
 ```bash
 pip install -U "pdf2zh>=1.5.3"
 ```
