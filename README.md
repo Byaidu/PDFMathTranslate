@@ -22,7 +22,7 @@ PDF scientific paper translation and bilingual comparison.
 ## Installation
 
 ```bash
-pip install "pdf2zh>=1.5.3"
+pip install -U "pdf2zh>=1.5.3"
 ```
 
 ## Usage
