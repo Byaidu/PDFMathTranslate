@@ -537,11 +537,12 @@ class TextConverter(PDFConverter[AnyIO]):
                         ch=new[ptr]
                         # if font.char_width(ord(ch)):
                         fcur_=None
-                        try:
-                            if font.widths.get(ord(ch)) and font.to_unichr(ord(ch))==ch:
-                                fcur_=self.fontid[font] # 原字体
-                        except:
-                            pass
+                        # 原字体编码容易出问题，这里直接放弃掉
+                        # try:
+                        #     if font.widths.get(ord(ch)) and font.to_unichr(ord(ch))==ch:
+                        #         fcur_=self.fontid[font] # 原字体
+                        # except:
+                        #     pass
                         try:
                             if fcur_==None and self.fontmap['tiro'].to_unichr(ord(ch))==ch:
                                 fcur_='tiro' # 默认英文字体
