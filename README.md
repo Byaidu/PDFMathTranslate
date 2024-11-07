@@ -13,11 +13,11 @@
 
 PDF scientific paper translation and bilingual comparison.
 
-- Retain formulas and charts.
+- 📊 Retain formulas and charts.
 
-- Preserve table of contents.
+- 📄 Preserve table of contents.
 
-- Support multiple translation services.
+- 🌐 Support multiple translation services.
 
 ## Installation
 
@@ -51,6 +51,8 @@ pdf2zh example.pdf -li en -lo ja
 
 ### Translate with Ollama
 
+See [Ollama](https://github.com/ollama/ollama).
+
 ```bash
 pdf2zh example.pdf -s gemma2
 ```
@@ -66,6 +68,8 @@ pdf2zh BDA3.pdf -f "(CM[^RT].*|MS.*|XY.*|MT.*|BL.*|.*0700|.*0500|.*Italic)" -c "
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
 ![image](https://github.com/user-attachments/assets/0e6d7e44-18cd-443a-8a84-db99edf2c268)
+
+![image](https://github.com/user-attachments/assets/5fe6af83-2f5b-47b1-9dd1-4aee6bc409de)
 
 ## Acknowledgement
 
