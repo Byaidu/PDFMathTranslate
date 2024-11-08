@@ -103,10 +103,10 @@ def extract_text(
 
         for obj_id,ops_new in obj_patch.items():
             # ops_old=doc_en.xref_stream(obj_id)
-            doc_en.update_stream(obj_id,ops_new.encode())
             # print(obj_id)
             # print(ops_old)
             # print(ops_new.encode())
+            doc_en.update_stream(obj_id,ops_new.encode())
 
         doc_zh = doc_en
         doc_dual = pymupdf.open(f'{filename}-en.pdf')
