@@ -19,7 +19,11 @@ import numpy as np
 import unicodedata
 from tenacity import retry
 from pdf2zh import cache
-from pdf2zh.translator import BaseTranslator, GoogleTranslator, OllamaTranslator
+from pdf2zh.translator import (
+    BaseTranslator,
+    GoogleTranslator,
+    DeepLXTranslator, OllamaTranslator,
+)
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C")
 
@@ -359,10 +363,18 @@ class TextConverter(PDFConverter[AnyIO]):
         self.vchar = vchar
         self.thread = thread
         self.layout = layout
-        if service=='google':
-            self.translator: BaseTranslator = GoogleTranslator(service,lang_out,lang_in)
+        if service == "google":
+            self.translator: BaseTranslator = GoogleTranslator(
+                service, lang_out, lang_in
+            )
+        elif service == "deeplx":
+            self.translator: BaseTranslator = DeepLXTranslator(
+                service, lang_out, lang_in
+            )
         else:
-            self.translator: BaseTranslator = OllamaTranslator(service,lang_out,lang_in)
+            self.translator: BaseTranslator = OllamaTranslator(
+                service, lang_out, lang_in
+            )
 
     def write_text(self, text: str) -> None:
         text = utils.compatible_encode_method(text, self.codec, "ignore")

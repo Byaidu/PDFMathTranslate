@@ -59,6 +59,19 @@ See [Ollama](https://github.com/ollama/ollama).
 pdf2zh example.pdf -s gemma2
 ```
 
+### Translate with DeepLX
+
+See [DeepLX](https://github.com/OwO-Network/DeepLX).
+
+1. Set ENVs to construct an endpoint like `{DEEPLX_URL}/{DEEPLX_TOKEN}/translate`:
+   - `DEEPLX_URL`, e.g., `export DEEPLX_URL=https://api.deeplx.org`
+   - `DEEPLX_TOKEN`, e.g., `export DEEPLX_TOKEN=ABCDEFG`
+
+2. Run:
+```bash
+pdf2zh example.pdf -s deeplx
+```
+
 ### Use regex to specify formula fonts and characters that need to be preserved
 
 ```bash
