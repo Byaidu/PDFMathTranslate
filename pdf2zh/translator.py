@@ -1,7 +1,11 @@
-import re
 import html
-import requests
+import json
+import re
+from os import getenv
+
 import ollama
+import requests
+
 
 class BaseTranslator:
     def __init__(self,service,lang_out,lang_in):
@@ -34,6 +38,63 @@ class GoogleTranslator(BaseTranslator):
         else:
             result=html.unescape(re_result[0])
         return result
+
+
+class DeepLXTranslator(BaseTranslator):
+    def __init__(
+        self,
+        service,
+        lang_out,
+        lang_in,
+    ):
+        super().__init__(service, lang_out, lang_in)
+        self.session = requests.Session()
+        self.base_link = ""
+        self.model = service
+        self.headers = {
+            "Content-Type": "application/json; charset=utf-8",
+        }
+
+    def translate(self, text):
+        text = text[:5000]  # Max Length
+        if getenv("DEEPLX_TOKEN"):
+            DEEPLX_TOKEN = getenv("DEEPLX_TOKEN")
+        else:
+            DEEPLX_TOKEN = ""
+        if DEEPLX_TOKEN == "":
+            raise ValueError("No valid env `DEEPLX_TOKEN`")
+        self.base_link = f"https://api.deeplx.org/{DEEPLX_TOKEN}/translate"
+
+        response = self.session.post(
+            self.base_link,
+            json.dumps(
+                {
+                    "target_lang": "zh",
+                    # "source_lang": self.lang_in,
+                    "text": text,
+                }
+            ),
+            headers=self.headers,
+        )
+        # re_result = re.findall(
+        #     r'(?s)class="(?:t0|result-container)">(.*?)<', response.text
+        # )
+        if response.status_code == 200:
+            result = json.loads(response.text)
+        else:
+            raise ValueError("HTTP Error")
+        try:
+            result = result["data"]
+            return "Deepl" + result
+        except KeyError:
+            result = ""
+            raise ValueError("No valid key in DeepLX's response")
+        # if len(result) == 0:
+        #     raise ValueError("Empty translation result")
+        # else:
+        #     result = html.unescape(result[0])
+        # return result
+
 
 class OllamaTranslator(BaseTranslator):
     def __init__(self,service,lang_out,lang_in):
