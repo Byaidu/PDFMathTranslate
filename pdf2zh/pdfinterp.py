@@ -1066,7 +1066,7 @@ class PDFPageInterpreter:
                         targs=func()
                         if targs==None:
                             targs=[]
-                        if not name in ['EMC']:
+                        if not (name[0]=='T' or name in ['BI','ID','EMC']):
                             p=" ".join([f'{x:f}' if isinstance(x,float) else str(x).replace("'","") for x in targs])
                             ops+=f'{p} {name} '
                 elif settings.STRICT:
