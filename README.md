@@ -11,6 +11,9 @@ English | [简体中文](README_zh-CN.md)
   <a href="./LICENSE">
     <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/>
   </a>
+  <a href="https://t.me/+kXx8BQCnUTc3NDM9">
+    <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"/>
+  </a>
 </p>
 
 PDF scientific paper translation and bilingual comparison.
