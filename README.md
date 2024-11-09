@@ -100,6 +100,8 @@ Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTran
 
 Layout parsing: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
+Document standard: [PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
+
 ## Star History
 
 <a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">

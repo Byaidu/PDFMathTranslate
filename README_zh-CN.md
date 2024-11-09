@@ -100,6 +100,8 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 
 布局解析: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
+文档标准: [PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
+
 ## Star History
 
 <a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">
