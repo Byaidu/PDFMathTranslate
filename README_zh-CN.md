@@ -1,4 +1,4 @@
-English | [简体中文](README_zh-CN.md)
+[English](README.md) | 简体中文
 
 # PDFMathTranslate
 
@@ -13,74 +13,74 @@ English | [简体中文](README_zh-CN.md)
   </a>
 </p>
 
-PDF scientific paper translation and bilingual comparison.
+PDF 文档翻译及双语对照
 
-- 📊 Retain formulas and charts.
+- 📊 保留公式和图表
 
-- 📄 Preserve table of contents.
+- 📄 保留可索引目录
 
-- 🌐 Support multiple translation services.
+- 🌐 支持多种翻译服务
 
-## Installation
+## 安装
 
-Require Python version >=3.8, <=3.11
+要求 Python 版本 >=3.8, <=3.11
 
 ```bash
 pip install -U "pdf2zh>=1.5.3"
 ```
 
-## Usage
+## 使用
 
-Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory.
+命令行中执行翻译指令，在工作目录下生成翻译文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`。
 
-### Translate the entire document
+### 翻译完整文档
 
 ```bash
 pdf2zh example.pdf
 ```
 
-### Translate part of the document
+### 翻译部分文档
 
 ```bash
 pdf2zh example.pdf -p 1-3,5
 ```
 
-### Translate with the specified language
+### 使用指定语言翻译
 
-See [Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages).
+参考 [Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages)
 
 ```bash
 pdf2zh example.pdf -li en -lo ja
 ```
 
-### Translate with Ollama
+### 使用 Ollama 翻译
 
-See [Ollama](https://github.com/ollama/ollama).
+参考 [Ollama](https://github.com/ollama/ollama)
 
 ```bash
 pdf2zh example.pdf -s gemma2
 ```
 
-### Translate with DeepLX
+### 使用 DeepLX 翻译
 
-See [DeepLX](https://github.com/OwO-Network/DeepLX).
+参考 [DeepLX](https://github.com/OwO-Network/DeepLX)
 
-1. Set ENVs to construct an endpoint like `{DEEPLX_URL}/{DEEPLX_TOKEN}/translate`:
+1. 设置环境变量构建 endpoint：`{DEEPLX_URL}/{DEEPLX_TOKEN}/translate`:
    - `DEEPLX_URL`, e.g., `export DEEPLX_URL=https://api.deeplx.org`
    - `DEEPLX_TOKEN`, e.g., `export DEEPLX_TOKEN=ABCDEFG`
 
-2. Run:
+2. 执行:
 ```bash
 pdf2zh example.pdf -s deeplx
 ```
 
-### Use regex to specify formula fonts and characters that need to be preserved
+### 使用正则表达式指定需要保留样式的字体和字符
 
 ```bash
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
 
-## Preview
+## 预览
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
@@ -88,17 +88,17 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 
 ![image](https://github.com/user-attachments/assets/5fe6af83-2f5b-47b1-9dd1-4aee6bc409de)
 
-## Acknowledgement
+## 致谢
 
-Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
+文档合并: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
-Document parsing: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
+文档解析: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 
-Document extraction: [MinerU](https://github.com/opendatalab/MinerU)
+文档提取: [MinerU](https://github.com/opendatalab/MinerU)
 
-Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
+多线程翻译: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
-Layout parsing: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
+布局解析: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
 ## Star History
 
