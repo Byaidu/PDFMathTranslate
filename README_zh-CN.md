@@ -5,15 +5,12 @@
 <p align="center">
   <!-- PyPI -->
   <a href="https://pypi.org/project/pdf2zh/">
-    <img src="https://img.shields.io/pypi/v/pdf2zh"/>
-  </a>
+    <img src="https://img.shields.io/pypi/v/pdf2zh"/></a>
   <!-- License -->
   <a href="./LICENSE">
-    <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/>
-  </a>
+    <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/></a>
   <a href="https://t.me/+kXx8BQCnUTc3NDM9">
-    <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"/>
-  </a>
+    <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"/></a>
 </p>
 
 PDF 文档翻译及双语对照
@@ -93,17 +90,17 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 
 ## 致谢
 
-文档合并: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
+文档合并：[PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
-文档解析: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
+文档解析：[Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 
-文档提取: [MinerU](https://github.com/opendatalab/MinerU)
+文档提取：[MinerU](https://github.com/opendatalab/MinerU)
 
-多线程翻译: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
+多线程翻译：[MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
-布局解析: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
+布局解析：[DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
-文档标准: [PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
+文档标准：[PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
 
 ## Star History
 
