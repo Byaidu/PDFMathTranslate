@@ -31,7 +31,7 @@ pip install -U "pdf2zh>=1.5.3"
 
 ## 使用
 
-命令行中执行翻译指令，在工作目录下生成翻译文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`。
+命令行中执行翻译指令，在工作目录下生成翻译文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`
 
 ### 翻译完整文档
 
@@ -69,7 +69,7 @@ pdf2zh example.pdf -s gemma2
    - `DEEPLX_URL`, e.g., `export DEEPLX_URL=https://api.deeplx.org`
    - `DEEPLX_TOKEN`, e.g., `export DEEPLX_TOKEN=ABCDEFG`
 
-2. 执行:
+2. 执行：
 ```bash
 pdf2zh example.pdf -s deeplx
 ```
