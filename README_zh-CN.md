@@ -45,7 +45,7 @@ pdf2zh example.pdf
 pdf2zh example.pdf -p 1-3,5
 ```
 
-### 使用特定语言翻译
+### 使用指定语言翻译
 
 参考 [Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages)
 
@@ -90,15 +90,15 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 
 ## 致谢
 
-Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
+文档合并: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
-Document parsing: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
+文档解析: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 
-Document extraction: [MinerU](https://github.com/opendatalab/MinerU)
+文档提取: [MinerU](https://github.com/opendatalab/MinerU)
 
-Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
+多线程翻译: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
-Layout parsing: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
+布局解析: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
 ## Star History
 
