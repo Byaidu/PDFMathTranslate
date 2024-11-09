@@ -65,7 +65,7 @@ pdf2zh example.pdf -s gemma2
 
 参考 [DeepLX](https://github.com/OwO-Network/DeepLX)
 
-1. 设置环境变量构建 endpoint：`{DEEPLX_URL}/{DEEPLX_TOKEN}/translate`:
+1. 设置环境变量构建 endpoint：`{DEEPLX_URL}/{DEEPLX_TOKEN}/translate`
    - `DEEPLX_URL`, e.g., `export DEEPLX_URL=https://api.deeplx.org`
    - `DEEPLX_TOKEN`, e.g., `export DEEPLX_TOKEN=ABCDEFG`
 
