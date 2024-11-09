@@ -514,7 +514,10 @@ class TextConverter(PDFConverter[AnyIO]):
                         cache.write_paragraph(hash_key, hash_key_paragraph, new)
                     return new
                 except BaseException as e:
-                    log.exception(e,exc_info=False)
+                    if log.isEnabledFor(logging.DEBUG):
+                        log.exception(e)
+                    else:
+                        log.exception(e,exc_info=False)
                     raise e
             with concurrent.futures.ThreadPoolExecutor(max_workers=self.thread) as executor:
                 news = list(executor.map(worker, sstk))
