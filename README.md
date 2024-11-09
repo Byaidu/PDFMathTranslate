@@ -77,7 +77,7 @@ pdf2zh example.pdf -s deeplx
 ### Use regex to specify formula fonts and characters that need to be preserved
 
 ```bash
-pdf2zh BDA3.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
+pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
 
 ## Preview
