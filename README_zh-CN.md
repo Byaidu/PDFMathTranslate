@@ -116,6 +116,12 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 
 文档标准：[PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
 
+## 贡献者
+
+<a href="https://github.com/Byaidu/PDFMathTranslate/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Byaidu/PDFMathTranslate" />
+</a>
+
 ## Star History
 
 <a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">

@@ -116,6 +116,12 @@ Layout parsing: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
 Document standard: [PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
 
+## Contributors
+
+<a href="https://github.com/Byaidu/PDFMathTranslate/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Byaidu/PDFMathTranslate" />
+</a>
+
 ## Star History
 
 <a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">
