@@ -53,17 +53,6 @@ See [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v
 pdf2zh example.pdf -li en -lo ja
 ```
 
-### Translate with Ollama
-
-See [Ollama](https://github.com/ollama/ollama).
-
-Set ENVs to construct an endpoint like: `{OLLAMA_HOST}/api/chat`
-- `OLLAMA_HOST` (Optional), e.g., `export OLLAMA_HOST=https://localhost:11434`
-
-```bash
-pdf2zh example.pdf -s ollama:gemma2
-```
-
 ### Translate with DeepL/DeepLX
 
 See [DeepLX](https://github.com/OwO-Network/DeepLX).
@@ -74,6 +63,17 @@ Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/{DEEPL_AUTH_KEY}/tra
 
 ```bash
 pdf2zh example.pdf -s deepl
+```
+
+### Translate with Ollama
+
+See [Ollama](https://github.com/ollama/ollama).
+
+Set ENVs to construct an endpoint like: `{OLLAMA_HOST}/api/chat`
+- `OLLAMA_HOST` (Optional), e.g., `export OLLAMA_HOST=https://localhost:11434`
+
+```bash
+pdf2zh example.pdf -s ollama:gemma2
 ```
 
 ### Translate with OpenAI/SiliconCloud

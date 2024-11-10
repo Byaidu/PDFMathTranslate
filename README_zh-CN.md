@@ -53,17 +53,6 @@ pdf2zh example.pdf -p 1-3,5
 pdf2zh example.pdf -li en -lo ja
 ```
 
-### 使用 Ollama 翻译
-
-参考 [Ollama](https://github.com/ollama/ollama)
-
-设置环境变量构建接入点：`{OLLAMA_HOST}/api/chat`
-- `OLLAMA_HOST`（可选）, e.g., `export OLLAMA_HOST=https://localhost:11434`
-
-```bash
-pdf2zh example.pdf -s ollama:gemma2
-```
-
 ### 使用 DeepL/DeepLX 翻译
 
 参考 [DeepLX](https://github.com/OwO-Network/DeepLX)
@@ -74,6 +63,17 @@ pdf2zh example.pdf -s ollama:gemma2
 
 ```bash
 pdf2zh example.pdf -s deepl
+```
+
+### 使用 Ollama 翻译
+
+参考 [Ollama](https://github.com/ollama/ollama)
+
+设置环境变量构建接入点：`{OLLAMA_HOST}/api/chat`
+- `OLLAMA_HOST`（可选）, e.g., `export OLLAMA_HOST=https://localhost:11434`
+
+```bash
+pdf2zh example.pdf -s ollama:gemma2
 ```
 
 ### 使用 OpenAI/SiliconCloud 翻译

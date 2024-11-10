@@ -27,6 +27,8 @@ setup(
         "doclayout-yolo",
         "numpy",
         "ollama",
+        "deepl",
+        "openai",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
