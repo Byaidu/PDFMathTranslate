@@ -25,6 +25,8 @@ PDF scientific paper translation and bilingual comparison.
 
 - 🌐 Support multiple translation services.
 
+Feel free to provide feedback in [issues](https://github.com/Byaidu/PDFMathTranslate/issues) or [user group](https://t.me/+Z9_SgnxmsmA5NzBl).
+
 ## Installation
 
 Require Python version <=3.12
