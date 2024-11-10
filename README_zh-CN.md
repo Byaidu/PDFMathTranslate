@@ -47,7 +47,7 @@ pdf2zh example.pdf -p 1-3,5
 
 ### 使用指定语言翻译
 
-参考 [Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages)
+参考 [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages), [DeepL Languages Codes](https://developers.deepl.com/docs/resources/supported-languages)
 
 ```bash
 pdf2zh example.pdf -li en -lo ja
@@ -57,21 +57,35 @@ pdf2zh example.pdf -li en -lo ja
 
 参考 [Ollama](https://github.com/ollama/ollama)
 
+设置环境变量构建接入点：`{OLLAMA_HOST}/api/chat`
+- `OLLAMA_HOST`（可选）, e.g., `export OLLAMA_HOST=https://localhost:11434`
+
 ```bash
-pdf2zh example.pdf -s gemma2
+pdf2zh example.pdf -s ollama:gemma2
 ```
 
-### 使用 DeepLX 翻译
+### 使用 DeepL/DeepLX 翻译
 
 参考 [DeepLX](https://github.com/OwO-Network/DeepLX)
 
-1. 设置环境变量构建 endpoint：`{DEEPLX_URL}/{DEEPLX_TOKEN}/translate`
-   - `DEEPLX_URL`, e.g., `export DEEPLX_URL=https://api.deeplx.org`
-   - `DEEPLX_TOKEN`, e.g., `export DEEPLX_TOKEN=ABCDEFG`
+设置环境变量构建接入点：`{DEEPL_SERVER_URL}/{DEEPL_AUTH_KEY}/translate`
+- `DEEPL_SERVER_URL`（可选）, e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
+- `DEEPL_AUTH_KEY`, e.g., `export DEEPL_AUTH_KEY=xxx`
 
-2. 执行：
 ```bash
-pdf2zh example.pdf -s deeplx
+pdf2zh example.pdf -s deepl
+```
+
+### 使用 OpenAI/SiliconCloud 翻译
+
+参考 [OpenAI](https://platform.openai.com/docs/overview)
+
+设置环境变量构建接入点：`{OPENAI_BASE_URL}/chat/completions`
+- `OPENAI_BASE_URL`（可选）, e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1`
+- `OPENAI_API_KEY`, e.g., `export OPENAI_API_KEY=xxx`
+
+```bash
+pdf2zh example.pdf -s openai:gpt-4o
 ```
 
 ### 使用正则表达式指定需要保留样式的字体和字符

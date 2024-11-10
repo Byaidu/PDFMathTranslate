@@ -47,7 +47,7 @@ pdf2zh example.pdf -p 1-3,5
 
 ### Translate with the specified language
 
-See [Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages).
+See [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages), [DeepL Languages Codes](https://developers.deepl.com/docs/resources/supported-languages).
 
 ```bash
 pdf2zh example.pdf -li en -lo ja
@@ -57,21 +57,35 @@ pdf2zh example.pdf -li en -lo ja
 
 See [Ollama](https://github.com/ollama/ollama).
 
+Set ENVs to construct an endpoint like: `{OLLAMA_HOST}/api/chat`
+- `OLLAMA_HOST` (Optional), e.g., `export OLLAMA_HOST=https://localhost:11434`
+
 ```bash
-pdf2zh example.pdf -s gemma2
+pdf2zh example.pdf -s ollama:gemma2
 ```
 
-### Translate with DeepLX
+### Translate with DeepL/DeepLX
 
 See [DeepLX](https://github.com/OwO-Network/DeepLX).
 
-1. Set ENVs to construct an endpoint like `{DEEPLX_URL}/{DEEPLX_TOKEN}/translate`:
-   - `DEEPLX_URL`, e.g., `export DEEPLX_URL=https://api.deeplx.org`
-   - `DEEPLX_TOKEN`, e.g., `export DEEPLX_TOKEN=ABCDEFG`
+Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/{DEEPL_AUTH_KEY}/translate`
+- `DEEPL_SERVER_URL` (Optional), e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
+- `DEEPL_AUTH_KEY`, e.g., `export DEEPL_AUTH_KEY=xxx`
 
-2. Run:
 ```bash
-pdf2zh example.pdf -s deeplx
+pdf2zh example.pdf -s deepl
+```
+
+### Translate with OpenAI/SiliconCloud
+
+See [OpenAI](https://platform.openai.com/docs/overview).
+
+Set ENVs to construct an endpoint like: `{OPENAI_BASE_URL}/chat/completions`
+- `OPENAI_BASE_URL` (Optional), e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1`
+- `OPENAI_API_KEY`, e.g., `export OPENAI_API_KEY=xxx`
+
+```bash
+pdf2zh example.pdf -s openai:gpt-4o
 ```
 
 ### Use regex to specify formula fonts and characters that need to be preserved

@@ -17,12 +17,14 @@ from typing import (
 import concurrent.futures
 import numpy as np
 import unicodedata
-from tenacity import retry
+from tenacity import retry, wait_fixed
 from pdf2zh import cache
 from pdf2zh.translator import (
     BaseTranslator,
     GoogleTranslator,
-    DeepLXTranslator, OllamaTranslator,
+    DeepLTranslator,
+    OllamaTranslator,
+    OpenAITranslator,
 )
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C")
@@ -363,18 +365,25 @@ class TextConverter(PDFConverter[AnyIO]):
         self.vchar = vchar
         self.thread = thread
         self.layout = layout
-        if service == "google":
+        param=service.split(':',1)
+        if param[0] == "google":
             self.translator: BaseTranslator = GoogleTranslator(
-                service, lang_out, lang_in
+                service, lang_out, lang_in, None
             )
-        elif service == "deeplx":
-            self.translator: BaseTranslator = DeepLXTranslator(
-                service, lang_out, lang_in
+        elif param[0] == "deepl":
+            self.translator: BaseTranslator = DeepLTranslator(
+                service, lang_out, lang_in, None
+            )
+        elif param[0] == "ollama":
+            self.translator: BaseTranslator = OllamaTranslator(
+                service, lang_out, lang_in, param[1]
+            )
+        elif param[0] == 'openai':
+            self.translator: BaseTranslator = OpenAITranslator(
+                service, lang_out, lang_in, param[1]
             )
         else:
-            self.translator: BaseTranslator = OllamaTranslator(
-                service, lang_out, lang_in
-            )
+            raise ValueError("Unsupported translation service")
 
     def write_text(self, text: str) -> None:
         text = utils.compatible_encode_method(text, self.codec, "ignore")
@@ -503,7 +512,7 @@ class TextConverter(PDFConverter[AnyIO]):
             log.debug('\n==========[SSTACK]==========\n')
             hash_key=cache.deterministic_hash("PDFMathTranslate")
             cache.create_cache(hash_key)
-            @retry
+            @retry(wait=wait_fixed(1))
             def worker(s): # 多线程翻译
                 try:
                     hash_key_paragraph = cache.deterministic_hash((s,str(self.translator)))

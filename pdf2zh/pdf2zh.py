@@ -180,14 +180,14 @@ def create_parser() -> argparse.ArgumentParser:
         "--lang-in",
         "-li",
         type=str,
-        default="en",
+        default="auto",
         help="The code of source language.",
     )
     parse_params.add_argument(
         "--lang-out",
         "-lo",
         type=str,
-        default="zh-CN",
+        default="auto",
         help="The code of target language.",
     )
     parse_params.add_argument(
