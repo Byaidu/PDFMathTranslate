@@ -25,6 +25,8 @@ PDF 文档翻译及双语对照
 
 - 🌐 支持多种翻译服务
 
+欢迎在 [issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [user group](https://t.me/+Z9_SgnxmsmA5NzBl) 中提供反馈
+
 ## 安装
 
 要求 Python 版本 <=3.12
