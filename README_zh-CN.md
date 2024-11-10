@@ -1,8 +1,10 @@
+<div align="center">
+
 [English](README.md) | 简体中文
 
 # PDFMathTranslate
 
-<p align="center">
+<p>
   <!-- PyPI -->
   <a href="https://pypi.org/project/pdf2zh/">
     <img src="https://img.shields.io/pypi/v/pdf2zh"/></a>
@@ -12,6 +14,8 @@
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
     <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"/></a>
 </p>
+
+</div>
 
 PDF 文档翻译及双语对照
 
