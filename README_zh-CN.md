@@ -37,7 +37,7 @@ pip install pdf2zh
 
 ## 使用
 
-命令行中执行翻译指令，在工作目录下生成翻译文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`
+命令行中执行翻译指令，在工作目录下生成翻译文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 作为翻译服务
 
 ### 翻译完整文档
 

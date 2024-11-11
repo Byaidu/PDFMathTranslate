@@ -37,7 +37,7 @@ pip install pdf2zh
 
 ## Usage
 
-Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory.
+Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory. Use Google as the default translation service.
 
 ### Translate the entire document
 
