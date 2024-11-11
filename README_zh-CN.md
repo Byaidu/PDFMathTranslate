@@ -29,7 +29,7 @@ PDF 文档翻译及双语对照
 
 ## 安装
 
-要求 Python 版本 <=3.12
+要求 Python 版本 >=3.8, <=3.12
 
 ```bash
 pip install pdf2zh

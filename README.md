@@ -29,7 +29,7 @@ Feel free to provide feedback in [issues](https://github.com/Byaidu/PDFMathTrans
 
 ## Installation
 
-Require Python version <=3.12
+Require Python version >=3.8, <=3.12
 
 ```bash
 pip install pdf2zh
