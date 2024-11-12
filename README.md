@@ -63,7 +63,7 @@ pdf2zh example.pdf -li en -lo ja
 
 ### Translate with DeepL/DeepLX
 
-See [DeepLX](https://github.com/OwO-Network/DeepLX).
+See [DeepLX](https://github.com/OwO-Network/DeepLX)
 
 Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/{DEEPL_AUTH_KEY}/translate`
 - `DEEPL_SERVER_URL` (Optional), e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
@@ -75,7 +75,7 @@ pdf2zh example.pdf -s deepl
 
 ### Translate with Ollama
 
-See [Ollama](https://github.com/ollama/ollama).
+See [Ollama](https://github.com/ollama/ollama)
 
 Set ENVs to construct an endpoint like: `{OLLAMA_HOST}/api/chat`
 - `OLLAMA_HOST` (Optional), e.g., `export OLLAMA_HOST=https://localhost:11434`
@@ -84,9 +84,9 @@ Set ENVs to construct an endpoint like: `{OLLAMA_HOST}/api/chat`
 pdf2zh example.pdf -s ollama:gemma2
 ```
 
-### Translate with OpenAI/SiliconCloud
+### Translate with OpenAI/SiliconCloud/Zhipu
 
-See [OpenAI](https://platform.openai.com/docs/overview).
+See [SiliconCloud](https://docs.siliconflow.cn/quickstart), [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)
 
 Set ENVs to construct an endpoint like: `{OPENAI_BASE_URL}/chat/completions`
 - `OPENAI_BASE_URL` (Optional), e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1`

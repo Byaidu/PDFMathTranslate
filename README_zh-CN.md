@@ -86,7 +86,7 @@ pdf2zh example.pdf -s ollama:gemma2
 
 ### 使用 OpenAI/SiliconCloud 翻译
 
-参考 [OpenAI](https://platform.openai.com/docs/overview)
+参考 [SiliconCloud](https://docs.siliconflow.cn/quickstart), [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)
 
 设置环境变量构建接入点：`{OPENAI_BASE_URL}/chat/completions`
 - `OPENAI_BASE_URL`（可选）, e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1`
