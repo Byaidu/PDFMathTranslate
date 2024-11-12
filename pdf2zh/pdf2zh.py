@@ -87,15 +87,15 @@ def extract_text(
         xreflen = doc_en.xref_length()
         for xref in range(1, xreflen):
             for label in ['Resources/','']: # 可能是基于 xobj 的 res
-                font_res=doc_en.xref_get_key(xref,f'{label}Font')
-                if font_res[0]=='dict':
-                    for font in font_list:
-                        font_exist=doc_en.xref_get_key(xref,f'{label}Font/{font}')
-                        if font_exist[0]=='null':
-                            try:
+                try: # xref 读写可能出错
+                    font_res=doc_en.xref_get_key(xref,f'{label}Font')
+                    if font_res[0]=='dict':
+                        for font in font_list:
+                            font_exist=doc_en.xref_get_key(xref,f'{label}Font/{font}')
+                            if font_exist[0]=='null':
                                 doc_en.xref_set_key(xref,f'{label}Font/{font}',f'{font_id[font]} 0 R')
-                            except:
-                                pass
+                except:
+                    pass
         doc_en.save(f'{filename}-en.pdf')
 
         with open(f'{filename}-en.pdf', "rb") as fp:
