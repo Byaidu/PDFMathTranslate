@@ -8,6 +8,8 @@ English | [简体中文](README_zh-CN.md)
   <!-- PyPI -->
   <a href="https://pypi.org/project/pdf2zh/">
     <img src="https://img.shields.io/pypi/v/pdf2zh"/></a>
+  <a href="https://pepy.tech/projects/pdf2zh">
+    <img src="https://static.pepy.tech/badge/pdf2zh"></a>
   <!-- License -->
   <a href="./LICENSE">
     <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/></a>
