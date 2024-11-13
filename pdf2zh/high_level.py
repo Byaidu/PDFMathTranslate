@@ -21,6 +21,7 @@ from pdf2zh.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdf2zh.pdfpage import PDFPage
 from pdf2zh.utils import AnyIO, FileOrName, open_filename
 import numpy as np
+from pymupdf import Document
 
 
 def extract_text_to_fp(
@@ -43,7 +44,7 @@ def extract_text_to_fp(
     vfont: str = "",
     vchar: str = "",
     thread: int = 0,
-    doc_en = None,
+    doc_en: Document = None,
     model = None,
     lang_in: str = "",
     lang_out: str = "",
@@ -184,6 +185,11 @@ def extract_text_to_fp(
         layout[page.pageno]=box
         # print(page.number,page_layout)
         page.rotate = (page.rotate + rotation) % 360
+        # 新建一个 xref 存放新指令流
+        page.page_xref = doc_en.get_new_xref() # hack
+        doc_en.update_object(page.page_xref, "<<>>")
+        doc_en.update_stream(page.page_xref,b'')
+        doc_en[page.pageno].set_contents(page.page_xref)
         interpreter.process_page(page)
 
     device.close()

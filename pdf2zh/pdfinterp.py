@@ -1006,12 +1006,10 @@ class PDFPageInterpreter:
         self.device.fontid=self.fontid
         self.device.fontmap=self.fontmap
         ops_new=self.device.end_page(page)
-        if page.contents:
-            page_objids=[i.objid for i in page.contents]
-            # 上面渲染的时候会根据 cropbox 减掉页面偏移得到真实坐标，这里输出的时候需要用 cm 把页面偏移加回来
-            self.obj_patch[page_objids[0]]=f'q {ops_base}Q 1 0 0 1 {x0} {y0} cm {ops_new}' # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
-            for objid in range(1,len(page_objids)):
-                self.obj_patch[page_objids[objid]]=''
+        # 上面渲染的时候会根据 cropbox 减掉页面偏移得到真实坐标，这里输出的时候需要用 cm 把页面偏移加回来
+        self.obj_patch[page.page_xref]=f'q {ops_base}Q 1 0 0 1 {x0} {y0} cm {ops_new}' # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
+        for obj in page.contents:
+            self.obj_patch[obj.objid]=''
 
     def render_contents(
         self,
