@@ -86,7 +86,7 @@ pdf2zh example.pdf -s deepl
 pdf2zh example.pdf -s ollama:gemma2
 ```
 
-### 使用 OpenAI/SiliconCloud 翻译
+### 使用 OpenAI/SiliconCloud/Zhipu 翻译
 
 参考 [SiliconCloud](https://docs.siliconflow.cn/quickstart), [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)
 
