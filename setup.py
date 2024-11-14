@@ -27,7 +27,7 @@ setup(
         "doclayout-yolo",
         "numpy",
         "ollama",
-        "deepl",
+        "deepl<1.19.1",
         "openai",
     ],
     classifiers=[
