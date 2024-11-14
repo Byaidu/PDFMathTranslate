@@ -67,7 +67,7 @@ pdf2zh example.pdf -li en -lo ja
 
 参考 [DeepLX](https://github.com/OwO-Network/DeepLX)
 
-设置环境变量构建接入点：`{DEEPL_SERVER_URL}/{DEEPL_AUTH_KEY}/translate`
+设置环境变量构建接入点：`{DEEPL_SERVER_URL}/translate`
 - `DEEPL_SERVER_URL`（可选）, e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
 - `DEEPL_AUTH_KEY`, e.g., `export DEEPL_AUTH_KEY=xxx`
 
