@@ -3,26 +3,37 @@
 output it to plain text, html, xml or tags.
 """
 
+from __future__ import annotations
+
 import argparse
 import logging
 import os
 import sys
-from typing import Any, Container, Iterable, List, Optional
 import pymupdf
-import doclayout_yolo
 import tempfile
 import urllib.request
 
-import pdf2zh.high_level
-from pdf2zh.layout import LAParams
+from pdf2zh import __version__
 from pdf2zh.pdfexceptions import PDFValueError
-from pdf2zh.utils import AnyIO
+from typing import Any, Container, Iterable, List, Optional, TYPE_CHECKING
 
-logging.basicConfig()
-
-doclayout_yolo.utils.LOGGER.setLevel(logging.WARNING)
+if TYPE_CHECKING:
+    from pdf2zh.utils import AnyIO
+    from pdf2zh.layout import LAParams
 
 OUTPUT_TYPES = ((".htm", "html"), (".html", "html"), (".xml", "xml"), (".tag", "tag"))
+
+
+def setup_log() -> None:
+    import doclayout_yolo
+
+    logging.basicConfig()
+    doclayout_yolo.utils.LOGGER.setLevel(logging.WARNING)
+
+
+def check_files(files: List[str]) -> List[str]:
+    missing_files = [file for file in files if not os.path.exists(file)]
+    return missing_files
 
 
 def float_or_disabled(x: str) -> Optional[float]:
@@ -58,6 +69,9 @@ def extract_text(
     service: str = "",
     **kwargs: Any,
 ) -> AnyIO:
+    import doclayout_yolo
+    import pdf2zh.high_level
+
     if not files:
         raise PDFValueError("Must provide files to work upon!")
 
@@ -136,7 +150,7 @@ def create_parser() -> argparse.ArgumentParser:
         "--version",
         "-v",
         action="version",
-        version=f"pdf2zh v{pdf2zh.__version__}",
+        version=f"pdf2zh v{__version__}",
     )
     parser.add_argument(
         "--debug",
@@ -226,6 +240,15 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
 
 def main(args: Optional[List[str]] = None) -> int:
     parsed_args = parse_args(args)
+
+    missing_files = check_files(parsed_args.files)
+    if missing_files:
+        print(f"The following files do not exist:", file=sys.stderr)
+        for file in missing_files:
+            print(f"  {file}", file=sys.stderr)
+        return -1
+
+    setup_log()
     extract_text(**vars(parsed_args))
     return 0
 
