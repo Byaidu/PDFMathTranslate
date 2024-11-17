@@ -25,6 +25,7 @@ from pdf2zh.translator import (
     DeepLTranslator,
     OllamaTranslator,
     OpenAITranslator,
+    AzureTranslator,
 )
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C")
@@ -381,6 +382,10 @@ class TextConverter(PDFConverter[AnyIO]):
         elif param[0] == 'openai':
             self.translator: BaseTranslator = OpenAITranslator(
                 service, lang_out, lang_in, param[1]
+            )
+        elif param[0] == 'azure':
+            self.translator: BaseTranslator = AzureTranslator(
+                service, lang_out, lang_in, None
             )
         else:
             raise ValueError("Unsupported translation service")

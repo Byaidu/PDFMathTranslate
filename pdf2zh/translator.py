@@ -2,9 +2,13 @@ import html
 import re
 import os
 import ollama
+import logging
 import requests
 import openai
 import deepl
+from azure.ai.translation.text import TextTranslationClient
+from azure.core.credentials import AzureKeyCredential
+
 
 class BaseTranslator:
     def __init__(self, service, lang_out, lang_in, model):
@@ -13,8 +17,8 @@ class BaseTranslator:
         self.lang_in = lang_in
         self.model = model
 
-    def translate(self, text):
-        pass
+    def translate(self, text) -> str:
+        ...
 
     def __str__(self):
         pass
@@ -106,7 +110,7 @@ class OpenAITranslator(BaseTranslator):
         # OPENAI_API_KEY
         self.client = openai.OpenAI()
 
-    def translate(self, text):
+    def translate(self, text) -> str:
         response = self.client.chat.completions.create(
             model=self.model,
             **self.options,
@@ -122,3 +126,37 @@ class OpenAITranslator(BaseTranslator):
             ],
         )
         return response.choices[0].message.content.strip()
+
+
+class AzureTranslator(BaseTranslator):
+    def __init__(self, service, lang_out, lang_in, model):
+        lang_out='zh-Hans' if lang_out=='auto' else lang_out
+        lang_in='en' if lang_in=='auto' else lang_in
+        super().__init__(service, lang_out, lang_in, model)
+
+        try:
+            api_key = os.environ["AZURE_APIKEY"]
+            endpoint = os.environ["AZURE_ENDPOINT"]
+            region = os.environ["AZURE_REGION"]
+        except KeyError as e:
+            missing_var = e.args[0]
+            raise ValueError(f"The environment variable '{missing_var}' is required but not set.") from e
+
+        credential = AzureKeyCredential(api_key)
+        self.client = TextTranslationClient(
+            endpoint=endpoint, credential=credential, region=region
+        )
+
+        # https://github.com/Azure/azure-sdk-for-python/issues/9422
+        logger = logging.getLogger("azure.core.pipeline.policies.http_logging_policy")
+        logger.setLevel(logging.WARNING)
+
+    def translate(self, text) -> str:
+        response = self.client.translate(
+            body=[text],
+            from_language=self.lang_in,
+            to_language=[self.lang_out],
+        )
+
+        translated_text = response[0].translations[0].text
+        return translated_text
