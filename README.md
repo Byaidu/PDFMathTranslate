@@ -98,6 +98,20 @@ Set ENVs to construct an endpoint like: `{OPENAI_BASE_URL}/chat/completions`
 pdf2zh example.pdf -s openai:gpt-4o
 ```
 
+### Translate with Azure Text Translation
+
+See [What is Azure Text Translation?](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)
+
+Following ENVs are required.
+- `AZURE_APIKEY`, e.g., `export AZURE_APIKEY=xxx`
+- `AZURE_ENDPOINT`, e.g, `export AZURE_ENDPOINT=https://api.translator.azure.cn/`
+- `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2`
+
+
+```bash
+pdf2zh example.pdf -s azure
+```
+
 ### Use regex to specify formula fonts and characters that need to be preserved
 
 ```bash
