@@ -43,19 +43,20 @@ Execute the translation command in the command line to generate the translated d
 
 Please refer to [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4) for how to set environment variables.
 
-### Translate the entire document
+### Full / partial document translation
+ - Entire document
 
-```bash
-pdf2zh example.pdf
-```
+  ```bash
+  pdf2zh example.pdf
+  ```
 
-### Translate part of the document
+ - Part of the document
 
-```bash
-pdf2zh example.pdf -p 1-3,5
-```
+  ```bash
+  pdf2zh example.pdf -p 1-3,5
+  ```
 
-### Translate with the specified language
+### Specify source and target languages
 
 See [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages), [DeepL Languages Codes](https://developers.deepl.com/docs/resources/supported-languages)
 
@@ -63,60 +64,81 @@ See [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v
 pdf2zh example.pdf -li en -lo ja
 ```
 
-### Translate with DeepL/DeepLX
+### Translate with Different Services
 
-See [DeepLX](https://github.com/OwO-Network/DeepLX)
+- **DeepL**
 
-Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/translate`
-- `DEEPL_SERVER_URL` (Optional), e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
-- `DEEPL_AUTH_KEY`, e.g., `export DEEPL_AUTH_KEY=xxx`
+  See [DeepL](https://support.deepl.com/hc/en-us/articles/360020695820-API-Key-for-DeepL-s-API)
 
-```bash
-pdf2zh example.pdf -s deepl
-```
+  Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/translate`
+  - `DEEPL_SERVER_URL` (Optional), e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
+  - `DEEPL_AUTH_KEY`, e.g., `export DEEPL_AUTH_KEY=xxx`
 
-### Translate with Ollama
-
-See [Ollama](https://github.com/ollama/ollama)
-
-Set ENVs to construct an endpoint like: `{OLLAMA_HOST}/api/chat`
-- `OLLAMA_HOST` (Optional), e.g., `export OLLAMA_HOST=https://localhost:11434`
-
-```bash
-pdf2zh example.pdf -s ollama:gemma2
-```
-
-### Translate with OpenAI/SiliconCloud/Zhipu
-
-See [SiliconCloud](https://docs.siliconflow.cn/quickstart), [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)
-
-Set ENVs to construct an endpoint like: `{OPENAI_BASE_URL}/chat/completions`
-- `OPENAI_BASE_URL` (Optional), e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1`
-- `OPENAI_API_KEY`, e.g., `export OPENAI_API_KEY=xxx`
-
-```bash
-pdf2zh example.pdf -s openai:gpt-4o
-```
-
-### Translate with Azure Text Translation
-
-See [What is Azure Text Translation?](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)
-
-Following ENVs are required.
-- `AZURE_APIKEY`, e.g., `export AZURE_APIKEY=xxx`
-- `AZURE_ENDPOINT`, e.g, `export AZURE_ENDPOINT=https://api.translator.azure.cn/`
-- `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2`
+  ```bash
+  pdf2zh example.pdf -s deepl
+  ```
 
 
-```bash
-pdf2zh example.pdf -s azure
-```
+- **DeepLX**
 
-### Use regex to specify formula fonts and characters that need to be preserved
+  See [DeepLX](https://github.com/OwO-Network/DeepLX)
+
+  Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/translate`
+  - `DEEPLX_SERVER_URL` (Optional), e.g., `export DEEPLX_SERVER_URL=https://api.deeplx.org`
+  - `DEEPLX_AUTH_KEY`, e.g., `export DEEPLX_AUTH_KEY=xxx`
+
+  ```bash
+  pdf2zh example.pdf -s deeplx
+  ```
+
+- **Ollama**
+
+  See [Ollama](https://github.com/ollama/ollama)
+
+  Set ENVs to construct an endpoint like: `{OLLAMA_HOST}/api/chat`
+  - `OLLAMA_HOST` (Optional), e.g., `export OLLAMA_HOST=https://localhost:11434`
+
+  ```bash
+  pdf2zh example.pdf -s ollama:gemma2
+  ```
+
+- **LLM with OpenAI compatible schemas (OpenAI / SiliconCloud / Zhipu)**
+
+  See [SiliconCloud](https://docs.siliconflow.cn/quickstart), [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)
+
+  Set ENVs to construct an endpoint like: `{OPENAI_BASE_URL}/chat/completions`
+  - `OPENAI_BASE_URL` (Optional), e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1`
+  - `OPENAI_API_KEY`, e.g., `export OPENAI_API_KEY=xxx`
+
+  ```bash
+  pdf2zh example.pdf -s openai:gpt-4o
+  ```
+
+- **Azure**
+
+  See [What is Azure Text Translation?](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)
+
+  Following ENVs are required.
+  - `AZURE_APIKEY`, e.g., `export AZURE_APIKEY=xxx`
+  - `AZURE_ENDPOINT`, e.g, `export AZURE_ENDPOINT=https://api.translator.azure.cn/`
+  - `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2`
+
+
+  ```bash
+  pdf2zh example.pdf -s azure
+  ```
+
+### Translation wih exceptions
+Use regex to specify formula fonts and characters that need to be preserved
 
 ```bash
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
+
+### Using GUI
+
+<img src="./gui/img/before.png" width="650" alt="Original">
+See [the documentation for the GUI for more details](./gui/README.md)
 
 ## Preview
 

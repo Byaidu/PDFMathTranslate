@@ -23,6 +23,7 @@ from pdf2zh.translator import (
     BaseTranslator,
     GoogleTranslator,
     DeepLTranslator,
+    DeepLXTranslator,
     OllamaTranslator,
     OpenAITranslator,
     AzureTranslator,
@@ -373,6 +374,10 @@ class TextConverter(PDFConverter[AnyIO]):
             )
         elif param[0] == "deepl":
             self.translator: BaseTranslator = DeepLTranslator(
+                service, lang_out, lang_in, None
+            )
+        elif param[0] == "deeplx":
+            self.translator: BaseTranslator = DeepLXTranslator(
                 service, lang_out, lang_in, None
             )
         elif param[0] == "ollama":
