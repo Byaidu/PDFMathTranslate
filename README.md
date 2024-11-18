@@ -137,7 +137,7 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 
 ### Using GUI
 
-<img src="./gui/img/before.png" width="650" alt="Original">
+<img src="./gui/img/before.png" width="650" alt="Original"/>
 See [the documentation for the GUI for more details](./gui/README.md)
 
 ## Preview
