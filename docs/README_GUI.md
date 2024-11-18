@@ -10,8 +10,8 @@ This subfolder provides the GUI mode of `pdf2zh`.
 
 ## Preview
 
-![image](./images/before.png)
-![image](./images/after.png)
+<img src="./images/before.png" height="500"/>
+<img src="./images/after.png" height="500"/>
 
 ## Maintainance
 
