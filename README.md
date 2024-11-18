@@ -137,7 +137,7 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 
 ### Interact with GUI
 
-<img src="./docs/images/before.png" height="500"/>
+<img src="./docs/images/before.png" width="500"/>
 
 ```bash
 pdf2zh -i
