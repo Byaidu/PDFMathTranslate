@@ -61,7 +61,7 @@ def translate(file_path, service, progress=gr.Progress()):
         final_output = output_dir / f"translated_{os.path.basename(file_path)}"
 
         # Execute translation command
-        command = f"cd '{temp_path}' && pdf2zh '{input_pdf}' -s {selected_service} -p 1"
+        command = f"cd '{temp_path}' && pdf2zh '{input_pdf}' -s {selected_service}"
         print(f"Executing command: {command}")
         print(f"Files in temp directory: {os.listdir(temp_path)}")
 
