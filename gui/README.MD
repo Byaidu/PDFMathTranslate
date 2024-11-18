@@ -19,8 +19,8 @@ This subfolder provides the GUI mode of `pdf2zh`.
 
 ## Sample PDFs:
 
-  <img src="./img/before.png" width="250" alt="Original">
-  <img src="./img/after.png" width="250" alt="Translated">
+  <img src="./img/before.png" width="650" alt="Original">
+  <img src="./img/after.png" width="650" alt="Translated">
 
 ## Maintainance
 GUI maintained by [Rongxin](https://github.com/reycn)
