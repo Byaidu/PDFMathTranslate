@@ -116,9 +116,9 @@ pdf2zh example.pdf -li en -lo ja
 
 - **Azure**
 
-  See [What is Azure Text Translation?](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)
+  See [Azure Text Translation](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)
 
-  Following ENVs are required.
+  Following ENVs are required:
   - `AZURE_APIKEY`, e.g., `export AZURE_APIKEY=xxx`
   - `AZURE_ENDPOINT`, e.g, `export AZURE_ENDPOINT=https://api.translator.azure.cn/`
   - `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2`
@@ -129,7 +129,7 @@ pdf2zh example.pdf -li en -lo ja
   ```
 
 ### Translation wih exceptions
-Use regex to specify formula fonts and characters that need to be preserved
+Use regex to specify formula fonts and characters that need to be preserved.
 
 ```bash
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
@@ -137,8 +137,9 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 
 ### Using GUI
 
-<img src="./gui/img/before.png" width="650" alt="Original"/>
-See [the documentation for the GUI for more details](./gui/README.md)
+![image](./gui/img/before.png)
+
+See [documentation for GUI](./gui/README.md) for more details.
 
 ## Preview
 
