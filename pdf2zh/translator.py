@@ -50,7 +50,9 @@ class GoogleTranslator(BaseTranslator):
         re_result = re.findall(
             r'(?s)class="(?:t0|result-container)">(.*?)<', response.text
         )
-        if len(re_result) == 0:
+        if response.status_code == 400:
+            result = 'IRREPARABLE TRANSLATION ERROR'
+        elif len(re_result) == 0:
             raise ValueError("Empty translation result")
         else:
             result = html.unescape(re_result[0])
