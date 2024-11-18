@@ -19,7 +19,7 @@
 
 </div>
 
-PDF 文档翻译及双语对照
+PDF 文档翻译及双语对照工具
 
 - 📊 保留公式和图表
 
@@ -27,7 +27,7 @@ PDF 文档翻译及双语对照
 
 - 🌐 支持多种翻译服务
 
-欢迎在 [issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [user group](https://t.me/+Z9_SgnxmsmA5NzBl) 中提供反馈
+欢迎在 [issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [用户群](https://t.me/+Z9_SgnxmsmA5NzBl) 中提供反馈
 
 ## 安装
 
@@ -39,23 +39,25 @@ pip install pdf2zh
 
 ## 使用
 
-命令行中执行翻译指令，在工作目录下生成翻译文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 作为翻译服务
+在命令行中执行翻译命令，生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
 
-有关如何设置环境变量，请参考 [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
+关于设置环境变量的详细说明，请参考 [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
 
-### 翻译完整文档
+### 全文或部分文档翻译
+
+- **全文翻译**
 
 ```bash
 pdf2zh example.pdf
 ```
 
-### 翻译部分文档
+- **部分翻译**
 
 ```bash
 pdf2zh example.pdf -p 1-3,5
 ```
 
-### 使用指定语言翻译
+### 指定源语言和目标语言
 
 参考 [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages), [DeepL Languages Codes](https://developers.deepl.com/docs/resources/supported-languages)
 
@@ -63,9 +65,11 @@ pdf2zh example.pdf -p 1-3,5
 pdf2zh example.pdf -li en -lo ja
 ```
 
-### 使用 DeepL/DeepLX 翻译
+### 使用不同的翻译服务
 
-参考 [DeepLX](https://github.com/OwO-Network/DeepLX)
+- **DeepL**
+
+参考 [DeepL](https://support.deepl.com/hc/en-us/articles/360020695820-API-Key-for-DeepL-s-API)
 
 设置环境变量构建接入点：`{DEEPL_SERVER_URL}/translate`
 - `DEEPL_SERVER_URL`（可选）, e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
@@ -75,7 +79,19 @@ pdf2zh example.pdf -li en -lo ja
 pdf2zh example.pdf -s deepl
 ```
 
-### 使用 Ollama 翻译
+- **DeepLX**
+
+参考 [DeepLX](https://github.com/OwO-Network/DeepLX)
+
+设置环境变量构建接入点：`{DEEPLX_SERVER_URL}/translate`
+- `DEEPLX_SERVER_URL`（可选）, e.g., `export DEEPLX_SERVER_URL=https://api.deepl.com`
+- `DEEPLX_AUTH_KEY`, e.g., `export DEEPLX_AUTH_KEY=xxx`
+
+```bash
+pdf2zh example.pdf -s deepl
+```
+
+- **Ollama**
 
 参考 [Ollama](https://github.com/ollama/ollama)
 
@@ -86,7 +102,7 @@ pdf2zh example.pdf -s deepl
 pdf2zh example.pdf -s ollama:gemma2
 ```
 
-### 使用 OpenAI/SiliconCloud/Zhipu 翻译
+- **支持 OpenAI 协议的 LLM（如 OpenAI、SiliconCloud、Zhipu）**
 
 参考 [SiliconCloud](https://docs.siliconflow.cn/quickstart), [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)
 
@@ -98,11 +114,36 @@ pdf2zh example.pdf -s ollama:gemma2
 pdf2zh example.pdf -s openai:gpt-4o
 ```
 
-### 使用正则表达式指定需要保留样式的字体和字符
+- **Azure**
+
+参考 [Azure Text Translation](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)
+
+需设置以下环境变量：
+- `AZURE_APIKEY`, e.g., `export AZURE_APIKEY=xxx`
+- `AZURE_ENDPOINT`, e.g., `export AZURE_ENDPOINT=https://api.translator.azure.cn/`
+- `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2`
+
+```bash
+pdf2zh example.pdf -s azure
+```
+
+### 指定例外规则
+
+使用正则表达式指定需保留的公式字体与字符
 
 ```bash
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
+
+### 图形化交互界面
+
+<img src="./docs/images/before.png" height="500"/>
+
+```bash
+pdf2zh -i
+```
+
+详见 [GUI 文档](./docs/README_GUI.md)
 
 ## 预览
 

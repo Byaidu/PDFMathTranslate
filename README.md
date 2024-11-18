@@ -128,7 +128,7 @@ pdf2zh example.pdf -li en -lo ja
   pdf2zh example.pdf -s azure
   ```
 
-### Translation wih exceptions
+### Translate wih exceptions
 Use regex to specify formula fonts and characters that need to be preserved.
 
 ```bash
