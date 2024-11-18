@@ -47,6 +47,7 @@ def translate(file_path, service, progress=gr.Progress()):
         service_map = {
             "Google": "google",
             "DeepL": "deepl",
+            "DeepLX": "deeplx",
             "Ollama": "ollama:gemma2",
         }
         selected_service = service_map.get(service, "google")
@@ -126,8 +127,8 @@ with gr.Blocks(title="PDF Translation") as app:
         with gr.Column(scale=1):
             service = gr.Dropdown(
                 label="Service",
-                choices=["Google", "DeepL", "Ollama"],
-                value="DeepL",
+                choices=["Google", "DeepL", "DeepLX", "Ollama"],
+                value="Google",
             )
 
             file_input = gr.File(
