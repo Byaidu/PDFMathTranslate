@@ -135,11 +135,15 @@ Use regex to specify formula fonts and characters that need to be preserved.
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
 
-### Using GUI
+### Interact with GUI
 
-![image](./gui/img/before.png)
+![image](./docs/images/before.png)
 
-See [documentation for GUI](./gui/README.md) for more details.
+```bash
+pdf2zh -i
+```
+
+See [documentation for GUI](./docs/README_GUI.md) for more details.
 
 ## Preview
 

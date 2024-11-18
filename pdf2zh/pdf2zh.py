@@ -15,6 +15,7 @@ import urllib.request
 
 from pdf2zh import __version__
 from pdf2zh.pdfexceptions import PDFValueError
+from pdf2zh.gui import setup_gui
 from typing import Any, Container, Iterable, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -143,7 +144,7 @@ def create_parser() -> argparse.ArgumentParser:
         "files",
         type=str,
         default=None,
-        nargs="+",
+        nargs="*",
         help="One or more paths to PDF files.",
     )
     parser.add_argument(
@@ -218,6 +219,12 @@ def create_parser() -> argparse.ArgumentParser:
         default=4,
         help="The number of threads to execute translation.",
     )
+    parse_params.add_argument(
+        "--interactive",
+        "-i",
+        action="store_true",
+        help="Interact with GUI.",
+    )
 
     return parser
 
@@ -247,6 +254,9 @@ def main(args: Optional[List[str]] = None) -> int:
         for file in missing_files:
             print(f"  {file}", file=sys.stderr)
         return -1
+    if parsed_args.interactive:
+        setup_gui()
+        return 0
 
     setup_log()
     extract_text(**vars(parsed_args))

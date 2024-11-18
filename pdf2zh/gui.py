@@ -5,8 +5,15 @@ import tempfile
 from pathlib import Path
 
 import gradio as gr
-from pdf2image import convert_from_path
+import pymupdf
+import numpy as np
 
+def pdf_preview(file):
+    doc=pymupdf.open(file)
+    page=doc[0]
+    pix=page.get_pixmap()
+    image=np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
+    return image
 
 def upload_file(file, service, progress=gr.Progress()):
     """Handle file upload, validation, and initial preview."""
@@ -16,8 +23,7 @@ def upload_file(file, service, progress=gr.Progress()):
     progress(0.3, desc="Converting PDF for preview...")
     try:
         # Convert first page for preview
-        images = convert_from_path(file, first_page=1, last_page=1)
-        preview_image = images[0] if images else None
+        preview_image=pdf_preview(file)
 
         return file, preview_image, gr.update(visible=True)
     except Exception as e:
@@ -62,7 +68,7 @@ def translate(file_path, service, progress=gr.Progress()):
         final_output = output_dir / f"translated_{os.path.basename(file_path)}"
 
         # Execute translation command
-        command = f"cd '{temp_path}' && pdf2zh '{input_pdf}' -s {selected_service}"
+        command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -s {selected_service}'
         print(f"Executing command: {command}")
         print(f"Files in temp directory: {os.listdir(temp_path)}")
 
@@ -109,9 +115,7 @@ def translate(file_path, service, progress=gr.Progress()):
         # Generate preview of translated PDF
         progress(0.9, desc="Generating preview...")
         try:
-            translated_preview = convert_from_path(
-                str(final_output), first_page=1, last_page=1
-            )[0]
+            translated_preview=pdf_preview(str(final_output))
         except Exception as e:
             print(f"Error generating preview: {e}")
             translated_preview = None
@@ -119,49 +123,52 @@ def translate(file_path, service, progress=gr.Progress()):
     progress(1.0, desc="Translation complete!")
     return str(final_output), translated_preview, gr.update(visible=True)
 
+def setup_gui():
+    with gr.Blocks(title="PDF Translation") as app:
+        gr.Markdown("# PDF Translation")
 
-with gr.Blocks(title="PDF Translation") as app:
-    gr.Markdown("# PDF Translation")
+        with gr.Row():
+            with gr.Column(scale=1):
+                service = gr.Dropdown(
+                    label="Service",
+                    choices=["Google", "DeepL", "DeepLX", "Ollama"],
+                    value="Google",
+                )
 
-    with gr.Row():
-        with gr.Column(scale=1):
-            service = gr.Dropdown(
-                label="Service",
-                choices=["Google", "DeepL", "DeepLX", "Ollama"],
-                value="Google",
-            )
+                file_input = gr.File(
+                    label="Upload",
+                    file_count="single",
+                    file_types=[".pdf"],
+                    type="filepath",
+                )
 
-            file_input = gr.File(
-                label="Upload",
-                file_count="single",
-                file_types=[".pdf"],
-                type="filepath",
-            )
+                output_file = gr.File(label="Download Translation", visible=False)
+                translate_btn = gr.Button("Translate", variant="primary", visible=False)
+                # add a text description
+                gr.Markdown(
+                    """*Note: Please make sure that [pdf2zh](https://github.com/Byaidu/PDFMathTranslate) is correctly configured.*
+                    GUI implemented by: [Rongxin](https://github.com/reycn)
+                    [Early Version]
+                    """
+                )
 
-            output_file = gr.File(label="Download Translation", visible=False)
-            translate_btn = gr.Button("Translate", variant="primary", visible=False)
-            # add a text description
-            gr.Markdown(
-                """*Note: Please make sure that [pdf2zh](https://github.com/Byaidu/PDFMathTranslate) is correctly configured.*
-                GUI implemented by: [Rongxin](https://github.com/reycn)
-                [Early Version]
-                """
-            )
+            with gr.Column(scale=2):
+                preview = gr.Image(label="Preview", visible=True)
 
-        with gr.Column(scale=2):
-            preview = gr.Image(label="Preview", visible=True)
+        # Event handlers
+        file_input.upload(
+            upload_file,
+            inputs=[file_input, service],
+            outputs=[file_input, preview, translate_btn],
+        )
 
-    # Event handlers
-    file_input.upload(
-        upload_file,
-        inputs=[file_input, service],
-        outputs=[file_input, preview, translate_btn],
-    )
+        translate_btn.click(
+            translate,
+            inputs=[file_input, service],
+            outputs=[output_file, preview, output_file],
+        )
 
-    translate_btn.click(
-        translate,
-        inputs=[file_input, service],
-        outputs=[output_file, preview, output_file],
-    )
+    app.launch(debug=True, inbrowser=True, share=False)
 
-app.launch(debug=True, inbrowser=True, share=False)
+if __name__ == '__main__':
+    setup_gui()
