@@ -34,7 +34,7 @@ def upload_file(file, service, progress=gr.Progress()):
 
 
 def translate(
-    file_path, service, lang_tgt, page_range, extra_args, progress=gr.Progress()
+    file_path, service, lang_to, page_range, extra_args, progress=gr.Progress()
 ):
     """Translate PDF content using selected service."""
     if not file_path:
@@ -73,25 +73,25 @@ def translate(
         final_output = output_dir / f"translated_{os.path.basename(file_path)}"
         # Prepare extra arguments
         extra_args = extra_args.strip()
-        lang_tgt = lang_tgt.lower()
-        if lang_tgt == "chinese":
-            lang_tgt = "zh"
-        elif lang_tgt == "english":
-            lang_tgt = "en"
-        elif lang_tgt == "french":
-            lang_tgt = "fr"
-        elif lang_tgt == "german":
-            lang_tgt = "de"
-        elif lang_tgt == "japanese":
-            lang_tgt = "ja"
-        elif lang_tgt == "korean":
-            lang_tgt = "ko"
-        elif lang_tgt == "russian":
-            lang_tgt = "ru"
-        elif lang_tgt == "spanish":
-            lang_tgt = "es"
+        lang_to = lang_to.lower()
+        if lang_to == "chinese":
+            lang_to = "zh"
+        elif lang_to == "english":
+            lang_to = "en"
+        elif lang_to == "french":
+            lang_to = "fr"
+        elif lang_to == "german":
+            lang_to = "de"
+        elif lang_to == "japanese":
+            lang_to = "ja"
+        elif lang_to == "korean":
+            lang_to = "ko"
+        elif lang_to == "russian":
+            lang_to = "ru"
+        elif lang_to == "spanish":
+            lang_to = "es"
         else:
-            lang_tgt = "zh"  # Default to Chinese
+            lang_to = "zh"  # Default to Chinese
         # Add page range arguments
         if page_range == "All":
             extra_args += ""
@@ -101,7 +101,12 @@ def translate(
             extra_args += " -p 1-5"
 
         # Execute translation command
-        command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo {lang_tgt} -s {selected_service} {extra_args}'
+        if selected_service == "google" and lang_to == "zh":
+            command = (
+                f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo "zh-CN" {extra_args}'
+            )
+        else:
+            command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo {lang_to} -s {selected_service} {extra_args}'
         print(f"Executing command: {command}")
         print(f"Files in temp directory: {os.listdir(temp_path)}")
 
@@ -191,7 +196,7 @@ with gr.Blocks(
             #     choices=["Google", "DeepL", "DeepLX", "Ollama", "Azure"],
             #     value="Google",
             # )
-            lang_tgt = gr.Dropdown(
+            lang_to = gr.Dropdown(
                 label="Translate to",
                 info="Which language to translate to (optional)",
                 choices=[
@@ -289,7 +294,7 @@ with gr.Blocks(
 
     translate_btn.click(
         translate,
-        inputs=[file_input, service, lang_tgt, page_range, extra_args],
+        inputs=[file_input, service, lang_to, page_range, extra_args],
         outputs=[output_file, preview, output_file],
     )
 
