@@ -1,8 +1,8 @@
 <div align="center">
 
+<img src="./docs/images/banner.jpg" alt="PDF2ZH">  
+  
 [English](README.md) | 简体中文
-
-# PDFMathTranslate
 
 <p>
   <!-- PyPI -->
@@ -72,6 +72,7 @@ pdf2zh example.pdf -li en -lo ja
 参考 [DeepL](https://support.deepl.com/hc/en-us/articles/360020695820-API-Key-for-DeepL-s-API)
 
 设置环境变量构建接入点：`{DEEPL_SERVER_URL}/translate`
+
 - `DEEPL_SERVER_URL`（可选）, e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
 - `DEEPL_AUTH_KEY`, e.g., `export DEEPL_AUTH_KEY=xxx`
 
@@ -84,6 +85,7 @@ pdf2zh example.pdf -s deepl
 参考 [DeepLX](https://github.com/OwO-Network/DeepLX)
 
 设置环境变量构建接入点：`{DEEPLX_SERVER_URL}/translate`
+
 - `DEEPLX_SERVER_URL`（可选）, e.g., `export DEEPLX_SERVER_URL=https://api.deepl.com`
 - `DEEPLX_AUTH_KEY`, e.g., `export DEEPLX_AUTH_KEY=xxx`
 
@@ -96,6 +98,7 @@ pdf2zh example.pdf -s deepl
 参考 [Ollama](https://github.com/ollama/ollama)
 
 设置环境变量构建接入点：`{OLLAMA_HOST}/api/chat`
+
 - `OLLAMA_HOST`（可选）, e.g., `export OLLAMA_HOST=https://localhost:11434`
 
 ```bash
@@ -107,6 +110,7 @@ pdf2zh example.pdf -s ollama:gemma2
 参考 [SiliconCloud](https://docs.siliconflow.cn/quickstart), [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)
 
 设置环境变量构建接入点：`{OPENAI_BASE_URL}/chat/completions`
+
 - `OPENAI_BASE_URL`（可选）, e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1`
 - `OPENAI_API_KEY`, e.g., `export OPENAI_API_KEY=xxx`
 
@@ -119,6 +123,7 @@ pdf2zh example.pdf -s openai:gpt-4o
 参考 [Azure Text Translation](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)
 
 需设置以下环境变量：
+
 - `AZURE_APIKEY`, e.g., `export AZURE_APIKEY=xxx`
 - `AZURE_ENDPOINT`, e.g., `export AZURE_ENDPOINT=https://api.translator.azure.cn/`
 - `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2`

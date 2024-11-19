@@ -1,8 +1,7 @@
 <div align="center">
-
+<img src="./docs/images/banner.jpg" alt="PDF2ZH">  
+  
 English | [简体中文](README_zh-CN.md)
-
-# PDFMathTranslate
 
 <p>
   <!-- PyPI -->
@@ -39,18 +38,19 @@ pip install pdf2zh
 
 ## Usage
 
-Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory. Use Google as the default translation service. 
+Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory. Use Google as the default translation service.
 
 Please refer to [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4) for how to set environment variables.
 
 ### Full / partial document translation
- - Entire document
+
+- Entire document
 
   ```bash
   pdf2zh example.pdf
   ```
 
- - Part of the document
+- Part of the document
 
   ```bash
   pdf2zh example.pdf -p 1-3,5
@@ -77,7 +77,6 @@ pdf2zh example.pdf -li en -lo ja
   ```bash
   pdf2zh example.pdf -s deepl
   ```
-
 
 - **DeepLX**
 
@@ -123,12 +122,12 @@ pdf2zh example.pdf -li en -lo ja
   - `AZURE_ENDPOINT`, e.g, `export AZURE_ENDPOINT=https://api.translator.azure.cn/`
   - `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2`
 
-
   ```bash
   pdf2zh example.pdf -s azure
   ```
 
 ### Translate wih exceptions
+
 Use regex to specify formula fonts and characters that need to be preserved.
 
 ```bash
