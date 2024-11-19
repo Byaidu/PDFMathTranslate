@@ -55,6 +55,7 @@ def translate(file_path, service, progress=gr.Progress()):
             "DeepL": "deepl",
             "DeepLX": "deeplx",
             "Ollama": "ollama:gemma2",
+            "Azure": "azure",
         }
         selected_service = service_map.get(service, "google")
         lang_to = "zh"
@@ -131,7 +132,7 @@ def setup_gui():
             with gr.Column(scale=1):
                 service = gr.Dropdown(
                     label="Service",
-                    choices=["Google", "DeepL", "DeepLX", "Ollama"],
+                    choices=["Google", "DeepL", "DeepLX", "Ollama", "Azure"],
                     value="Google",
                 )
 
