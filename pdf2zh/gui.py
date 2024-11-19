@@ -5,15 +5,17 @@ import tempfile
 from pathlib import Path
 
 import gradio as gr
-import pymupdf
 import numpy as np
+import pymupdf
+
 
 def pdf_preview(file):
-    doc=pymupdf.open(file)
-    page=doc[0]
-    pix=page.get_pixmap()
-    image=np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
+    doc = pymupdf.open(file)
+    page = doc[0]
+    pix = page.get_pixmap()
+    image = np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
     return image
+
 
 def upload_file(file, service, progress=gr.Progress()):
     """Handle file upload, validation, and initial preview."""
@@ -23,7 +25,7 @@ def upload_file(file, service, progress=gr.Progress()):
     progress(0.3, desc="Converting PDF for preview...")
     try:
         # Convert first page for preview
-        preview_image=pdf_preview(file)
+        preview_image = pdf_preview(file)
 
         return file, preview_image, gr.update(visible=True)
     except Exception as e:
@@ -116,7 +118,7 @@ def translate(file_path, service, progress=gr.Progress()):
         # Generate preview of translated PDF
         progress(0.9, desc="Generating preview...")
         try:
-            translated_preview=pdf_preview(str(final_output))
+            translated_preview = pdf_preview(str(final_output))
         except Exception as e:
             print(f"Error generating preview: {e}")
             translated_preview = None
@@ -124,52 +126,114 @@ def translate(file_path, service, progress=gr.Progress()):
     progress(1.0, desc="Translation complete!")
     return str(final_output), translated_preview, gr.update(visible=True)
 
-def setup_gui():
-    with gr.Blocks(title="PDF Translation") as app:
-        gr.Markdown("# PDF Translation")
 
-        with gr.Row():
-            with gr.Column(scale=1):
-                service = gr.Dropdown(
-                    label="Service",
-                    choices=["Google", "DeepL", "DeepLX", "Ollama", "Azure"],
-                    value="Google",
-                )
+# Global setup
+with gr.Blocks(
+    title="PDF Translation",
+    css="""
+    .secondary-text {color: #999 !important;}
+    footer {visibility: hidden}
+    .env-warning {color: #dd5500 !important;}
+    .env-success {color: #559900 !important;}
+    """,
+) as demo:
+    gr.Markdown("# PDF Translation")
 
-                file_input = gr.File(
-                    label="Upload",
-                    file_count="single",
-                    file_types=[".pdf"],
-                    type="filepath",
-                )
+    with gr.Row():
+        with gr.Column(scale=1):
+            service = gr.Dropdown(
+                label="Service",
+                choices=["Google", "DeepL", "DeepLX", "Ollama", "Azure"],
+                value="Google",
+            )
+            envs_status = "<span class='env-success'>- Properly configured.</span><br>"
 
-                output_file = gr.File(label="Download Translation", visible=False)
-                translate_btn = gr.Button("Translate", variant="primary", visible=False)
+            def details_wrapper(text_markdown):
+                text = f""" 
+                <details>
+                    <summary>Technical details</summary>
+                    {text_markdown}
+                    - GUI by: <a href="https://github.com/reycn">Rongxin</a>    
+                </details>"""
+                return text
+
+            def env_var_checker(env_var_name: str) -> str:
+                if (
+                    not os.environ.get(env_var_name)
+                    or os.environ.get(env_var_name) == ""
+                ):
+                    envs_status = f"<span class='env-warning'>- Warning: environmental not found or error ({env_var_name}).</span><br>- Please make sure that the environment variables are properly configured (<a href='https://github.com/Byaidu/PDFMathTranslate'>guide</a>).<br>"
+                else:
+                    value = str(os.environ.get(env_var_name))
+                    envs_status = (
+                        "<span class='env-success'>- Properly configured.</span><br>"
+                    )
+                    if len(value) < 13:
+                        envs_status += (
+                            f"- Env: <code>{os.environ.get(env_var_name)}</code><br>"
+                        )
+                    else:
+                        envs_status += f"- Env: <code>{value[:13]}***</code><br>"
+                return details_wrapper(envs_status)
+
+            def on_select_service(value, evt: gr.EventData):
                 # add a text description
-                gr.Markdown(
-                    """*Note: Please make sure that [pdf2zh](https://github.com/Byaidu/PDFMathTranslate) is correctly configured.*
-                    GUI implemented by: [Rongxin](https://github.com/reycn)
-                    [Early Version]
-                    """
-                )
+                if value == "Google":
+                    envs_status = details_wrapper(
+                        "<span class='env-success'>- Properly configured.</span><br>"
+                    )
 
-            with gr.Column(scale=2):
-                preview = gr.Image(label="Preview", visible=True)
+                elif value == "DeepL":
+                    envs_status = env_var_checker("DEEPL_AUTH_KEY")
+                elif value == "DeepLX":
+                    envs_status = env_var_checker("DEEPLX_AUTH_KEY")
+                elif value == "Azure":
+                    envs_status = env_var_checker("AZURE_APIKEY")
+                elif value == "OpenAI":
+                    envs_status = env_var_checker("OPENAI_API_KEY")
+                elif value == "Ollama":
+                    envs_status = env_var_checker("OLLAMA_HOST")
+                else:
+                    envs_status = "<span class='env-warning'>- Warning: model not in the list.</span><br>- Please report via (<a href='https://github.com/Byaidu/PDFMathTranslate'>guide</a>).<br>"
+                return envs_status
 
-        # Event handlers
-        file_input.upload(
-            upload_file,
-            inputs=[file_input, service],
-            outputs=[file_input, preview, translate_btn],
-        )
+            file_input = gr.File(
+                label="Upload",
+                file_count="single",
+                file_types=[".pdf"],
+                type="filepath",
+            )
+            output_file = gr.File(label="Download Translation", visible=False)
+            translate_btn = gr.Button("Translate", variant="primary", visible=False)
+            tech_details_tog = gr.Markdown()
 
-        translate_btn.click(
-            translate,
-            inputs=[file_input, service],
-            outputs=[output_file, preview, output_file],
-        )
+            tech_details_tog = gr.Markdown(
+                details_wrapper(envs_status),
+                elem_classes=["secondary-text"],
+            )
+            service.select(on_select_service, service, tech_details_tog)
 
-    app.launch(debug=True, inbrowser=True, share=False)
+        with gr.Column(scale=2):
+            preview = gr.Image(label="Preview", visible=True)
 
-if __name__ == '__main__':
-    setup_gui()
+    # Event handlers
+    file_input.upload(
+        upload_file,
+        inputs=[file_input, service],
+        outputs=[file_input, preview, translate_btn],
+    )
+
+    translate_btn.click(
+        translate,
+        inputs=[file_input, service],
+        outputs=[output_file, preview, output_file],
+    )
+
+
+def setup_gui():
+    demo.launch(debug=True, inbrowser=True, share=False)
+
+
+# For auto-reloading while developing
+if __name__ == "__main__":
+    demo.launch(debug=True, inbrowser=True, share=False)
