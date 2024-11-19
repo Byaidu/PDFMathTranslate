@@ -1,8 +1,10 @@
 <div align="center">
 
-<img src="./docs/images/banner.jpg" width="520px", alt="PDF2ZH">  
-  
 [English](README.md) | 简体中文
+
+## PDFMathTranslate
+
+<img src="./docs/images/banner.png" width="320px", alt="PDF2ZH">  
 
 <p>
   <!-- PyPI -->
