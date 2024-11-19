@@ -31,6 +31,8 @@ setup(
         "openai",
         "azure-ai-translation-text<=1.0.1",
         "gradio",
+        "huggingface_hub",
+        "torch",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

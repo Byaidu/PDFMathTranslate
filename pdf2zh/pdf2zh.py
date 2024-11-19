@@ -10,12 +10,10 @@ import logging
 import os
 import sys
 import pymupdf
-import tempfile
-import urllib.request
+from huggingface_hub import hf_hub_download
 
 from pdf2zh import __version__
 from pdf2zh.pdfexceptions import PDFValueError
-from pdf2zh.gui import setup_gui
 from typing import Any, Container, Iterable, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -82,10 +80,11 @@ def extract_text(
                 output_type = alttype
 
     outfp: AnyIO = sys.stdout
-    pth = os.path.join(tempfile.gettempdir(), 'doclayout_yolo_docstructbench_imgsz1024.pt')
-    if not os.path.exists(pth):
-        print('Downloading...')
-        urllib.request.urlretrieve("http://huggingface.co/juliozhao/DocLayout-YOLO-DocStructBench/resolve/main/doclayout_yolo_docstructbench_imgsz1024.pt",pth)
+    # pth = os.path.join(tempfile.gettempdir(), 'doclayout_yolo_docstructbench_imgsz1024.pt')
+    # if not os.path.exists(pth):
+    #     print('Downloading...')
+    #     urllib.request.urlretrieve("http://huggingface.co/juliozhao/DocLayout-YOLO-DocStructBench/resolve/main/doclayout_yolo_docstructbench_imgsz1024.pt",pth)
+    pth = hf_hub_download(repo_id="juliozhao/DocLayout-YOLO-DocStructBench", filename="doclayout_yolo_docstructbench_imgsz1024.pt")
     model = doclayout_yolo.YOLOv10(pth)
 
     for file in files:
@@ -255,6 +254,7 @@ def main(args: Optional[List[str]] = None) -> int:
             print(f"  {file}", file=sys.stderr)
         return -1
     if parsed_args.interactive:
+        from pdf2zh.gui import setup_gui
         setup_gui()
         return 0
 
