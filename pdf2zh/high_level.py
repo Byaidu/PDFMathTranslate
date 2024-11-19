@@ -4,7 +4,10 @@ import logging
 import sys
 from io import StringIO
 from typing import Any, BinaryIO, Container, Iterator, Optional, cast
+import torch
+import numpy as np
 import tqdm
+from pymupdf import Document
 
 from pdf2zh.converter import (
     HOCRConverter,
@@ -20,8 +23,6 @@ from pdf2zh.pdfexceptions import PDFValueError
 from pdf2zh.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdf2zh.pdfpage import PDFPage
 from pdf2zh.utils import AnyIO, FileOrName, open_filename
-import numpy as np
-from pymupdf import Document
 
 
 def extract_text_to_fp(
@@ -167,6 +168,7 @@ def extract_text_to_fp(
         page_layout=model.predict(
             image,
             imgsz=int(pix.height/32)*32,
+            device="cuda:0" if torch.cuda.is_available() else "cpu", # Auto-select GPU if available
         )[0]
         # kdtree 是不可能 kdtree 的，不如直接渲染成图片，用空间换时间
         box=np.ones((pix.height, pix.width))
