@@ -33,7 +33,9 @@ def upload_file(file, service, progress=gr.Progress()):
         return None, None, gr.update(visible=False)
 
 
-def translate(file_path, service, progress=gr.Progress()):
+def translate(
+    file_path, service, lang_tgt, page_range, extra_args, progress=gr.Progress()
+):
     """Translate PDF content using selected service."""
     if not file_path:
         return None, None, gr.update(visible=False)
@@ -69,9 +71,37 @@ def translate(file_path, service, progress=gr.Progress()):
         output_dir = Path("gradio_files") / "outputs"
         output_dir.mkdir(parents=True, exist_ok=True)
         final_output = output_dir / f"translated_{os.path.basename(file_path)}"
+        # Prepare extra arguments
+        extra_args = extra_args.strip()
+        lang_tgt = lang_tgt.lower()
+        if lang_tgt == "chinese":
+            lang_tgt = "zh"
+        elif lang_tgt == "english":
+            lang_tgt = "en"
+        elif lang_tgt == "french":
+            lang_tgt = "fr"
+        elif lang_tgt == "german":
+            lang_tgt = "de"
+        elif lang_tgt == "japanese":
+            lang_tgt = "ja"
+        elif lang_tgt == "korean":
+            lang_tgt = "ko"
+        elif lang_tgt == "russian":
+            lang_tgt = "ru"
+        elif lang_tgt == "spanish":
+            lang_tgt = "es"
+        else:
+            lang_tgt = "zh"  # Default to Chinese
+        # Add page range arguments
+        if page_range == "All":
+            extra_args += ""
+        elif page_range == "First":
+            extra_args += " -p 1"
+        elif page_range == "First 5 pages":
+            extra_args += " -p 1-5"
 
         # Execute translation command
-        command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -s {selected_service}'
+        command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo {lang_tgt} -s {selected_service} {extra_args}'
         print(f"Executing command: {command}")
         print(f"Files in temp directory: {os.listdir(temp_path)}")
 
@@ -129,7 +159,7 @@ def translate(file_path, service, progress=gr.Progress()):
 
 # Global setup
 with gr.Blocks(
-    title="PDF Translation",
+    title="PDF2ZH - PDF Translation with preserved formats",
     css="""
     .secondary-text {color: #999 !important;}
     footer {visibility: hidden}
@@ -141,10 +171,51 @@ with gr.Blocks(
 
     with gr.Row():
         with gr.Column(scale=1):
+            gr.Markdown("## File")
+            file_input = gr.File(
+                label="Document",
+                file_count="single",
+                file_types=[".pdf"],
+                type="filepath",
+            )
+            gr.Markdown("## Option")
             service = gr.Dropdown(
                 label="Service",
+                info="Which translation service to use. Some require keys",
                 choices=["Google", "DeepL", "DeepLX", "Ollama", "Azure"],
                 value="Google",
+            )
+            # lang_src = gr.Dropdown(
+            #     label="Source Language",
+            #     info="Which translation service to use. Some require keys",
+            #     choices=["Google", "DeepL", "DeepLX", "Ollama", "Azure"],
+            #     value="Google",
+            # )
+            lang_tgt = gr.Dropdown(
+                label="Translate to",
+                info="Which language to translate to (optional)",
+                choices=[
+                    "Chinese",
+                    "English",
+                    "French",
+                    "German",
+                    "Japanese",
+                    "Korean",
+                    "Russian",
+                    "Spanish",
+                ],
+                value="Chinese",
+            )
+            page_range = gr.Radio(
+                ["All", "First", "First 5 pages"],
+                label="Pages",
+                info="Translate the full document or just few pages (optional)",
+                value="All",
+            )
+            extra_args = gr.Textbox(
+                label="Advanced Arguments",
+                info="Extra arguments supported in commandline (optional)",
+                value="",
             )
             envs_status = "<span class='env-success'>- Properly configured.</span><br>"
 
@@ -197,16 +268,8 @@ with gr.Blocks(
                     envs_status = "<span class='env-warning'>- Warning: model not in the list.</span><br>- Please report via (<a href='https://github.com/Byaidu/PDFMathTranslate'>guide</a>).<br>"
                 return envs_status
 
-            file_input = gr.File(
-                label="Upload",
-                file_count="single",
-                file_types=[".pdf"],
-                type="filepath",
-            )
             output_file = gr.File(label="Download Translation", visible=False)
             translate_btn = gr.Button("Translate", variant="primary", visible=False)
-            tech_details_tog = gr.Markdown()
-
             tech_details_tog = gr.Markdown(
                 details_wrapper(envs_status),
                 elem_classes=["secondary-text"],
@@ -214,7 +277,8 @@ with gr.Blocks(
             service.select(on_select_service, service, tech_details_tog)
 
         with gr.Column(scale=2):
-            preview = gr.Image(label="Preview", visible=True)
+            gr.Markdown("## Preview")
+            preview = gr.Image(label="Document Preview", visible=True)
 
     # Event handlers
     file_input.upload(
@@ -225,7 +289,7 @@ with gr.Blocks(
 
     translate_btn.click(
         translate,
-        inputs=[file_input, service],
+        inputs=[file_input, service, lang_tgt, page_range, extra_args],
         outputs=[output_file, preview, output_file],
     )
 
