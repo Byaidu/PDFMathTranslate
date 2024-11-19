@@ -432,7 +432,7 @@ class TextConverter(PDFConverter[AnyIO]):
                     if re.match(self.vchar,char):
                         return True
                 else:
-                    if char and char!=' ' and unicodedata.category(char[0]) in ['Lm','Mn','Sk','Sm','Zl','Zp','Zs']: # 文字修饰符、数学符号、分隔符号
+                    if char and char!=' ' and (unicodedata.category(char[0]) in ['Lm','Mn','Sk','Sm','Zl','Zp','Zs'] or ord(char[0]) in range(0x370,0x400)): # 文字修饰符、数学符号、分隔符号、希腊字母
                         return True
                 return False
             ptr=0
