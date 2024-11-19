@@ -170,7 +170,7 @@ Document standard: [PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF
 ## Contributors
 
 <a href="https://github.com/Byaidu/PDFMathTranslate/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Byaidu/PDFMathTranslate" />
+  <img src="https://opencollective.com/PDFMathTranslate/contributors.svg?width=890&button=false" />
 </a>
 
 ## Star History

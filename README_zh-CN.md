@@ -170,7 +170,7 @@ pdf2zh -i
 ## 贡献者
 
 <a href="https://github.com/Byaidu/PDFMathTranslate/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Byaidu/PDFMathTranslate" />
+  <img src="https://opencollective.com/PDFMathTranslate/contributors.svg?width=890&button=false" />
 </a>
 
 ## Star History
