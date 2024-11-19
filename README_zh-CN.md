@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/images/banner.jpg" alt="PDF2ZH">  
+<img src="./docs/images/banner.jpg" width="520px", alt="PDF2ZH">  
   
 [English](README.md) | 简体中文
 
