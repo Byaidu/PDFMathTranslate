@@ -2,9 +2,9 @@
 
 English | [简体中文](README_zh-CN.md)
 
-## PDFMathTranslate
+<img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
-<img src="./docs/images/banner.png" width="320px", alt="PDF2ZH">  
+## PDFMathTranslate
 
 <p>
   <!-- PyPI -->
