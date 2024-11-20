@@ -303,30 +303,14 @@ def setup_gui():
     try:
         demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
     except Exception as e:
-        print(f"Error launching GUI usin 0.0.0.0, using localhost instead: {e}")
+        print(f"Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software.")
         try:
-            demo.launch(
-                server_name="127.0.0.1", debug=True, inbrowser=True, share=False
-            )
+            demo.launch(server_name="127.0.0.1", debug=True, inbrowser=True, share=False)
         except Exception as e:
-            print(
-                f"Error launching GUI using localhost, creating a shareable link instead: {e}"
-            )
+            print(f"Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software.")
             demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
 
 
 # For auto-reloading while developing
 if __name__ == "__main__":
-    try:
-        demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
-    except Exception as e:
-        print(f"Error launching GUI usin 0.0.0.0, using localhost instead: {e}")
-        try:
-            demo.launch(
-                server_name="127.0.0.1", debug=True, inbrowser=True, share=False
-            )
-        except Exception as e:
-            print(
-                f"Error launching GUI using localhost, creating a shareable link instead: {e}"
-            )
-            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
+    setup_gui()
