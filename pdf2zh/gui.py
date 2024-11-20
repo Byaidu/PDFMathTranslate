@@ -28,6 +28,7 @@ lang_map = {
     "Spanish": "es",
 }
 
+
 def pdf_preview(file):
     doc = pymupdf.open(file)
     page = doc[0]
@@ -57,7 +58,14 @@ def translate(
 ):
     """Translate PDF content using selected service."""
     if not file_path:
-        return None, None, gr.update(visible=False)
+        return (
+            None,
+            None,
+            None,
+            gr.update(visible=False),
+            gr.update(visible=False),
+            gr.update(visible=False),
+        )
 
     progress(0, desc="Starting translation...")
 
@@ -82,7 +90,8 @@ def translate(
         output_dir = Path("gradio_files") / "outputs"
         output_dir.mkdir(parents=True, exist_ok=True)
         final_output = output_dir / f"translated_{os.path.basename(file_path)}"
-        # [] TODO: Add support for fuzzy matching of language names
+        final_output_dual = output_dir / f"dual_{os.path.basename(file_path)}"
+
         # Prepare extra arguments
         extra_args = extra_args.strip()
         # Add page range arguments
@@ -95,9 +104,9 @@ def translate(
 
         # Execute translation command
         if selected_service == "google":
-            lang_to="zh-CN" if lang_to=="zh" else lang_to
+            lang_to = "zh-CN" if lang_to == "zh" else lang_to
 
-        if selected_service in ["ollama","openai"]:
+        if selected_service in ["ollama", "openai"]:
             command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo {lang_to} -s {selected_service}:{model_id} {extra_args}'
         else:
             command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo {lang_to} -s {selected_service} {extra_args}'
@@ -132,17 +141,31 @@ def translate(
         print(f"Command completed with return code: {return_code}")
 
         # Check if translation was successful
-        translated_file = temp_path / f"input-zh.pdf" # 输出文件名是固定的
+        translated_file = temp_path / f"input-{lang_to}.pdf"
+        dual_file = temp_path / "input-dual.pdf"
         print(f"Files after translation: {os.listdir(temp_path)}")
 
-        if not translated_file.exists():
-            print(f"Translation failed: Output file not found at {translated_file}")
-            return None, None, gr.update(visible=False)
+        if not translated_file.exists() and not dual_file.exists():
+            print("Translation failed: No output files found")
+            return (
+                None,
+                None,
+                None,
+                gr.update(visible=False),
+                gr.update(visible=False),
+                gr.update(visible=False),
+            )
 
-        # Copy the translated file to a permanent location
-        progress(0.8, desc="Saving translated file...")
-        with open(translated_file, "rb") as src, open(final_output, "wb") as dst:
-            dst.write(src.read())
+        # Copy the translated files to permanent locations
+        progress(0.8, desc="Saving translated files...")
+
+        if translated_file.exists():
+            with open(translated_file, "rb") as src, open(final_output, "wb") as dst:
+                dst.write(src.read())
+
+        if dual_file.exists():
+            with open(dual_file, "rb") as src, open(final_output_dual, "wb") as dst:
+                dst.write(src.read())
 
         # Generate preview of translated PDF
         progress(0.9, desc="Generating preview...")
@@ -153,7 +176,14 @@ def translate(
             translated_preview = None
 
     progress(1.0, desc="Translation complete!")
-    return str(final_output), translated_preview, gr.update(visible=True)
+    return (
+        str(final_output),
+        translated_preview,
+        str(final_output_dual),
+        gr.update(visible=True),
+        gr.update(visible=True),
+        gr.update(visible=True),
+    )
 
 
 # Global setup
@@ -206,7 +236,7 @@ with gr.Blocks(
                 label="Model ID",
                 info="Please enter the identifier of the model you wish to use (e.g., gemma2). This identifier will be used to specify the particular model for translation.",
                 # value="gemma2",
-                visible=False  # hide by default
+                visible=False,  # hide by default
             )
             extra_args = gr.Textbox(
                 label="Advanced Arguments",
@@ -260,16 +290,24 @@ with gr.Blocks(
                 elif value == "Azure":
                     envs_status = env_var_checker("AZURE_APIKEY")
                 elif value == "OpenAI":
-                    model_visibility = gr.update(visible=True,value="gpt-4o")   # show model id when service is selected
+                    model_visibility = gr.update(
+                        visible=True, value="gpt-4o"
+                    )  # show model id when service is selected
                     envs_status = env_var_checker("OPENAI_API_KEY")
                 elif value == "Ollama":
-                    model_visibility = gr.update(visible=True,value="gemma2")   # show model id when service is selected
+                    model_visibility = gr.update(
+                        visible=True, value="gemma2"
+                    )  # show model id when service is selected
                     envs_status = env_var_checker("OLLAMA_HOST")
                 else:
                     envs_status = "<span class='env-warning'>- Warning: model not in the list.</span><br>- Please report via (<a href='https://github.com/Byaidu/PDFMathTranslate'>guide</a>).<br>"
                 return envs_status, model_visibility
 
+            output_title = gr.Markdown("## Translated", visible=False)
             output_file = gr.File(label="Download Translation", visible=False)
+            output_file_dual = gr.File(
+                label="Download Translation (Dual)", visible=False
+            )
             translate_btn = gr.Button("Translate", variant="primary", visible=False)
             tech_details_tog = gr.Markdown(
                 details_wrapper(envs_status),
@@ -291,7 +329,14 @@ with gr.Blocks(
     translate_btn.click(
         translate,
         inputs=[file_input, service, model_id, lang_to, page_range, extra_args],
-        outputs=[output_file, preview, output_file],
+        outputs=[
+            output_file,
+            preview,
+            output_file_dual,
+            output_file,
+            output_file_dual,
+            output_title,
+        ],
     )
 
 
