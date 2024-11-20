@@ -31,10 +31,10 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="updates">Updates</h2>
 
-- [Nov. 20 2024] Support Docker  
-- [Nov. 20 2024] Support multiple-threads  
+- [Nov. 20 2024] Supports Docker  
+- [Nov. 20 2024] Supports multiple-threads  
 - [Nov. 19 2024] Provides an graphical user interface  
-- [Nov. 18 2024] Supports DeepL, DeepLX, and Azure  
+- [Nov. 18 2024] Supports more services, DeepL, DeepLX, and Azure  
 
 <h2 id="install">Installation</h2>
 
