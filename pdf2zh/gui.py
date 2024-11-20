@@ -300,9 +300,33 @@ with gr.Blocks(
 
 
 def setup_gui():
-    demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+    try:
+        demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+    except Exception as e:
+        print(f"Error launching GUI usin 0.0.0.0, using localhost instead: {e}")
+        try:
+            demo.launch(
+                server_name="127.0.0.1", debug=True, inbrowser=True, share=False
+            )
+        except Exception as e:
+            print(
+                f"Error launching GUI using localhost, creating a shareable link instead: {e}"
+            )
+            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
 
 
 # For auto-reloading while developing
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+    try:
+        demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+    except Exception as e:
+        print(f"Error launching GUI usin 0.0.0.0, using localhost instead: {e}")
+        try:
+            demo.launch(
+                server_name="127.0.0.1", debug=True, inbrowser=True, share=False
+            )
+        except Exception as e:
+            print(
+                f"Error launching GUI using localhost, creating a shareable link instead: {e}"
+            )
+            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
