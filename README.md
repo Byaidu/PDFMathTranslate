@@ -25,7 +25,7 @@ PDF scientific paper translation and bilingual comparison.
 
 - 📊 Preserve formulas, charts, table of contents, and annotations *([preview](#preview))*.
 
-- 🌐 Support [multiple languages](#language), and diverse [translation services services](#services).
+- 🌐 Support [multiple languages](#language), and diverse [translation services](#services).
 - 🤖 Provides [commandline tool](#usage), [interactive user interface](#gui), and [Docker](#docker)
 
 <h2 id="updates">Updates</h2>
