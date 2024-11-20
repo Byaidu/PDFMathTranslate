@@ -4,7 +4,7 @@ English | [简体中文](README_zh-CN.md)
 
 <img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
-## PDFMathTranslate
+<h2 id="title">PDFMathTranslate</h2>
 
 <p>
   <!-- PyPI -->
@@ -23,15 +23,18 @@ English | [简体中文](README_zh-CN.md)
 
 PDF scientific paper translation and bilingual comparison.
 
-- 📊 Retain formulas and charts.
+- 📊 Preserve formulas, charts, table of contents, and annotations *([preview](#preview))*.
 
-- 📄 Preserve table of contents.
+- 🌐 Support [multiple languages](#language), and diverse [translation services services](#services).
+- 🤖 Provides [commandline tool](#usage), [interactive user interface](#gui), and [Docker](#docker)
 
-- 🌐 Support multiple translation services.
+<h2 id="updates">Updates</h2>
+- [Nov. 20 2024] Support Docker
+- [Nov. 20 2024] Support multiple-threads
+- [Nov. 19 2024] Provides an graphical user interface
+- [Nov. 18 2024] Supports DeepL, DeepLX, and Azure
 
-Feel free to provide feedback in [issues](https://github.com/Byaidu/PDFMathTranslate/issues) or [user group](https://t.me/+Z9_SgnxmsmA5NzBl).
-
-## Installation
+<h2 id="install">Installation</h2>
 
 Require Python version >=3.8, <=3.12
 
@@ -39,13 +42,13 @@ Require Python version >=3.8, <=3.12
 pip install pdf2zh
 ```
 
-## Usage
+<h2 id="usage">Usage</h2>
 
 Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory. Use Google as the default translation service.
 
 Please refer to [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4) for how to set environment variables.
 
-### Full / partial document translation
+<h2 id="partial">Full / partial document translation</h3>
 
 - Entire document
 
@@ -59,7 +62,7 @@ Please refer to [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57c
   pdf2zh example.pdf -p 1-3,5
   ```
 
-### Specify source and target languages
+<h3 id="language">Specify source and target languages</h3>
 
 See [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages), [DeepL Languages Codes](https://developers.deepl.com/docs/resources/supported-languages)
 
@@ -67,7 +70,7 @@ See [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v
 pdf2zh example.pdf -li en -lo ja
 ```
 
-### Translate with Different Services
+<h3 id="services">Translate with Different Services</h3>
 
 - **DeepL**
 
@@ -129,7 +132,7 @@ pdf2zh example.pdf -li en -lo ja
   pdf2zh example.pdf -s azure
   ```
 
-### Translate wih exceptions
+<h3 id="exceptions">Translate wih exceptions</h3>
 
 Use regex to specify formula fonts and characters that need to be preserved.
 
@@ -137,7 +140,7 @@ Use regex to specify formula fonts and characters that need to be preserved.
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
 
-### Interact with GUI
+<h3 id="gui">Interact with GUI</h3>
 
 <img src="./docs/images/before.png" width="500"/>
 
@@ -147,20 +150,22 @@ pdf2zh -i
 
 See [documentation for GUI](./docs/README_GUI.md) for more details.
 
-### Docker
+<h3 id="docker">Docker</h3>
 
-```bash
-docker pull byaidu/pdf2zh
-docker run -p 7860:7860 byaidu/pdf2zh
-```
+1. Pull and run:
 
-Open in browser:
+    ```bash
+    docker pull byaidu/pdf2zh
+    docker run -p 7860:7860 byaidu/pdf2zh
+    ```
 
-```
-http://localhost:7860/
-```
+2. Open in browser:
 
-## Preview
+    ```
+    http://localhost:7860/
+    ```
+
+<h2 id="preview">Preview</h2>
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
@@ -168,27 +173,31 @@ http://localhost:7860/
 
 ![image](https://github.com/user-attachments/assets/5fe6af83-2f5b-47b1-9dd1-4aee6bc409de)
 
-## Acknowledgement
+<h2 id="reports">Requests and Reports</h2>  
 
-Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
+Feel free to provide feedback in [issues](https://github.com/Byaidu/PDFMathTranslate/issues) or [user group](https://t.me/+Z9_SgnxmsmA5NzBl).
 
-Document parsing: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
+<h2 id="acknowledgement">Acknowledgement</h2>
 
-Document extraction: [MinerU](https://github.com/opendatalab/MinerU)
+- Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
-Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
+- Document parsing: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 
-Layout parsing: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
+- Document extraction: [MinerU](https://github.com/opendatalab/MinerU)
 
-Document standard: [PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
+- Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
-## Contributors
+- Layout parsing: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
+
+- Document standard: [PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
+
+<h2 id="contrib">Contributors</h2>
 
 <a href="https://github.com/Byaidu/PDFMathTranslate/graphs/contributors">
   <img src="https://opencollective.com/PDFMathTranslate/contributors.svg?width=890&button=false" />
 </a>
 
-## Star History
+<h2 id="star_hist">Star History</h2>
 
 <a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">
  <picture>
