@@ -48,6 +48,8 @@ pip install pdf2zh
 
 Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory. Use Google as the default translation service.
 
+![](./docs/images/cmd.explained.png)
+
 Please refer to [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4) for how to set environment variables.
 
 <h2 id="partial">Full / partial document translation</h3>
