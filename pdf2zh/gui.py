@@ -300,9 +300,9 @@ with gr.Blocks(
 
 
 def setup_gui():
-    demo.launch(debug=True, inbrowser=True, share=False)
+    demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
 
 
 # For auto-reloading while developing
 if __name__ == "__main__":
-    demo.launch(debug=True, inbrowser=True, share=False)
+    demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
