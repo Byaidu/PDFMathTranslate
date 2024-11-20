@@ -27,6 +27,8 @@ PDF scientific paper translation and bilingual comparison.
 - 🌐 Support [multiple languages](#language), and diverse [translation services](#services).
 - 🤖 Provides [commandline tool](#usage), [interactive user interface](#gui), and [Docker](#docker)
 
+Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) or [Telegram Group](https://t.me/+Z9_SgnxmsmA5NzBl).
+
 <h2 id="updates">Updates</h2>
 
 - [Nov. 20 2024] Support Docker  
@@ -172,10 +174,6 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
 ![image](https://github.com/user-attachments/assets/0e6d7e44-18cd-443a-8a84-db99edf2c268)
 
 ![image](https://github.com/user-attachments/assets/5fe6af83-2f5b-47b1-9dd1-4aee6bc409de)
-
-<h2 id="reports">Requests and Reports</h2>  
-
-Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) or [Telegram Group](https://t.me/+Z9_SgnxmsmA5NzBl).
 
 <h2 id="acknowledgement">Acknowledgements</h2>
 
