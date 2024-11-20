@@ -147,6 +147,19 @@ pdf2zh -i
 
 See [documentation for GUI](./docs/README_GUI.md) for more details.
 
+### Docker
+
+```bash
+docker pull byaidu/pdf2zh
+docker run -p 7860:7860 byaidu/pdf2zh
+```
+
+Open in browser:
+
+```
+http://localhost:7860/
+```
+
 ## Preview
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
