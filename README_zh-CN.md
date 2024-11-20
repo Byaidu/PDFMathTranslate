@@ -36,23 +36,86 @@
 - [Nov. 19 2024] 提供了[图形用户界面](#gui)
 - [Nov. 18 2024] 支持更多翻译服务，包含 [DeepL, DeepLX, 和 Azure](#services)
 
-<h2 id="install">安装</h2>
+<h2 id="install">安装和使用</h2>
 
-要求 Python 版本 >=3.8, <=3.12
+我们提供了三种使用该项目的方法：[命令行工具](#cmd)、[图形交互界面](#gui) 和 [容器化部署](#docker).
 
-```bash
-pip install pdf2zh
-```
+<h3 id="cmd">方法一、命令行工具</h3>
 
-<h2 id="usage">使用</h2>
+  1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
+  2. 安装此程序：
+
+      ```bash
+      pip install pdf2zh
+      ```
+
+  3. 开始使用：
+
+      ```bash
+      pdf2zh document.pdf
+      ```
+
+<h3 id="gui">方法二、图形交互界面</h3>
+
+1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
+2. 安装此程序：
+
+      ```bash
+      pip install pdf2zh
+      ```
+
+3. 开始在浏览器中使用：
+
+      ```bash
+      pdf2zh -i
+      ```
+
+4. 如果您的浏览器没有自动启动并跳转，请用浏览器打开：
+
+    ```bash
+    http://localhost:7860/
+    ```
+
+<img src="./docs/images/before.png" width="500"/>
+
+查看 [documentation for GUI](./docs/README_GUI.md) 获取细节说明.
+
+<h3 id="docker">方法三、容器化部署</h3>
+
+1. 拉取 Docker 镜像并运行：
+
+    ```bash
+    docker pull byaidu/pdf2zh
+    docker run -p 7860:7860 byaidu/pdf2zh
+    ```
+
+2. 通过浏览器打开：
+
+    ```
+    http://localhost:7860/
+    ```
+
+<h2 id="usage">高级选项</h2>
 
 在命令行中执行翻译命令，生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
 
-<img src="./docs/images/cmd.explained.zh.png" width="580px"  alt="cmd"/>  
+<img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
-关于设置环境变量的详细说明，请参考 [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
+我们在下表中列出了所有高级选项，以供参考：
 
-<h2 id="partial">全文或部分文档翻译</h3>
+| Option    | Function | Example |
+| -------- | ------- |------- |
+| `-i`  | [进入图形界面](#gui) |  `pdf2zh -i` |
+| `-p`  | [仅翻译部分文档](#partial) |  `pdf2zh example.pdf -p 1` |
+| `-li` | [源语言](#languages) |  `pdf2zh example.pdf -li en` |
+| `-lo` | [目标语言](#languages) |  `pdf2zh example.pdf -lo zh` |
+| `-s`  | [指定翻译服务](#services) |  `pdf2zh example.pdf -s deepl` |
+| `-t`  | [多线程](#threads) | `pdf2zh example.pdf -t 1` |
+| `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
+
+某些服务需要设置环境变量。关于设置环境变量的详细说明，请参考 [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
+
+<h3 id="partial">全文或部分文档翻译</h3>
 
 - **全文翻译**
 
@@ -157,28 +220,6 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 pdf2zh example.pdf -t 1
 ```
 
-<h3 id="gui">图形化交互界面</h3>
-<img src="./docs/images/before.png" width="500"/>
-
-```bash
-pdf2zh -i
-```
-
-详见 [GUI 文档](./docs/README_GUI.md)
-
-<h3 id="docker">使用 Docker 部署</h3>
-
-```bash
-docker pull byaidu/pdf2zh
-docker run -p 7860:7860 byaidu/pdf2zh
-```
-
-在浏览器中打开：
-
-```
-http://localhost:7860/
-```
-
 <h2 id="preview">预览</h2>
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
@@ -207,7 +248,7 @@ http://localhost:7860/
   <img src="https://opencollective.com/PDFMathTranslate/contributors.svg?width=890&button=false" />
 </a>
 
-<h2 id="star_hist">Star History</h2>
+<h2 id="star_hist">星标历史</h2>
 
 <a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">
  <picture>

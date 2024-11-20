@@ -115,7 +115,7 @@ In the following table, we list all advanced options for reference:
 
 Some services require setting environmental variables. Please refer to [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4) for how to set environment variables.
 
-<h2 id="partial">Full / partial document translation</h3>
+<h3 id="partial">Full / partial document translation</h3>
 
 - Entire document
 
