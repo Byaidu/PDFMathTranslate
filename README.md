@@ -24,7 +24,6 @@ English | [简体中文](README_zh-CN.md)
 PDF scientific paper translation and bilingual comparison.
 
 - 📊 Preserve formulas, charts, table of contents, and annotations *([preview](#preview))*.
-
 - 🌐 Support [multiple languages](#language), and diverse [translation services](#services).
 - 🤖 Provides [commandline tool](#usage), [interactive user interface](#gui), and [Docker](#docker)
 
@@ -176,9 +175,9 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
 
 <h2 id="reports">Requests and Reports</h2>  
 
-Feel free to provide feedback in [issues](https://github.com/Byaidu/PDFMathTranslate/issues) or [user group](https://t.me/+Z9_SgnxmsmA5NzBl).
+Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) or [Telegram Group](https://t.me/+Z9_SgnxmsmA5NzBl).
 
-<h2 id="acknowledgement">Acknowledgement</h2>
+<h2 id="acknowledgement">Acknowledgements</h2>
 
 - Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 

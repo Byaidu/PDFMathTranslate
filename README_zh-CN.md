@@ -4,7 +4,7 @@
 
 <img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
-## PDFMathTranslate
+<h2 id="title">PDFMathTranslate</h2>
 
 <p>
   <!-- PyPI -->
@@ -21,17 +21,20 @@
 
 </div>
 
-PDF 文档翻译及双语对照工具
+科学 PDF 文档翻译及双语对照工具
 
-- 📊 保留公式和图表
+- 📊 保留公式、图表、目录和注释 *([预览效果](#preview))*
+- 🌐 支持 [多种语言](#language)，和 [诸多翻译服务](#services)
+- 🤖 提供 [命令行工具](#usage)，[图形交互界面](#gui)，以及 [容器化部署](#docker)
 
-- 📄 保留可索引目录
+<h2 id="updates">近期更新</h2>
 
-- 🌐 支持多种翻译服务
+- [Nov. 20 2024] 支持容器化部署
+- [Nov. 20 2024] 支持多线程翻译、提升速度
+- [Nov. 19 2024] 提供了图形用户界面
+- [Nov. 18 2024] 支持更多翻译服务 DeepL, DeepLX, 和 Azure
 
-欢迎在 [issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [用户群](https://t.me/+Z9_SgnxmsmA5NzBl) 中提供反馈
-
-## 安装
+<h2 id="install">安装</h2>
 
 要求 Python 版本 >=3.8, <=3.12
 
@@ -39,13 +42,13 @@ PDF 文档翻译及双语对照工具
 pip install pdf2zh
 ```
 
-## 使用
+<h2 id="usage">使用</h2>
 
 在命令行中执行翻译命令，生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
 
 关于设置环境变量的详细说明，请参考 [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
 
-### 全文或部分文档翻译
+<h2 id="partial">全文或部分文档翻译</h3>
 
 - **全文翻译**
 
@@ -59,7 +62,7 @@ pdf2zh example.pdf
 pdf2zh example.pdf -p 1-3,5
 ```
 
-### 指定源语言和目标语言
+<h3 id="language">指定源语言和目标语言</h3>
 
 参考 [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages), [DeepL Languages Codes](https://developers.deepl.com/docs/resources/supported-languages)
 
@@ -67,7 +70,7 @@ pdf2zh example.pdf -p 1-3,5
 pdf2zh example.pdf -li en -lo ja
 ```
 
-### 使用不同的翻译服务
+<h3 id="services">使用不同的翻译服务</h3>
 
 - **DeepL**
 
@@ -134,7 +137,7 @@ pdf2zh example.pdf -s openai:gpt-4o
 pdf2zh example.pdf -s azure
 ```
 
-### 指定例外规则
+<h3 id="exceptions">指定例外规则</h3>
 
 使用正则表达式指定需保留的公式字体与字符
 
@@ -142,8 +145,7 @@ pdf2zh example.pdf -s azure
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
 
-### 图形化交互界面
-
+<h3 id="gui">图形化交互界面</h3>
 <img src="./docs/images/before.png" width="500"/>
 
 ```bash
@@ -152,7 +154,7 @@ pdf2zh -i
 
 详见 [GUI 文档](./docs/README_GUI.md)
 
-### Docker
+<h3 id="docker">使用 Docker 部署</h3>
 
 ```bash
 docker pull byaidu/pdf2zh
@@ -165,7 +167,7 @@ docker run -p 7860:7860 byaidu/pdf2zh
 http://localhost:7860/
 ```
 
-## 预览
+<h2 id="preview">预览</h2>
 
 ![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
 
@@ -173,27 +175,31 @@ http://localhost:7860/
 
 ![image](https://github.com/user-attachments/assets/5fe6af83-2f5b-47b1-9dd1-4aee6bc409de)
 
-## 致谢
+<h2 id="reports">功能请求和错误报告</h2>  
+  
+欢迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [Telegram 用户群](https://t.me/+Z9_SgnxmsmA5NzBl) 中提供反馈。
 
-文档合并：[PyMuPDF](https://github.com/pymupdf/PyMuPDF)
+<h2 id="acknowledgement">致谢</h2>
 
-文档解析：[Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
+- 文档合并：[PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
-文档提取：[MinerU](https://github.com/opendatalab/MinerU)
+- 文档解析：[Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 
-多线程翻译：[MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
+- 文档提取：[MinerU](https://github.com/opendatalab/MinerU)
 
-布局解析：[DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
+- 多线程翻译：[MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
-文档标准：[PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
+- 布局解析：[DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
-## 贡献者
+- 文档标准：[PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
+
+<h2 id="contrib">贡献者</h2>
 
 <a href="https://github.com/Byaidu/PDFMathTranslate/graphs/contributors">
   <img src="https://opencollective.com/PDFMathTranslate/contributors.svg?width=890&button=false" />
 </a>
 
-## Star History
+<h2 id="star_hist">Star History</h2>
 
 <a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">
  <picture>
