@@ -48,7 +48,7 @@ pip install pdf2zh
 
 在命令行中执行翻译命令，生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
 
-![](./docs/images/cmd.explained.zh.png)
+<img src="./docs/images/cmd.explained.zh.png" width="580px"  alt="cmd"/>  
 
 关于设置环境变量的详细说明，请参考 [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
 
