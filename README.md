@@ -84,7 +84,7 @@ We provide three methods for using this project: [commanline](#cmd), [GUI](#gui)
     http://localhost:7860/
     ```
 
-<img src="./docs/images/before.png" width="500"/>
+    <img src="./docs/images/gui.gif" width="500"/>
 
 See [documentation for GUI](./docs/README_GUI.md) for more details.
 

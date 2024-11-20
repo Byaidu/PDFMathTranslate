@@ -84,7 +84,7 @@
     http://localhost:7860/
     ```
 
-<img src="./docs/images/before.png" width="500"/>
+    <img src="./docs/images/gui.gif" width="500"/>
 
 查看 [documentation for GUI](./docs/README_GUI.md) 获取细节说明.
 
