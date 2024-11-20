@@ -1,0 +1,20 @@
+FROM python:3.12
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install pdf2zh
+RUN mkdir -p /data
+RUN chmod 777 /data
+RUN mkdir -p /app
+RUN chmod 777 /app
+RUN mkdir -p /.cache
+RUN chmod 777 /.cache
+RUN mkdir -p ./gradio_files
+RUN chmod 777 ./gradio_files
+
+CMD ["pdf2zh", "-i"]
