@@ -33,11 +33,12 @@
 
 <h2 id="updates">近期更新</h2>
 
-- [Nov. 20 2024] 🌟 提供了 [在线演示](#demo)！
-- [Nov. 20 2024] 支持 [容器化部署](#docker)
-- [Nov. 20 2024] 支持速度更快的 [多线程翻译](#threads)
-- [Nov. 19 2024] 提供了[图形用户界面](#gui)
-- [Nov. 18 2024] 支持更多翻译服务，包含 [DeepL, DeepLX, 和 Azure](#services)
+- [Nov. 20 2024] 图形用户界面现在支持指定 Ollama 各模型 *(by [@IuvenisSapiens](https://github.com/IuvenisSapiens))*  
+- [Nov. 20 2024] 🌟 提供了 [在线演示](#demo)！ *(by [@reycn](https://github.com/reycn))*  
+- [Nov. 20 2024] 支持 [容器化部署](#docker) *(by [@Byaidu](https://github.com/Byaidu))*  
+- [Nov. 20 2024] 支持速度更快的 [多线程翻译](#threads) *(by [@Byaidu](https://github.com/Byaidu))*  
+- [Nov. 19 2024] 提供了[图形用户界面](#gui) *(by [@reycn](https://github.com/reycn))*  
+- [Nov. 18 2024] 支持更多翻译服务，包含 [DeepL, DeepLX, 和 Azure](#services) *(by [@reycn](https://github.com/reycn), [@Hanaasagi](https://github.com/Hanaasagi))*  
 
 <h2 id="preview">效果预览</h2>
 

@@ -33,11 +33,12 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="updates">Updates</h2>
 
-- [Nov. 20 2024] 🌟 [Demo](#demo)  online!
-- [Nov. 20 2024] Supports [Docker](#docker)  
-- [Nov. 20 2024] Supports [multiple-threads translation](#threads)
-- [Nov. 19 2024] Provides an [interactive graphical user interface](#gui)
-- [Nov. 18 2024] Supports [more services: DeepL, DeepLX, and Azure](#services)
+- [Nov. 20 2024] GUI now supports specifying Ollama models *(by [@IuvenisSapiens](https://github.com/IuvenisSapiens))*  
+- [Nov. 20 2024] 🌟 [Demo](#demo)  online! *(by [@reycn](https://github.com/reycn))*  
+- [Nov. 20 2024] Supports [Docker](#docker) *(by [@Byaidu](https://github.com/Byaidu))*  
+- [Nov. 20 2024] Supports [multiple-threads translation](#threads) *(by [@Byaidu](https://github.com/Byaidu))*  
+- [Nov. 19 2024] Provides an [interactive graphical user interface](#gui) *(by [@reycn](https://github.com/reycn))*  
+- [Nov. 18 2024] Supports [more services: DeepL, DeepLX, and Azure](#services) *(by [@reycn](https://github.com/reycn), [@Hanaasagi](https://github.com/Hanaasagi))*  
 
 <h2 id="preview">Preview</h2>
 
