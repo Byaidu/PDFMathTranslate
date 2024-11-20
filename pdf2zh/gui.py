@@ -71,6 +71,7 @@ def translate(
         output_dir = Path("gradio_files") / "outputs"
         output_dir.mkdir(parents=True, exist_ok=True)
         final_output = output_dir / f"translated_{os.path.basename(file_path)}"
+        # [] TODO: Add support for fuzzy matching of language names
         # Prepare extra arguments
         extra_args = extra_args.strip()
         lang_to = lang_to.lower()
@@ -166,7 +167,7 @@ def translate(
 
 # Global setup
 with gr.Blocks(
-    title="PDF2ZH - PDF Translation with preserved formats",
+    title="PDFMathTranslate - PDF Translation with preserved formats",
     css="""
     .secondary-text {color: #999 !important;}
     footer {visibility: hidden}
@@ -174,7 +175,7 @@ with gr.Blocks(
     .env-success {color: #559900 !important;}
     """,
 ) as demo:
-    gr.Markdown("# PDF Translation")
+    gr.Markdown("# PDFMathTranslate")
 
     with gr.Row():
         with gr.Column(scale=1):
@@ -237,6 +238,7 @@ with gr.Blocks(
                 <details>
                     <summary>Technical details</summary>
                     {text_markdown}
+                    - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
                     - GUI by: <a href="https://github.com/reycn">Rongxin</a>    
                 </details>"""
                 return text
@@ -311,9 +313,23 @@ with gr.Blocks(
 
 
 def setup_gui():
-    demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+    try:
+        demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+    except Exception:
+        print(
+            "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
+        )
+        try:
+            demo.launch(
+                server_name="127.0.0.1", debug=True, inbrowser=True, share=False
+            )
+        except Exception:
+            print(
+                "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
+            )
+            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
 
 
 # For auto-reloading while developing
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+    setup_gui()

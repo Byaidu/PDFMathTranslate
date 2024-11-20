@@ -16,7 +16,7 @@ English | [简体中文](README_zh-CN.md)
   <a href="./LICENSE">
     <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/></a>
   <a href="https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker">
-    <img src="https://img.shields.io/badge/%F0%9F%A4%97-Online%20Demo-yellow"/></a>
+    <img src="https://img.shields.io/badge/%F0%9F%A4%97-Online%20Demo-FF9E0D"/></a>
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
     <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"/></a>
 </p>
@@ -102,6 +102,20 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
     ```
     http://localhost:7860/
     ```
+
+For docker deployment on cloud service:
+
+<a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" height="26"></a>
+
+<a href="https://render.com/deploy">
+  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Koyeb" height="26"></a>
+
+<a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
+  <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="26"></a>
+
+<a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
+  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
 
 <h2 id="usage">Advanced Options</h2>
 
