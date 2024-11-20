@@ -141,7 +141,7 @@ def translate(
         print(f"Command completed with return code: {return_code}")
 
         # Check if translation was successful
-        translated_file = temp_path / f"input-{lang_to}.pdf"
+        translated_file = temp_path / "input-zh.pdf" # <= Do not change filename
         dual_file = temp_path / "input-dual.pdf"
         print(f"Files after translation: {os.listdir(temp_path)}")
 
