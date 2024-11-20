@@ -24,17 +24,17 @@
 科学 PDF 文档翻译及双语对照工具
 
 - 📊 保留公式、图表、目录和注释 *([预览效果](#preview))*
-- 🌐 支持 [多种语言](#language)，和 [诸多翻译服务](#services)
+- 🌐 支持 [多种语言](#language) 和 [诸多翻译服务](#services)
 - 🤖 提供 [命令行工具](#usage)，[图形交互界面](#gui)，以及 [容器化部署](#docker)
 
 欢迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [Telegram 用户群](https://t.me/+Z9_SgnxmsmA5NzBl) 中提供反馈。
 
 <h2 id="updates">近期更新</h2>
 
-- [Nov. 20 2024] 支持容器化部署
-- [Nov. 20 2024] 支持多线程翻译、提升速度
-- [Nov. 19 2024] 提供了图形用户界面
-- [Nov. 18 2024] 支持更多翻译服务 DeepL, DeepLX, 和 Azure
+- [Nov. 20 2024] 支持 [容器化部署](#docker)
+- [Nov. 20 2024] 支持速度更快的 [多线程翻译](#threads)
+- [Nov. 19 2024] 提供了[图形用户界面](#gui)
+- [Nov. 18 2024] 支持更多翻译服务，包含 [DeepL, DeepLX, 和 Azure](#services)
 
 <h2 id="install">安装</h2>
 
@@ -147,6 +147,14 @@ pdf2zh example.pdf -s azure
 
 ```bash
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
+```
+
+<h3 id="threads">指定线程数量</h3>
+
+使用 `-t` 指定翻译时使用的线程数量：
+
+```bash
+pdf2zh example.pdf -t 1
 ```
 
 <h3 id="gui">图形化交互界面</h3>

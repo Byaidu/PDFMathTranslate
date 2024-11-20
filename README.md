@@ -31,10 +31,10 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="updates">Updates</h2>
 
-- [Nov. 20 2024] Supports Docker  
-- [Nov. 20 2024] Supports multiple-threads  
-- [Nov. 19 2024] Provides an graphical user interface  
-- [Nov. 18 2024] Supports more services, DeepL, DeepLX, and Azure  
+- [Nov. 20 2024] Supports [Docker](#docker)  
+- [Nov. 20 2024] Supports [multiple-threads translation](#threads)
+- [Nov. 19 2024] Provides an [interactive graphical user interface](#gui)
+- [Nov. 18 2024] Supports [more services: DeepL, DeepLX, and Azure](#services)
 
 <h2 id="install">Installation</h2>
 
@@ -142,6 +142,14 @@ Use regex to specify formula fonts and characters that need to be preserved.
 
 ```bash
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
+```
+
+<h3 id="threads">Specify threads</h3>
+
+Use `-t` to specify how many threads to use in translation:
+
+```bash
+pdf2zh example.pdf -t 1
 ```
 
 <h3 id="gui">Interact with GUI</h3>
