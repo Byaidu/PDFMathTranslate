@@ -339,23 +339,53 @@ with gr.Blocks(
         ],
     )
 
+# Global setup
+with gr.Blocks(
+    title="PDFMathTranslate - PDF Translation with preserved formats",
+    css="""
+    .secondary-text {color: #999 !important;}
+    footer {visibility: hidden}
+    .env-warning {color: #dd5500 !important;}
+    .env-success {color: #559900 !important;}
+    """,
+) as tutorial:
+    gr.Markdown("# Configuration")
+    gr.Markdown(
+        """<span class='env-success'>- Properly configured.</span><br>
+        - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
+        - GUI by: <a href="https://github.com/reycn">Rongxin</a>"""
+    )
 
-def setup_gui():
+
+def launch_module(module):
     try:
-        demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+        module.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
     except Exception:
         print(
             "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
         )
         try:
-            demo.launch(
+            module.launch(
                 server_name="127.0.0.1", debug=True, inbrowser=True, share=False
             )
         except Exception:
             print(
                 "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
             )
-            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
+            module.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
+
+
+def setup_gui():
+    # Check if environmental variables of tutorial is properly configured
+    if (
+        os.environ.get("PDF2ZH_TUTORIAL") is None
+        or os.environ.get("PDF2ZH_TUTORIAL") == ""
+        or os.environ.get("PDF2ZH_TUTORIAL") == False
+    ):
+        print("No configurations found; entering tutorial mode")
+        launch_module(tutorial)
+    else:
+        launch_module(demo)
 
 
 # For auto-reloading while developing
