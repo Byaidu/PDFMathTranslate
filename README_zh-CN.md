@@ -109,9 +109,18 @@
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" height="26">
 </a>
 
+<a href="https://render.com/deploy">
+  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Koyeb" height="26">
+</a>
+
+<a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
+  <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="26">
+</a>
+
 <a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
   <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26">
 </a>
+
 <h2 id="usage">高级选项</h2>
 
 在命令行中执行翻译命令，生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
