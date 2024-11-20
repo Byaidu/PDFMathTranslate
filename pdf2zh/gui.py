@@ -34,7 +34,7 @@ def upload_file(file, service, progress=gr.Progress()):
 
 
 def translate(
-    file_path, service, lang_to, page_range, extra_args, progress=gr.Progress()
+    file_path, service, ollama_model_id, lang_to, page_range, extra_args, progress=gr.Progress()
 ):
     """Translate PDF content using selected service."""
     if not file_path:
@@ -58,7 +58,7 @@ def translate(
             "Google": "google",
             "DeepL": "deepl",
             "DeepLX": "deeplx",
-            "Ollama": "ollama:gemma2",
+            "Ollama": "ollama",
             "Azure": "azure",
         }
         selected_service = service_map.get(service, "google")
@@ -105,6 +105,8 @@ def translate(
             command = (
                 f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo "zh-CN" {extra_args}'
             )
+        elif selected_service == "ollama":
+            command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo {lang_to} -s {selected_service}:{ollama_model_id} {extra_args}'
         else:
             command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo {lang_to} -s {selected_service} {extra_args}'
         print(f"Executing command: {command}")
@@ -217,6 +219,11 @@ with gr.Blocks(
                 info="Translate the full document or just few pages (optional)",
                 value="All",
             )
+            ollama_model_id = gr.Textbox(
+                label="Ollama Model ID",
+                info="Please enter the identifier of the Ollama model you wish to use (e.g., gemma2). This identifier will be used to specify the particular model for translation.",
+                value="gemma2",
+            )
             extra_args = gr.Textbox(
                 label="Advanced Arguments",
                 info="Extra arguments supported in commandline (optional)",
@@ -294,7 +301,7 @@ with gr.Blocks(
 
     translate_btn.click(
         translate,
-        inputs=[file_input, service, lang_to, page_range, extra_args],
+        inputs=[file_input, service, ollama_model_id, lang_to, page_range, extra_args],
         outputs=[output_file, preview, output_file],
     )
 
