@@ -44,7 +44,9 @@
 
 <h2 id="preview">效果预览</h2>
 
-![image](./docs/images/preview.gif)
+<div align="center">
+<img src="./docs/images/preview.gif" width="80%"/>
+</div>
 
 <h2 id="demo">在线演示 🌟</h2>
 

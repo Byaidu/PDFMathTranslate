@@ -44,7 +44,9 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="preview">Preview</h2>
 
-![image](./docs/images/preview.gif)
+<div align="center">
+<img src="./docs/images/preview.gif" width="80%"/>
+</div>
 
 <h2 id="demo">Demo 🌟</h2>
 
