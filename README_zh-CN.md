@@ -103,6 +103,12 @@
     http://localhost:7860/
     ```
 
+用于在云服务上部署容器镜像：
+
+<a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" height="24">
+</a>
+
 <h2 id="usage">高级选项</h2>
 
 在命令行中执行翻译命令，生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务

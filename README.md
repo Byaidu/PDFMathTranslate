@@ -103,6 +103,12 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
     http://localhost:7860/
     ```
 
+For docker deployment on cloud service:
+
+<a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" height="24">
+</a>
+
 <h2 id="usage">Advanced Options</h2>
 
 Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory. Use Google as the default translation service.
