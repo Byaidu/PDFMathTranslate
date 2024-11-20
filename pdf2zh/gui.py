@@ -8,6 +8,25 @@ import gradio as gr
 import numpy as np
 import pymupdf
 
+# Map service names to pdf2zh service options
+service_map = {
+    "Google": "google",
+    "DeepL": "deepl",
+    "DeepLX": "deeplx",
+    "Ollama": "ollama",
+    "OpenAI": "openai",
+    "Azure": "azure",
+}
+lang_map = {
+    "Chinese": "zh",
+    "English": "en",
+    "French": "fr",
+    "German": "de",
+    "Japanese": "ja",
+    "Korean": "ko",
+    "Russian": "ru",
+    "Spanish": "es",
+}
 
 def pdf_preview(file):
     doc = pymupdf.open(file)
@@ -34,7 +53,7 @@ def upload_file(file, service, progress=gr.Progress()):
 
 
 def translate(
-    file_path, service, model_id, lang_to, page_range, extra_args, progress=gr.Progress()
+    file_path, service, model_id, lang, page_range, extra_args, progress=gr.Progress()
 ):
     """Translate PDF content using selected service."""
     if not file_path:
@@ -53,17 +72,8 @@ def translate(
         with open(file_path, "rb") as src, open(input_pdf, "wb") as dst:
             dst.write(src.read())
 
-        # Map service names to pdf2zh service options
-        service_map = {
-            "Google": "google",
-            "DeepL": "deepl",
-            "DeepLX": "deeplx",
-            "Ollama": "ollama",
-            "OpenAI": "openai",
-            "Azure": "azure",
-        }
         selected_service = service_map.get(service, "google")
-        lang_to = "zh"
+        lang_to = lang_map.get(lang, "zh")
 
         # Execute translation in temp directory with real-time progress
         progress(0.3, desc=f"Starting translation with {selected_service}...")
@@ -75,25 +85,6 @@ def translate(
         # [] TODO: Add support for fuzzy matching of language names
         # Prepare extra arguments
         extra_args = extra_args.strip()
-        lang_to = lang_to.lower()
-        if lang_to == "chinese":
-            lang_to = "zh"
-        elif lang_to == "english":
-            lang_to = "en"
-        elif lang_to == "french":
-            lang_to = "fr"
-        elif lang_to == "german":
-            lang_to = "de"
-        elif lang_to == "japanese":
-            lang_to = "ja"
-        elif lang_to == "korean":
-            lang_to = "ko"
-        elif lang_to == "russian":
-            lang_to = "ru"
-        elif lang_to == "spanish":
-            lang_to = "es"
-        else:
-            lang_to = "zh"  # Default to Chinese
         # Add page range arguments
         if page_range == "All":
             extra_args += ""
@@ -103,11 +94,10 @@ def translate(
             extra_args += " -p 1-5"
 
         # Execute translation command
-        if selected_service == "google" and lang_to == "zh":
-            command = (
-                f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo "zh-CN" {extra_args}'
-            )
-        elif selected_service in ["ollama","openai"]:
+        if selected_service == "google":
+            lang_to="zh-CN" if lang_to=="zh" else lang_to
+
+        if selected_service in ["ollama","openai"]:
             command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo {lang_to} -s {selected_service}:{model_id} {extra_args}'
         else:
             command = f'cd "{temp_path}" && pdf2zh "{input_pdf}" -lo {lang_to} -s {selected_service} {extra_args}'
@@ -142,7 +132,7 @@ def translate(
         print(f"Command completed with return code: {return_code}")
 
         # Check if translation was successful
-        translated_file = temp_path / f"input-{lang_to}.pdf"
+        translated_file = temp_path / f"input-zh.pdf" # 输出文件名是固定的
         print(f"Files after translation: {os.listdir(temp_path)}")
 
         if not translated_file.exists():
@@ -191,7 +181,7 @@ with gr.Blocks(
             service = gr.Dropdown(
                 label="Service",
                 info="Which translation service to use. Some require keys",
-                choices=["Google", "DeepL", "DeepLX", "Ollama", "OpenAI", "Azure"],
+                choices=service_map.keys(),
                 value="Google",
             )
             # lang_src = gr.Dropdown(
@@ -203,16 +193,7 @@ with gr.Blocks(
             lang_to = gr.Dropdown(
                 label="Translate to",
                 info="Which language to translate to (optional)",
-                choices=[
-                    "Chinese",
-                    "English",
-                    "French",
-                    "German",
-                    "Japanese",
-                    "Korean",
-                    "Russian",
-                    "Spanish",
-                ],
+                choices=lang_map.keys(),
                 value="Chinese",
             )
             page_range = gr.Radio(
