@@ -29,10 +29,11 @@ PDF scientific paper translation and bilingual comparison.
 - 🤖 Provides [commandline tool](#usage), [interactive user interface](#gui), and [Docker](#docker)
 
 <h2 id="updates">Updates</h2>
-- [Nov. 20 2024] Support Docker
-- [Nov. 20 2024] Support multiple-threads
-- [Nov. 19 2024] Provides an graphical user interface
-- [Nov. 18 2024] Supports DeepL, DeepLX, and Azure
+
+- [Nov. 20 2024] Support Docker  
+- [Nov. 20 2024] Support multiple-threads  
+- [Nov. 19 2024] Provides an graphical user interface  
+- [Nov. 18 2024] Supports DeepL, DeepLX, and Azure  
 
 <h2 id="install">Installation</h2>
 
