@@ -39,6 +39,10 @@
 - [Nov. 19 2024] 提供了[图形用户界面](#gui)
 - [Nov. 18 2024] 支持更多翻译服务，包含 [DeepL, DeepLX, 和 Azure](#services)
 
+<h2 id="preview">效果预览</h2>
+
+![image](./docs/images/preview.gif)
+
 <h2 id="demo">在线演示 🌟</h2>
 
 你可以立即尝试 [在 HuggingFace 上的在线演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker) 而无需安装.  
@@ -242,14 +246,6 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 pdf2zh example.pdf -t 1
 ```
 
-<h2 id="preview">预览</h2>
-
-![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
-
-![image](https://github.com/user-attachments/assets/0e6d7e44-18cd-443a-8a84-db99edf2c268)
-
-![image](https://github.com/user-attachments/assets/5fe6af83-2f5b-47b1-9dd1-4aee6bc409de)
-
 <h2 id="acknowledgement">致谢</h2>
 
 - 文档合并：[PyMuPDF](https://github.com/pymupdf/PyMuPDF)
@@ -276,6 +272,6 @@ pdf2zh example.pdf -t 1
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" width="70%"/>
  </picture>
 </a>

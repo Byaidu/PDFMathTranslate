@@ -39,6 +39,10 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 - [Nov. 19 2024] Provides an [interactive graphical user interface](#gui)
 - [Nov. 18 2024] Supports [more services: DeepL, DeepLX, and Azure](#services)
 
+<h2 id="preview">Preview</h2>
+
+![image](./docs/images/preview.gif)
+
 <h2 id="demo">Demo 🌟</h2>
 
 You can try [our demo on HuggingFace](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker) without installation.  
@@ -237,14 +241,6 @@ Use `-t` to specify how many threads to use in translation:
 pdf2zh example.pdf -t 1
 ```
 
-<h2 id="preview">Preview</h2>
-
-![image](https://github.com/user-attachments/assets/57e1cde6-c647-4af8-8f8f-587a40050dde)
-
-![image](https://github.com/user-attachments/assets/0e6d7e44-18cd-443a-8a84-db99edf2c268)
-
-![image](https://github.com/user-attachments/assets/5fe6af83-2f5b-47b1-9dd1-4aee6bc409de)
-
 <h2 id="acknowledgement">Acknowledgements</h2>
 
 - Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
@@ -271,6 +267,6 @@ pdf2zh example.pdf -t 1
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" width="70%"/>
  </picture>
 </a>
