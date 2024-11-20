@@ -31,10 +31,16 @@
 
 <h2 id="updates">近期更新</h2>
 
+- [Nov. 20 2024] 🌟 提供了 [在线演示](#demo)！
 - [Nov. 20 2024] 支持 [容器化部署](#docker)
 - [Nov. 20 2024] 支持速度更快的 [多线程翻译](#threads)
 - [Nov. 19 2024] 提供了[图形用户界面](#gui)
 - [Nov. 18 2024] 支持更多翻译服务，包含 [DeepL, DeepLX, 和 Azure](#services)
+
+<h2 id="demo">在线演示 🌟</h2>
+
+你可以立即尝试 [在 HuggingFace 上的在线演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker) 而无需安装.  
+请注意，演示的计算资源有限，因此请避免滥用。
 
 <h2 id="install">安装和使用</h2>
 

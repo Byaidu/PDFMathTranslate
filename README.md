@@ -31,10 +31,16 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="updates">Updates</h2>
 
+- [Nov. 20 2024] 🌟 [Demo](#demo)  online!
 - [Nov. 20 2024] Supports [Docker](#docker)  
 - [Nov. 20 2024] Supports [multiple-threads translation](#threads)
 - [Nov. 19 2024] Provides an [interactive graphical user interface](#gui)
 - [Nov. 18 2024] Supports [more services: DeepL, DeepLX, and Azure](#services)
+
+<h2 id="demo">Demo 🌟</h2>
+
+You can try [our demo on HuggingFace](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker) without installation.  
+Note that the computing resources of the demo are limited, so please avoid abusing them.
 
 <h2 id="install">Installation and Usage</h2>
 
