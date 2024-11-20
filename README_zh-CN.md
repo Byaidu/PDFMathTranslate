@@ -17,6 +17,8 @@
     <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/></a>
   <a href="https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker">
     <img src="https://img.shields.io/badge/%F0%9F%A4%97-Online%20Demo-FF9E0D"/></a>
+  <a href="https://github.com/Byaidu/PDFMathTranslate/pulls">
+    <img src="https://img.shields.io/badge/contributions-welcome-green"/></a>
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
     <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"/></a>
 </p>
