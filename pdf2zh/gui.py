@@ -223,6 +223,7 @@ with gr.Blocks(
                 label="Ollama Model ID",
                 info="Please enter the identifier of the Ollama model you wish to use (e.g., gemma2). This identifier will be used to specify the particular model for translation.",
                 value="gemma2",
+                visible=False  # hide by default
             )
             extra_args = gr.Textbox(
                 label="Advanced Arguments",
@@ -260,6 +261,8 @@ with gr.Blocks(
                 return details_wrapper(envs_status)
 
             def on_select_service(value, evt: gr.EventData):
+                # hide ollama model id by default
+                ollama_visibility = gr.update(visible=False)
                 # add a text description
                 if value == "Google":
                     envs_status = details_wrapper(
@@ -275,10 +278,11 @@ with gr.Blocks(
                 elif value == "OpenAI":
                     envs_status = env_var_checker("OPENAI_API_KEY")
                 elif value == "Ollama":
+                    ollama_visibility = gr.update(visible=True)   # show ollama model id when Ollama service is selected
                     envs_status = env_var_checker("OLLAMA_HOST")
                 else:
                     envs_status = "<span class='env-warning'>- Warning: model not in the list.</span><br>- Please report via (<a href='https://github.com/Byaidu/PDFMathTranslate'>guide</a>).<br>"
-                return envs_status
+                return envs_status, ollama_visibility
 
             output_file = gr.File(label="Download Translation", visible=False)
             translate_btn = gr.Button("Translate", variant="primary", visible=False)
@@ -286,7 +290,7 @@ with gr.Blocks(
                 details_wrapper(envs_status),
                 elem_classes=["secondary-text"],
             )
-            service.select(on_select_service, service, tech_details_tog)
+            service.select(on_select_service, service, [tech_details_tog, ollama_model_id])
 
         with gr.Column(scale=2):
             gr.Markdown("## Preview")
