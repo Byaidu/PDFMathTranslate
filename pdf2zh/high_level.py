@@ -164,7 +164,7 @@ def extract_text_to_fp(
         caching=not disable_caching,
     ), total=total_pages, position=0):
         pix = doc_en[page.pageno].get_pixmap()
-        image = np.fromstring(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
+        image = np.fromstring(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)[:, :, ::-1]
         page_layout=model.predict(
             image,
             imgsz=int(pix.height/32)*32,
