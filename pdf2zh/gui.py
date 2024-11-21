@@ -141,7 +141,7 @@ def translate(
         print(f"Command completed with return code: {return_code}")
 
         # Check if translation was successful
-        translated_file = temp_path / "input-zh.pdf" # <= Do not change filename
+        translated_file = temp_path / "input-zh.pdf"  # <= Do not change filename
         dual_file = temp_path / "input-dual.pdf"
         print(f"Files after translation: {os.listdir(temp_path)}")
 
@@ -249,7 +249,7 @@ with gr.Blocks(
     #     color: #165DFF !important;
     # }
     """,
-) as demo:
+) as demo1:
     gr.Markdown("# PDFMathTranslate")
 
     with gr.Row():
@@ -394,54 +394,248 @@ with gr.Blocks(
         ],
     )
 
+
+class EnvSync:
+    """Two-way synchronization between a variable and its system environment counterpart."""
+
+    def __init__(self, env_name: str, default_value: str = ""):
+        self._name = env_name
+        self._value = os.environ.get(env_name, default_value)
+        # Initialize the environment variable if it doesn't exist
+        if env_name not in os.environ:
+            os.environ[env_name] = default_value
+
+    @property
+    def value(self) -> str:
+        """Get the current value, ensuring sync with system env."""
+        sys_value = os.environ.get(self._name)
+        if sys_value != self._value:
+            self._value = sys_value
+        return self._value
+
+    @value.setter
+    def value(self, new_value: str):
+        """Set the value and sync with system env."""
+        self._value = new_value
+        os.environ[self._name] = new_value
+
+    def __str__(self) -> str:
+        return self.value
+
+    def __bool__(self) -> bool:
+        return bool(self.value)
+
+
 # Global setup
 with gr.Blocks(
     title="PDFMathTranslate - PDF Translation with preserved formats",
+    theme=gr.themes.Default(
+        primary_hue=custom_blue, spacing_size="md", radius_size="lg"
+    ),
     css="""
-    .secondary-text {color: #999 !important;}
+    # .secondary-text {color: #999 !important;}
     footer {visibility: hidden}
     .env-warning {color: #dd5500 !important;}
     .env-success {color: #559900 !important;}
+    .logo {border: transparent;}
+    .logo label {display: none;}
+    .logo .top-panel {display: none;}
+    .title {text-align: center;}
+    .title h1 {color: #999999 !important;}
+    .question  {text-align: center;}
+    .question h2 {color: #165DFF !important;}
+    .info-text {text-align: center; margin-top: -5px;}
+    .info-text p {color: #aaaaaa !important;}
     """,
-) as tutorial:
-    gr.Markdown("# Configuration")
-    gr.Markdown(
-        """<span class='env-success'>- Properly configured.</span><br>
-        - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
-        - GUI by: <a href="https://github.com/reycn">Rongxin</a>"""
-    )
-
-
-def launch_module(module):
-    try:
-        module.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
-    except Exception:
-        print(
-            "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
+) as demo3:
+    gr.Markdown(" ", elem_classes=["title"])
+    gr.Markdown(" ", elem_classes=["title"])
+    gr.Markdown(" ", elem_classes=["title"])
+    gr.Markdown(" ", elem_classes=["title"])
+    gr.Image("./docs/images/banner.nocolor.png", elem_classes=["logo"], width=400)
+    gr.Markdown("# Configuration Guide<br/><br/>", elem_classes=["title"])
+    gr.Markdown("## Use Google Translate?<br/>", elem_classes=["question"])
+    with gr.Row():
+        gr.Markdown("")
+        use_google = gr.Button(
+            "Yes",
+            variant="primary",
+            elem_classes=["secondary-text"],
         )
-        try:
-            module.launch(
-                server_name="127.0.0.1", debug=True, inbrowser=True, share=False
-            )
-        except Exception:
-            print(
-                "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
-            )
-            module.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
+        use_other = gr.Button(
+            "No",
+            variant="secondary",
+            elem_classes=["secondary-text"],
+        )
+        gr.Markdown("")
+    with gr.Row():
+        gr.Markdown("")
+        gr.Markdown(
+            "Google Translate",
+            elem_classes=["info-text"],
+        )
+        gr.Markdown(
+            "DeepL, OpenAI, and more",
+            elem_classes=["info-text"],
+        )
+        gr.Markdown("")
+    # gr.Markdown(
+    #     """<span class='env-success'>- Properly configured.</span><br>
+    #     - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
+    #     - GUI by: <a href="https://github.com/reycn">Rongxin</a>"""
+    # )
+
+with gr.Blocks(
+    title="PDFMathTranslate - PDF Translation with preserved formats",
+    theme=gr.themes.Default(
+        primary_hue=custom_blue, spacing_size="md", radius_size="lg"
+    ),
+    css="""
+    # .secondary-text {color: #999 !important;}
+    footer {visibility: hidden}
+    .env-warning {color: #dd5500 !important;}
+    .env-success {color: #559900 !important;}
+    .logo {border: transparent;
+    height: 10vh;}
+    .logo label {display: none;}
+    .logo .top-panel {display: none;}
+    .title {text-align: center;
+    height: 5vh;}
+    .title h1 {color: #999999 !important;}
+    .question  {text-align: center;}
+    .question h2 {color: #165DFF !important;}
+    .info-text {text-align: center; margin-top: -5px;}
+    .info-text p {color: #aaaaaa !important;}
+
+    @keyframes pulse-background {
+        0% { background-color: #FFFFFF; }
+        25% { background-color: #FFFFFF; }
+        50% { background-color: #E8F3FF; }
+        75% { background-color: #FFFFFF; }
+        100% { background-color: #FFFFFF; }
+    }
+    
+    /* Add dashed border to input-file class */
+    .input-file {
+        border: 1.2px dashed #165DFF !important;
+        border-radius: 6px !important;
+        # background-color: #ffffff !important;
+        animation: pulse-background 2s ease-in-out;
+        transition: background-color 0.4s ease-out;
+        width: 80vw;
+        height: 60vh;
+        margin: 0 auto;
+    }
+
+    .input-file:hover {
+        border: 1.2px dashed #165DFF !important;
+        border-radius: 6px !important;
+        color: #165DFF !important;
+        background-color: #E8F3FF !important;
+        transition: background-color 0.2s ease-in;
+    }
 
 
-def setup_gui():
-    # Check if environmental variables of tutorial is properly configured
-    if (
-        os.environ.get("PDF2ZH_TUTORIAL") is None
-        or os.environ.get("PDF2ZH_TUTORIAL") == ""
-        or os.environ.get("PDF2ZH_TUTORIAL") == False
-    ):
-        print("No configurations found; entering tutorial mode")
-        launch_module(tutorial)
-    else:
-        launch_module(demo)
+    .input-file label {
+        color: #165DFF !important;
+        border: 1.2px dashed #165DFF !important;
+        border-left: none !important;
+        border-top: none !important;
+    }
+    .input-file .top-panel {
+        color: #165DFF !important;
+        border: 1.2px dashed #165DFF !important;
+        border-right: none !important;
+        border-top: none !important;
+    }
+    .input-file .filename {
+        color: #165DFF !important;
+        background-color: #FFFFFF !important;
+    }
+    .input-file .download {
+        color: #165DFF !important;
+        background-color: #FFFFFF !important;
+    }
+    .input-file .wrap {
+        color: #165DFF !important;
+    }
+    .input-file .or {
+        color: #165DFF !important;
+    }
 
+    .options-row {
+        align-items: center;
+         width: 80vw;
+    }
+    .options-row div fieldset  {
+        align-items: center;}
+    .options-row [data-testid="block-info"] {
+        display: none !important;}
+    .options-row .form {border: none !important;}
+    .logo-row {
+        align-items: center;
+    width: 80vw;}
+    .title-row {
+        align-items: center;
+    width: 80vw;}
+    .details-row {
+        align-items: center;
+    width: 80vw;}
+    """,
+) as demo:
+    with gr.Row(elem_classes=["logo-row"]):
+        gr.Image("./docs/images/banner.nocolor.png", elem_classes=["logo"])
+    with gr.Row(elem_classes=["title-row"]):
+        gr.Markdown("# PDFMathTranslate", elem_classes=["title"])
+    with gr.Row(elem_classes=["input-file-row"]):
+        gr.File(
+            label="Upload PDF",
+            file_count="single",
+            file_types=[".pdf"],
+            interactive=True,
+            elem_classes=["input-file", "secondary-text"],
+        )
+    with gr.Row(elem_classes=["options-row"]):
+        gr.Markdown("")
+        # gr.Dropdown(
+        #     ["Google", "DeepL", "DeepLX", "Azure", "OpenAI", "Ollama"],
+        #     value="Google",
+        #     label="Translation Service",
+        #     interactive=True,
+        #     elem_classes=["secondary-text"],
+        # )
+        # gr.Dropdown(
+        #     [
+        #         "Chinese",
+        #         "English",
+        #         "French",
+        #         "German",
+        #         "Japanese",
+        #         "Korean",
+        #         "Russian",
+        #         "Spanish",
+        #     ],
+        #     value="Chinese",
+        #     label="To",
+        #     interactive=True,
+        #     elem_classes=["secondary-text"],
+        #     scale=2,
+        # )
+        gr.Radio(
+            ["All pages", "First page", "First 5 pages"],
+            value="All",
+            label="Pages",
+            interactive=True,
+            elem_classes=["secondary-text"],
+            scale=2,
+        )
+        gr.Markdown("")
+    with gr.Row(elem_classes=["options-row"]):
+        gr.Markdown("")
+        gr.Markdown("Advanced Options", elem_classes=["info-text"])
+        gr.Markdown("")
+    # with gr.Row(elem_classes=["details-row"]):
+    # gr.Markdown("Technical details", elem_classes=["info-text"])
 
 # For auto-reloading while developing
 if __name__ == "__main__":
