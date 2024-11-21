@@ -37,7 +37,7 @@
 
 
 - [Nov. 21 2024] 图形用户界面现在支持下载双语文档 *(by [@reycn](https://github.com/reycn))*  
-- [Nov. 20 2024] 图形用户界面现在支持指定 Ollama 各模型 *(by [@IuvenisSapiens](https://github.com/IuvenisSapiens))*  
+- [Nov. 20 2024] 图形用户界面现在支持指定 Ollama 和 OpenAI 的模型 *(by [@IuvenisSapiens](https://github.com/IuvenisSapiens), [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 20 2024] 🌟 提供了 [在线演示](#demo)！ *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 20 2024] 支持 [容器化部署](#docker) *(by [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 20 2024] 支持速度更快的 [多线程翻译](#threads) *(by [@Byaidu](https://github.com/Byaidu))*  
