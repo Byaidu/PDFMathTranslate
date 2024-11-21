@@ -141,7 +141,7 @@ def translate(
         print(f"Command completed with return code: {return_code}")
 
         # Check if translation was successful
-        translated_file = temp_path / f"input-{lang_to}.pdf"
+        translated_file = temp_path / "input-zh.pdf" # <= Do not change filename
         dual_file = temp_path / "input-dual.pdf"
         print(f"Files after translation: {os.listdir(temp_path)}")
 
@@ -187,13 +187,67 @@ def translate(
 
 
 # Global setup
+custom_blue = gr.themes.Color(
+    c50="#E8F3FF",
+    c100="#BEDAFF",
+    c200="#94BFFF",
+    c300="#6AA1FF",
+    c400="#4080FF",
+    c500="#165DFF",  # Primary color
+    c600="#0E42D2",
+    c700="#0A2BA6",
+    c800="#061D79",
+    c900="#03114D",
+    c950="#020B33",
+)
+
 with gr.Blocks(
     title="PDFMathTranslate - PDF Translation with preserved formats",
+    theme=gr.themes.Default(
+        primary_hue=custom_blue, spacing_size="md", radius_size="lg"
+    ),
     css="""
     .secondary-text {color: #999 !important;}
     footer {visibility: hidden}
     .env-warning {color: #dd5500 !important;}
     .env-success {color: #559900 !important;}
+    
+    @keyframes pulse-background {
+        0% { background-color: #FFFFFF; }
+        25% { background-color: #FFFFFF; }
+        50% { background-color: #E8F3FF; }
+        75% { background-color: #FFFFFF; }
+        100% { background-color: #FFFFFF; }
+    }
+    
+    /* Add dashed border to input-file class */
+    .input-file {
+        border: 1.2px dashed #165DFF !important;
+        border-radius: 6px !important;
+        # background-color: #ffffff !important;
+        animation: pulse-background 2s ease-in-out;
+        transition: background-color 0.4s ease-out;
+    }
+
+    .input-file:hover {
+        border: 1.2px dashed #165DFF !important;
+        border-radius: 6px !important;
+        color: #165DFF !important;
+        background-color: #E8F3FF !important;
+        transition: background-color 0.2s ease-in;
+    }
+    # .input-file label {
+    #     color: #165DFF !important;
+    #     border: 1.2px dashed #165DFF !important;
+    #     border-left: none !important;
+    #     border-top: none !important;
+    # }
+    # .input-file .wrap {
+    #     color: #165DFF !important;
+    # }
+    # .input-file .or {
+    #     color: #165DFF !important;
+    # }
     """,
 ) as demo:
     gr.Markdown("# PDFMathTranslate")
@@ -206,6 +260,7 @@ with gr.Blocks(
                 file_count="single",
                 file_types=[".pdf"],
                 type="filepath",
+                elem_classes=["input-file"],
             )
             gr.Markdown("## Option")
             service = gr.Dropdown(

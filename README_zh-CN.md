@@ -35,7 +35,8 @@
 
 <h2 id="updates">近期更新</h2>
 
-- [Nov. 20 2024] 图形用户界面现在支持指定 Ollama 各模型 *(by [@IuvenisSapiens](https://github.com/IuvenisSapiens))*  
+- [Nov. 21 2024] 图形用户界面现在支持下载双语文档 *(by [@reycn](https://github.com/reycn))*  
+- [Nov. 20 2024] 图形用户界面现在支持指定 Ollama 和 OpenAI 的模型 *(by [@IuvenisSapiens](https://github.com/IuvenisSapiens), [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 20 2024] 🌟 提供了 [在线演示](#demo)！ *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 20 2024] 支持 [容器化部署](#docker) *(by [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 20 2024] 支持速度更快的 [多线程翻译](#threads) *(by [@Byaidu](https://github.com/Byaidu))*  
@@ -271,12 +272,14 @@ pdf2zh example.pdf -t 1
   <img src="https://opencollective.com/PDFMathTranslate/contributors.svg?width=890&button=false" />
 </a>
 
+![Alt](https://repobeats.axiom.co/api/embed/dfa7583da5332a11468d686fbd29b92320a6a869.svg "Repobeats analytics image")
+
 <h2 id="star_hist">星标历史</h2>
 
 <a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" width="70%"/>
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date"/>
  </picture>
 </a>
