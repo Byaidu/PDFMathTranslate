@@ -267,12 +267,14 @@ pdf2zh example.pdf -t 1
   <img src="https://opencollective.com/PDFMathTranslate/contributors.svg?width=890&button=false" />
 </a>
 
+![Alt](https://repobeats.axiom.co/api/embed/dfa7583da5332a11468d686fbd29b92320a6a869.svg "Repobeats analytics image")
+
 <h2 id="star_hist">Star History</h2>
 
 <a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" width="70%"/>
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date"/>
  </picture>
 </a>
