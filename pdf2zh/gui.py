@@ -236,6 +236,7 @@ with gr.Blocks(
         background-color: #E8F3FF !important;
         transition: background-color 0.2s ease-in;
     }
+
     .progress-bar-wrap {
     border-radius: 8px !important;
     }
