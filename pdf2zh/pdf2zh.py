@@ -235,9 +235,8 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Interact with GUI.",
     )
-    parse_params.add_argument(
+    parser.add_argument(
         "--share",
-        type=str,
         action="store_true",
         help="Enable Gradio Share",
     )
