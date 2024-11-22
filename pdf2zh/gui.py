@@ -236,6 +236,13 @@ with gr.Blocks(
         background-color: #E8F3FF !important;
         transition: background-color 0.2s ease-in;
     }
+    .progress-bar-wrap {
+    border-radius: 8px !important;
+    }
+    .progress-bar {
+    border-radius: 8px !important;
+    }
+
     # .input-file label {
     #     color: #165DFF !important;
     #     border: 1.2px dashed #165DFF !important;
@@ -272,7 +279,7 @@ with gr.Blocks(
             # lang_src = gr.Dropdown(
             #     label="Source Language",
             #     info="Which translation service to use. Some require keys",
-            #     choices=["Google", "DeepL", "DeepLX", "Ollama", "Azure"],
+            #     choices=["Google", "DeepL", "DeepLX", "Azure", "OpenAI", "Ollama"],
             #     value="Google",
             # )
             lang_to = gr.Dropdown(
@@ -533,6 +540,7 @@ with gr.Blocks(
         color: #165DFF !important;
         background-color: #E8F3FF !important;
         transition: background-color 0.2s ease-in;
+        box-shadow: 4px 4px 20px rgba(22, 93, 255, 0.1);
     }
 
 
@@ -563,24 +571,59 @@ with gr.Blocks(
         color: #165DFF !important;
     }
 
+    .progress-bar-wrap {
+    border-radius: 8px !important;
+    }
+    .progress-bar {
+    border-radius: 8px !important;
+    }
+
     .options-row {
         align-items: center;
-         width: 80vw;
+        display: flex;
     }
-    .options-row div fieldset  {
-        align-items: center;}
+    .options-row .wrap  {
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;}
+
+    .options-row .form label  {
+        color: #999;}
+    .options-row .form   {
+        border: none !important;
+        align-items: center !important;}
     .options-row [data-testid="block-info"] {
         display: none !important;}
-    .options-row .form {border: none !important;}
     .logo-row {
-        align-items: center;
-    width: 80vw;}
+        align-items: center;}
     .title-row {
-        align-items: center;
-    width: 80vw;}
+        align-items: center;}
     .details-row {
-        align-items: center;
-    width: 80vw;}
+        align-items: center;}
+    .hide-frame {
+        border: none !important;}
+    .hide-frame .top-panel {
+        display: none !important;}
+    .hide-frame label {
+        display: none !important;}
+    .options-icon {
+        height: 2em;
+        width: 2em;
+    }
+    .options-btn {
+        line-height: var(--line-md);
+        background-color: #FFFFFF;
+        border: 1.2px solid var(--checkbox-label-border-color) !important;
+        border-radius: 6px !important;
+        # color: var(--checkbox-label-border-color) !important;
+        color: #999;
+        transition: background-color 0.2s ease-in;
+    }
+    .options-btn:hover {
+        background-color: #fafafa;
+        # border: 1.2px solid  #fcfcfc !important;
+    }
     """,
 ) as demo:
     with gr.Row(elem_classes=["logo-row"]):
@@ -622,8 +665,8 @@ with gr.Blocks(
         #     scale=2,
         # )
         gr.Radio(
-            ["All pages", "First page", "First 5 pages"],
-            value="All",
+            ["All Pages", "First Page", "First 5 Pages"],
+            value="All Pages",
             label="Pages",
             interactive=True,
             elem_classes=["secondary-text"],
@@ -632,10 +675,41 @@ with gr.Blocks(
         gr.Markdown("")
     with gr.Row(elem_classes=["options-row"]):
         gr.Markdown("")
-        gr.Markdown("Advanced Options", elem_classes=["info-text"])
+        gr.Markdown("")
+        # gr.Image(
+        #     "./docs/images/icon/setting-one.png",
+        #     elem_classes=["hide-frame", "options-icon"],
+        #     scale=1,
+        # )
+        # gr.Markdown("Advanced Settings", elem_classes=["secondary-text"])
+        gr.Button(
+            "⚙️ Advanced Options",
+            variant="secondary",
+            elem_classes=["options-btn"],
+        )
+        gr.Markdown("")
         gr.Markdown("")
     # with gr.Row(elem_classes=["details-row"]):
     # gr.Markdown("Technical details", elem_classes=["info-text"])
+
+
+def setup_gui():
+    try:
+        demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+    except Exception:
+        print(
+            "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
+        )
+        try:
+            demo.launch(
+                server_name="127.0.0.1", debug=True, inbrowser=True, share=False
+            )
+        except Exception:
+            print(
+                "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
+            )
+            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
+
 
 # For auto-reloading while developing
 if __name__ == "__main__":
