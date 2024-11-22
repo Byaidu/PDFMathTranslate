@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Container, Iterable, List, Optional
 
 import pymupdf
 from huggingface_hub import hf_hub_download
+from pathlib import Path
 
 from pdf2zh import __version__
 from pdf2zh.pdfexceptions import PDFValueError
@@ -67,6 +68,8 @@ def extract_text(
     lang_in: str = "",
     lang_out: str = "",
     service: str = "",
+    callback: object = None,
+    output: str = "",
     **kwargs: Any,
 ) -> AnyIO:
     import doclayout_yolo
@@ -118,9 +121,9 @@ def extract_text(
                                 )
                 except:
                     pass
-        doc_en.save(f"{filename}-en.pdf")
+        doc_en.save(Path(output) / f"{filename}-en.pdf")
 
-        with open(f"{filename}-en.pdf", "rb") as fp:
+        with open(Path(output) / f"{filename}-en.pdf", "rb") as fp:
             obj_patch: dict = pdf2zh.high_level.extract_text_to_fp(fp, **locals())
 
         for obj_id, ops_new in obj_patch.items():
@@ -131,15 +134,15 @@ def extract_text(
             doc_en.update_stream(obj_id, ops_new.encode())
 
         doc_zh = doc_en
-        doc_dual = pymupdf.open(f"{filename}-en.pdf")
+        doc_dual = pymupdf.open(Path(output) / f"{filename}-en.pdf")
         doc_dual.insert_file(doc_zh)
         for id in range(page_count):
             doc_dual.move_page(page_count + id, id * 2 + 1)
-        doc_zh.save(f"{filename}-zh.pdf", deflate=1)
-        doc_dual.save(f"{filename}-dual.pdf", deflate=1)
+        doc_zh.save(Path(output) / f"{filename}-zh.pdf", deflate=1)
+        doc_dual.save(Path(output) / f"{filename}-dual.pdf", deflate=1)
         doc_zh.close()
         doc_dual.close()
-        os.remove(f"{filename}-en.pdf")
+        os.remove(Path(output) / f"{filename}-en.pdf")
 
     return
 
@@ -216,7 +219,14 @@ def create_parser() -> argparse.ArgumentParser:
         "-s",
         type=str,
         default="google",
-        help="The service to use for translating.",
+        help="The service to use for translation.",
+    )
+    parse_params.add_argument(
+        "--output",
+        "-o",
+        type=str,
+        default="",
+        help="Output directory for files.",
     )
     parse_params.add_argument(
         "--thread",
