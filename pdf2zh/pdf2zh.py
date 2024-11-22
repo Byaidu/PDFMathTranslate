@@ -139,11 +139,7 @@ def extract_text(
         doc_dual.save(f"{filename}-dual.pdf", deflate=1)
         doc_zh.close()
         doc_dual.close()
-        try:  # fix (main): permission error @ https://github.com/Byaidu/PDFMathTranslate/issues/84
-            os.remove(f"{filename}-en.pdf")
-        except Exception as e:
-            print(f"File removal failed due to occupation / not existing, pass.\n{e}")
-            pass
+        os.remove(f"{filename}-en.pdf")
 
     return
 
