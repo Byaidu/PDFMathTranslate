@@ -3,6 +3,7 @@ import re
 import subprocess
 import tempfile
 from pathlib import Path
+from pdf2zh import __version__
 
 import gradio as gr
 import numpy as np
@@ -315,7 +316,8 @@ with gr.Blocks(
                     <summary>Technical details</summary>
                     {text_markdown}
                     - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
-                    - GUI by: <a href="https://github.com/reycn">Rongxin</a>    
+                    - GUI by: <a href="https://github.com/reycn">Rongxin</a><br>
+                    - Version: {__version__}
                 </details>"""
                 return text
 
