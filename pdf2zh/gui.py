@@ -26,6 +26,7 @@ lang_map = {
     "Korean": "ko",
     "Russian": "ru",
     "Spanish": "es",
+    "Italian": "it",
 }
 
 
