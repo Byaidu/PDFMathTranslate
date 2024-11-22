@@ -141,7 +141,7 @@ def translate(
         print(f"Command completed with return code: {return_code}")
 
         # Check if translation was successful
-        translated_file = temp_path / "input-zh.pdf" # <= Do not change filename
+        translated_file = temp_path / "input-zh.pdf"  # <= Do not change filename
         dual_file = temp_path / "input-dual.pdf"
         print(f"Files after translation: {os.listdir(temp_path)}")
 
@@ -236,6 +236,14 @@ with gr.Blocks(
         background-color: #E8F3FF !important;
         transition: background-color 0.2s ease-in;
     }
+
+.progress-bar-wrap {
+  border-radius: 8px !important;
+}
+.progress-bar {
+  border-radius: 8px !important;
+}
+
     # .input-file label {
     #     color: #165DFF !important;
     #     border: 1.2px dashed #165DFF !important;
