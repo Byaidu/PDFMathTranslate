@@ -237,12 +237,12 @@ with gr.Blocks(
         transition: background-color 0.2s ease-in;
     }
 
-.progress-bar-wrap {
-  border-radius: 8px !important;
-}
-.progress-bar {
-  border-radius: 8px !important;
-}
+    .progress-bar-wrap {
+    border-radius: 8px !important;
+    }
+    .progress-bar {
+    border-radius: 8px !important;
+    }
 
     # .input-file label {
     #     color: #165DFF !important;
@@ -257,7 +257,7 @@ with gr.Blocks(
     #     color: #165DFF !important;
     # }
     """,
-) as demo:
+) as demo1:
     gr.Markdown("# PDFMathTranslate")
 
     with gr.Row():
@@ -280,7 +280,7 @@ with gr.Blocks(
             # lang_src = gr.Dropdown(
             #     label="Source Language",
             #     info="Which translation service to use. Some require keys",
-            #     choices=["Google", "DeepL", "DeepLX", "Ollama", "Azure"],
+            #     choices=["Google", "DeepL", "DeepLX", "Azure", "OpenAI", "Ollama"],
             #     value="Google",
             # )
             lang_to = gr.Dropdown(
@@ -401,6 +401,297 @@ with gr.Blocks(
             output_title,
         ],
     )
+
+
+class EnvSync:
+    """Two-way synchronization between a variable and its system environment counterpart."""
+
+    def __init__(self, env_name: str, default_value: str = ""):
+        self._name = env_name
+        self._value = os.environ.get(env_name, default_value)
+        # Initialize the environment variable if it doesn't exist
+        if env_name not in os.environ:
+            os.environ[env_name] = default_value
+
+    @property
+    def value(self) -> str:
+        """Get the current value, ensuring sync with system env."""
+        sys_value = os.environ.get(self._name)
+        if sys_value != self._value:
+            self._value = sys_value
+        return self._value
+
+    @value.setter
+    def value(self, new_value: str):
+        """Set the value and sync with system env."""
+        self._value = new_value
+        os.environ[self._name] = new_value
+
+    def __str__(self) -> str:
+        return self.value
+
+    def __bool__(self) -> bool:
+        return bool(self.value)
+
+
+# Global setup
+with gr.Blocks(
+    title="PDFMathTranslate - PDF Translation with preserved formats",
+    theme=gr.themes.Default(
+        primary_hue=custom_blue, spacing_size="md", radius_size="lg"
+    ),
+    css="""
+    # .secondary-text {color: #999 !important;}
+    footer {visibility: hidden}
+    .env-warning {color: #dd5500 !important;}
+    .env-success {color: #559900 !important;}
+    .logo {border: transparent;}
+    .logo label {display: none;}
+    .logo .top-panel {display: none;}
+    .title {text-align: center;}
+    .title h1 {color: #999999 !important;}
+    .question  {text-align: center;}
+    .question h2 {color: #165DFF !important;}
+    .info-text {text-align: center; margin-top: -5px;}
+    .info-text p {color: #aaaaaa !important;}
+    """,
+) as demo3:
+    gr.Markdown(" ", elem_classes=["title"])
+    gr.Markdown(" ", elem_classes=["title"])
+    gr.Markdown(" ", elem_classes=["title"])
+    gr.Markdown(" ", elem_classes=["title"])
+    gr.Image("./docs/images/banner.nocolor.png", elem_classes=["logo"], width=400)
+    gr.Markdown("# Configuration Guide<br/><br/>", elem_classes=["title"])
+    gr.Markdown("## Use Google Translate?<br/>", elem_classes=["question"])
+    with gr.Row():
+        gr.Markdown("")
+        use_google = gr.Button(
+            "Yes",
+            variant="primary",
+            elem_classes=["secondary-text"],
+        )
+        use_other = gr.Button(
+            "No",
+            variant="secondary",
+            elem_classes=["secondary-text"],
+        )
+        gr.Markdown("")
+    with gr.Row():
+        gr.Markdown("")
+        gr.Markdown(
+            "Google Translate",
+            elem_classes=["info-text"],
+        )
+        gr.Markdown(
+            "DeepL, OpenAI, and more",
+            elem_classes=["info-text"],
+        )
+        gr.Markdown("")
+    # gr.Markdown(
+    #     """<span class='env-success'>- Properly configured.</span><br>
+    #     - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
+    #     - GUI by: <a href="https://github.com/reycn">Rongxin</a>"""
+    # )
+
+with gr.Blocks(
+    title="PDFMathTranslate - PDF Translation with preserved formats",
+    theme=gr.themes.Default(
+        primary_hue=custom_blue, spacing_size="md", radius_size="lg"
+    ),
+    css="""
+    # .secondary-text {color: #999 !important;}
+    footer {visibility: hidden}
+    .env-warning {color: #dd5500 !important;}
+    .env-success {color: #559900 !important;}
+    .logo {border: transparent;
+    height: 10vh;}
+    .logo label {display: none;}
+    .logo .top-panel {display: none;}
+    .title {text-align: center;
+    height: 5vh;}
+    .title h1 {color: #999999 !important;}
+    .question  {text-align: center;}
+    .question h2 {color: #165DFF !important;}
+    .info-text {text-align: center; margin-top: -5px;}
+    .info-text p {color: #aaaaaa !important;}
+
+    @keyframes pulse-background {
+        0% { background-color: #FFFFFF; }
+        25% { background-color: #FFFFFF; }
+        50% { background-color: #E8F3FF; }
+        75% { background-color: #FFFFFF; }
+        100% { background-color: #FFFFFF; }
+    }
+    
+    /* Add dashed border to input-file class */
+    .input-file {
+        border: 1.2px dashed #165DFF !important;
+        border-radius: 6px !important;
+        # background-color: #ffffff !important;
+        animation: pulse-background 2s ease-in-out;
+        transition: background-color 0.4s ease-out;
+        width: 80vw;
+        height: 60vh;
+        margin: 0 auto;
+    }
+
+    .input-file:hover {
+        border: 1.2px dashed #165DFF !important;
+        border-radius: 6px !important;
+        color: #165DFF !important;
+        background-color: #E8F3FF !important;
+        transition: background-color 0.2s ease-in;
+        box-shadow: 4px 4px 20px rgba(22, 93, 255, 0.1);
+    }
+
+
+    .input-file label {
+        color: #165DFF !important;
+        border: 1.2px dashed #165DFF !important;
+        border-left: none !important;
+        border-top: none !important;
+    }
+    .input-file .top-panel {
+        color: #165DFF !important;
+        border: 1.2px dashed #165DFF !important;
+        border-right: none !important;
+        border-top: none !important;
+    }
+    .input-file .filename {
+        color: #165DFF !important;
+        background-color: #FFFFFF !important;
+    }
+    .input-file .download {
+        color: #165DFF !important;
+        background-color: #FFFFFF !important;
+    }
+    .input-file .wrap {
+        color: #165DFF !important;
+    }
+    .input-file .or {
+        color: #165DFF !important;
+    }
+
+    .progress-bar-wrap {
+    border-radius: 8px !important;
+    }
+    .progress-bar {
+    border-radius: 8px !important;
+    }
+
+    .options-row {
+        align-items: center;
+        display: flex;
+    }
+    .options-row .wrap  {
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;}
+
+    .options-row .form label  {
+        color: #999;}
+    .options-row .form   {
+        border: none !important;
+        align-items: center !important;}
+    .options-row [data-testid="block-info"] {
+        display: none !important;}
+    .logo-row {
+        align-items: center;}
+    .title-row {
+        align-items: center;}
+    .details-row {
+        align-items: center;}
+    .hide-frame {
+        border: none !important;}
+    .hide-frame .top-panel {
+        display: none !important;}
+    .hide-frame label {
+        display: none !important;}
+    .options-icon {
+        height: 2em;
+        width: 2em;
+    }
+    .options-btn {
+        line-height: var(--line-md);
+        background-color: #FFFFFF;
+        border: 1.2px solid var(--checkbox-label-border-color) !important;
+        border-radius: 6px !important;
+        # color: var(--checkbox-label-border-color) !important;
+        color: #999;
+        transition: background-color 0.2s ease-in;
+    }
+    .options-btn:hover {
+        background-color: #fafafa;
+        # border: 1.2px solid  #fcfcfc !important;
+    }
+    """,
+) as demo:
+    with gr.Row(elem_classes=["logo-row"]):
+        gr.Image("./docs/images/banner.nocolor.png", elem_classes=["logo"])
+    with gr.Row(elem_classes=["title-row"]):
+        gr.Markdown("# PDFMathTranslate", elem_classes=["title"])
+    with gr.Row(elem_classes=["input-file-row"]):
+        gr.File(
+            label="Upload PDF",
+            file_count="single",
+            file_types=[".pdf"],
+            interactive=True,
+            elem_classes=["input-file", "secondary-text"],
+        )
+    with gr.Row(elem_classes=["options-row"]):
+        gr.Markdown("")
+        # gr.Dropdown(
+        #     ["Google", "DeepL", "DeepLX", "Azure", "OpenAI", "Ollama"],
+        #     value="Google",
+        #     label="Translation Service",
+        #     interactive=True,
+        #     elem_classes=["secondary-text"],
+        # )
+        # gr.Dropdown(
+        #     [
+        #         "Chinese",
+        #         "English",
+        #         "French",
+        #         "German",
+        #         "Japanese",
+        #         "Korean",
+        #         "Russian",
+        #         "Spanish",
+        #     ],
+        #     value="Chinese",
+        #     label="To",
+        #     interactive=True,
+        #     elem_classes=["secondary-text"],
+        #     scale=2,
+        # )
+        gr.Radio(
+            ["All Pages", "First Page", "First 5 Pages"],
+            value="All Pages",
+            label="Pages",
+            interactive=True,
+            elem_classes=["secondary-text"],
+            scale=2,
+        )
+        gr.Markdown("")
+    with gr.Row(elem_classes=["options-row"]):
+        gr.Markdown("")
+        gr.Markdown("")
+        # gr.Image(
+        #     "./docs/images/icon/setting-one.png",
+        #     elem_classes=["hide-frame", "options-icon"],
+        #     scale=1,
+        # )
+        # gr.Markdown("Advanced Settings", elem_classes=["secondary-text"])
+        gr.Button(
+            "⚙️ Advanced Options",
+            variant="secondary",
+            elem_classes=["options-btn"],
+        )
+        gr.Markdown("")
+        gr.Markdown("")
+    # with gr.Row(elem_classes=["details-row"]):
+    # gr.Markdown("Technical details", elem_classes=["info-text"])
 
 
 def setup_gui():
