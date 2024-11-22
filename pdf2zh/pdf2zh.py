@@ -272,7 +272,7 @@ def main(args: Optional[List[str]] = None) -> int:
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
 
-        if parse_args.share:
+        if parsed_args.share:
             setup_gui(True)
             return 0
         else:
