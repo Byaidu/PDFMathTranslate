@@ -694,23 +694,39 @@ with gr.Blocks(
     # gr.Markdown("Technical details", elem_classes=["info-text"])
 
 
-def setup_gui():
-    try:
-        demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
-    except Exception:
-        print(
-            "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
-        )
+def setup_gui(enable_gradio_share=False):
+    if(enable_gradio_share):
         try:
-            demo.launch(
-                server_name="127.0.0.1", debug=True, inbrowser=True, share=False
-            )
+            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
         except Exception:
             print(
-                "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
+                "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
             )
-            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
-
+            try:
+                demo.launch(
+                    server_name="127.0.0.1", debug=True, inbrowser=True, share=True
+                )
+            except Exception:
+                print(
+                    "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
+                )
+                demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
+    else:
+        try:
+            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=False)
+        except Exception:
+            print(
+                "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
+            )
+            try:
+                demo.launch(
+                    server_name="127.0.0.1", debug=True, inbrowser=True, share=False
+                )
+            except Exception:
+                print(
+                    "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software.Force enable Gradio sharing feature."
+                )
+                demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=True)
 
 # For auto-reloading while developing
 if __name__ == "__main__":

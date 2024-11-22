@@ -235,6 +235,12 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Interact with GUI.",
     )
+    parse_params.add_argument(
+        "--share",
+        type=str,
+        action="store_true",
+        help="Enable Gradio Share",
+    )
 
     return parser
 
@@ -267,8 +273,12 @@ def main(args: Optional[List[str]] = None) -> int:
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
 
-        setup_gui()
-        return 0
+        if parse_args.share:
+            setup_gui(True)
+            return 0
+        else:
+            setup_gui()
+            return 0
 
     setup_log()
     extract_text(**vars(parsed_args))
