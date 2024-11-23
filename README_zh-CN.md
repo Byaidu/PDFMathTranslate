@@ -38,6 +38,7 @@
 <h2 id="updates">近期更新</h2>
 
 
+- [Nov. 23 2024] 非 PDF/A 文档也能正常翻译了 *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 23 2024] 防止网页爬虫的防火墙 *(by [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 22 2024] 图形用户界面现已支持意大利语，并获得了一些更新 *(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))*  
 - [Nov. 22 2024] 现在你可以将自己部署的服务分享给朋友了 *(by [@Zxis233](https://github.com/Zxis233))*  

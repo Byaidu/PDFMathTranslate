@@ -37,6 +37,7 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="updates">Updates</h2>
 
+- [Nov. 23 2024] Non-PDF/A documents are now supported *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 23 2024] Firewall for preventing web bots *(by [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 22 2024] GUI now supports Italian, and has been improved *(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))*  
 - [Nov. 22 2024] You can now share your deployed service to others *(by [@Zxis233](https://github.com/Zxis233))*  
