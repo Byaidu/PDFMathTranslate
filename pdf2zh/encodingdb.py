@@ -120,7 +120,7 @@ class EncodingDB:
                 elif isinstance(x, PSLiteral):
                     try:
                         cid2unicode[cid] = name2unicode(cast(str, x.name))
-                    except (KeyError, ValueError) as e:
+                    except (KeyError, ValueError):
                         # log.debug(str(e))
                         pass
                     cid += 1

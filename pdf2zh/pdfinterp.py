@@ -368,7 +368,9 @@ class PDFPageInterpreter:
     Reference: PDF Reference, Appendix A, Operator Summary
     """
 
-    def __init__(self, rsrcmgr: PDFResourceManager, device: PDFDevice, obj_patch) -> None:
+    def __init__(
+        self, rsrcmgr: PDFResourceManager, device: PDFDevice, obj_patch
+    ) -> None:
         self.rsrcmgr = rsrcmgr
         self.device = device
         self.obj_patch = obj_patch
@@ -407,7 +409,7 @@ class PDFPageInterpreter:
                         objid = spec.objid
                     spec = dict_value(spec)
                     self.fontmap[fontid] = self.rsrcmgr.get_font(objid, spec)
-                    self.fontid[self.fontmap[fontid]]=fontid
+                    self.fontid[self.fontmap[fontid]] = fontid
             elif k == "ColorSpace":
                 for csid, spec in dict_value(v).items():
                     colorspace = get_colorspace(resolve1(spec))
@@ -570,16 +572,25 @@ class PDFPageInterpreter:
 
     def do_S(self) -> None:
         """Stroke path"""
+
         def is_black(color: Color) -> bool:
             if isinstance(color, Tuple):
-                return sum(color)==0
+                return sum(color) == 0
             else:
-                return color==0
-        if len(self.curpath)==2 and self.curpath[0][0]=='m' and self.curpath[1][0]=='l' and apply_matrix_pt(self.ctm,self.curpath[0][-2:])[1]==apply_matrix_pt(self.ctm,self.curpath[1][-2:])[1] and is_black(self.graphicstate.scolor): # 独立直线，水平，黑色
+                return color == 0
+
+        if (
+            len(self.curpath) == 2
+            and self.curpath[0][0] == "m"
+            and self.curpath[1][0] == "l"
+            and apply_matrix_pt(self.ctm, self.curpath[0][-2:])[1]
+            == apply_matrix_pt(self.ctm, self.curpath[1][-2:])[1]
+            and is_black(self.graphicstate.scolor)
+        ):  # 独立直线，水平，黑色
             # print(apply_matrix_pt(self.ctm,self.curpath[0][-2:]),apply_matrix_pt(self.ctm,self.curpath[1][-2:]),self.graphicstate.scolor)
             self.device.paint_path(self.graphicstate, True, False, False, self.curpath)
             self.curpath = []
-            return 'n'
+            return "n"
         else:
             self.curpath = []
 
@@ -698,7 +709,7 @@ class PDFPageInterpreter:
             if settings.STRICT:
                 raise PDFInterpreterError("No colorspace specified!")
             n = 1
-        args=self.pop(n)
+        args = self.pop(n)
         self.graphicstate.scolor = cast(Color, args)
         return args
 
@@ -710,7 +721,7 @@ class PDFPageInterpreter:
             if settings.STRICT:
                 raise PDFInterpreterError("No colorspace specified!")
             n = 1
-        args=self.pop(n)
+        args = self.pop(n)
         self.graphicstate.ncolor = cast(Color, args)
         return args
 
@@ -963,22 +974,24 @@ class PDFPageInterpreter:
             else:
                 resources = self.resources.copy()
             self.device.begin_figure(xobjid, bbox, matrix)
-            ctm=mult_matrix(matrix, self.ctm)
-            ops_base=interpreter.render_contents(
+            ctm = mult_matrix(matrix, self.ctm)
+            ops_base = interpreter.render_contents(
                 resources,
                 [xobj],
                 ctm=ctm,
             )
-            try: # 有的时候 form 字体加不上这里会烂掉
-                self.device.fontid=interpreter.fontid
-                self.device.fontmap=interpreter.fontmap
-                ops_new=self.device.end_figure(xobjid)
-                ctm_inv=np.linalg.inv(np.array(ctm[:4]).reshape(2,2))
-                pos_inv=-np.mat(ctm[4:])*ctm_inv
-                a,b,c,d=ctm_inv.reshape(4).tolist()
-                e,f=pos_inv.tolist()[0]
-                self.obj_patch[self.xobjmap[xobjid].objid]=f'q {ops_base}Q {a} {b} {c} {d} {e} {f} cm {ops_new}'
-            except:
+            try:  # 有的时候 form 字体加不上这里会烂掉
+                self.device.fontid = interpreter.fontid
+                self.device.fontmap = interpreter.fontmap
+                ops_new = self.device.end_figure(xobjid)
+                ctm_inv = np.linalg.inv(np.array(ctm[:4]).reshape(2, 2))
+                pos_inv = -np.mat(ctm[4:]) * ctm_inv
+                a, b, c, d = ctm_inv.reshape(4).tolist()
+                e, f = pos_inv.tolist()[0]
+                self.obj_patch[self.xobjmap[xobjid].objid] = (
+                    f"q {ops_base}Q {a} {b} {c} {d} {e} {f} cm {ops_new}"
+                )
+            except Exception:
                 pass
         elif subtype is LITERAL_IMAGE and "Width" in xobj and "Height" in xobj:
             self.device.begin_figure(xobjid, (0, 0, 1, 1), MATRIX_IDENTITY)
@@ -1002,14 +1015,16 @@ class PDFPageInterpreter:
         else:
             ctm = (1, 0, 0, 1, -x0, -y0)
         self.device.begin_page(page, ctm)
-        ops_base=self.render_contents(page.resources, page.contents, ctm=ctm)
-        self.device.fontid=self.fontid
-        self.device.fontmap=self.fontmap
-        ops_new=self.device.end_page(page)
+        ops_base = self.render_contents(page.resources, page.contents, ctm=ctm)
+        self.device.fontid = self.fontid
+        self.device.fontmap = self.fontmap
+        ops_new = self.device.end_page(page)
         # 上面渲染的时候会根据 cropbox 减掉页面偏移得到真实坐标，这里输出的时候需要用 cm 把页面偏移加回来
-        self.obj_patch[page.page_xref]=f'q {ops_base}Q 1 0 0 1 {x0} {y0} cm {ops_new}' # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
+        self.obj_patch[page.page_xref] = (
+            f"q {ops_base}Q 1 0 0 1 {x0} {y0} cm {ops_new}"  # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
+        )
         for obj in page.contents:
-            self.obj_patch[obj.objid]=''
+            self.obj_patch[obj.objid] = ""
 
     def render_contents(
         self,
@@ -1032,7 +1047,7 @@ class PDFPageInterpreter:
         return self.execute(list_value(streams))
 
     def execute(self, streams: Sequence[object]) -> None:
-        ops=''
+        ops = ""
         try:
             parser = PDFContentParser(streams)
         except PSEOF:
@@ -1057,17 +1072,38 @@ class PDFPageInterpreter:
                         # log.debug("exec: %s %r", name, args)
                         if len(args) == nargs:
                             func(*args)
-                            if not (name[0]=='T' or name in ['"',"'",'EI','MP','DP','BMC','BDC']): # 过滤 T 系列文字指令，因为 EI 的参数是 obj 所以也需要过滤（只在少数文档中画横线时使用），过滤 marked 系列指令
-                                p=" ".join([f'{x:f}' if isinstance(x,float) else str(x).replace("'","") for x in args])
-                                ops+=f'{p} {name} '
+                            if not (
+                                name[0] == "T"
+                                or name in ['"', "'", "EI", "MP", "DP", "BMC", "BDC"]
+                            ):  # 过滤 T 系列文字指令，因为 EI 的参数是 obj 所以也需要过滤（只在少数文档中画横线时使用），过滤 marked 系列指令
+                                p = " ".join(
+                                    [
+                                        (
+                                            f"{x:f}"
+                                            if isinstance(x, float)
+                                            else str(x).replace("'", "")
+                                        )
+                                        for x in args
+                                    ]
+                                )
+                                ops += f"{p} {name} "
                     else:
                         # log.debug("exec: %s", name)
-                        targs=func()
-                        if targs==None:
-                            targs=[]
-                        if not (name[0]=='T' or name in ['BI','ID','EMC']):
-                            p=" ".join([f'{x:f}' if isinstance(x,float) else str(x).replace("'","") for x in targs])
-                            ops+=f'{p} {name} '
+                        targs = func()
+                        if targs is None:
+                            targs = []
+                        if not (name[0] == "T" or name in ["BI", "ID", "EMC"]):
+                            p = " ".join(
+                                [
+                                    (
+                                        f"{x:f}"
+                                        if isinstance(x, float)
+                                        else str(x).replace("'", "")
+                                    )
+                                    for x in targs
+                                ]
+                            )
+                            ops += f"{p} {name} "
                 elif settings.STRICT:
                     error_msg = "Unknown operator: %r" % name
                     raise PDFInterpreterError(error_msg)

@@ -580,7 +580,7 @@ class PSStackParser(PSBaseParser, Generic[ExtraT]):
 
         :return: keywords, literals, strings, numbers, arrays and dictionaries.
         """
-        end=None
+        end = None
         while not self.results:
             (pos, token) = self.nexttoken()
             if isinstance(token, (int, float, bool, str, bytes, PSLiteral)):
@@ -632,8 +632,8 @@ class PSStackParser(PSBaseParser, Generic[ExtraT]):
                 #     token,
                 #     self.curstack,
                 # )
-                if token.name==b'endobj':
-                    end=pos+7
+                if token.name == b"endobj":
+                    end = pos + 7
                 self.do_keyword(pos, token)
             else:
                 log.error(
@@ -653,4 +653,4 @@ class PSStackParser(PSBaseParser, Generic[ExtraT]):
         #     log.debug("nextobject: %r", obj)
         # except Exception:
         #     log.debug("nextobject: (unprintable object)")
-        return end,obj
+        return end, obj

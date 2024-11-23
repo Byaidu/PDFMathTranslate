@@ -284,9 +284,11 @@ def apply_matrix_norm(m: Matrix, v: Point) -> Point:
     (p, q) = v
     return a * p + c * q, b * p + d * q
 
+
 def matrix_scale(m: Matrix) -> float:
     (a, b, c, d, e, f) = m
-    return (a**2+c**2)**0.5
+    return (a**2 + c**2) ** 0.5
+
 
 #  Utility functions
 

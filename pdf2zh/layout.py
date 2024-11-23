@@ -368,7 +368,7 @@ class LTChar(LTComponent, LTText):
         LTText.__init__(self)
         self._text = text
         self.matrix = matrix
-        self.font=font
+        self.font = font
         self.fontname = font.fontname
         self.ncs = ncs
         self.graphicstate = graphicstate
@@ -387,7 +387,7 @@ class LTChar(LTComponent, LTText):
             bbox_upper_right = (-vx + fontsize, vy + rise)
         else:
             # horizontal
-            descent = 0 # descent = font.get_descent() * fontsize
+            descent = 0  # descent = font.get_descent() * fontsize
             bbox_lower_left = (0, descent + rise)
             bbox_upper_right = (self.adv, descent + rise + fontsize)
         (a, b, c, d, e, f) = self.matrix
@@ -405,7 +405,14 @@ class LTChar(LTComponent, LTText):
             self.size = self.height
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {bbox2str(self.bbox)} matrix={matrix2str(self.matrix)} font={self.fontname!r} adv={self.adv} text={self.get_text()!r}>"
+        return "<{} {} matrix={} font={} adv={} text={}>".format(
+            self.__class__.__name__,
+            bbox2str(self.bbox),
+            matrix2str(self.matrix),
+            repr(self.fontname),
+            self.adv,
+            repr(self.get_text()),
+        )
 
     def get_text(self) -> str:
         return self._text
