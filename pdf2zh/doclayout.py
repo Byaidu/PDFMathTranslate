@@ -206,5 +206,7 @@ class OnnxModel(DocLayoutModel):
 
         # Postprocess predictions
         preds = preds[preds[..., 4] > 0.25]
-        preds[..., :4] = self.scale_boxes((new_h, new_w), preds[..., :4], (orig_h, orig_w))
+        preds[..., :4] = self.scale_boxes(
+            (new_h, new_w), preds[..., :4], (orig_h, orig_w)
+        )
         return [YoloResult(boxes=preds, names=self._names)]

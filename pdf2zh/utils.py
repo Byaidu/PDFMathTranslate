@@ -819,3 +819,16 @@ def format_int_alpha(value: int) -> str:
 
     result.reverse()
     return "".join(result)
+
+
+def get_device():
+    """Get the device to use for computation."""
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            return "cuda:0"
+    except ImportError:
+        pass
+
+    return "cpu"
