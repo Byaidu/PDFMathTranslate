@@ -27,6 +27,14 @@ lang_map = {
 }
 
 
+def pdf_preview(file):
+    doc = pymupdf.open(file)
+    page = doc[0]
+    pix = page.get_pixmap()
+    image = np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
+    return image
+
+
 def upload_file(file, service, progress=gr.Progress()):
     """Handle file upload, validation, and initial preview."""
     if not file or not os.path.exists(file):
@@ -46,13 +54,6 @@ def upload_file(file, service, progress=gr.Progress()):
 def translate(
     file_path, service, model_id, lang, page_range, extra_args, progress=gr.Progress()
 ):
-    def pdf_preview(file):
-        doc = pymupdf.open(file)
-        page = doc[0]
-        pix = page.get_pixmap()
-        image = np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
-        return image
-
     """Translate PDF content using selected service."""
     if not file_path:
         return (
@@ -217,6 +218,20 @@ with gr.Blocks(
         primary_hue=custom_blue, spacing_size="md", radius_size="lg"
     ),
     css="""
+    body {
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE 10 and IE 11 */
+        user-select: none; /* Standard syntax */}
+        gradio-app {
+        background: 
+            radial-gradient(farthest-side at -33.33% 50%,#0000 52%,#fcfcfc 54% 57%,#0000 59%) 0 calc(224px/2),
+            radial-gradient(farthest-side at 50% 133.33%,#0000 52%,#fcfcfc 54% 57%,#0000 59%) calc(224px/2) 0,
+            radial-gradient(farthest-side at 133.33% 50%,#0000 52%,#fcfcfc 54% 57%,#0000 59%),
+            radial-gradient(farthest-side at 50% -33.33%,#0000 52%,#fcfcfc 54% 57%,#0000 59%),
+            #ffffff !important;
+        background-size: calc(224px/4.667) 224px,224px calc(224px/4.667) !important;
+
+        }
         # .secondary-text {
         color: #999 !important;
         }
@@ -231,7 +246,10 @@ with gr.Blocks(
         }
         .logo {
         border: transparent;
-            max-width: 10vh;
+        filter: saturate(0%);
+        background-color:transparent !important;
+        max-width: 4vh;
+        margin-bottom: -1.2em;
         }
         .logo label {
         display: none;
@@ -242,7 +260,7 @@ with gr.Blocks(
         .title {
         text-align: center;
         }
-        .title h1 {
+        .title h2 {
         color: #999999 !important;
         }
         .question {
@@ -372,6 +390,21 @@ with gr.Blocks(
         .preview-block .top-panel {
             display: none !important;
         }
+        .preview-block {
+            # width: 80vw !important;
+            margin: 0 auto !important;
+            justify-content: center !important;
+            align-items: center !important;
+            background-color: #eeeeee !important;
+        }
+        .preview-block .image-frame {
+            width: 100% !important;
+            # height: auto !important;
+            object-fit: cover !important;
+        }
+        .preview-block .image-frame img {width: var(--size-full);
+            object-fit: cover !important;
+        }
         .options-btn {
             line-height: var(--line-md);
             background-color: #FFFFFF;
@@ -390,7 +423,7 @@ with gr.Blocks(
             # border: 1.2px solid #fcfcfc !important;
         }
         .form {
-            background-color: #FFFFFF !important;
+            background-color: rgba(0, 0, 0, 0) !important;
         }
         .first-page-checkbox {
             border: 1.2px solid var(--checkbox-label-border-color) !important;
@@ -420,7 +453,7 @@ with gr.Blocks(
     with gr.Row(elem_classes=["logo-row"]):
         gr.Image("./docs/images/banner.png", elem_classes=["logo"])
     with gr.Row(elem_classes=["title-row"]):
-        gr.Markdown("# PDFMathTranslate", elem_classes=["title"])
+        gr.Markdown("## PDFMathTranslate", elem_classes=["title"])
     with gr.Row(elem_classes=["input-file-row"]):
         file_input = gr.File(
             label="Document",
