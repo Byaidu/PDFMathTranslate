@@ -8,12 +8,13 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import subprocess
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Container, Iterable, List, Optional
 
 import pymupdf
 from huggingface_hub import hf_hub_download
-from pathlib import Path
 
 from pdf2zh import __version__
 from pdf2zh.pdfexceptions import PDFValueError
@@ -98,7 +99,45 @@ def extract_text(
     for file in files:
         filename = os.path.splitext(os.path.basename(file))[0]
 
-        doc_en = pymupdf.open(file)
+        def convert_to_pdfa(input_pdf_path, output_pdfa_path):
+            """
+            Converts a PDF to PDF/A format using Ghostscript.
+            Args:
+                input_pdf_path (str): Path to the input PDF file.
+                output_pdfa_path (str): Path where the PDF/A file will be saved.
+            """
+            try:
+                # Ghostscript command for conversion
+                command = [
+                    "gs",
+                    "-dPDFA",
+                    "-dBATCH",
+                    "-dNOPAUSE",
+                    "-dNOOUTERSAVE",
+                    "-sDEVICE=pdfwrite",
+                    "-sOutputFile=" + output_pdfa_path,
+                    "-dPDFACompatibilityPolicy=1",
+                    input_pdf_path,
+                ]
+
+                # Run the command
+                subprocess.run(command, check=True)
+                print(
+                    f"Successfully converted {input_pdf_path} to PDF/A at {output_pdfa_path}"
+                )
+            except subprocess.CalledProcessError as e:
+                print(f"Error during conversion: {e}")
+            except FileNotFoundError:
+                print("Ghostscript is not installed or not found in the PATH.")
+
+        try:
+            file_pdfa = f"{str(file)}-pdfa.pdf"
+            convert_to_pdfa(file, file_pdfa)
+            doc_en = pymupdf.open(file_pdfa)
+        except Exception as e:
+            print(f"Error converting PDF: {e}")
+            doc_en = pymupdf.open(file)
+
         page_count = doc_en.page_count
         font_list = ["china-ss", "tiro"]
         font_id = {}
