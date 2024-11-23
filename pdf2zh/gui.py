@@ -217,163 +217,204 @@ with gr.Blocks(
         primary_hue=custom_blue, spacing_size="md", radius_size="lg"
     ),
     css="""
-    # .secondary-text {color: #999 !important;}
-    footer {visibility: hidden}
-    .env-warning {color: #dd5500 !important;}
-    .env-success {color: #559900 !important;}
-    .logo {border: transparent;
-    max-width: 10vh;
-    }
-    .logo label {display: none;}
-    .logo .top-panel {display: none;}
-    .title {text-align: center;}
-    .title h1 {color: #999999 !important;}
-    .question  {text-align: center;}
-    .question h2 {color: #165DFF !important;}
-    .info-text {text-align: center; margin-top: -5px;}
-    .info-text p {color: #aaaaaa !important;}
-
-    @keyframes pulse-background {
-        0% { background-color: #FFFFFF; }
-        25% { background-color: #FFFFFF; }
-        50% { background-color: #E8F3FF; }
-        75% { background-color: #FFFFFF; }
-        100% { background-color: #FFFFFF; }
-    }
-    
-    /* Add dashed border to input-file class */
-    .input-file {
-        border: 1.2px dashed #165DFF !important;
-        border-radius: 6px !important;
-        # background-color: #ffffff !important;
-        animation: pulse-background 2s ease-in-out;
-        transition: background-color 0.4s ease-out;
-        width: 80vw;
-        height: 60vh;
-        margin: 0 auto;
-    }
-
-    .input-file:hover {
-        border: 1.2px dashed #165DFF !important;
-        border-radius: 6px !important;
+        # .secondary-text {
+        color: #999 !important;
+        }
+        footer {
+        visibility: hidden
+        }
+        .env-warning {
+        color: #dd5500 !important;
+        }
+        .env-success {
+        color: #559900 !important;
+        }
+        .logo {
+        border: transparent;
+            max-width: 10vh;
+        }
+        .logo label {
+        display: none;
+        }
+        .logo .top-panel {
+        display: none;
+        }
+        .title {
+        text-align: center;
+        }
+        .title h1 {
+        color: #999999 !important;
+        }
+        .question {
+        text-align: center;
+        }
+        .question h2 {
         color: #165DFF !important;
-        background-color: #E8F3FF !important;
-        transition: background-color 0.2s ease-in;
-        box-shadow: 4px 4px 20px rgba(22, 93, 255, 0.1);
-    }
-
-
-    .input-file label {
-        color: #165DFF !important;
-        border: 1.2px dashed #165DFF !important;
-        border-left: none !important;
-        border-top: none !important;
-    }
-    .input-file .top-panel {
-        color: #165DFF !important;
-        border: 1.2px dashed #165DFF !important;
-        border-right: none !important;
-        border-top: none !important;
-    }
-    .input-file .filename {
-        color: #165DFF !important;
-        background-color: #FFFFFF !important;
-    }
-    .input-file .download {
-        color: #165DFF !important;
-        background-color: #FFFFFF !important;
-    }
-    .input-file .wrap {
-        color: #165DFF !important;
-    }
-    .input-file .or {
-        color: #165DFF !important;
-    }
-
-    .progress-bar-wrap {
-    border-radius: 8px !important;
-    }
-    .progress-bar {
-    border-radius: 8px !important;
-    }
-
-    .options-row {
-        align-items: center;
-        display: flex;
-        padding: 0 20vw 0 20vw !important;
-    }
-    .options-row .wrap  {
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 1rem;}
-
-    .options-row .form label  {
-        color: #999;}
-    .options-row .form   {
-        border: none !important;
-        align-items: center !important;}
-    .options-row [data-testid="block-info"] {
-        display: none !important;}
-    .logo-row {
-        align-items: center;}
-    .title-row {
-        align-items: center;}
-    .details-row {
-        align-items: center;}
-    .hide-frame {
-        border: none !important;}
-    .hide-frame .top-panel {
-        display: none !important;}
-    .hide-frame label {
-        display: none !important;}
-    .options-icon {
-        height: 2em;
-        width: 2em;
-    }
-    .preview-block .top-panel {
-        display: none !important;
-    }
-    .options-btn {
-        line-height: var(--line-md);
-        background-color: #FFFFFF;
-        border: 1.2px solid var(--checkbox-label-border-color) !important;
-        border-radius: 6px !important;
-        # color: var(--checkbox-label-border-color) !important;
-        color: #999;
-        font-weight: 500;
-        font-size: var(--text-md);
-        padding: 0.8em 1em 0.8em 1em !important;
-        margin: 0.5em !important;
-        transition: background-color 0.2s ease-in;
-    }
-    .options-btn:hover {
-        background-color: #fafafa;
-        # border: 1.2px solid  #fcfcfc !important;
-    }
-    .form {
-    background-color: #FFFFFF !important;}
-    .first-page-checkbox {
-        border: 1.2px solid var(--checkbox-label-border-color) !important;
-        border-radius: 6px !important;
-        font-weight: 500;
-        padding: 0.8em 1em 0.8em 1em !important;
-        background-color: #ffffff; !important;
-        margin: 0.5em !important;
-        align-items: center !important;
-        font-size: var(--text-md);
-        # color: var(--checkbox-label-border-color) !important;
-        color: #999;
-        transition: background-color 0.2s ease-in;
-    }
-    .first-page-checkbox label {
-        align-items: center !important;
-    }
-    .first-page-checkbox:hover {
-        border: 1.2px solid  var(--checkbox-label-border-color) !important;
-        color: #165DFF !important;
-        background-color: #fafafa; !important;
-    
+        }
+        .info-text {
+        text-align: center;
+            margin-top: -5px;
+        }
+        .info-text p {
+        color: #aaaaaa !important;
+        }
+        @keyframes pulse-background {
+            0% {
+                background-color: #FFFFFF;
+        }
+            25% {
+                background-color: #FFFFFF;
+        }
+            50% {
+                background-color: #E8F3FF;
+        }
+            75% {
+                background-color: #FFFFFF;
+        }
+            100% {
+                background-color: #FFFFFF;
+        }
+        }
+        /* Add dashed border to input-file class */
+        .input-file {
+            border: 1.2px dashed #165DFF !important;
+            border-radius: 6px !important;
+            # background-color: #ffffff !important;
+            animation: pulse-background 2s ease-in-out;
+            transition: background-color 0.4s ease-out;
+            width: 80vw;
+            height: 60vh;
+            margin: 0 auto;
+        }
+        .input-file:hover {
+            border: 1.2px dashed #165DFF !important;
+            border-radius: 6px !important;
+            color: #165DFF !important;
+            background-color: #E8F3FF !important;
+            transition: background-color 0.2s ease-in;
+            box-shadow: 4px 4px 20px rgba(22, 93, 255, 0.1);
+        }
+        .input-file label {
+            color: #165DFF !important;
+            border: 1.2px dashed #165DFF !important;
+            border-left: none !important;
+            border-top: none !important;
+        }
+        .input-file .top-panel {
+            color: #165DFF !important;
+            border: 1.2px dashed #165DFF !important;
+            border-right: none !important;
+            border-top: none !important;
+        }
+        .input-file .filename {
+            color: #165DFF !important;
+            background-color: #FFFFFF !important;
+        }
+        .input-file .download {
+            color: #165DFF !important;
+            background-color: #FFFFFF !important;
+        }
+        .input-file .wrap {
+            color: #165DFF !important;
+        }
+        .input-file .or {
+            color: #165DFF !important;
+        }
+        .progress-bar-wrap {
+            border-radius: 8px !important;
+        }
+        .progress-bar {
+            border-radius: 8px !important;
+        }
+        .options-row {
+            align-items: center;
+            display: flex;
+            padding: 0 20vw 0 20vw !important;
+        }
+        .options-row .wrap {
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .options-row .form label {
+            color: #999;
+        }
+        .options-row .form {
+            border: none !important;
+            align-items: center !important;
+        }
+        .options-row [data-testid="block-info"] {
+            display: none !important;
+        }
+        .logo-row {
+            align-items: center;
+        }
+        .title-row {
+            align-items: center;
+        }
+        .details-row {
+            align-items: center;
+        }
+        .hide-frame {
+            border: none !important;
+        }
+        .hide-frame .top-panel {
+            display: none !important;
+        }
+        .hide-frame label {
+            display: none !important;
+        }
+        .options-icon {
+            height: 2em;
+            width: 2em;
+        }
+        .preview-block .top-panel {
+            display: none !important;
+        }
+        .options-btn {
+            line-height: var(--line-md);
+            background-color: #FFFFFF;
+            border: 1.2px solid var(--checkbox-label-border-color) !important;
+            border-radius: 6px !important;
+            # color: var(--checkbox-label-border-color) !important;
+            color: #999;
+            font-weight: 500;
+            font-size: var(--text-md);
+            padding: 0.8em 1em 0.8em 1em !important;
+            margin: 0.5em !important;
+            transition: background-color 0.2s ease-in;
+        }
+        .options-btn:hover {
+            background-color: #fafafa;
+            # border: 1.2px solid #fcfcfc !important;
+        }
+        .form {
+            background-color: #FFFFFF !important;
+        }
+        .first-page-checkbox {
+            border: 1.2px solid var(--checkbox-label-border-color) !important;
+            border-radius: 6px !important;
+            font-weight: 500;
+            padding: 0.8em 1em 0.8em 1em !important;
+            background-color: #ffffff;
+            !important;
+            margin: 0.5em !important;
+            align-items: center !important;
+            font-size: var(--text-md);
+            # color: var(--checkbox-label-border-color) !important;
+            color: #999;
+            transition: background-color 0.2s ease-in;
+        }
+        .first-page-checkbox label {
+            align-items: center !important;
+        }
+        .first-page-checkbox:hover {
+            border: 1.2px solid var(--checkbox-label-border-color) !important;
+            color: #165DFF !important;
+            background-color: #fafafa;
+            !important;
+            
     """,
 ) as demo:
     with gr.Row(elem_classes=["logo-row"]):
@@ -433,7 +474,7 @@ with gr.Blocks(
     def on_file_upload_translate(file):
         if file:
             (output, output_dual, preview) = translate(
-                file.name, "Google", "", "Chinese", "First", ""
+                file.name, "DeepLX", "", "Chinese", "First", ""
             )
             return [
                 gr.update(visible=False),  # Hide file upload
