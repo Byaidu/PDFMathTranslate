@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Container, Iterable, List, Optional
 
 import pymupdf
-from pathlib import Path
 
 from pdf2zh import __version__
 from pdf2zh.pdfexceptions import PDFValueError

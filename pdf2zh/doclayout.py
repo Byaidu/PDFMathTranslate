@@ -173,7 +173,8 @@ class OnnxModel(DocLayoutModel):
         specified in (img1_shape) to the shape of a different image (img0_shape).
 
         Args:
-            img1_shape (tuple): The shape of the image that the bounding boxes are for, in the format of (height, width).
+            img1_shape (tuple): The shape of the image that the bounding boxes are for,
+                in the format of (height, width).
             boxes (torch.Tensor): the bounding boxes of the objects in the image, in the format of (x1, y1, x2, y2)
             img0_shape (tuple): the shape of the target image, in the format of (height, width).
 
