@@ -37,13 +37,16 @@
 
 <h2 id="updates">近期更新</h2>
 
+
+- [Nov. 23 2024] 防止网页爬虫的防火墙 *(by [@Byaidu](https://github.com/Byaidu))*  
+- [Nov. 22 2024] 图形用户界面现已支持意大利语，并获得了一些更新 *(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))*  
+- [Nov. 22 2024] 现在你可以将自己部署的服务分享给朋友了 *(by [@Zxis233](https://github.com/Zxis233))*  
+- [Nov. 22 2024] Now supportsTencent Translation *(by [@hellofinch](https://github.com/hellofinch))*  
 - [Nov. 21 2024] 图形用户界面现在支持下载双语文档 *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 20 2024] 图形用户界面现在支持指定 Ollama 和 OpenAI 的模型 *(by [@IuvenisSapiens](https://github.com/IuvenisSapiens), [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 20 2024] 🌟 提供了 [在线演示](#demo)！ *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 20 2024] 支持 [容器化部署](#docker) *(by [@Byaidu](https://github.com/Byaidu))*  
-- [Nov. 20 2024] 支持速度更快的 [多线程翻译](#threads) *(by [@Byaidu](https://github.com/Byaidu))*  
-- [Nov. 19 2024] 提供了[图形用户界面](#gui) *(by [@reycn](https://github.com/reycn))*  
-- [Nov. 18 2024] 支持更多翻译服务，包含 [DeepL, DeepLX, 和 Azure](#services) *(by [@reycn](https://github.com/reycn), [@Hanaasagi](https://github.com/Hanaasagi))*  
+- [Nov. 20 2024] 支持速度更快的 [多线程翻译](#threads) *(by [@Byaidu](https://github.com/Byaidu))* 
 
 <h2 id="preview">效果预览</h2>
 
