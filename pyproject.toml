@@ -1,0 +1,46 @@
+[project]
+name = "pdf2zh"
+version = "1.7.9"
+description = "Latex PDF Translator"
+authors = [{ name = "Byaidu", email = "byaidux@gmail.com" }]
+license = "AGPL-3.0"
+readme = "README.md"
+requires-python = ">=3.8,<3.13"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "charset-normalizer",
+    "cryptography",
+    "requests",
+    "pymupdf",
+    "tqdm",
+    "tenacity",
+    "doclayout-yolo",
+    "numpy",
+    "ollama",
+    "deepl<1.19.1",
+    "openai",
+    "azure-ai-translation-text<=1.0.1",
+    "gradio",
+    "huggingface_hub",
+    "torch",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "pre-commit"
+]
+
+[project.urls]
+Homepage = "https://github.com/Byaidu/PDFMathTranslate"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+pdf2zh = "pdf2zh.pdf2zh:main"

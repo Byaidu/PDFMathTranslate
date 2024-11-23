@@ -119,7 +119,7 @@ def extract_text(
                                 doc_en.xref_set_key(
                                     xref, f"{label}Font/{font}", f"{font_id[font]} 0 R"
                                 )
-                except:
+                except Exception:
                     pass
         doc_en.save(Path(output) / f"{filename}-en.pdf")
 
@@ -277,6 +277,7 @@ def main(args: Optional[List[str]] = None) -> int:
         return -1
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
+
         setup_gui(parsed_args.share)
         return 0
 

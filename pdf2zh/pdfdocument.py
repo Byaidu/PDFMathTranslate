@@ -706,7 +706,7 @@ class PDFDocument:
         try:
             # print('FIND XREF')
             pos = self.find_xref(parser)
-            self.pos=pos
+            self.pos = pos
             self.read_xref_from(parser, pos, self.xrefs)
         except PDFNoValidXRef:
             if fallback:

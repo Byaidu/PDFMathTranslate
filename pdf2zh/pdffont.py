@@ -140,7 +140,7 @@ class Type1FontHeaderParser(PSStackParser[int]):
                 break
             try:
                 self._cid2unicode[cid] = name2unicode(cast(str, name))
-            except KeyError as e:
+            except KeyError:
                 # log.debug(str(e))
                 pass
         return self._cid2unicode

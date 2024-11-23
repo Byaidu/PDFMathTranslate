@@ -188,7 +188,7 @@ class PDFPage:
                 log.warning(warning_msg)
         # Process each page contained in the document.
         for pageno, page in enumerate(cls.create_pages(doc)):
-            page.pageno=pageno
+            page.pageno = pageno
             if pagenos and (pageno not in pagenos):
                 continue
             yield page

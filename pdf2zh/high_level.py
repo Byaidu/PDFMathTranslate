@@ -46,7 +46,7 @@ def extract_text_to_fp(
     vchar: str = "",
     thread: int = 0,
     doc_en: Document = None,
-    model = None,
+    model=None,
     lang_in: str = "",
     lang_out: str = "",
     service: str = "",
@@ -91,7 +91,7 @@ def extract_text_to_fp(
 
     rsrcmgr = PDFResourceManager(caching=not disable_caching)
     device: Optional[PDFDevice] = None
-    layout={}
+    layout = {}
 
     if output_type != "text" and outfp == sys.stdout:
         outfp = sys.stdout.buffer
@@ -151,50 +151,68 @@ def extract_text_to_fp(
         raise PDFValueError(msg)
 
     assert device is not None
-    obj_patch={}
+    obj_patch = {}
     interpreter = PDFPageInterpreter(rsrcmgr, device, obj_patch)
     if pages:
-        total_pages=len(pages)
+        total_pages = len(pages)
     else:
-        total_pages=page_count
-    with tqdm.tqdm(PDFPage.get_pages(
-        inf,
-        pages,
-        maxpages=maxpages,
-        password=password,
-        caching=not disable_caching,
-    ), total=total_pages, position=0) as progress:
+        total_pages = page_count
+    with tqdm.tqdm(
+        PDFPage.get_pages(
+            inf,
+            pages,
+            maxpages=maxpages,
+            password=password,
+            caching=not disable_caching,
+        ),
+        total=total_pages,
+        position=0,
+    ) as progress:
         for page in progress:
             if callback:
                 callback(progress)
             pix = doc_en[page.pageno].get_pixmap()
-            image = np.fromstring(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)[:, :, ::-1]
-            page_layout=model.predict(
+            image = np.fromstring(pix.samples, np.uint8).reshape(
+                pix.height, pix.width, 3
+            )[:, :, ::-1]
+            page_layout = model.predict(
                 image,
-                imgsz=int(pix.height/32)*32,
-                device="cuda:0" if torch.cuda.is_available() else "cpu", # Auto-select GPU if available
+                imgsz=int(pix.height / 32) * 32,
+                device=(
+                    "cuda:0" if torch.cuda.is_available() else "cpu"
+                ),  # Auto-select GPU if available
             )[0]
             # kdtree 是不可能 kdtree 的，不如直接渲染成图片，用空间换时间
-            box=np.ones((pix.height, pix.width))
-            h,w=box.shape
-            vcls=['abandon','figure','table','isolate_formula','formula_caption']
-            for i,d in enumerate(page_layout.boxes):
+            box = np.ones((pix.height, pix.width))
+            h, w = box.shape
+            vcls = ["abandon", "figure", "table", "isolate_formula", "formula_caption"]
+            for i, d in enumerate(page_layout.boxes):
                 if not page_layout.names[int(d.cls)] in vcls:
-                    x0,y0,x1,y1=d.xyxy.squeeze()
-                    x0,y0,x1,y1=np.clip(int(x0-1),0,w-1),np.clip(int(h-y1-1),0,h-1),np.clip(int(x1+1),0,w-1),np.clip(int(h-y0+1),0,h-1)
-                    box[y0:y1,x0:x1]=i+2
-            for i,d in enumerate(page_layout.boxes):
+                    x0, y0, x1, y1 = d.xyxy.squeeze()
+                    x0, y0, x1, y1 = (
+                        np.clip(int(x0 - 1), 0, w - 1),
+                        np.clip(int(h - y1 - 1), 0, h - 1),
+                        np.clip(int(x1 + 1), 0, w - 1),
+                        np.clip(int(h - y0 + 1), 0, h - 1),
+                    )
+                    box[y0:y1, x0:x1] = i + 2
+            for i, d in enumerate(page_layout.boxes):
                 if page_layout.names[int(d.cls)] in vcls:
-                    x0,y0,x1,y1=d.xyxy.squeeze()
-                    x0,y0,x1,y1=np.clip(int(x0-1),0,w-1),np.clip(int(h-y1-1),0,h-1),np.clip(int(x1+1),0,w-1),np.clip(int(h-y0+1),0,h-1)
-                    box[y0:y1,x0:x1]=0
-            layout[page.pageno]=box
+                    x0, y0, x1, y1 = d.xyxy.squeeze()
+                    x0, y0, x1, y1 = (
+                        np.clip(int(x0 - 1), 0, w - 1),
+                        np.clip(int(h - y1 - 1), 0, h - 1),
+                        np.clip(int(x1 + 1), 0, w - 1),
+                        np.clip(int(h - y0 + 1), 0, h - 1),
+                    )
+                    box[y0:y1, x0:x1] = 0
+            layout[page.pageno] = box
             # print(page.number,page_layout)
             page.rotate = (page.rotate + rotation) % 360
             # 新建一个 xref 存放新指令流
-            page.page_xref = doc_en.get_new_xref() # hack
+            page.page_xref = doc_en.get_new_xref()  # hack
             doc_en.update_object(page.page_xref, "<<>>")
-            doc_en.update_stream(page.page_xref,b'')
+            doc_en.update_stream(page.page_xref, b"")
             doc_en[page.pageno].set_contents(page.page_xref)
             interpreter.process_page(page)
 
