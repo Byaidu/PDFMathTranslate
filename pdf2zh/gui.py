@@ -31,7 +31,11 @@ def pdf_preview(file):
     doc = pymupdf.open(file)
     page = doc[0]
     pix = page.get_pixmap()
+    # Get only the top half of the image
+    height = pix.height
+    half_height = height // 2
     image = np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
+    image = image[:half_height, :, :]  # Take only the top half
     return image
 
 
@@ -129,7 +133,7 @@ def translate(
                 progress_val = 0.3 + (percent * 0.5 / 100)
                 progress(
                     progress_val,
-                    desc=f"Translating content using {selected_service}, {percent}% pages done...",
+                    desc=f"Translating content using {selected_service}. {percent}% pages translated / overall ",
                 )
 
     # Get the return code
@@ -209,6 +213,12 @@ class EnvSync:
 
     def __bool__(self) -> bool:
         return bool(self.value)
+
+
+env_services = EnvSync("PDF2ZH_GUI_SERVICE")
+env_lo = EnvSync("PDF2ZH_GUI_LO")
+env_deeplx_auth_key = EnvSync("DEEPLX_AUTH_KEY")
+env_deeplx_server_url = EnvSync("DEEPLX_SERVER_URL")
 
 
 # Global setup
@@ -301,7 +311,7 @@ with gr.Blocks(
             animation: pulse-background 2s ease-in-out;
             transition: background-color 0.4s ease-out;
             width: 80vw;
-            height: 60vh;
+            height: 50vh;
             margin: 0 auto;
         }
         .input-file:hover {
@@ -405,6 +415,42 @@ with gr.Blocks(
         .preview-block .image-frame img {width: var(--size-full);
             object-fit: cover !important;
         }
+        .options-modal {
+            position: absolute !important;
+            # top: 20vh !important;
+            left: 50vw !important;
+            transform: translate(-25vw,-0vh) !important;
+            z-index: 1000 !important;
+            background: white !important;
+            padding: 2rem !important;
+            border-radius: 8px !important;
+            box-shadow: 4px 4px 10px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.02) !important;
+            width: 400px !important;
+        }
+        .options-modal .gr-group {
+            background: white !important;
+        }
+        .options-modal .styler{
+            background: white !important;
+        }
+        .options-modal h3 {
+            margin-top: 0 !important;
+            margin-bottom: 1.5rem !important;
+            color: #333 !important;
+        }
+        .options-modal .form {
+            margin-bottom: 1.5rem !important;
+        }
+        .options-modal .row {
+            justify-content: flex-end !important;
+            gap: 1rem !important;
+        }
+        .options-modal div button .secondary {
+            background-color: white !important;
+        }
+        .options-modal button {
+            min-width: 80px !important;
+        }
         .options-btn {
             line-height: var(--line-md);
             background-color: #FFFFFF;
@@ -476,14 +522,14 @@ with gr.Blocks(
             elem_classes=["secondary-text"],
         )
     with gr.Row(elem_classes=["options-row"]):
-        first_page = gr.Checkbox(
-            label="First Page",
+        first_page_only = gr.Checkbox(
+            label="Only first page",
             value=False,
             interactive=True,
             elem_classes=["first-page-checkbox", "secondary-text"],
         )
         more_options = gr.Button(
-            "Preferences",
+            "More options",
             variant="secondary",
             elem_classes=["options-btn"],
         )
@@ -495,6 +541,59 @@ with gr.Blocks(
             visible=False,
         )
 
+    def show_options():
+        return gr.update(visible=True)
+
+    def save_options(api_key, api_url, model):
+        env_api_key.value = api_key
+        env_api_url.value = api_url
+        env_model.value = model
+        return gr.update(visible=False)
+
+    def cancel_options():
+        return gr.update(visible=False)
+
+    # Options modal
+    with gr.Column(visible=False, elem_classes=["options-modal"]) as options_modal:
+        gr.Markdown("## Advanced Options")
+        with gr.Group():
+            gui_service = gr.Dropdown(
+                label="Translation Service",
+                choices=list(service_map.keys()),
+                value=env_services.value,
+                interactive=True,
+            )
+            api_key_input = gr.Textbox(
+                label="DeepLX Auth Key (required)",
+                value=env_deeplx_auth_key.value,
+                interactive=True,
+            )
+            api_url_input = gr.Textbox(
+                label="DeepLX ServerURL (optional)",
+                value=env_deeplx_server_url.value,
+                interactive=True,
+            )
+            gui_lo = gr.Dropdown(
+                label="Target Language",
+                choices=["Chinese", "English"],
+                value=env_lo.value,
+                interactive=True,
+            )
+            with gr.Row():
+                cancel_btn = gr.Button("Cancel")
+                save_btn = gr.Button("Save", variant="primary")
+
+    # Connect the options events
+    more_options.click(show_options, outputs=[options_modal])
+
+    cancel_btn.click(cancel_options, outputs=[options_modal])
+
+    save_btn.click(
+        save_options,
+        inputs=[api_key_input, api_url_input, model_input],
+        outputs=[options_modal],
+    )
+
     # Event handlers
     def on_file_upload_immediate(file):
         if file:
@@ -504,10 +603,12 @@ with gr.Blocks(
             ]
         return [gr.update(visible=True), gr.update(visible=True)]
 
-    def on_file_upload_translate(file):
+    def on_file_upload_translate(file, first_page_only):
+        option_first_page = "First" if first_page_only else "All"
+        option_service = service_map[gui_service] if gui_service else "Google"
         if file:
             (output, output_dual, preview) = translate(
-                file.name, "DeepLX", "", "Chinese", "First", ""
+                file.name, option_service, "", "Chinese", option_first_page, ""
             )
             return [
                 gr.update(visible=False),  # Hide file upload
@@ -537,10 +638,10 @@ with gr.Blocks(
     file_input.upload(
         fn=on_file_upload_immediate,
         inputs=[file_input],
-        outputs=[first_page, more_options],
+        outputs=[first_page_only, more_options],
     ).then(
         fn=on_file_upload_translate,
-        inputs=[file_input],
+        inputs=[file_input, first_page_only],
         outputs=[
             file_input,
             preview,
@@ -549,7 +650,7 @@ with gr.Blocks(
             output_file,
             output_file_dual,
             output_file_dual,
-            first_page,
+            first_page_only,
             more_options,
             refresh,
         ],
@@ -579,7 +680,7 @@ with gr.Blocks(
             output_file,
             output_file_dual,
             output_file_dual,
-            first_page,
+            first_page_only,
             more_options,
             refresh,
         ],
