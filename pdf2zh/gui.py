@@ -74,16 +74,16 @@ def pdf_preview(file):
 def upload_file(file, service, progress=gr.Progress()):
     """Handle file upload, validation, and initial preview."""
     if not file or not os.path.exists(file):
-        return None, None, gr.update(visible=False), gr.update(visible=False)
+        return None, None
 
     try:
         # Convert first page for preview
         preview_image = pdf_preview(file)
 
-        return file, preview_image, gr.update(visible=True), gr.update(visible=True)
+        return file, preview_image
     except Exception as e:
         print(f"Error converting PDF: {e}")
-        return None, None, gr.update(visible=False), gr.update(visible=False)
+        return None, None
 
 
 def translate(
@@ -107,7 +107,7 @@ def translate(
     shutil.copyfile(file_path, file_en)
 
     selected_service = service_map.get(service, "google")
-    selected_page = page_map.get(page_range, [1])
+    selected_page = page_map.get(page_range, [0])
     lang_to = lang_map.get(lang, "zh")
     if selected_service == "google":
         lang_to = "zh-CN" if lang_to == "zh" else lang_to
@@ -222,7 +222,7 @@ with gr.Blocks(
     # }
     """,
     head='''
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
     <script type="text/javascript">
         var onVerify = function(token) {
             el=document.getElementById('verify').getElementsByTagName('textarea')[0];
@@ -230,7 +230,7 @@ with gr.Blocks(
             el.dispatchEvent(new Event('input'));
         };
     </script>
-    ''' if flag_demo else None
+    ''' if flag_demo else ""
 ) as demo:
     gr.Markdown("# [PDFMathTranslate @ Github](https://github.com/Byaidu/PDFMathTranslate)")
 
@@ -336,11 +336,8 @@ with gr.Blocks(
                 label="Download Translation (Dual)", visible=False
             )
             recaptcha_response = gr.Textbox(label="reCAPTCHA Response", elem_id='verify', visible=False)
-            if flag_demo:
-                recaptcha_box=gr.HTML(f'<div class="g-recaptcha" data-sitekey="{client_key}" data-callback="onVerify"></div>', visible=False)
-            else:
-                recaptcha_box=gr.HTML()
-            translate_btn = gr.Button("Translate", variant="primary", visible=False)
+            recaptcha_box=gr.HTML(f'<div id="recaptcha-box"></div>')
+            translate_btn = gr.Button("Translate", variant="primary")
             tech_details_tog = gr.Markdown(
                 details_wrapper(envs_status),
                 elem_classes=["secondary-text"],
@@ -355,7 +352,18 @@ with gr.Blocks(
     file_input.upload(
         upload_file,
         inputs=[file_input, service],
-        outputs=[file_input, preview, translate_btn, recaptcha_box],
+        outputs=[file_input, preview],
+        js=f"""
+            (a,b)=>{{
+                try{{
+                    grecaptcha.render('recaptcha-box',{{
+                        'sitekey':'{client_key}',
+                        'callback':'onVerify'
+                    }});
+                }}catch(error){{}}
+                return [a];
+            }}
+            """ if flag_demo else ""
     )
 
     translate_btn.click(
@@ -369,7 +377,7 @@ with gr.Blocks(
             output_file_dual,
             output_title,
         ],
-    )
+    ).then(lambda:None,js="()=>{grecaptcha.reset()}" if flag_demo else "")
 
 
 def setup_gui(share=False):
