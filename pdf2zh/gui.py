@@ -228,7 +228,8 @@ with gr.Blocks(
     #     color: #165DFF !important;
     # }
     """,
-    head='''
+    head=(
+        """
     <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
     <script type="text/javascript">
         var onVerify = function(token) {
@@ -237,7 +238,10 @@ with gr.Blocks(
             el.dispatchEvent(new Event('input'));
         };
     </script>
-    ''' if flag_demo else ""
+    """
+        if flag_demo
+        else ""
+    ),
 ) as demo:
     gr.Markdown(
         "# [PDFMathTranslate @ Github](https://github.com/Byaidu/PDFMathTranslate)"
@@ -353,8 +357,10 @@ with gr.Blocks(
             output_file_dual = gr.File(
                 label="Download Translation (Dual)", visible=False
             )
-            recaptcha_response = gr.Textbox(label="reCAPTCHA Response", elem_id='verify', visible=False)
-            recaptcha_box=gr.HTML(f'<div id="recaptcha-box"></div>')
+            recaptcha_response = gr.Textbox(
+                label="reCAPTCHA Response", elem_id="verify", visible=False
+            )
+            recaptcha_box = gr.HTML(f'<div id="recaptcha-box"></div>')
             translate_btn = gr.Button("Translate", variant="primary")
             tech_details_tog = gr.Markdown(
                 details_wrapper(envs_status),
@@ -371,7 +377,8 @@ with gr.Blocks(
         upload_file,
         inputs=[file_input, service],
         outputs=[file_input, preview],
-        js=f"""
+        js=(
+            f"""
             (a,b)=>{{
                 try{{
                     grecaptcha.render('recaptcha-box',{{
@@ -381,7 +388,10 @@ with gr.Blocks(
                 }}catch(error){{}}
                 return [a];
             }}
-            """ if flag_demo else ""
+            """
+            if flag_demo
+            else ""
+        ),
     )
 
     translate_btn.click(
@@ -395,7 +405,7 @@ with gr.Blocks(
             output_file_dual,
             output_title,
         ],
-    ).then(lambda:None,js="()=>{grecaptcha.reset()}" if flag_demo else "")
+    ).then(lambda: None, js="()=>{grecaptcha.reset()}" if flag_demo else "")
 
 
 def setup_gui(share=False):
