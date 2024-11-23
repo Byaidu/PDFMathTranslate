@@ -1,5 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+files: '^.*\.py$'
 repos:
 -   repo: local
     hooks:
@@ -7,9 +8,7 @@ repos:
       name: black
       entry: black --check --diff --color
       language: python
-      files: ".py"
     - id: flake8
       name: flake8
       entry: flake8
       language: python
-      files: ".py"

@@ -20,7 +20,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build
+        pip install build flake8 black
+
+    - name: Check code format
+      run: |
+        black --check --diff --color pdf2zh/*.py
+        flake8
 
     - name: Build package
       run: python -m build
