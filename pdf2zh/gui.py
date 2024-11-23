@@ -360,7 +360,7 @@ with gr.Blocks(
             recaptcha_response = gr.Textbox(
                 label="reCAPTCHA Response", elem_id="verify", visible=False
             )
-            recaptcha_box = gr.HTML(f'<div id="recaptcha-box"></div>')
+            recaptcha_box = gr.HTML('<div id="recaptcha-box"></div>')
             translate_btn = gr.Button("Translate", variant="primary")
             tech_details_tog = gr.Markdown(
                 details_wrapper(envs_status),
