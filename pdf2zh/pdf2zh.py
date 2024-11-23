@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Container, Iterable, List, Optional
 
 import pymupdf
-from huggingface_hub import hf_hub_download
+from pathlib import Path
 
 from pdf2zh import __version__
 from pdf2zh.pdfexceptions import PDFValueError
@@ -27,10 +27,14 @@ OUTPUT_TYPES = ((".htm", "html"), (".html", "html"), (".xml", "xml"), (".tag", "
 
 
 def setup_log() -> None:
-    import doclayout_yolo
-
     logging.basicConfig()
-    doclayout_yolo.utils.LOGGER.setLevel(logging.WARNING)
+
+    try:
+        import doclayout_yolo
+
+        doclayout_yolo.utils.LOGGER.setLevel(logging.WARNING)
+    except ImportError:
+        pass
 
 
 def check_files(files: List[str]) -> List[str]:
@@ -73,8 +77,7 @@ def extract_text(
     output: str = "",
     **kwargs: Any,
 ) -> AnyIO:
-    import doclayout_yolo
-
+    from pdf2zh.doclayout import DocLayoutModel
     import pdf2zh.high_level
 
     if not files:
@@ -86,15 +89,7 @@ def extract_text(
                 output_type = alttype
 
     outfp: AnyIO = sys.stdout
-    # pth = os.path.join(tempfile.gettempdir(), 'doclayout_yolo_docstructbench_imgsz1024.pt')
-    # if not os.path.exists(pth):
-    #     print('Downloading...')
-    #     urllib.request.urlretrieve("http://huggingface.co/juliozhao/DocLayout-YOLO-DocStructBench/resolve/main/doclayout_yolo_docstructbench_imgsz1024.pt",pth)
-    pth = hf_hub_download(
-        repo_id="juliozhao/DocLayout-YOLO-DocStructBench",
-        filename="doclayout_yolo_docstructbench_imgsz1024.pt",
-    )
-    model = doclayout_yolo.YOLOv10(pth)
+    model = DocLayoutModel.load_available()
 
     for file in files:
         filename = os.path.splitext(os.path.basename(file))[0]
