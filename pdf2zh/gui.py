@@ -183,20 +183,11 @@ with gr.Blocks(
     .env-warning {color: #dd5500 !important;}
     .env-success {color: #559900 !important;}
 
-    @keyframes pulse-background {
-        0% { background-color: #FFFFFF; }
-        25% { background-color: #FFFFFF; }
-        50% { background-color: #E8F3FF; }
-        75% { background-color: #FFFFFF; }
-        100% { background-color: #FFFFFF; }
-    }
-
     /* Add dashed border to input-file class */
     .input-file {
         border: 1.2px dashed #165DFF !important;
         border-radius: 6px !important;
         # background-color: #ffffff !important;
-        animation: pulse-background 2s ease-in-out;
         transition: background-color 0.4s ease-out;
     }
 
