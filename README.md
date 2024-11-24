@@ -263,6 +263,8 @@ pdf2zh example.pdf -t 1
 
 - [ ] Fix page rotation, table of contents, format of list
 
+- [ ] Fix special size of first character in paragraphs
+
 <h2 id="acknowledgement">Acknowledgements</h2>
 
 - Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
