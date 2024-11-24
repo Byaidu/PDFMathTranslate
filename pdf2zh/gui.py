@@ -244,7 +244,7 @@ with gr.Blocks(
     ),
 ) as demo:
     gr.Markdown(
-        "# [PDFMathTranslate @ Github](https://github.com/Byaidu/PDFMathTranslate)"
+        "# [PDFMathTranslate @ GitHub](https://github.com/Byaidu/PDFMathTranslate)"
     )
 
     with gr.Row():
