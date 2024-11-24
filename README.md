@@ -37,6 +37,7 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="updates">Updates</h2>
 
+- [Nov. 23 2024] [ONNX](https://github.com/onnx/onnx) support to reduce dependency sizes *(by [@Wybxc](https://github.com/Wybxc))*  
 - [Nov. 23 2024] 🌟 [Public Service](#demo)  online! *(by [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 23 2024] Non-PDF/A documents are now supported *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 23 2024] Firewall for preventing web bots *(by [@Byaidu](https://github.com/Byaidu))*  
@@ -44,10 +45,7 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 - [Nov. 22 2024] You can now share your deployed service to others *(by [@Zxis233](https://github.com/Zxis233))*  
 - [Nov. 22 2024] Now supports Tencent Translation *(by [@hellofinch](https://github.com/hellofinch))*  
 - [Nov. 21 2024] GUI now supports downloading dual-document *(by [@reycn](https://github.com/reycn))*  
-- [Nov. 20 2024] GUI now supports specifying Ollama and OpenAI models *(by [@IuvenisSapiens](https://github.com/IuvenisSapiens), [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 20 2024] 🌟 [Demo](#demo)  online! *(by [@reycn](https://github.com/reycn))*  
-- [Nov. 20 2024] Supports [Docker](#docker) *(by [@Byaidu](https://github.com/Byaidu))*  
-- [Nov. 20 2024] Supports [multiple-threads translation](#threads) *(by [@Byaidu](https://github.com/Byaidu))*  
 
 <h2 id="preview">Preview</h2>
 
@@ -57,10 +55,13 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="demo">Public Service 🌟</h2>
 
-### Free Service (https://pdf2zh.com/)
+### Free Service (<https://pdf2zh.com/>)
+
 You can try our [public service](https://pdf2zh.com/) online without installation.  
+
 ### Hugging Face Demo
-You can try [our demo on HuggingFace](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker) without installation.   
+
+You can try [our demo on HuggingFace](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker) without installation.
 Note that the computing resources of the demo are limited, so please avoid abusing them.
 
 <h2 id="install">Installation and Usage</h2>
