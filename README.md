@@ -257,6 +257,12 @@ Use `-t` to specify how many threads to use in translation:
 pdf2zh example.pdf -t 1
 ```
 
+<h2 id="todo">TODO</h2>
+
+- [ ] Parse layout with [PaddleX](https://github.com/PaddlePaddle/PaddleX/blob/17cc27ac3842e7880ca4aad92358d3ef8555429a/paddlex/repo_apis/PaddleDetection_api/object_det/official_categories.py#L81), [PaperMage](https://github.com/allenai/papermage/blob/9cd4bb48cbedab45d0f7a455711438f1632abebe/README.md?plain=1#L118)
+
+- [ ] Fix page rotation, table of contents, format of list
+
 <h2 id="acknowledgement">Acknowledgements</h2>
 
 - Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
