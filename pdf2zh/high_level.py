@@ -205,7 +205,7 @@ def extract_text_to_fp(
             # print(page.number,page_layout)
             page.rotate = (page.rotate + rotation) % 360
             # 新建一个 xref 存放新指令流
-            page.page_xref = doc_en.get_new_xref()  # hack
+            page.page_xref = doc_en.get_new_xref()  # hack 插入页面的新 xref
             doc_en.update_object(page.page_xref, "<<>>")
             doc_en.update_stream(page.page_xref, b"")
             doc_en[page.pageno].set_contents(page.page_xref)
