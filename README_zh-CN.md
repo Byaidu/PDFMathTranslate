@@ -238,6 +238,19 @@ pdf2zh example.pdf -s openai:gpt-4o
 pdf2zh example.pdf -s azure
 ```
 
+- **腾讯机器翻译**
+
+参考 [腾讯机器翻译](https://cloud.tencent.com/product/tmt)
+
+需设置以下环境变量：
+
+- `Tencent_SECRET_ID`, e.g., `export Tencent_SECRET_ID=AKIDxxx`
+- `Tencent_SECRET_KEY`, e.g., `export Tencent_SECRET_KEY=xxx`
+
+```bash
+pdf2zh example.pdf -s tmt
+```
+
 <h3 id="exceptions">指定例外规则</h3>
 
 使用正则表达式指定需保留的公式字体与字符
