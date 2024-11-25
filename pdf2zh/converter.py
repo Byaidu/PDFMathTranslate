@@ -528,10 +528,10 @@ class TextConverter(PDFConverter[AnyIO]):
                         pstk[-1][5] = child.font
                     sstk[-1] += child.get_text()
                 else:                                                       # 公式入栈
-                    if (                                                    # 根据公式右侧的文字修正公式的纵向偏移
+                    if (                                                    # 根据公式左侧的文字修正公式的纵向偏移
                         not vstk                                            # 1. 当前字符是公式的第一个字符
                         and cls == xt_cls                                   # 2. 当前字符与前一个字符属于同一段落
-                        and child.x0 > xt.x0                                # 3. 当前字符在前一个字符右侧
+                        and child.x0 > xt.x0                                # 3. 前一个字符在公式左侧
                     ):
                         vfix = child.y0 - xt.y0
                     vstk.append(child)
