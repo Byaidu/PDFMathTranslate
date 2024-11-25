@@ -113,7 +113,7 @@
 
     ```bash
     docker pull byaidu/pdf2zh
-    docker run -p 7860:7860 byaidu/pdf2zh
+    docker run -d -p 7860:7860 byaidu/pdf2zh
     ```
 
 2. 通过浏览器打开：

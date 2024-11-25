@@ -113,7 +113,7 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
 
     ```bash
     docker pull byaidu/pdf2zh
-    docker run -p 7860:7860 byaidu/pdf2zh
+    docker run -d -p 7860:7860 byaidu/pdf2zh
     ```
 
 2. Open in browser:
