@@ -25,7 +25,7 @@ jobs:
     - name: Check code format
       run: |
         black --check --diff --color pdf2zh/*.py
-        flake8
+        flake8 --ignore E203,E261,E501,W503,E741
 
     - name: Build package
       run: python -m build

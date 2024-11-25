@@ -10,5 +10,5 @@ repos:
       language: python
     - id: flake8
       name: flake8
-      entry: flake8
+      entry: flake8 --ignore E203,E261,E501,W503,E741
       language: python

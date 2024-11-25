@@ -511,7 +511,7 @@ class TextConverter(PDFConverter[AnyIO]):
                             pstk[-1][6] = True
                     else:                           # 根据当前字符构建一个新的段落
                         sstk.append("")
-                        pstk.append([child.y0,child.x0,child.x0,child.x0,child.size,child.font,False,])
+                        pstk.append([child.y0, child.x0, child.x0, child.x0, child.size, child.font, False])
                 if not cur_v:                                               # 文字入栈
                     if (                                                    # 根据当前字符修正段落属性
                         child.size > pstk[-1][4] / 0.79                     # 1. 当前字符显著比段落字体大
@@ -565,7 +565,7 @@ class TextConverter(PDFConverter[AnyIO]):
             varf.append(vfix)
         log.debug("\n==========[VSTACK]==========\n")
         for id, v in enumerate(var):  # 计算公式宽度
-            l = max([vch.x1 for vch in v]) - v[0].x0  # noqa: E741
+            l = max([vch.x1 for vch in v]) - v[0].x0
             log.debug(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])} > $v{id}$ = {"".join([ch.get_text() for ch in v])}')
             vlen.append(l)
 
@@ -574,6 +574,7 @@ class TextConverter(PDFConverter[AnyIO]):
         log.debug("\n==========[SSTACK]==========\n")
         hash_key = cache.deterministic_hash("PDFMathTranslate")
         cache.create_cache(hash_key)
+
         @retry(wait=wait_fixed(1))
         def worker(s):  # 多线程翻译
             try:
@@ -604,6 +605,7 @@ class TextConverter(PDFConverter[AnyIO]):
                 return "".join(["%04x" % ord(c) for c in cstk])
             else:
                 return "".join(["%02x" % ord(c) for c in cstk])
+
         _x, _y = 0, 0
         for id, new in enumerate(news):
             tx = x = pstk[id][1]    # 段落初始横坐标
@@ -633,9 +635,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         adv = vlen[vid]
                     except Exception:
                         continue  # 翻译器可能会自动补个越界的公式标记
-                    if len(var[vid]) == 1 and unicodedata.category(
-                        var[vid][0].get_text()[0]
-                    ) in ["Lm","Mn","Sk",]:  # 文字修饰符
+                    if len(var[vid]) == 1 and unicodedata.category(var[vid][0].get_text()[0]) in ["Lm", "Mn", "Sk"]:  # 文字修饰符
                         mod = True
                 else:  # 加载文字
                     ch = new[ptr]
@@ -667,7 +667,7 @@ class TextConverter(PDFConverter[AnyIO]):
                         cstk = ""
                 if lb and x + adv > rt + 0.1 * size:  # 到达右边界且原文段落存在换行
                     x = lt
-                    lang_space = {"zh-CN": 1.4,"zh-TW": 1.4,"ja": 1.1,"ko": 1.2,"en": 1.2}  # CJK
+                    lang_space = {"zh-CN": 1.4, "zh-TW": 1.4, "ja": 1.1, "ko": 1.2, "en": 1.2}  # CJK
                     y -= size * lang_space.get(self.translator.lang_out, 1.1)  # 小语种大多适配 1.1
                 if vy_regex:  # 插入公式
                     fix = 0
@@ -675,13 +675,13 @@ class TextConverter(PDFConverter[AnyIO]):
                         fix = varf[vid]
                     for vch in var[vid]:  # 排版公式字符
                         vc = chr(vch.cid)
-                        ops += f"/{self.fontid[vch.font]} {vch.size:f} Tf 1 0 0 1 {x + vch.x0 - var[vid][0].x0:f} {fix + y + vch.y0 - var[vid][0].y0:f} Tm [<{raw_string(self.fontid[vch.font], vc)}>] TJ "  # noqa: E501
+                        ops += f"/{self.fontid[vch.font]} {vch.size:f} Tf 1 0 0 1 {x + vch.x0 - var[vid][0].x0:f} {fix + y + vch.y0 - var[vid][0].y0:f} Tm [<{raw_string(self.fontid[vch.font], vc)}>] TJ "
                         if log.isEnabledFor(logging.DEBUG):
-                            lstk.append(LTLine(0.1,(_x, _y),(x + vch.x0 - var[vid][0].x0,fix + y + vch.y0 - var[vid][0].y0,)))
+                            lstk.append(LTLine(0.1, (_x, _y), (x + vch.x0 - var[vid][0].x0, fix + y + vch.y0 - var[vid][0].y0)))
                             _x, _y = x + vch.x0 - var[vid][0].x0, fix + y + vch.y0 - var[vid][0].y0
-                    for l in varl[vid]:  # 排版公式线条 # noqa: E741
+                    for l in varl[vid]:  # 排版公式线条
                         if l.linewidth < 5:  # hack 有的文档会用粗线条当图片背景
-                            ops += f"ET q 1 0 0 1 {l.pts[0][0] + x - var[vid][0].x0:f} {l.pts[0][1] + fix + y - var[vid][0].y0:f} cm [] 0 d 0 J {l.linewidth:f} w 0 0 m {l.pts[1][0] - l.pts[0][0]:f} {l.pts[1][1] - l.pts[0][1]:f} l S Q BT "  # noqa: E501
+                            ops += f"ET q 1 0 0 1 {l.pts[0][0] + x - var[vid][0].x0:f} {l.pts[0][1] + fix + y - var[vid][0].y0:f} cm [] 0 d 0 J {l.linewidth:f} w 0 0 m {l.pts[1][0] - l.pts[0][0]:f} {l.pts[1][1] - l.pts[0][1]:f} l S Q BT "
                 else:  # 插入文字缓冲区
                     if not cstk:  # 单行开头
                         tx = x
@@ -698,9 +698,9 @@ class TextConverter(PDFConverter[AnyIO]):
                 if log.isEnabledFor(logging.DEBUG):
                     lstk.append(LTLine(0.1, (_x, _y), (x, y)))
                     _x, _y = x, y
-        for l in lstk:  # 排版全局线条 # noqa: E741
+        for l in lstk:  # 排版全局线条
             if l.linewidth < 5:  # hack 有的文档会用粗线条当图片背景
-                ops += f"ET q 1 0 0 1 {l.pts[0][0]:f} {l.pts[0][1]:f} cm [] 0 d 0 J {l.linewidth:f} w 0 0 m {l.pts[1][0] - l.pts[0][0]:f} {l.pts[1][1] - l.pts[0][1]:f} l S Q BT "  # noqa: E501
+                ops += f"ET q 1 0 0 1 {l.pts[0][0]:f} {l.pts[0][1]:f} cm [] 0 d 0 J {l.linewidth:f} w 0 0 m {l.pts[1][0] - l.pts[0][0]:f} {l.pts[1][1] - l.pts[0][1]:f} l S Q BT "
         ops = f"BT {ops}ET "
         return ops
 
