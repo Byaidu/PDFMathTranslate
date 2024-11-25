@@ -400,8 +400,6 @@ with gr.Blocks(
 
 
 def setup_gui(share=False):
-    import doclayout_yolo  # cache # noqa: F401
-
     if flag_demo:
         demo.launch(server_name="0.0.0.0", max_file_size="5mb", inbrowser=True)
     else:
