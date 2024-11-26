@@ -37,7 +37,8 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="updates">Updates</h2>
 
-- [Nov. 23 2024] [ONNX](https://github.com/onnx/onnx) support to reduce dependency sizes *(by [@Wybxc](https://github.com/Wybxc))*  
+- [Nov. 26 2024] CLI now supports online file(s) *(by [@reycn](https://github.com/reycn))*  
+- [Nov. 24 2024] [ONNX](https://github.com/onnx/onnx) support to reduce dependency sizes *(by [@Wybxc](https://github.com/Wybxc))*  
 - [Nov. 23 2024] 🌟 [Public Service](#demo)  online! *(by [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 23 2024] Firewall for preventing web bots *(by [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 22 2024] GUI now supports Italian, and has been improved *(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))*  
@@ -146,6 +147,8 @@ In the following table, we list all advanced options for reference:
 
 | Option    | Function | Example |
 | -------- | ------- |------- |
+| (document)  | Local file(s) |  `pdf2zh ~/local.pdf` |
+|  | Online files(s) |  `pdf2zh http://web.com/online.pdf` |
 | `-i`  | [Enter GUI](#gui) |  `pdf2zh -i` |
 | `-p`  | [Partial document translation](#partial) |  `pdf2zh example.pdf -p 1` |
 | `-li` | [Source language](#languages) |  `pdf2zh example.pdf -li en` |

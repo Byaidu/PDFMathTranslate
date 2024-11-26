@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Container, Iterable, List, Optional
 
 import pymupdf
+import requests
 
 from pdf2zh import __version__
 from pdf2zh.pdfexceptions import PDFValueError
@@ -36,6 +37,12 @@ def setup_log() -> None:
 
 
 def check_files(files: List[str]) -> List[str]:
+    files = [
+        f for f in files if not f.startswith("http://")
+    ]  # exclude online files, http
+    files = [
+        f for f in files if not f.startswith("https://")
+    ]  # exclude online files, https
     missing_files = [file for file in files if not os.path.exists(file)]
     return missing_files
 
@@ -75,8 +82,8 @@ def extract_text(
     output: str = "",
     **kwargs: Any,
 ) -> AnyIO:
-    from pdf2zh.doclayout import DocLayoutModel
     import pdf2zh.high_level
+    from pdf2zh.doclayout import DocLayoutModel
 
     if not files:
         raise PDFValueError("Must provide files to work upon!")
@@ -90,6 +97,24 @@ def extract_text(
     model = DocLayoutModel.load_available()
 
     for file in files:
+        if file.startswith("http://") or file.startswith("https://"):
+            print("Online files detected, downloading...")
+            try:
+                r = requests.get(file, allow_redirects=True)
+                if r.status_code == 200:
+                    if not os.path.exists("./pdf2zh_files"):
+                        print("Making a temporary dir for downloading PDF files...")
+                        os.mkdir(os.path.dirname("./pdf2zh_files"))
+                    with open("./pdf2zh_files/tmp_download.pdf", "wb") as f:
+                        print(f"Writing the file: {file}...")
+                        f.write(r.content)
+                    file = "./pdf2zh_files/tmp_download.pdf"
+                else:
+                    r.raise_for_status()
+            except Exception as e:
+                raise PDFValueError(
+                    f"Errors occur in downloading the PDF file. Please check the link(s).\nError:\n{e}"
+                )
         filename = os.path.splitext(os.path.basename(file))[0]
 
         doc_en = pymupdf.open(file)
@@ -281,4 +306,5 @@ def main(args: Optional[List[str]] = None) -> int:
 
 
 if __name__ == "__main__":
+    sys.exit(main())
     sys.exit(main())
