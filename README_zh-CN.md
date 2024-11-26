@@ -37,6 +37,7 @@
 
 <h2 id="updates">近期更新</h2>
 
+- [Nov. 26 2024] CLI 现在已支持（多个）在线 PDF 文件 *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 24 2024] 为降低依赖大小，提供 [ONNX](https://github.com/onnx/onnx) 支持 *(by [@Wybxc](https://github.com/Wybxc))*  
 - [Nov. 23 2024] 🌟 [免费公共服务](#demo) 上线! *(by [@Byaidu](https://github.com/Byaidu))*  
 - [Nov. 23 2024] 防止网页爬虫的防火墙 *(by [@Byaidu](https://github.com/Byaidu))*  
@@ -146,6 +147,8 @@
 
 | Option    | Function | Example |
 | -------- | ------- |------- |
+| (文档)  | 本地（多个）文件 |  `pdf2zh ~/local.pdf` |
+|  | 在线（多个）文件|  `pdf2zh http://web.com/online.pdf` |
 | `-i`  | [进入图形界面](#gui) |  `pdf2zh -i` |
 | `-p`  | [仅翻译部分文档](#partial) |  `pdf2zh example.pdf -p 1` |
 | `-li` | [源语言](#languages) |  `pdf2zh example.pdf -li en` |
@@ -243,6 +246,19 @@ pdf2zh example.pdf -s openai:gpt-4o
 
 ```bash
 pdf2zh example.pdf -s azure
+```
+
+- **腾讯机器翻译**
+
+参考 [腾讯机器翻译](https://cloud.tencent.com/product/tmt)
+
+需设置以下环境变量：
+
+- `TENCENT_SECRET_ID`, e.g., `export TENCENT_SECRET_ID=AKIDxxx`
+- `TENCENT_SECRET_KEY`, e.g., `export TENCENT_SECRET_KEY=xxx`
+
+```bash
+pdf2zh example.pdf -s tmt
 ```
 
 <h3 id="exceptions">指定例外规则</h3>
