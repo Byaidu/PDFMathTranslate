@@ -33,7 +33,7 @@
 - 🌐 支持 [多种语言](#language) 和 [诸多翻译服务](#services)
 - 🤖 提供 [命令行工具](#usage)，[图形交互界面](#gui)，以及 [容器化部署](#docker)
 
-欢迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [Telegram 用户群](https://t.me/+Z9_SgnxmsmA5NzBl) 中提供反馈。
+欢迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues)、[Telegram 用户群](https://t.me/+Z9_SgnxmsmA5NzBl) 或 [QQ 用户群](https://qm.qq.com/q/DixZCxQej0) 中提供反馈。
 
 <h2 id="updates">近期更新</h2>
 
