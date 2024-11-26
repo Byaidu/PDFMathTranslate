@@ -38,7 +38,8 @@ torch = [
 dev = [
     "black",
     "flake8",
-    "pre-commit"
+    "pre-commit",
+    "pytest",
 ]
 
 [project.urls]

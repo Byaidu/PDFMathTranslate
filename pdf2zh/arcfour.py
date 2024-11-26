@@ -13,6 +13,8 @@ class Arcfour:
         s = [i for i in range(256)]
         j = 0
         klen = len(key)
+        if not (0 < klen < 256):
+            raise ValueError("key must be non-empty and less than 256 bytes")
         for i in range(256):
             j = (j + s[i] + key[i % klen]) % 256
             (s[i], s[j]) = (s[j], s[i])
