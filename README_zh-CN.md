@@ -251,8 +251,8 @@ pdf2zh example.pdf -s azure
 
 需设置以下环境变量：
 
-- `Tencent_SECRET_ID`, e.g., `export Tencent_SECRET_ID=AKIDxxx`
-- `Tencent_SECRET_KEY`, e.g., `export Tencent_SECRET_KEY=xxx`
+- `TENCENT_SECRET_ID`, e.g., `export TENCENT_SECRET_ID=AKIDxxx`
+- `TENCENT_SECRET_KEY`, e.g., `export TENCENT_SECRET_KEY=xxx`
 
 ```bash
 pdf2zh example.pdf -s tmt
