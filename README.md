@@ -155,6 +155,7 @@ In the following table, we list all advanced options for reference:
 | `-lo` | [Target language](#languages) |  `pdf2zh example.pdf -lo zh` |
 | `-s`  | [Translation service](#services) |  `pdf2zh example.pdf -s deepl` |
 | `-t`  | [Multi-threads](#threads) | `pdf2zh example.pdf -t 1` |
+| `-o`  | Output dir | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [Exceptions](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 
 Some services require setting environmental variables. Please refer to [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4) for how to set environment variables.
@@ -251,12 +252,12 @@ pdf2zh example.pdf -li en -lo ja
   - `TENCENT_SECRET_KEY`, e.g, `export TENCENT_SECRET_KEY=xxx`
 
   ```bash
-  pdf2zh example.pdf -s tmt
+  pdf2zh example.pdf -s tencent
   ```
 
 <h3 id="exceptions">Translate wih exceptions</h3>
 
-Use regex to specify formula fonts and characters that need to be preserved.
+Use regex to specify formula fonts and characters that need to be preserved:
 
 ```bash
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"

@@ -155,6 +155,7 @@
 | `-lo` | [目标语言](#languages) |  `pdf2zh example.pdf -lo zh` |
 | `-s`  | [指定翻译服务](#services) |  `pdf2zh example.pdf -s deepl` |
 | `-t`  | [多线程](#threads) | `pdf2zh example.pdf -t 1` |
+| `-o`  | 输出目录 | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 
 某些服务需要设置环境变量。关于设置环境变量的详细说明，请参考 [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
@@ -258,12 +259,12 @@ pdf2zh example.pdf -s azure
 - `TENCENT_SECRET_KEY`, e.g., `export TENCENT_SECRET_KEY=xxx`
 
 ```bash
-pdf2zh example.pdf -s tmt
+pdf2zh example.pdf -s tencent
 ```
 
 <h3 id="exceptions">指定例外规则</h3>
 
-使用正则表达式指定需保留的公式字体与字符
+使用正则表达式指定需保留的公式字体与字符：
 
 ```bash
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
