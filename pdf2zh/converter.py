@@ -69,6 +69,7 @@ from pdf2zh.translator import (
     OllamaTranslator,
     OpenAITranslator,
     AzureTranslator,
+    TencentTranslator,
 )
 
 
@@ -392,6 +393,10 @@ class TextConverter(PDFConverter[AnyIO]):
             )
         elif param[0] == "azure":
             self.translator: BaseTranslator = AzureTranslator(
+                service, lang_out, lang_in, None
+            )
+        elif param[0] == "tencent":
+            self.translator: BaseTranslator = TencentTranslator(
                 service, lang_out, lang_in, None
             )
         else:
