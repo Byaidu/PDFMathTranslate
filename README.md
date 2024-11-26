@@ -239,6 +239,17 @@ pdf2zh example.pdf -li en -lo ja
   ```bash
   pdf2zh example.pdf -s azure
   ```
+- **Tencent Machine Translation**
+
+  See [Tencent Machine Translation](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)
+
+  Following ENVs are required:
+  - `Tencent_SECRET_ID`, e.g., `export Tencent_SECRET_ID=AKIDxxx`
+  - `Tencent_SECRET_KEY`, e.g, `export Tencent_SECRET_KEY=xxx`
+
+  ```bash
+  pdf2zh example.pdf -s tmt
+  ```
 
 <h3 id="exceptions">Translate wih exceptions</h3>
 
