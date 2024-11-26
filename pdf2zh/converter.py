@@ -395,7 +395,7 @@ class TextConverter(PDFConverter[AnyIO]):
             self.translator: BaseTranslator = AzureTranslator(
                 service, lang_out, lang_in, None
             )
-        elif param[0] == "tmt":
+        elif param[0] == "tencent":
             self.translator: BaseTranslator = TencentTranslator(
                 service, lang_out, lang_in, None
             )

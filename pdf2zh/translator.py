@@ -70,8 +70,8 @@ class TencentTranslator(BaseTranslator):
             server_url = (
                 "tmt.tencentcloudapi.com"
             )
-            self.secret_id = os.getenv("Tencent_SECRET_ID")
-            self.secret_key = os.getenv("Tencent_SECRET_KEY")
+            self.secret_id = os.getenv("TENCENT_SECRET_ID")
+            self.secret_key = os.getenv("TENCENT_SECRET_KEY")
             
         except KeyError as e:
             missing_var = e.args[0]
