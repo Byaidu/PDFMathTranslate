@@ -77,7 +77,7 @@
       pip install pdf2zh
       ```
 
-  3. 开始使用：
+  3. 执行翻译，生成文件位于 [当前工作目录](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444)：
 
       ```bash
       pdf2zh document.pdf
@@ -106,7 +106,7 @@
 
     <img src="./docs/images/gui.gif" width="500"/>
 
-查看 [documentation for GUI](./docs/README_GUI.md) 获取细节说明.
+查看 [documentation for GUI](./docs/README_GUI.md) 获取细节说明
 
 <h3 id="docker">方法三、容器化部署</h3>
 
@@ -139,7 +139,7 @@
 
 <h2 id="usage">高级选项</h2>
 
-在命令行中执行翻译命令，生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
+在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
 
 <img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
@@ -158,7 +158,7 @@
 | `-o`  | 输出目录 | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 
-某些服务需要设置环境变量。关于设置环境变量的详细说明，请参考 [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
+某些服务需要 [设置环境变量](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
 
 <h3 id="partial">全文或部分文档翻译</h3>
 

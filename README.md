@@ -71,13 +71,13 @@ We provide three methods for using this project: [Commandline](#cmd), [GUI](#gui
 <h3 id="cmd">Method I. Commandline</h3>
 
   1. Python installed (3.8 <= version <= 3.12)
-  2. Install our package
+  2. Install our package:
 
       ```bash
       pip install pdf2zh
       ```
 
-  3. Use:
+  3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
 
       ```bash
       pdf2zh document.pdf
@@ -86,7 +86,7 @@ We provide three methods for using this project: [Commandline](#cmd), [GUI](#gui
 <h3 id="gui">Method II. GUI</h3>
 
 1. Python installed (3.8 <= version <= 3.12)
-2. Install our package
+2. Install our package:
 
       ```bash
       pip install pdf2zh
@@ -139,7 +139,7 @@ For docker deployment on cloud service:
 
 <h2 id="usage">Advanced Options</h2>
 
-Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current directory. Use Google as the default translation service.
+Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service.
 
 <img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
@@ -158,7 +158,7 @@ In the following table, we list all advanced options for reference:
 | `-o`  | Output dir | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [Exceptions](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 
-Some services require setting environmental variables. Please refer to [ChatGPT](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4) for how to set environment variables.
+Some services require setting [environmental variables](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4).
 
 <h3 id="partial">Full / partial document translation</h3>
 
