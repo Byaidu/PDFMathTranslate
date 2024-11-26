@@ -97,7 +97,7 @@ def extract_text(
     model = DocLayoutModel.load_available()
 
     for file in files:
-        if file.startswith("http://") or file.startswith("https://"):
+        if file is str and (file.startswith("http://") or file.startswith("https://")):
             print("Online files detected, downloading...")
             try:
                 r = requests.get(file, allow_redirects=True)
