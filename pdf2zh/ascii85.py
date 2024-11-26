@@ -4,7 +4,6 @@ This code is in the public domain.
 
 """
 
-import re
 import struct
 
 
@@ -38,12 +37,11 @@ def ascii85decode(data: bytes) -> bytes:
                     b = b * 85 + 84
                 out += struct.pack(">L", b)[: n - 1]
             break
+        elif c.isspace():
+            continue
+        else:
+            raise ValueError("Bad character in ASCII85Decode")
     return out
-
-
-# asciihexdecode(data)
-hex_re = re.compile(rb"([a-f\d]{2})", re.IGNORECASE)
-trail_re = re.compile(rb"^(?:[a-f\d]{2}|\s)*([a-f\d])[\s>]*$", re.IGNORECASE)
 
 
 def asciihexdecode(data: bytes) -> bytes:
@@ -56,15 +54,17 @@ def asciihexdecode(data: bytes) -> bytes:
     will behave as if a 0 followed the last digit.
     """
 
-    def decode(x: bytes) -> bytes:
-        i = int(x, 16)
-        return bytes((i,))
-
-    out = b""
-    for x in hex_re.findall(data):
-        out += decode(x)
-
-    m = trail_re.search(data)
-    if m:
-        out += decode(m.group(1) + b"0")
-    return out
+    hex_str = b""
+    for i in data:
+        c = bytes((i,))
+        if b"0" <= c <= b"9" or b"a" <= c <= b"f" or b"A" <= c <= b"F":
+            hex_str += c
+        elif c == b">":
+            break
+        elif c in b" \n\r\t":
+            continue
+        else:
+            raise ValueError("Bad character in ASCIIHexDecode")
+    if len(hex_str) % 2 == 1:
+        hex_str += b"0"
+    return bytes.fromhex(hex_str.decode())
