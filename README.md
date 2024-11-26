@@ -147,8 +147,8 @@ In the following table, we list all advanced options for reference:
 
 | Option    | Function | Example |
 | -------- | ------- |------- |
-| files | Local file(s) |  `pdf2zh ~/local.pdf` |
-| links | Online files(s) |  `pdf2zh http://arxiv.org/paper.pdf` |
+| files | Local files |  `pdf2zh ~/local.pdf` |
+| links | Online files |  `pdf2zh http://arxiv.org/paper.pdf` |
 | `-i`  | [Enter GUI](#gui) |  `pdf2zh -i` |
 | `-p`  | [Partial document translation](#partial) |  `pdf2zh example.pdf -p 1` |
 | `-li` | [Source language](#languages) |  `pdf2zh example.pdf -li en` |
