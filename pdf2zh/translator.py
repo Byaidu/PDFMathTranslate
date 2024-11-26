@@ -173,7 +173,6 @@ class DeepLXTranslator(BaseTranslator):
             self.base_link = f"{server_url}/{auth_key}/translate"
         else:
             self.base_link = f"{server_url}/translate"
-        self.base_link = f"{server_url}/{auth_key}/translate"
         self.headers = {
             "User-Agent": "Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)"  # noqa: E501
         }
