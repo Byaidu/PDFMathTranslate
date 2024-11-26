@@ -147,8 +147,8 @@
 
 | Option    | Function | Example |
 | -------- | ------- |------- |
-| files | 本地（多个）文件 |  `pdf2zh ~/local.pdf` |
-| links | 在线（多个）文件 |  `pdf2zh http://arxiv.org/paper.pdf` |
+| files | 本地文件 |  `pdf2zh ~/local.pdf` |
+| links | 在线文件 |  `pdf2zh http://arxiv.org/paper.pdf` |
 | `-i`  | [进入图形界面](#gui) |  `pdf2zh -i` |
 | `-p`  | [仅翻译部分文档](#partial) |  `pdf2zh example.pdf -p 1` |
 | `-li` | [源语言](#languages) |  `pdf2zh example.pdf -li en` |
