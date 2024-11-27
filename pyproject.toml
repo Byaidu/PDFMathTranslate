@@ -11,17 +11,14 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "charset-normalizer",
-    "cryptography",
     "requests",
     "pymupdf",
     "tqdm",
     "tenacity",
     "numpy",
     "ollama",
-    "deepl<1.19.1",
+    "deepl",
     "openai",
-    "requests",
     "azure-ai-translation-text<=1.0.1",
     "gradio",
     "huggingface_hub",
