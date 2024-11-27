@@ -28,6 +28,7 @@ dependencies = [
     "onnx",
     "onnxruntime",
     "opencv-python-headless",
+    "pdfminer.six",
 ]
 
 [project.optional-dependencies]

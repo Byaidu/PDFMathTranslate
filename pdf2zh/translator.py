@@ -7,6 +7,7 @@ import re
 import time
 from datetime import UTC, datetime
 from json import dumps, loads
+import unicodedata
 
 import deepl
 import ollama
@@ -14,6 +15,10 @@ import openai
 import requests
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
+
+
+def remove_control_characters(s):
+    return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
 
 class BaseTranslator:
@@ -56,7 +61,7 @@ class GoogleTranslator(BaseTranslator):
             raise ValueError("Empty translation result")
         else:
             result = html.unescape(re_result[0])
-        return result
+        return remove_control_characters(result)
 
 
 class TencentTranslator(BaseTranslator):

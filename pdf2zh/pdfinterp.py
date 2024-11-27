@@ -4,13 +4,11 @@ from io import BytesIO
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union, cast
 import numpy as np
 
-from pdf2zh import settings
-from pdf2zh.casting import safe_float
-from pdf2zh.cmapdb import CMap, CMapBase, CMapDB
-from pdf2zh.pdfcolor import PREDEFINED_COLORSPACE, PDFColorSpace
-from pdf2zh.pdfdevice import PDFDevice, PDFTextSeq
-from pdf2zh.pdfexceptions import PDFException, PDFValueError
-from pdf2zh.pdffont import (
+from pdfminer import settings
+from pdfminer.cmapdb import CMap, CMapBase, CMapDB
+from pdfminer.pdfcolor import PREDEFINED_COLORSPACE, PDFColorSpace
+from pdfminer.pdfdevice import PDFDevice, PDFTextSeq
+from pdfminer.pdffont import (
     PDFCIDFont,
     PDFFont,
     PDFFontError,
@@ -18,8 +16,8 @@ from pdf2zh.pdffont import (
     PDFType1Font,
     PDFType3Font,
 )
-from pdf2zh.pdfpage import PDFPage
-from pdf2zh.pdftypes import (
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdftypes import (
     LITERALS_ASCII85_DECODE,
     PDFObjRef,
     PDFStream,
@@ -28,8 +26,8 @@ from pdf2zh.pdftypes import (
     resolve1,
     stream_value,
 )
-from pdf2zh.psexceptions import PSEOF, PSTypeError
-from pdf2zh.psparser import (
+from pdfminer.psparser import PSEOF
+from pdfminer.psparser import (
     KWD,
     LIT,
     PSKeyword,
@@ -39,7 +37,7 @@ from pdf2zh.psparser import (
     keyword_name,
     literal_name,
 )
-from pdf2zh.utils import (
+from pdfminer.utils import (
     MATRIX_IDENTITY,
     Matrix,
     PathSegment,
@@ -53,11 +51,7 @@ from pdf2zh.utils import (
 log = logging.getLogger(__name__)
 
 
-class PDFResourceError(PDFException):
-    pass
-
-
-class PDFInterpreterError(PDFException):
+class PDFInterpreterError(Exception):
     pass
 
 
@@ -362,7 +356,7 @@ PDFStackT = PSStackType[PDFStream]
 """Types that may appear on the PDF argument stack."""
 
 
-class PDFPageInterpreter:
+class PDFPageInterpreterEx:
     """Processor for the content of a PDF page
 
     Reference: PDF Reference, Appendix A, Operator Summary
@@ -839,16 +833,13 @@ class PDFPageInterpreter:
 
         Offset from the start of the current line by (tx , ty).
         """
-        tx_ = safe_float(tx)
-        ty_ = safe_float(ty)
+        tx_ = cast(float, tx)
+        ty_ = cast(float, ty)
         if tx_ is not None and ty_ is not None:
             (a, b, c, d, e, f) = self.textstate.matrix
             e_new = tx_ * a + ty_ * c + e
             f_new = tx_ * b + ty_ * d + f
             self.textstate.matrix = (a, b, c, d, e_new, f_new)
-
-        elif settings.STRICT:
-            raise PDFValueError(f"Invalid offset ({tx!r}, {ty!r}) for Td")
 
         self.textstate.linematrix = (0, 0)
 
@@ -1055,7 +1046,7 @@ class PDFPageInterpreter:
             return
         while True:
             try:
-                _, (_, obj) = parser.nextobject()
+                (_, obj) = parser.nextobject()
             except PSEOF:
                 break
             if isinstance(obj, PSKeyword):
