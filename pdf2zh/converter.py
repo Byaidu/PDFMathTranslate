@@ -51,7 +51,7 @@ class PDFConverterEx(PDFConverter):
         self._stack.append(self.cur_item)
         self.cur_item = LTFigure(name, bbox, mult_matrix(matrix, self.ctm))
         self.cur_item.pageid = self._stack[-1].pageid
-    
+
     def end_figure(self, _: str) -> None:
         fig = self.cur_item
         assert isinstance(self.cur_item, LTFigure), str(type(self.cur_item))

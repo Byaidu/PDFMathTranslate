@@ -67,7 +67,7 @@ def extract_text_to_fp(
         total=total_pages,
     ) as progress:
         for pageno, page in progress:
-            if pages and (not pageno in pages):
+            if pages and (pageno not in pages):
                 continue
             if callback:
                 callback(progress)
