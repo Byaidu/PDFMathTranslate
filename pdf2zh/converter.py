@@ -1,5 +1,7 @@
+from pdfminer.pdfinterp import PDFGraphicState, PDFResourceManager
 from pdfminer.pdffont import PDFCIDFont
 from pdfminer.converter import PDFConverter
+from pdfminer.pdffont import PDFUnicodeNotDefined
 from pdfminer.layout import (
     LTChar,
     LTFigure,
@@ -27,7 +29,58 @@ from pdf2zh.translator import (
 log = logging.getLogger(__name__)
 
 
-class TranslateConverter(PDFConverter):
+class PDFConverterEx(PDFConverter):
+    def __init__(
+        self,
+        rsrcmgr: PDFResourceManager,
+        outfp,
+        codec: str = "utf-8",
+        pageno: int = 1,
+        laparams=None,
+    ) -> None:
+        PDFConverter.__init__(self, rsrcmgr, outfp, codec, pageno, laparams)
+
+    def end_page(self, page):
+        # self.pageno += 1
+        return self.receive_layout(self.cur_item)
+
+    def render_char(
+        self,
+        matrix,
+        font,
+        fontsize: float,
+        scaling: float,
+        rise: float,
+        cid: int,
+        ncs,
+        graphicstate: PDFGraphicState,
+    ) -> float:
+        try:
+            text = font.to_unichr(cid)
+            assert isinstance(text, str), str(type(text))
+        except PDFUnicodeNotDefined:
+            text = self.handle_undefined_char(font, cid)
+        textwidth = font.char_width(cid)
+        textdisp = font.char_disp(cid)
+        item = LTChar(
+            matrix,
+            font,
+            fontsize,
+            scaling,
+            rise,
+            text,
+            textwidth,
+            textdisp,
+            ncs,
+            graphicstate,
+        )
+        self.cur_item.add(item)
+        item.cid = cid  # hack 插入原字符编码
+        item.font = font  # hack 插入原字符字体
+        return item.adv
+
+
+class TranslateConverter(PDFConverterEx):
     def __init__(
         self,
         rsrcmgr,
@@ -133,6 +186,7 @@ class TranslateConverter(PDFConverter):
             if isinstance(child, LTChar):
                 cur_v = False
                 fontname = child.fontname.split("+")[-1]
+                ltpage.pageid = 0 # hack DEBUG ONLY
                 layout = self.layout[ltpage.pageid]
                 # ltpage.height 可能是 fig 里面的高度，这里统一用 layout.shape
                 h, w = layout.shape
@@ -256,7 +310,6 @@ class TranslateConverter(PDFConverter):
                 new = cache.load_paragraph(hash_key, hash_key_paragraph)  # 查询缓存
                 if new is None:
                     new = self.translator.translate(s)
-                    new = remove_control_characters(new)
                     cache.write_paragraph(hash_key, hash_key_paragraph, new)
                 return new
             except BaseException as e:

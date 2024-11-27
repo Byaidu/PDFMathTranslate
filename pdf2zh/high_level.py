@@ -66,7 +66,7 @@ def extract_text_to_fp(
         for page in progress:
             if callback:
                 callback(progress)
-            page.pageno = 1  # hack
+            page.pageno = 0  # hack DEBUG ONLY
             pix = doc_en[page.pageno].get_pixmap()
             image = np.fromstring(pix.samples, np.uint8).reshape(
                 pix.height, pix.width, 3

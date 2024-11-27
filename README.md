@@ -281,6 +281,8 @@ pdf2zh example.pdf -t 1
 
 - [ ] Support multiple language with [Noto Font](https://fonts.google.com/noto), [Ubuntu Font](https://design.ubuntu.com/font)
 
+- [ ] Retry except KeyboardInterrupt
+
 <h2 id="acknowledgement">Acknowledgements</h2>
 
 - Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
