@@ -10,6 +10,7 @@ on:
     types: [published]
 
 env:
+  TARGET_PLATFORMS: linux/amd64,linux/arm64
   # Use docker.io for Docker Hub if empty
   REGISTRY: docker.io
   # github.repository as <account>/<repo>
