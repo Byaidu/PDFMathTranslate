@@ -9,7 +9,8 @@ import argparse
 import os
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Container, Iterable, List, Optional
+from typing import Any, Container, Iterable, List, Optional
+from pdfminer.pdfexceptions import PDFValueError
 
 import pymupdf
 import requests
@@ -28,15 +29,6 @@ def check_files(files: List[str]) -> List[str]:
     return missing_files
 
 
-def float_or_disabled(x: str) -> Optional[float]:
-    if x.lower().strip() == "disabled":
-        return None
-    try:
-        return float(x)
-    except ValueError:
-        raise argparse.ArgumentTypeError(f"invalid float value: {x}")
-
-
 def extract_text(
     files: Iterable[str] = [],
     pages: Optional[Container[int]] = None,
@@ -51,14 +43,13 @@ def extract_text(
     callback: object = None,
     output: str = "",
     **kwargs: Any,
-) -> AnyIO:
+):
     import pdf2zh.high_level
     from pdf2zh.doclayout import DocLayoutModel
 
     if not files:
         raise PDFValueError("Must provide files to work upon!")
 
-    outfp: AnyIO = sys.stdout
     model = DocLayoutModel.load_available()
 
     for file in files:
@@ -270,5 +261,4 @@ def main(args: Optional[List[str]] = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
     sys.exit(main())

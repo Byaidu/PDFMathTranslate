@@ -1,9 +1,7 @@
 """Functions that can be used for the most common use-cases for pdf2zh.six"""
 
 import logging
-import sys
-from io import StringIO
-from typing import Any, BinaryIO, Container, Iterator, Optional, cast
+from typing import BinaryIO
 import numpy as np
 import tqdm
 from pymupdf import Document

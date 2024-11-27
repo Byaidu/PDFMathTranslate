@@ -92,7 +92,7 @@ class TranslateConverter(PDFConverterEx):
         lang_out: str = "",
         service: str = "",
     ) -> None:
-        super().__init__(rsrcmgr, None, "utf-8", 1, None)
+        super().__init__(rsrcmgr, None, "utf-8", 1, None)  # hack DEBUG ONLY
         self.vfont = vfont
         self.vchar = vchar
         self.thread = thread
