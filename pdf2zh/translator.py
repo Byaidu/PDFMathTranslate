@@ -121,7 +121,7 @@ class TencentTranslator(BaseTranslator):
             + "\n"
             + hashed_canonical_request
         )
-        secret_date = self.sign(("TC3" + self.secret_key).encode("utf-8"), date)
+        secret_date = self.sign(("TC3" + str(self.secret_key)).encode("utf-8"), date)
         secret_service = self.sign(secret_date, "tmt")
         secret_signing = self.sign(secret_service, "tc3_request")
         signed_headers = "content-type;host;x-tc-action"
@@ -132,7 +132,7 @@ class TencentTranslator(BaseTranslator):
             algorithm
             + " "
             + "Credential="
-            + self.secret_id
+            + str(self.secret_id)
             + "/"
             + credential_scope
             + ", "
@@ -194,7 +194,7 @@ class DeepLXTranslator(BaseTranslator):
             ) from e
 
         self.session = requests.Session()
-        server_url = server_url.rstrip("/")
+        server_url = str(server_url).rstrip("/")
         if auth_key:
             self.base_link = f"{server_url}/{auth_key}/translate"
         else:
