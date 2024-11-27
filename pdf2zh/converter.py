@@ -2,6 +2,7 @@ from pdfminer.pdfinterp import PDFGraphicState, PDFResourceManager
 from pdfminer.pdffont import PDFCIDFont
 from pdfminer.converter import PDFConverter
 from pdfminer.pdffont import PDFUnicodeNotDefined
+from pdfminer.utils import apply_matrix_pt, mult_matrix
 from pdfminer.layout import (
     LTChar,
     LTFigure,
@@ -33,16 +34,30 @@ class PDFConverterEx(PDFConverter):
     def __init__(
         self,
         rsrcmgr: PDFResourceManager,
-        outfp,
-        codec: str = "utf-8",
-        pageno: int = 1,
-        laparams=None,
     ) -> None:
-        PDFConverter.__init__(self, rsrcmgr, outfp, codec, pageno, laparams)
+        PDFConverter.__init__(self, rsrcmgr, None, "utf-8", 1, None)
+
+    def begin_page(self, page, ctm) -> None:
+        (x0, y0, x1, y1) = page.cropbox
+        (x0, y0) = apply_matrix_pt(ctm, (x0, y0))
+        (x1, y1) = apply_matrix_pt(ctm, (x1, y1))
+        mediabox = (0, 0, abs(x0 - x1), abs(y0 - y1))
+        self.cur_item = LTPage(page.pageno, mediabox)
 
     def end_page(self, page):
-        # self.pageno += 1
         return self.receive_layout(self.cur_item)
+
+    def begin_figure(self, name, bbox, matrix) -> None:
+        self._stack.append(self.cur_item)
+        self.cur_item = LTFigure(name, bbox, mult_matrix(matrix, self.ctm))
+        self.cur_item.pageid = self._stack[-1].pageid
+    
+    def end_figure(self, _: str) -> None:
+        fig = self.cur_item
+        assert isinstance(self.cur_item, LTFigure), str(type(self.cur_item))
+        self.cur_item = self._stack.pop()
+        self.cur_item.add(fig)
+        return self.receive_layout(fig)
 
     def render_char(
         self,
@@ -92,7 +107,7 @@ class TranslateConverter(PDFConverterEx):
         lang_out: str = "",
         service: str = "",
     ) -> None:
-        super().__init__(rsrcmgr, None, "utf-8", 1, None)  # hack DEBUG ONLY
+        super().__init__(rsrcmgr)
         self.vfont = vfont
         self.vchar = vchar
         self.thread = thread
@@ -186,7 +201,6 @@ class TranslateConverter(PDFConverterEx):
             if isinstance(child, LTChar):
                 cur_v = False
                 fontname = child.fontname.split("+")[-1]
-                ltpage.pageid = 0 # hack DEBUG ONLY
                 layout = self.layout[ltpage.pageid]
                 # ltpage.height 可能是 fig 里面的高度，这里统一用 layout.shape
                 h, w = layout.shape

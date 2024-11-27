@@ -6,8 +6,10 @@ import numpy as np
 import tqdm
 from pymupdf import Document
 from pdfminer.pdfpage import PDFPage
-from pdf2zh.converter import TranslateConverter
 from pdfminer.pdfinterp import PDFResourceManager
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfparser import PDFParser
+from pdf2zh.converter import TranslateConverter
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
 
 
@@ -57,14 +59,19 @@ def extract_text_to_fp(
         total_pages = len(pages)
     else:
         total_pages = page_count
+
+    parser = PDFParser(inf)
+    doc = PDFDocument(parser, password=password)
     with tqdm.tqdm(
-        PDFPage.get_pages(inf, pages, password=password),
+        enumerate(PDFPage.create_pages(doc)),
         total=total_pages,
     ) as progress:
-        for page in progress:
+        for pageno, page in progress:
+            if pages and (not pageno in pages):
+                continue
             if callback:
                 callback(progress)
-            page.pageno = 0  # hack DEBUG ONLY
+            page.pageno = pageno
             pix = doc_en[page.pageno].get_pixmap()
             image = np.fromstring(pix.samples, np.uint8).reshape(
                 pix.height, pix.width, 3

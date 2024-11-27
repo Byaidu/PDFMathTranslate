@@ -95,7 +95,7 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
                         objid = spec.objid
                     spec = dict_value(spec)
                     self.fontmap[fontid] = self.rsrcmgr.get_font(objid, spec)
-                    self.fontmap[fontid].descent = 0  # hack fix
+                    self.fontmap[fontid].descent = 0  # hack fix descent
                     self.fontid[self.fontmap[fontid]] = fontid
             elif k == "ColorSpace":
                 for csid, spec in dict_value(v).items():
