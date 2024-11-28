@@ -17,13 +17,6 @@ import requests
 
 from pdf2zh import __version__
 
-## set huggingface home
-HF_HOME = os.getcwd() + "/hf_home"
-## if not exists, create it
-if not os.path.exists(HF_HOME):
-    os.makedirs(HF_HOME)
-print(f"HF_HOME: {HF_HOME}")
-os.environ["HF_HOME"] = HF_HOME
 
 def check_files(files: List[str]) -> List[str]:
     files = [
