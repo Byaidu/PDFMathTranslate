@@ -65,6 +65,7 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
         return self.__class__(self.rsrcmgr, self.device, self.obj_patch)
 
     def init_resources(self, resources: Dict[object, object]) -> None:
+        # 重载设置 fontid 和 descent
         """Prepare the fonts and XObjects listed in the Resource attribute."""
         self.resources = resources
         self.fontmap: Dict[object, PDFFont] = {}
@@ -109,6 +110,7 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
                     self.xobjmap[xobjid] = xobjstrm
 
     def do_S(self) -> None:
+        # 重载过滤非公式线条
         """Stroke path"""
 
         def is_black(color: Color) -> bool:
@@ -132,6 +134,8 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
         else:
             self.curpath = []
 
+    ############################################################
+    # 重载过滤非公式线条（F/B）
     def do_f(self) -> None:
         """Fill path using nonzero winding number rule"""
         # self.device.paint_path(self.graphicstate, False, True, False, self.curpath)
@@ -155,6 +159,8 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
         # self.device.paint_path(self.graphicstate, True, True, True, self.curpath)
         self.curpath = []
 
+    ############################################################
+    # 重载返回调用参数（SCN）
     def do_SCN(self) -> None:
         """Set color for stroking operations."""
         if self.scs:
@@ -188,6 +194,7 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
         return self.do_scn()
 
     def do_Do(self, xobjid_arg: PDFStackT) -> None:
+        # 重载设置 xobj 的 obj_patch
         """Invoke named XObject"""
         xobjid = literal_name(xobjid_arg)
         try:
@@ -239,6 +246,7 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
             pass
 
     def process_page(self, page: PDFPage) -> None:
+        # 重载设置 page 的 obj_patch
         # log.debug("Processing page: %r", page)
         # print(page.mediabox,page.cropbox)
         # (x0, y0, x1, y1) = page.mediabox
@@ -269,6 +277,7 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
         streams: Sequence[object],
         ctm: Matrix = MATRIX_IDENTITY,
     ) -> None:
+        # 重载返回指令流
         """Render the content streams.
 
         This method may be called recursively.
@@ -284,6 +293,7 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
         return self.execute(list_value(streams))
 
     def execute(self, streams: Sequence[object]) -> None:
+        # 重载返回指令流
         ops = ""
         try:
             parser = PDFContentParser(streams)
