@@ -374,7 +374,7 @@ class TranslateConverter(PDFConverterEx):
                         adv = vlen[vid]
                     except Exception:
                         continue  # 翻译器可能会自动补个越界的公式标记
-                    if len(var[vid]) == 1 and unicodedata.category(var[vid][0].get_text()[0]) in ["Lm", "Mn", "Sk"]:  # 文字修饰符
+                    if len(var[vid]) == 1 and var[vid][0].get_text() and unicodedata.category(var[vid][0].get_text()[0]) in ["Lm", "Mn", "Sk"]:  # 文字修饰符
                         mod = True
                 else:  # 加载文字
                     ch = new[ptr]
