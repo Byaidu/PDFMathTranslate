@@ -91,6 +91,14 @@
       ```bash
       pip install pdf2zh
       ```
+2.1 本地运行最新代码
+
+      ```bash
+      git clone https://github.com/Byaidu/PDFMathTranslate.git
+      cd PDFMathTranslate
+      pip install -e .
+      pdf2zh -i
+      ```
 
 3. 开始在浏览器中使用：
 
