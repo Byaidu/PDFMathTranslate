@@ -1,0 +1,17 @@
+FROM python:3.12
+
+WORKDIR /app
+
+RUN sed -i 's/deb.debian.org/mirrors.huaweicloud.com/g' /etc/apt/sources.list.d/debian.sources
+
+COPY . .
+
+ENV PYTHONUNBUFFERED=1
+
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+RUN apt-get update && apt-get install -y libgl1
+
+RUN pip install .
+
+CMD ["pdf2zh", "-i"]
