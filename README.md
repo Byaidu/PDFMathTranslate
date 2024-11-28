@@ -91,6 +91,14 @@ We provide three methods for using this project: [Commandline](#cmd), [GUI](#gui
       ```bash
       pip install pdf2zh
       ```
+2.1 if you want to run dev version
+
+      ```bash
+      git clone https://github.com/Byaidu/PDFMathTranslate.git
+      cd PDFMathTranslate
+      pip install -e .
+      pdf2zh -i
+      ```
 
 3. Start using in browser:
 
