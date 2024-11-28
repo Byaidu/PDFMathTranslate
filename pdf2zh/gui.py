@@ -18,6 +18,7 @@ service_map = {
     "Ollama": "ollama",
     "OpenAI": "openai",
     "Azure": "azure",
+    "Tencent": "tencent",
 }
 lang_map = {
     "Chinese": "zh",
