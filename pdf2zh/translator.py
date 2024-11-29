@@ -288,9 +288,9 @@ class OpenAITranslator(BaseTranslator):
         lang_in = "en" if lang_in == "auto" else lang_in
         super().__init__(service, lang_out, lang_in, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        # OPENAI_BASE_URL
-        # OPENAI_API_KEY
-        self.client = openai.OpenAI()
+        OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
+        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        self.client = openai.OpenAI(base_url=OPENAI_BASE_URL, api_key=OPENAI_API_KEY)
 
     def translate(self, text) -> str:
         response = self.client.chat.completions.create(
