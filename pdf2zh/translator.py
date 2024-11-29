@@ -299,7 +299,7 @@ class OpenAITranslator(BaseTranslator):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a professional,authentic machine translation engine.",
+                    "content": "You are a professional, authentic machine translation engine.",
                 },
                 {
                     "role": "user",
