@@ -178,7 +178,7 @@ class TranslateConverter(PDFConverterEx):
                     return True
             else:
                 if re.match(                                            # latex 字体
-                    r"(CM[^R]|MS|XY|MT|BL|RM|EU|LA|RS|LINE|TeX-|rsfs|txsy|wasy|.*Mono|.*Code|.*Ital|.*Sym)",
+                    r"(CM[^R]|MS|XY|MT|BL|RM|EU|LA|RS|LINE|TeX-|rsfs|txsy|wasy|stmary|.*Mono|.*Code|.*Ital|.*Sym|.*Math)",
                     font,
                 ):
                     return True
@@ -366,7 +366,7 @@ class TranslateConverter(PDFConverterEx):
                 vy_regex = re.match(
                     r"\$?\s*v([\d\s]+)\$", new[ptr:], re.IGNORECASE
                 )  # 匹配 $vn$ 公式标记，前面的 $ 有的时候会被丢掉
-                mod = False  # 当前公式是否为文字修饰符
+                mod = 0  # 文字修饰符
                 if vy_regex:  # 加载公式
                     ptr += len(vy_regex.group(0))
                     try:
@@ -374,8 +374,8 @@ class TranslateConverter(PDFConverterEx):
                         adv = vlen[vid]
                     except Exception:
                         continue  # 翻译器可能会自动补个越界的公式标记
-                    if len(var[vid]) == 1 and var[vid][0].get_text() and unicodedata.category(var[vid][0].get_text()[0]) in ["Lm", "Mn", "Sk"]:  # 文字修饰符
-                        mod = True
+                    if var[vid][-1].get_text() and unicodedata.category(var[vid][-1].get_text()[0]) in ["Lm", "Mn", "Sk"]:  # 文字修饰符
+                        mod = var[vid][-1].width
                 else:  # 加载文字
                     ch = new[ptr]
                     fcur_ = None
@@ -429,8 +429,7 @@ class TranslateConverter(PDFConverterEx):
                             cstk += ch
                     else:
                         cstk += ch
-                if mod:  # 文字修饰符
-                    adv = 0
+                adv -= mod # 文字修饰符
                 fcur = fcur_
                 x += adv
                 if log.isEnabledFor(logging.DEBUG):
