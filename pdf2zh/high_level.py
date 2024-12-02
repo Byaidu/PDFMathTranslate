@@ -13,19 +13,6 @@ from pdf2zh.converter import TranslateConverter
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
 
 
-def get_device():
-    """Get the device to use for computation."""
-    try:
-        import torch
-
-        if torch.cuda.is_available():
-            return "cuda:0"
-    except ImportError:
-        pass
-
-    return "cpu"
-
-
 def extract_text_to_fp(
     inf: BinaryIO,
     pages=None,
@@ -43,9 +30,6 @@ def extract_text_to_fp(
     callback: object = None,
     **kwarg,
 ) -> None:
-    if debug:
-        logging.getLogger().setLevel(logging.DEBUG)
-
     rsrcmgr = PDFResourceManager()
     layout = {}
     device = TranslateConverter(
@@ -77,7 +61,7 @@ def extract_text_to_fp(
                 pix.height, pix.width, 3
             )[:, :, ::-1]
             page_layout = model.predict(
-                image, imgsz=int(pix.height / 32) * 32, device=get_device()
+                image, imgsz=int(pix.height / 32) * 32
             )[0]
             # kdtree 是不可能 kdtree 的，不如直接渲染成图片，用空间换时间
             box = np.ones((pix.height, pix.width))

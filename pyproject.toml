@@ -29,10 +29,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-torch = [
-    "doclayout-yolo",
-    "torch",
-]
 dev = [
     "black",
     "flake8",

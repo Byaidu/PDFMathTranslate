@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import logging
 from pathlib import Path
 from typing import Any, Container, Iterable, List, Optional
 from pdfminer.pdfexceptions import PDFValueError
@@ -15,7 +16,13 @@ from pdfminer.pdfexceptions import PDFValueError
 import pymupdf
 import requests
 
-from pdf2zh import __version__
+from pdf2zh import __version__, log
+from pdf2zh.high_level import extract_text_to_fp
+from pdf2zh.doclayout import DocLayoutModel
+
+logging.basicConfig()
+
+model = DocLayoutModel.load_available()
 
 
 def check_files(files: List[str]) -> List[str]:
@@ -44,13 +51,11 @@ def extract_text(
     output: str = "",
     **kwargs: Any,
 ):
-    import pdf2zh.high_level
-    from pdf2zh.doclayout import DocLayoutModel
+    if debug:
+        log.setLevel(logging.DEBUG)
 
     if not files:
         raise PDFValueError("Must provide files to work upon!")
-
-    model = DocLayoutModel.load_available()
 
     for file in files:
         if file is str and (file.startswith("http://") or file.startswith("https://")):
@@ -99,7 +104,7 @@ def extract_text(
         doc_en.save(Path(output) / f"{filename}-en.pdf")
 
         with open(Path(output) / f"{filename}-en.pdf", "rb") as fp:
-            obj_patch: dict = pdf2zh.high_level.extract_text_to_fp(fp, **locals())
+            obj_patch: dict = extract_text_to_fp(fp, model=model, **locals())
 
         for obj_id, ops_new in obj_patch.items():
             # ops_old=doc_en.xref_stream(obj_id)
