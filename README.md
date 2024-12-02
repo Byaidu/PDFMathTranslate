@@ -188,9 +188,9 @@ pdf2zh example.pdf -li en -lo ja
 
   See [DeepL](https://support.deepl.com/hc/en-us/articles/360020695820-API-Key-for-DeepL-s-API)
 
-  Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/translate`
-  - `DEEPL_SERVER_URL` (Optional), e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
-  - `DEEPL_AUTH_KEY`, e.g., `export DEEPL_AUTH_KEY=xxx`
+  Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/translate` 
+  - `DEEPL_SERVER_URL` (Optional), e.g., `export DEEPL_SERVER_URL=https://api.deepl.com` or `set DEEPL_SERVER_URL=https://api.deepl.com`
+  - `DEEPL_AUTH_KEY`, e.g., `export DEEPL_AUTH_KEY=xxx` or `set DEEPL_AUTH_KEY=xxx`
 
   ```bash
   pdf2zh example.pdf -s deepl
@@ -201,8 +201,8 @@ pdf2zh example.pdf -li en -lo ja
   See [DeepLX](https://github.com/OwO-Network/DeepLX)
 
   Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/translate`
-  - `DEEPLX_SERVER_URL` (Optional), e.g., `export DEEPLX_SERVER_URL=https://api.deeplx.org`
-  - `DEEPLX_AUTH_KEY`, e.g., `export DEEPLX_AUTH_KEY=xxx`
+  - `DEEPLX_SERVER_URL` (Optional), e.g., `export DEEPLX_SERVER_URL=https://api.deeplx.org` or `set DEEPLX_SERVER_URL=https://api.deeplx.org`
+  - `DEEPLX_AUTH_KEY`, e.g., `export DEEPLX_AUTH_KEY=xxx` or `set DEEPLX_AUTH_KEY=xxx`
 
   ```bash
   pdf2zh example.pdf -s deeplx
@@ -213,7 +213,7 @@ pdf2zh example.pdf -li en -lo ja
   See [Ollama](https://github.com/ollama/ollama)
 
   Set ENVs to construct an endpoint like: `{OLLAMA_HOST}/api/chat`
-  - `OLLAMA_HOST` (Optional), e.g., `export OLLAMA_HOST=https://localhost:11434`
+  - `OLLAMA_HOST` (Optional), e.g., `export OLLAMA_HOST=https://localhost:11434` or `set OLLAMA_HOST=https://localhost:11434`
 
   ```bash
   pdf2zh example.pdf -s ollama:gemma2
@@ -224,8 +224,8 @@ pdf2zh example.pdf -li en -lo ja
   See [SiliconCloud](https://docs.siliconflow.cn/quickstart), [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)
 
   Set ENVs to construct an endpoint like: `{OPENAI_BASE_URL}/chat/completions`
-  - `OPENAI_BASE_URL` (Optional), e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1`
-  - `OPENAI_API_KEY`, e.g., `export OPENAI_API_KEY=xxx`
+  - `OPENAI_BASE_URL` (Optional), e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1` or `set OPENAI_BASE_URL=https://api.openai.com/v1`
+  - `OPENAI_API_KEY`, e.g., `export OPENAI_API_KEY=xxx` or `set OPENAI_API_KEY=xxx`
 
   ```bash
   pdf2zh example.pdf -s openai:gpt-4o
@@ -236,9 +236,9 @@ pdf2zh example.pdf -li en -lo ja
   See [Azure Text Translation](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)
 
   Following ENVs are required:
-  - `AZURE_APIKEY`, e.g., `export AZURE_APIKEY=xxx`
-  - `AZURE_ENDPOINT`, e.g, `export AZURE_ENDPOINT=https://api.translator.azure.cn/`
-  - `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2`
+  - `AZURE_APIKEY`, e.g., `export AZURE_APIKEY=xxx` or `set AZURE_APIKEY=xxx`
+  - `AZURE_ENDPOINT`, e.g, `export AZURE_ENDPOINT=https://api.translator.azure.cn/` or `set AZURE_ENDPOINT=https://api.translator.azure.cn/`
+  - `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2` or `set AZURE_REGION=chinaeast2`
 
   ```bash
   pdf2zh example.pdf -s azure
@@ -248,8 +248,8 @@ pdf2zh example.pdf -li en -lo ja
   See [Tencent Machine Translation](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)
 
   Following ENVs are required:
-  - `TENCENT_SECRET_ID`, e.g., `export TENCENT_SECRET_ID=AKIDxxx`
-  - `TENCENT_SECRET_KEY`, e.g, `export TENCENT_SECRET_KEY=xxx`
+  - `TENCENT_SECRET_ID`, e.g., `export TENCENT_SECRET_ID=AKIDxxx` or `set TENCENT_SECRET_ID=AKIDxxx`
+  - `TENCENT_SECRET_KEY`, e.g, `export TENCENT_SECRET_KEY=xxx` or `set TENCENT_SECRET_KEY=xxx`
 
   ```bash
   pdf2zh example.pdf -s tencent
