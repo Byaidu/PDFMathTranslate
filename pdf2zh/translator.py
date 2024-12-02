@@ -170,13 +170,13 @@ class TencentTranslator(BaseTranslator):
         # 2. Result test
         try:
             result = result["Response"]["TargetText"]
-            return result
+            # return result
         except KeyError:
             result = ""
-            raise ValueError("No valid key in Tencent's response")
-        # 3. Result length check
-        if len(result) == 0:
-            raise ValueError("Empty translation result")
+        #     raise ValueError("No valid key in Tencent's response")
+        # # 3. Result length check
+        # if len(result) == 0:
+        #     raise ValueError("Empty translation result")
         return result
 
 
