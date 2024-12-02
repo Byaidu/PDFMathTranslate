@@ -1,6 +1,5 @@
 """Functions that can be used for the most common use-cases for pdf2zh.six"""
 
-import logging
 from typing import BinaryIO
 import numpy as np
 import tqdm
@@ -60,9 +59,7 @@ def extract_text_to_fp(
             image = np.fromstring(pix.samples, np.uint8).reshape(
                 pix.height, pix.width, 3
             )[:, :, ::-1]
-            page_layout = model.predict(
-                image, imgsz=int(pix.height / 32) * 32
-            )[0]
+            page_layout = model.predict(image, imgsz=int(pix.height / 32) * 32)[0]
             # kdtree 是不可能 kdtree 的，不如直接渲染成图片，用空间换时间
             box = np.ones((pix.height, pix.width))
             h, w = box.shape
