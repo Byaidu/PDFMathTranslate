@@ -5,7 +5,8 @@ import logging
 import os
 import re
 import time
-from datetime import UTC, datetime
+from datetime import timezone, datetime
+
 from json import dumps, loads
 import unicodedata
 
@@ -111,7 +112,7 @@ class TencentTranslator(BaseTranslator):
         )
 
         timestamp = int(time.time())
-        date = datetime.fromtimestamp(timestamp, UTC).strftime("%Y-%m-%d")
+        date = datetime.fromtimestamp(timestamp, timezone.utc).strftime("%Y-%m-%d")
         credential_scope = date + "/tmt/tc3_request"
         hashed_canonical_request = hashlib.sha256(
             canonical_request.encode("utf-8")
