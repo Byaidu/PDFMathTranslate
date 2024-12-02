@@ -66,7 +66,7 @@
 
 <h2 id="install">安装和使用</h2>
 
-我们提供了三种使用该项目的方法：[命令行工具](#cmd)、[图形交互界面](#gui) 和 [容器化部署](#docker).
+我们提供了三种使用该项目的方法：[命令行工具](#cmd)、[图形交互界面](#gui)、[便携式安装](#portable) 和 [容器化部署](#docker).
 
 <h3 id="cmd">方法一、命令行工具</h3>
 
@@ -108,7 +108,11 @@
 
 查看 [documentation for GUI](./docs/README_GUI.md) 获取细节说明
 
-<h3 id="docker">方法三、容器化部署</h3>
+<h3 id="portable">方法三、便携式安装</h3>
+
+下载并双击运行 [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat)
+
+<h3 id="docker">方法四、容器化部署</h3>
 
 1. 拉取 Docker 镜像并运行：
 

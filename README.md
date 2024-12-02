@@ -66,7 +66,7 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 <h2 id="install">Installation and Usage</h2>
 
-We provide three methods for using this project: [Commandline](#cmd), [GUI](#gui), and [Docker](#docker).
+We provide three methods for using this project: [Commandline](#cmd), [GUI](#gui), [Portable](#portable), and [Docker](#docker).
 
 <h3 id="cmd">Method I. Commandline</h3>
 
@@ -108,7 +108,11 @@ We provide three methods for using this project: [Commandline](#cmd), [GUI](#gui
 
 See [documentation for GUI](./docs/README_GUI.md) for more details.
 
-<h3 id="docker">Method III. Docker</h3>
+<h3 id="portable">Method III. Portable</h3>
+
+Download and double-click to run [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat)
+
+<h3 id="docker">Method IV. Docker</h3>
 
 1. Pull and run:
 
