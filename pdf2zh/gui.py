@@ -91,7 +91,7 @@ def upload_file(file, service, progress=gr.Progress()):
 def download_with_limit(url, save_path, size_limit):
     chunk_size = 1024
     total_size = 0
-    with requests.get(url, stream=True) as response:
+    with requests.get(url, stream=True, timeout=10) as response:
         response.raise_for_status()
         content = response.headers.get("Content-Disposition")
         try:
