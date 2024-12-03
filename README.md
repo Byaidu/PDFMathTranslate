@@ -66,7 +66,7 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 <h2 id="install">Installation and Usage</h2>
 
-We provide three methods for using this project: [Commandline](#cmd), [GUI](#gui), [Portable](#portable), and [Docker](#docker).
+We provide three methods for using this project: [Commandline](#cmd), [Portable](#portable), [GUI](#gui), and [Docker](#docker).
 
 <h3 id="cmd">Method I. Commandline</h3>
 
@@ -83,7 +83,13 @@ We provide three methods for using this project: [Commandline](#cmd), [GUI](#gui
       pdf2zh document.pdf
       ```
 
-<h3 id="gui">Method II. GUI</h3>
+<h3 id="portable">Method II. Portable</h3>
+
+No need to pre-install Python environment
+
+Download and double-click to run [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat)
+
+<h3 id="gui">Method III. GUI</h3>
 
 1. Python installed (3.8 <= version <= 3.12)
 2. Install our package:
@@ -107,10 +113,6 @@ We provide three methods for using this project: [Commandline](#cmd), [GUI](#gui
     <img src="./docs/images/gui.gif" width="500"/>
 
 See [documentation for GUI](./docs/README_GUI.md) for more details.
-
-<h3 id="portable">Method III. Portable</h3>
-
-Download and double-click to run [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat)
 
 <h3 id="docker">Method IV. Docker</h3>
 
