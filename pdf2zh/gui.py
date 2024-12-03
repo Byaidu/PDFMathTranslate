@@ -41,7 +41,7 @@ flag_demo = False
 if os.environ.get("PDF2ZH_DEMO"):
     flag_demo = True
     service_map = {
-        "Google": "google",
+        "Google": ("google", None, None),
     }
     page_map = {
         "First": [0],
@@ -115,12 +115,12 @@ def translate(
     file_dual = output / f"{filename}-dual.pdf"
     shutil.copyfile(file_path, file_en)
 
-    selected_service = service_map.get(service, "google")[0]
+    selected_service = service_map[service][0]
     if service_map[service][1]:
         os.environ.setdefault(service_map[service][1], apikey)
-    selected_page = page_map.get(page_range, [0])
-    lang_from = lang_map.get(lang_from, "en")
-    lang_to = lang_map.get(lang_to, "zh")
+    selected_page = page_map[page_range]
+    lang_from = lang_map[lang_from]
+    lang_to = lang_map[lang_to]
     if selected_service == "google":
         lang_from = "zh-CN" if lang_from == "zh" else lang_from
         lang_to = "zh-CN" if lang_to == "zh" else lang_to
