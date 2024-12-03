@@ -17,7 +17,7 @@ service_map = {
     "DeepLX": ("deeplx", "DEEPLX_SERVER_URL", "DEEPLX_AUTH_KEY"),
     "Ollama": ("ollama", None, None),
     "OpenAI": ("openai", "OPENAI_API_KEY", None),
-    "Azure": ("azure", "AZURE_APIKEY", "AZURE_ENDPOINT","AZURE_REGION"),
+    "Azure": ("azure", "AZURE_APIKEY", "AZURE_ENDPOINT", "AZURE_REGION"),
     "Tencent": ("tencent", "TENCENT_SECRET_KEY", "TENCENT_SECRET_ID"),
 }
 service_config = {
@@ -28,14 +28,30 @@ service_config = {
         "apikey3_visibility": {"visible": False},
     },
     "deepl": {
-        "apikey_content": lambda s: {"visible": True, "value": os.environ.get(s[1]), "label": s[1]},
-        "apikey2_visibility": lambda s: {"visible": True, "value": os.environ.get(s[2]), "label": s[2]},
+        "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[1]),
+            "label": s[1],
+        },
+        "apikey2_visibility": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[2]),
+            "label": s[2],
+        },
         "model_visibility": {"visible": False},
         "apikey3_visibility": {"visible": False},
     },
     "deeplx": {
-        "apikey_content": lambda s: {"visible": True, "value": os.environ.get(s[1]), "label": s[1]},
-        "apikey2_visibility": lambda s: {"visible": True, "value": os.environ.get(s[2]), "label": s[2]},
+        "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[1]),
+            "label": s[1],
+        },
+        "apikey2_visibility": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[2]),
+            "label": s[2],
+        },
         "model_visibility": {"visible": False},
         "apikey3_visibility": {"visible": False},
     },
@@ -46,19 +62,39 @@ service_config = {
         "apikey3_visibility": {"visible": False},
     },
     "openai": {
-        "apikey_content": lambda s: {"visible": True, "value": os.environ.get(s[1]), "label": s[1]},
+        "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[1]),
+            "label": s[1],
+        },
         "apikey2_visibility": {"visible": False},
         "model_visibility": {"visible": True, "value": "gpt-4o"},
         "apikey3_visibility": {"visible": False},
     },
     "azure": {
-        "apikey_content": lambda s: {"visible": True, "value": os.environ.get(s[1]), "label": s[1]},
-        "apikey2_visibility": lambda s: {"visible": True, "value": os.environ.get(s[2]), "label": s[2]},
+        "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[1]),
+            "label": s[1],
+        },
+        "apikey2_visibility": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[2]),
+            "label": s[2],
+        },
         "model_visibility": {"visible": False},
-        "apikey3_visibility": lambda s: {"visible": True, "value": os.environ.get(s[3]), "label": s[3]},
+        "apikey3_visibility": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[3]),
+            "label": s[3],
+        },
     },
     "tencent": {
-        "apikey_content": lambda s: {"visible": True, "value": os.environ.get(s[1]), "label": s[1]},
+        "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[1]),
+            "label": s[1],
+        },
         "apikey2_visibility": lambda s: {"visible": True, "value": "", "label": s[2]},
         "model_visibility": {"visible": False},
         "apikey3_visibility": {"visible": False},
@@ -165,7 +201,7 @@ def translate(
     selected_page = page_map[page_range]
     lang_from = lang_map[lang_from]
     lang_to = lang_map[lang_to]
-    
+
     if selected_service == "google":
         lang_from = "zh-CN" if lang_from == "zh" else lang_from
         lang_to = "zh-CN" if lang_to == "zh" else lang_to
@@ -382,15 +418,13 @@ with gr.Blocks(
                 return text
 
             def env_var_checker(env_var_name: str) -> str:
-                envvarflag=True
-                envs_status=""
+                envvarflag = True
+                envs_status = ""
                 for envvar in env_var_name[1:]:
                     if envvar:
                         if not os.environ.get(envvar):
-                            envs_status += (
-                                f"<span class='env-warning'>- Warning: environmental not found or error ({envvar}).</span><br>"
-                            )
-                            envvarflag=False
+                            envs_status += f"<span class='env-warning'>- Warning: environmental not found or error ({envvar}).</span><br>"
+                            envvarflag = False
                         else:
                             value = str(os.environ.get(envvar))
                             envs_status += (
@@ -402,10 +436,8 @@ with gr.Blocks(
                         "<span class='env-success'>- Properly configured.</span><br>"
                     )
                 else:
-                    envs_status += (
-                        "- Please make sure that the environment variables are properly configured "
-                    )
-                    envs_status += ("(<a href='https://github.com/Byaidu/PDFMathTranslate'>guide</a>).<br>")
+                    envs_status += "- Please make sure that the environment variables are properly configured "
+                    envs_status += "(<a href='https://github.com/Byaidu/PDFMathTranslate'>guide</a>).<br>"
                 return details_wrapper(envs_status)
 
             def on_select_service(service, evt: gr.EventData):
@@ -413,10 +445,34 @@ with gr.Blocks(
 
                 if service_type in service_config:
                     config = service_config[service_type]
-                    apikey_content = gr.update(**(config["apikey_content"](service_map[service]) if callable(config["apikey_content"]) else config["apikey_content"]))
-                    apikey2_visibility = gr.update(**(config["apikey2_visibility"](service_map[service]) if callable(config["apikey2_visibility"]) else config["apikey2_visibility"]))
-                    model_visibility = gr.update(**(config["model_visibility"](service_map[service]) if callable(config["model_visibility"]) else config["model_visibility"]))
-                    apikey3_visibility = gr.update(**(config["apikey3_visibility"](service_map[service]) if callable(config["apikey3_visibility"]) else config["apikey3_visibility"]))
+                    apikey_content = gr.update(
+                        **(
+                            config["apikey_content"](service_map[service])
+                            if callable(config["apikey_content"])
+                            else config["apikey_content"]
+                        )
+                    )
+                    apikey2_visibility = gr.update(
+                        **(
+                            config["apikey2_visibility"](service_map[service])
+                            if callable(config["apikey2_visibility"])
+                            else config["apikey2_visibility"]
+                        )
+                    )
+                    model_visibility = gr.update(
+                        **(
+                            config["model_visibility"](service_map[service])
+                            if callable(config["model_visibility"])
+                            else config["model_visibility"]
+                        )
+                    )
+                    apikey3_visibility = gr.update(
+                        **(
+                            config["apikey3_visibility"](service_map[service])
+                            if callable(config["apikey3_visibility"])
+                            else config["apikey3_visibility"]
+                        )
+                    )
                 else:
                     raise gr.Error("Strange Service")
                 return (
@@ -442,7 +498,9 @@ with gr.Blocks(
                 elem_classes=["secondary-text"],
             )
             service.select(
-                on_select_service, service, [tech_details_tog, model_id, apikey, apikey2, apikey3]
+                on_select_service,
+                service,
+                [tech_details_tog, model_id, apikey, apikey2, apikey3],
             )
 
         with gr.Column(scale=2):
