@@ -11,10 +11,12 @@ import sys
 import logging
 from pathlib import Path
 from typing import Any, Container, Iterable, List, Optional
+import urllib.request
 from pdfminer.pdfexceptions import PDFValueError
 
 import pymupdf
 import requests
+import tempfile
 
 from pdf2zh import __version__, log
 from pdf2zh.high_level import extract_text_to_fp
@@ -23,6 +25,38 @@ from pdf2zh.doclayout import DocLayoutModel
 logging.basicConfig()
 
 model = DocLayoutModel.load_available()
+
+resfont_map = {
+    "zh-CN": "china-ss",
+    "zh-TW": "china-ts",
+    "ja": "japan-s",
+    "ko": "korea-s",
+}
+noto_list = [
+    "am",  # Amharic
+    "ar",  # Arabic
+    "bn",  # Bengali
+    "bg",  # Bulgarian
+    "chr",  # Cherokee
+    "el",  # Greek
+    "gu",  # Gujarati
+    "iw",  # Hebrew
+    "hi",  # Hindi
+    # "ja",  # Japanese
+    "kn",  # Kannada
+    # "ko",  # Korean
+    "ml",  # Malayalam
+    "mr",  # Marathi
+    "ru",  # Russian
+    "sr",  # Serbian
+    # "zh-CN",# Chinese (PRC)
+    "ta",  # Tamil
+    "te",  # Telugu
+    "th",  # Thai
+    # "zh-TW",# Chinese (Taiwan)
+    "ur",  # Urdu
+    "uk",  # Ukrainian
+]
 
 
 def check_files(files: List[str]) -> List[str]:
@@ -78,13 +112,33 @@ def extract_text(
                 )
         filename = os.path.splitext(os.path.basename(file))[0]
 
+        font_list = [("tiro", None)]
+        noto = None
+        if lang_out in resfont_map:  # CJK
+            resfont = resfont_map[lang_out]
+            font_list.append((resfont, None))
+        elif lang_out in noto_list:  # noto
+            resfont = "noto"
+            ttf_path = os.path.join(tempfile.gettempdir(), "GoNotoKurrent-Regular.ttf")
+            if not os.path.exists(ttf_path):
+                print("Downloading Noto font...")
+                urllib.request.urlretrieve(
+                    "https://github.com/satbyy/go-noto-universal/releases/download/v7.0/GoNotoKurrent-Regular.ttf",
+                    ttf_path,
+                )
+            font_list.append(("noto", ttf_path))
+            noto = pymupdf.Font("noto", ttf_path)
+        else:  # auto
+            resfont = "china-ss"
+            font_list.append(("china-ss", None))
+
         doc_en = pymupdf.open(file)
         page_count = doc_en.page_count
-        font_list = ["china-ss", "tiro"]
+        # font_list = [("china-ss", None), ("tiro", None)]
         font_id = {}
         for page in doc_en:
             for font in font_list:
-                font_id[font] = page.insert_font(font)
+                font_id[font[0]] = page.insert_font(font[0], font[1])
         xreflen = doc_en.xref_length()
         for xref in range(1, xreflen):
             for label in ["Resources/", ""]:  # 可能是基于 xobj 的 res
@@ -93,11 +147,13 @@ def extract_text(
                     if font_res[0] == "dict":
                         for font in font_list:
                             font_exist = doc_en.xref_get_key(
-                                xref, f"{label}Font/{font}"
+                                xref, f"{label}Font/{font[0]}"
                             )
                             if font_exist[0] == "null":
                                 doc_en.xref_set_key(
-                                    xref, f"{label}Font/{font}", f"{font_id[font]} 0 R"
+                                    xref,
+                                    f"{label}Font/{font[0]}",
+                                    f"{font_id[font[0]]} 0 R",
                                 )
                 except Exception:
                     pass
