@@ -129,21 +129,22 @@ class TranslateConverter(PDFConverterEx):
         self.vchar = vchar
         self.thread = thread
         self.layout = layout
+        self.translator: BaseTranslator = None
         param = service.split(":", 1)
         if param[0] == "google":
-            self.translator: BaseTranslator = GoogleTranslator(service, lang_out, lang_in, None)
+            self.translator = GoogleTranslator(service, lang_out, lang_in, None)
         elif param[0] == "deepl":
-            self.translator: BaseTranslator = DeepLTranslator(service, lang_out, lang_in, None)
+            self.translator = DeepLTranslator(service, lang_out, lang_in, None)
         elif param[0] == "deeplx":
-            self.translator: BaseTranslator = DeepLXTranslator(service, lang_out, lang_in, None)
+            self.translator = DeepLXTranslator(service, lang_out, lang_in, None)
         elif param[0] == "ollama":
-            self.translator: BaseTranslator = OllamaTranslator(service, lang_out, lang_in, param[1])
+            self.translator = OllamaTranslator(service, lang_out, lang_in, param[1])
         elif param[0] == "openai":
-            self.translator: BaseTranslator = OpenAITranslator(service, lang_out, lang_in, param[1])
+            self.translator = OpenAITranslator(service, lang_out, lang_in, param[1])
         elif param[0] == "azure":
-            self.translator: BaseTranslator = AzureTranslator(service, lang_out, lang_in, None)
+            self.translator = AzureTranslator(service, lang_out, lang_in, None)
         elif param[0] == "tencent":
-            self.translator: BaseTranslator = TencentTranslator(service, lang_out, lang_in, None)
+            self.translator = TencentTranslator(service, lang_out, lang_in, None)
         else:
             raise ValueError("Unsupported translation service")
 
