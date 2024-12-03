@@ -97,7 +97,7 @@ def download_with_limit(url, save_path, size_limit):
         try:
             _, params = cgi.parse_header(content)
             filename = params["filename"]
-        except:
+        except Exception:
             filename = os.path.basename(url)
         with open(save_path / filename, "wb") as file:
             for chunk in response.iter_content(chunk_size=chunk_size):
