@@ -419,67 +419,6 @@ with gr.Blocks(
                     apikey3_visibility = gr.update(**(config["apikey3_visibility"](service_map[service]) if callable(config["apikey3_visibility"]) else config["apikey3_visibility"]))
                 else:
                     raise gr.Error("Strange Service")
-                # if service_map[service][0] == "google":
-                #     apikey_content = gr.update(visible=False)
-                #     apikey2_visibility = gr.update(visible=False)
-                #     model_visibility = gr.update(visible=False)
-                #     apikey3_visibility = gr.update(visible=False)
-                # elif service_map[service][0] == "deepl":
-                #     apikey_content = gr.update(
-                #         visible=True, value=os.environ.get(service_map[service][1]),label=service_map[service][1]
-                #     )
-                #     apikey2_visibility = gr.update(
-                #         visible=True, value=os.environ.get(service_map[service][2]),label=service_map[service][2]
-                #     )
-                #     model_visibility = gr.update(visible=False)
-                #     apikey3_visibility = gr.update(visible=False)
-                # elif service_map[service][0] == "deeplx":
-                #     apikey_content = gr.update(
-                #         visible=True, value=os.environ.get(service_map[service][1]),label=service_map[service][1]
-                #     )
-                #     apikey2_visibility = gr.update(
-                #         visible=True, value=os.environ.get(service_map[service][2]),label=service_map[service][2]
-                #     )
-                #     model_visibility = gr.update(visible=False)
-                #     apikey3_visibility = gr.update(visible=False)
-                # elif service_map[service][0] == "ollama":
-                #     apikey_content = gr.update(visible=False)
-                #     apikey2_visibility = gr.update(visible=False)
-                #     model_visibility = gr.update(
-                #         visible=True, value=service_map[service][1]
-                #     )
-                #     apikey3_visibility = gr.update(visible=False)
-                # elif service_map[service][0] == "openai":
-                #     apikey_content = gr.update(
-                #         visible=True, value=os.environ.get(service_map[service][1]),label=service_map[service][1]
-                #     )
-                #     apikey2_visibility = gr.update(visible=False)
-                #     model_visibility = gr.update(
-                #         visible=True, value="gpt-4o"
-                #     )
-                #     apikey3_visibility = gr.update(visible=False)
-                # elif service_map[service][0] == "azure":
-                #     apikey_content = gr.update(
-                #         visible=True, value=os.environ.get(service_map[service][1]),label=service_map[service][1]
-                #     )
-                #     apikey2_visibility = gr.update(
-                #         visible=True, value=os.environ.get(service_map[service][2]),label=service_map[service][2]
-                #     )
-                #     model_visibility = gr.update(visible=False)
-                #     apikey3_visibility = gr.update(
-                #         visible=True, value=os.environ.get(service_map[service][3]),label=service_map[service][3]
-                #     )
-                # elif service_map[service][0] == "tencent":
-                #     apikey_content = gr.update(
-                #         visible=True, value=os.environ.get(service_map[service][1]),label=service_map[service][1]
-                #     )
-                #     apikey2_visibility = gr.update(
-                #         visible=True, value="", label=service_map[service][2]
-                #     )
-                #     model_visibility = gr.update(visible=False)
-                #     apikey3_visibility = gr.update(visible=False)
-                # else:
-                #     raise gr.Error("Strange Service")
                 return (
                     env_var_checker(service_map[service]),
                     model_visibility,
