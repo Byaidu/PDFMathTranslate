@@ -70,7 +70,7 @@ class OnnxModel(DocLayoutModel):
 
     @staticmethod
     def from_pretrained(repo_id: str, filename: str):
-        pth = hf_hub_download(repo_id=repo_id, filename=filename)
+        pth = hf_hub_download(repo_id=repo_id, filename=filename, etag_timeout=1)
         return OnnxModel(pth)
 
     @property
