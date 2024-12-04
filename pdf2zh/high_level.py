@@ -10,6 +10,7 @@ from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfparser import PDFParser
 from pdf2zh.converter import TranslateConverter
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
+from pymupdf import Font
 
 
 def extract_text_to_fp(
@@ -26,13 +27,15 @@ def extract_text_to_fp(
     lang_in: str = "",
     lang_out: str = "",
     service: str = "",
+    resfont: str = "",
+    noto: Font = None,
     callback: object = None,
     **kwarg,
 ) -> None:
     rsrcmgr = PDFResourceManager()
     layout = {}
     device = TranslateConverter(
-        rsrcmgr, vfont, vchar, thread, layout, lang_in, lang_out, service
+        rsrcmgr, vfont, vchar, thread, layout, lang_in, lang_out, service, resfont, noto
     )
 
     assert device is not None

@@ -1,6 +1,6 @@
 [project]
 name = "pdf2zh"
-version = "1.8.1"
+version = "1.8.4"
 description = "Latex PDF Translator"
 authors = [{ name = "Byaidu", email = "byaidux@gmail.com" }]
 license = "AGPL-3.0"

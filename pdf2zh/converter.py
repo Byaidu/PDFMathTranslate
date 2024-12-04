@@ -26,6 +26,7 @@ from pdf2zh.translator import (
     AzureTranslator,
     TencentTranslator,
 )
+from pymupdf import Font
 
 log = logging.getLogger(__name__)
 
@@ -123,12 +124,16 @@ class TranslateConverter(PDFConverterEx):
         lang_in: str = "",
         lang_out: str = "",
         service: str = "",
+        resfont: str = "",
+        noto: Font = None,
     ) -> None:
         super().__init__(rsrcmgr)
         self.vfont = vfont
         self.vchar = vchar
         self.thread = thread
         self.layout = layout
+        self.resfont = resfont
+        self.noto = noto
         self.translator: BaseTranslator = None
         param = service.split(":", 1)
         if param[0] == "google":
@@ -343,7 +348,9 @@ class TranslateConverter(PDFConverterEx):
         ############################################################
         # C. 新文档排版
         def raw_string(fcur: str, cstk: str):  # 编码字符串
-            if isinstance(self.fontmap[fcur], PDFCIDFont):  # 判断编码长度
+            if fcur == 'noto':
+                return "".join(["%04x" % self.noto.has_glyph(ord(c)) for c in cstk])
+            elif isinstance(self.fontmap[fcur], PDFCIDFont):  # 判断编码长度
                 return "".join(["%04x" % ord(c) for c in cstk])
             else:
                 return "".join(["%02x" % ord(c) for c in cstk])
@@ -388,13 +395,16 @@ class TranslateConverter(PDFConverterEx):
                     #     pass
                     try:
                         if fcur_ is None and self.fontmap["tiro"].to_unichr(ord(ch)) == ch:
-                            fcur_ = "tiro"  # 默认英文字体
+                            fcur_ = "tiro"  # 默认拉丁字体
                     except Exception:
                         pass
                     if fcur_ is None:
-                        fcur_ = "china-ss"  # 默认中文字体
+                        fcur_ = self.resfont  # 默认非拉丁字体
                     # print(self.fontid[font],fcur_,ch,font.char_width(ord(ch)))
-                    adv = self.fontmap[fcur_].char_width(ord(ch)) * size
+                    if fcur_ == 'noto':
+                        adv = self.noto.char_lengths(ch, size)[0]
+                    else:
+                        adv = self.fontmap[fcur_].char_width(ord(ch)) * size
                     ptr += 1
                 if (                                # 输出文字缓冲区
                     fcur_ != fcur                   # 1. 字体更新
@@ -406,7 +416,7 @@ class TranslateConverter(PDFConverterEx):
                         cstk = ""
                 if brk and x + adv > x1 + 0.1 * size:  # 到达右边界且原文段落存在换行
                     x = x0
-                    lang_space = {"zh-CN": 1.4, "zh-TW": 1.4, "ja": 1.1, "ko": 1.2, "en": 1.2}  # CJK
+                    lang_space = {"zh-CN": 1.4, "zh-TW": 1.4, "ja": 1.1, "ko": 1.2, "en": 1.2, "ar": 1.0, "ru": 0.8, "uk": 0.8, "ta": 0.8}
                     y -= size * lang_space.get(self.translator.lang_out, 1.1)  # 小语种大多适配 1.1
                 if vy_regex:  # 插入公式
                     fix = 0
