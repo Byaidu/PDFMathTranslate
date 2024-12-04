@@ -298,6 +298,8 @@ pdf2zh example.pdf -t 1
 
 - 文档标准：[PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
 
+- 多语言字体：[Go Noto Universal](https://github.com/satbyy/go-noto-universal)
+
 <h2 id="contrib">贡献者</h2>
 
 <a href="https://github.com/Byaidu/PDFMathTranslate/graphs/contributors">

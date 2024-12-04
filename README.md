@@ -285,8 +285,6 @@ pdf2zh example.pdf -t 1
 
 - [ ] Fix pixel formula in old papers
 
-- [ ] Support multiple language with [Noto Font](https://fonts.google.com/noto), [Ubuntu Font](https://design.ubuntu.com/font)
-
 - [ ] Async retry except KeyboardInterrupt
 
 - [ ] Knuth–Plass algorithm for western languages
@@ -306,6 +304,8 @@ pdf2zh example.pdf -t 1
 - Layout parsing: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
 - Document standard: [PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
+
+- Multilingual Font: [Go Noto Universal](https://github.com/satbyy/go-noto-universal)
 
 <h2 id="contrib">Contributors</h2>
 
