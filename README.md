@@ -206,7 +206,7 @@ pdf2zh example.pdf -li en -lo ja
 
   See [DeepLX](https://github.com/OwO-Network/DeepLX)
 
-  Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/translate`
+  Set ENVs to construct an endpoint like: `{DEEPLX_SERVER_URL}/{DEEPLX_AUTH_KEY}/translate`
   - `DEEPLX_SERVER_URL` (Optional), e.g., `export DEEPLX_SERVER_URL=https://api.deeplx.org`
   - `DEEPLX_AUTH_KEY`, e.g., `export DEEPLX_AUTH_KEY=xxx`
 

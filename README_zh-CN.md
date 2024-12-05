@@ -207,13 +207,13 @@ pdf2zh example.pdf -s deepl
 
 参考 [DeepLX](https://github.com/OwO-Network/DeepLX)
 
-设置环境变量构建接入点：`{DEEPLX_SERVER_URL}/translate`
+设置环境变量构建接入点：`{DEEPLX_SERVER_URL}/{DEEPLX_AUTH_KEY}/translate`
 
-- `DEEPLX_SERVER_URL`（可选）, e.g., `export DEEPLX_SERVER_URL=https://api.deepl.com`
+- `DEEPLX_SERVER_URL`（可选）, e.g., `export DEEPLX_SERVER_URL=https://api.deeplx.org`
 - `DEEPLX_AUTH_KEY`, e.g., `export DEEPLX_AUTH_KEY=xxx`
 
 ```bash
-pdf2zh example.pdf -s deepl
+pdf2zh example.pdf -s deeplx
 ```
 
 - **Ollama**
