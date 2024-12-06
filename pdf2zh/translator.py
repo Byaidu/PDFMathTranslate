@@ -156,7 +156,7 @@ class DeepLTranslator(BaseTranslator):
     def __init__(self, service, lang_out, lang_in, model):
         super().__init__(service, lang_out, lang_in, model)
         self.session = requests.Session()
-        server_url = os.getenv("DEEPL_SERVER_URL")
+        server_url = os.getenv("DEEPL_SERVER_URL", self.envs["DEEPL_SERVER_URL"])
         auth_key = os.getenv("DEEPL_AUTH_KEY")
         self.client = deepl.Translator(auth_key, server_url=server_url)
 
@@ -177,7 +177,7 @@ class DeepLXTranslator(BaseTranslator):
 
     def __init__(self, service, lang_out, lang_in, model):
         super().__init__(service, lang_out, lang_in, model)
-        self.endpoint = os.getenv("DEEPLX_ENDPOINT")
+        self.endpoint = os.getenv("DEEPLX_ENDPOINT", self.envs["DEEPLX_ENDPOINT"])
         self.session = requests.Session()
 
     def translate(self, text):
@@ -252,8 +252,8 @@ class AzureTranslator(BaseTranslator):
 
     def __init__(self, service, lang_out, lang_in, model):
         super().__init__(service, lang_out, lang_in, model)
-        endpoint = os.environ["AZURE_ENDPOINT"]
-        api_key = os.environ["AZURE_APIKEY"]
+        endpoint = os.getenv("AZURE_ENDPOINT", self.envs["AZURE_ENDPOINT"])
+        api_key = os.getenv("AZURE_APIKEY")
         credential = AzureKeyCredential(api_key)
         self.client = TextTranslationClient(
             endpoint=endpoint, credential=credential, region="chinaeast2"

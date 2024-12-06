@@ -50,7 +50,7 @@ page_map = {
 }
 
 flag_demo = False
-if os.environ.get("PDF2ZH_DEMO"):
+if os.getenv("PDF2ZH_DEMO"):
     flag_demo = True
     service_map = {
         "Google": GoogleTranslator,
@@ -59,8 +59,8 @@ if os.environ.get("PDF2ZH_DEMO"):
         "First": [0],
         "First 20 pages": list(range(0, 20)),
     }
-    client_key = os.environ.get("PDF2ZH_CLIENT_KEY")
-    server_key = os.environ.get("PDF2ZH_SERVER_KEY")
+    client_key = os.getenv("PDF2ZH_CLIENT_KEY")
+    server_key = os.getenv("PDF2ZH_SERVER_KEY")
 
 
 def verify_recaptcha(response):
@@ -150,7 +150,7 @@ def translate(
     lang_to = lang_map[lang_to]
 
     for i, env in enumerate(translator.envs.items()):
-        os.environ.setdefault(env[0], envs[i])
+        os.putenv(env[0], envs[i])
 
     print(f"Files before translation: {os.listdir(output)}")
 
@@ -317,7 +317,7 @@ with gr.Blocks(
                     _envs.append(gr.update(visible=False, value=""))
                 for i, env in enumerate(translator.envs.items()):
                     _envs[i] = gr.update(
-                        visible=True, label=env[0], value=os.environ.get(env[0], env[1])
+                        visible=True, label=env[0], value=os.getenv(env[0], env[1])
                     )
                 return _envs
 
