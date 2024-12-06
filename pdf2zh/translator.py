@@ -100,17 +100,56 @@ class DeepLXTranslator(BaseTranslator):
         super().__init__(service, lang_out, lang_in, model)
         self.endpoint = os.getenv("DEEPLX_ENDPOINT")
         self.session = requests.Session()
+        self.header = {"Content-Type": "application/json"}
+        self.check_url()
+
+    def check_url(self):
+        self.endpoint = self.endpoint.rstrip("/")
+        # 检查URL是否以translate结尾
+        if not self.endpoint.endswith("/translate"):
+            raise ValueError("DEEPLX_ENDPOINT error")
+
+        # 移除URL开头的http://或https://
+        self.endpoint = re.sub(r"^https?://", "", self.endpoint)
+
+        # 检查是否有相邻的两个"/"（移除开头协议部分之后）
+        if "//" in self.endpoint:
+            raise ValueError("DEEPLX_ENDPOINT error")
+
+        # 按"/"划分URL
+        parts = self.endpoint.split("/")
+
+        # 检查条件：只有两个元素且以translate结尾
+        if len(parts) == 2:
+            self.verion = "free"
+
+        # 检查倒数第二个元素是否为v1或v2
+        if len(parts) > 2 and parts[-2] in {"v1", "v2"}:
+            self.verion = parts[-2]
 
     def translate(self, text):
-        resp = self.session.post(
-            self.endpoint,
-            json={
+        if self.verion == "free" or self.verion == "v1":
+            if os.getenv("DEEPLX_AUTH_KEY"):
+                self.header["Authorization"] = os.getenv("DEEPLX_AUTH_KEY")
+            if not os.getenv("DEEPLX_AUTH_KEY") and self.verion == "v1":
+                raise ValueError("Missing DEEPLX_AUTH_KEY")
+            wait_to_translate = {
                 "source_lang": self.lang_in,
                 "target_lang": self.lang_out,
                 "text": text,
-            },
-        )
-        return resp.json()["data"]
+            }
+            resp = self.session.post(
+                self.endpoint, json=wait_to_translate, headers=self.header
+            )
+            return resp.json()["data"]
+        if self.verion == "v2":
+            self.header["Authorization"] = os.getenv("DeepLX_AUTH_KEY")
+            print("Please use DeepL service.")
+            wait_to_translate = {"text": [text], "target_lang": "ZH"}
+            resp = self.session.post(
+                self.endpoint, json=wait_to_translate, headers=self.header
+            )
+            return resp.json()["translations"]["text"]
 
 
 class DeepLTranslator(BaseTranslator):

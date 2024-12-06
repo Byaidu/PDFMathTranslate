@@ -16,7 +16,7 @@ import cgi
 service_map = {
     "Google": (None, None, None),
     "DeepL": ("DEEPL_SERVER_URL", "DEEPL_AUTH_KEY", None),
-    "DeepLX": ("DEEPLX_SERVER_URL", "DEEPLX_AUTH_KEY", None),
+    "DeepLX": ("DEEPLX_ENDPOINT", "DEEPLX_AUTH_KEY", None),
     "Ollama": ("OLLAMA_HOST", None, None),
     "OpenAI": ("OPENAI_BASE_URL", None, "OPENAI_API_KEY"),
     "Azure": ("AZURE_APIKEY", "AZURE_ENDPOINT", "AZURE_REGION"),
