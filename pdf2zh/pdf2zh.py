@@ -27,8 +27,11 @@ logging.basicConfig()
 model = DocLayoutModel.load_available()
 
 resfont_map = {
-    "zh-CN": "china-ss",
-    "zh-TW": "china-ts",
+    "zh-cn": "china-ss",
+    "zh-tw": "china-ts",
+    "zh-hans": "china-ss",
+    "zh-hant": "china-ts",
+    "zh": "china-ss",
     "ja": "japan-s",
     "ko": "korea-s",
 }
@@ -49,11 +52,11 @@ noto_list = [
     "mr",  # Marathi
     "ru",  # Russian
     "sr",  # Serbian
-    # "zh-CN",# Chinese (PRC)
+    # "zh-cn",# SC
     "ta",  # Tamil
     "te",  # Telugu
     "th",  # Thai
-    # "zh-TW",# Chinese (Taiwan)
+    # "zh-tw",# TC
     "ur",  # Urdu
     "uk",  # Ukrainian
 ]
@@ -114,10 +117,10 @@ def extract_text(
 
         font_list = [("tiro", None)]
         noto = None
-        if lang_out in resfont_map:  # CJK
-            resfont = resfont_map[lang_out]
+        if lang_out.lower() in resfont_map:  # CJK
+            resfont = resfont_map[lang_out.lower()]
             font_list.append((resfont, None))
-        elif lang_out in noto_list:  # noto
+        elif lang_out.lower() in noto_list:  # noto
             resfont = "noto"
             ttf_path = os.path.join(tempfile.gettempdir(), "GoNotoKurrent-Regular.ttf")
             if not os.path.exists(ttf_path):
@@ -128,7 +131,7 @@ def extract_text(
                 )
             font_list.append(("noto", ttf_path))
             noto = pymupdf.Font("noto", ttf_path)
-        else:  # auto
+        else:  # fallback
             resfont = "china-ss"
             font_list.append(("china-ss", None))
 
@@ -240,14 +243,14 @@ def create_parser() -> argparse.ArgumentParser:
         "--lang-in",
         "-li",
         type=str,
-        default="auto",
+        default="en",
         help="The code of source language.",
     )
     parse_params.add_argument(
         "--lang-out",
         "-lo",
         type=str,
-        default="auto",
+        default="zh",
         help="The code of target language.",
     )
     parse_params.add_argument(

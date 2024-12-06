@@ -25,11 +25,9 @@ class BaseTranslator:
     envs = {}
     lang_map = {}
 
-    def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
-        lang_out = self.lang_map.get(lang_out, lang_out)
-        lang_in = self.lang_map.get(lang_in, lang_in)
+    def __init__(self, service, lang_out: str, lang_in: str, model):
+        lang_out = self.lang_map.get(lang_out.lower(), lang_out)
+        lang_in = self.lang_map.get(lang_in.lower(), lang_in)
         self.service = service
         self.lang_out = lang_out
         self.lang_in = lang_in
@@ -59,8 +57,6 @@ class GoogleTranslator(BaseTranslator):
     lang_map = {"zh": "zh-CN"}
 
     def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh-CN" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
         super().__init__(service, lang_out, lang_in, model)
         self.session = requests.Session()
         self.endpoint = "http://translate.google.com/m"
@@ -92,8 +88,6 @@ class BingTranslator(BaseTranslator):
     lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh-Hans" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
         super().__init__(service, lang_out, lang_in, model)
         self.session = requests.Session()
         self.endpoint = "https://www.bing.com/ttranslatev3"
@@ -136,8 +130,6 @@ class TencentTranslator(BaseTranslator):
     }
 
     def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
         super().__init__(service, lang_out, lang_in, model)
         cred = credential.DefaultCredentialProvider().get_credential()
         self.client = TmtClient(cred, "ap-beijing")
@@ -162,8 +154,6 @@ class DeepLTranslator(BaseTranslator):
     lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
         super().__init__(service, lang_out, lang_in, model)
         self.session = requests.Session()
         server_url = os.getenv("DEEPL_SERVER_URL")
@@ -186,8 +176,6 @@ class DeepLXTranslator(BaseTranslator):
     lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
         super().__init__(service, lang_out, lang_in, model)
         self.endpoint = os.getenv("DEEPLX_ENDPOINT")
         self.session = requests.Session()
@@ -213,8 +201,6 @@ class OllamaTranslator(BaseTranslator):
     }
 
     def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh-CN" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
         if not model:
             model = os.getenv("OLLAMA_MODEL", self.envs["OLLAMA_MODEL"])
         super().__init__(service, lang_out, lang_in, model)
@@ -240,8 +226,6 @@ class OpenAITranslator(BaseTranslator):
     }
 
     def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh-CN" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
         if not model:
             model = os.getenv("OPENAI_MODEL", self.envs["OPENAI_MODEL"])
         super().__init__(service, lang_out, lang_in, model)
@@ -267,8 +251,6 @@ class AzureTranslator(BaseTranslator):
     lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh-Hans" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
         super().__init__(service, lang_out, lang_in, model)
         endpoint = os.environ["AZURE_ENDPOINT"]
         api_key = os.environ["AZURE_APIKEY"]
