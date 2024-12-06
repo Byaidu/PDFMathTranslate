@@ -107,7 +107,13 @@ class BingTranslator(BaseTranslator):
         ig, iid, key, token = self.fineSID()
         resp = self.session.post(
             f"{self.endpoint}?IG={ig}&IID={iid}",
-            data={"fromLang": self.lang_in, "to": self.lang_out, "text": text, "token": token, "key": key},
+            data={
+                "fromLang": self.lang_in,
+                "to": self.lang_out,
+                "text": text,
+                "token": token,
+                "key": key,
+            },
             headers=self.headers,
         )
         return resp.json()[0]["translations"][0]["text"]
