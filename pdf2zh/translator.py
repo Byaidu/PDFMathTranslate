@@ -21,6 +21,7 @@ def remove_control_characters(s):
 
 
 class BaseTranslator:
+    name = "base"
     envs = {}
 
     def __init__(self, service, lang_out, lang_in, model):
@@ -49,6 +50,8 @@ class BaseTranslator:
 
 
 class GoogleTranslator(BaseTranslator):
+    name = "google"
+
     def __init__(self, service, lang_out, lang_in, model):
         lang_out = "zh-CN" if lang_out == "auto" else lang_out
         lang_in = "en" if lang_in == "auto" else lang_in
@@ -76,8 +79,45 @@ class GoogleTranslator(BaseTranslator):
         return remove_control_characters(result)
 
 
+class BingTranslator(BaseTranslator):
+    # https://github.com/immersive-translate/old-immersive-translate/blob/6df13da22664bea2f51efe5db64c63aca59c4e79/src/background/translationService.js
+    # TODO: IID & IG
+    name = "bing"
+
+    def __init__(self, service, lang_out, lang_in, model):
+        lang_out = "zh" if lang_out == "auto" else lang_out
+        lang_in = "en" if lang_in == "auto" else lang_in
+        super().__init__(service, lang_out, lang_in, model)
+        self.session = requests.Session()
+        self.endpoint = "https://www.bing.com/ttranslatev3?isVertical=1"
+
+    def fineSID(self):
+        resp = self.session.get("https://www.bing.com/translator")
+        result = re.findall(
+            r"params_AbusePreventionHelper\s=\s\[(.*?),\"(.*?)\",", resp.text
+        )[0]
+        return result
+
+    def translate(self, text):
+        sid = self.fineSID()
+        resp = self.session.post(
+            self.endpoint,
+            data={
+                "fromLang": self.lang_in,
+                "text": text,
+                "to": self.lang_out,
+                "tryFetchingGenderDebiasedTranslations": True,
+                "token": sid[1],
+                "key": sid[0],
+            },
+        )
+        print(resp.json())
+        return resp.json()[0]["translations"][0]["text"]
+
+
 class TencentTranslator(BaseTranslator):
     # https://github.com/TencentCloud/tencentcloud-sdk-python
+    name = "tencent"
     envs = {
         "TENCENTCLOUD_SECRET_ID": None,
         "TENCENTCLOUD_SECRET_KEY": None,
@@ -100,33 +140,9 @@ class TencentTranslator(BaseTranslator):
         return resp.TargetText
 
 
-class DeepLXTranslator(BaseTranslator):
-    # https://deeplx.owo.network/endpoints/free.html
-    envs = {
-        "DEEPLX_ENDPOINT": "https://api.deepl.com/v2/translate",
-    }
-
-    def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh" if lang_out == "auto" else lang_out
-        lang_in = "en" if lang_in == "auto" else lang_in
-        super().__init__(service, lang_out, lang_in, model)
-        self.endpoint = os.getenv("DEEPLX_ENDPOINT")
-        self.session = requests.Session()
-
-    def translate(self, text):
-        resp = self.session.post(
-            self.endpoint,
-            json={
-                "source_lang": self.lang_in,
-                "target_lang": self.lang_out,
-                "text": text,
-            },
-        )
-        return resp.json()["data"]
-
-
 class DeepLTranslator(BaseTranslator):
     # https://github.com/DeepLcom/deepl-python
+    name = "deepl"
     envs = {
         "DEEPL_SERVER_URL": "https://api.deepl.com",
         "DEEPL_AUTH_KEY": None,
@@ -148,8 +164,35 @@ class DeepLTranslator(BaseTranslator):
         return response.text
 
 
+class DeepLXTranslator(BaseTranslator):
+    # https://deeplx.owo.network/endpoints/free.html
+    name = "deeplx"
+    envs = {
+        "DEEPLX_ENDPOINT": "https://api.deepl.com/translate",
+    }
+
+    def __init__(self, service, lang_out, lang_in, model):
+        lang_out = "zh" if lang_out == "auto" else lang_out
+        lang_in = "en" if lang_in == "auto" else lang_in
+        super().__init__(service, lang_out, lang_in, model)
+        self.endpoint = os.getenv("DEEPLX_ENDPOINT")
+        self.session = requests.Session()
+
+    def translate(self, text):
+        resp = self.session.post(
+            self.endpoint,
+            json={
+                "source_lang": self.lang_in,
+                "target_lang": self.lang_out,
+                "text": text,
+            },
+        )
+        return resp.json()["data"]
+
+
 class OllamaTranslator(BaseTranslator):
     # https://github.com/ollama/ollama-python
+    name = "ollama"
     envs = {
         "OLLAMA_HOST": "http://127.0.0.1:11434",
         "OLLAMA_MODEL": "gemma2",
@@ -175,6 +218,7 @@ class OllamaTranslator(BaseTranslator):
 
 class OpenAITranslator(BaseTranslator):
     # https://github.com/openai/openai-python
+    name = "openai"
     envs = {
         "OPENAI_BASE_URL": "https://api.openai.com/v1",
         "OPENAI_API_KEY": None,
@@ -201,6 +245,7 @@ class OpenAITranslator(BaseTranslator):
 
 class AzureTranslator(BaseTranslator):
     # https://github.com/Azure/azure-sdk-for-python
+    name = "azure"
     envs = {
         "AZURE_ENDPOINT": "https://api.translator.azure.cn",
         "AZURE_APIKEY": None,

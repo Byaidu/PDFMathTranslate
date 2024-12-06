@@ -3,6 +3,16 @@ import shutil
 from pathlib import Path
 from pdf2zh import __version__
 from pdf2zh.pdf2zh import extract_text
+from pdf2zh.translator import (
+    BaseTranslator,
+    GoogleTranslator,
+    DeepLTranslator,
+    DeepLXTranslator,
+    OllamaTranslator,
+    OpenAITranslator,
+    AzureTranslator,
+    TencentTranslator,
+)
 
 import gradio as gr
 import numpy as np
@@ -13,106 +23,14 @@ import cgi
 
 # Map service names to pdf2zh service options
 # five value, padding with None
-service_map = {
-    "Google": (None, None, None),
-    "DeepL": ("DEEPL_SERVER_URL", "DEEPL_AUTH_KEY", None),
-    "DeepLX": ("DEEPLX_SERVER_URL", "DEEPLX_AUTH_KEY", None),
-    "Ollama": ("OLLAMA_HOST", None, None),
-    "OpenAI": ("OPENAI_BASE_URL", None, "OPENAI_API_KEY"),
-    "Azure": ("AZURE_APIKEY", "AZURE_ENDPOINT", "AZURE_REGION"),
-    "Tencent": ("TENCENT_SECRET_KEY", "TENCENT_SECRET_ID", None),
-}
-service_config = {
-    "Google": {
-        "apikey_content": {"visible": False},
-        "apikey2_visibility": {"visible": False},
-        "model_visibility": {"visible": False},
-        "apikey3_visibility": {"visible": False},
-    },
-    "DeepL": {
-        "apikey_content": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[0]),
-            "label": s[0],
-        },
-        "apikey2_visibility": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[1]),
-            "label": s[1],
-        },
-        "model_visibility": {"visible": False},
-        "apikey3_visibility": {"visible": False},
-    },
-    "DeepLX": {
-        "apikey_content": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[0]),
-            "label": s[0],
-        },
-        "apikey2_visibility": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[1]),
-            "label": s[1],
-        },
-        "model_visibility": {"visible": False},
-        "apikey3_visibility": {"visible": False},
-    },
-    "Ollama": {
-        "apikey_content": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[0]),
-            "label": s[0],
-        },
-        "apikey2_visibility": {"visible": False},
-        "model_visibility": lambda s: {"visible": True, "value": s[1]},
-        "apikey3_visibility": {"visible": False},
-    },
-    "OpenAI": {
-        "apikey_content": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[2]),
-            "label": s[2],
-        },
-        "apikey2_visibility": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[0]),
-            "label": s[0],
-        },
-        "model_visibility": {"visible": True, "value": "gpt-4o"},
-        "apikey3_visibility": {"visible": False},
-    },
-    "Azure": {
-        "apikey_content": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[0]),
-            "label": s[0],
-        },
-        "apikey2_visibility": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[1]),
-            "label": s[1],
-        },
-        "model_visibility": {"visible": False},
-        "apikey3_visibility": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[2]),
-            "label": s[2],
-        },
-    },
-    "Tencent": {
-        "apikey_content": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[0]),
-            "label": s[0],
-        },
-        "apikey2_visibility": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[1]),
-            "label": s[1],
-        },
-        "model_visibility": {"visible": False},
-        "apikey3_visibility": {"visible": False},
-    },
+service_map: dict[str, BaseTranslator] = {
+    "Google": GoogleTranslator,
+    "DeepL": DeepLTranslator,
+    "DeepLX": DeepLXTranslator,
+    "Ollama": OllamaTranslator,
+    "OpenAI": OpenAITranslator,
+    "Azure": AzureTranslator,
+    "Tencent": TencentTranslator,
 }
 lang_map = {
     "Chinese": "zh",
@@ -135,7 +53,7 @@ flag_demo = False
 if os.environ.get("PDF2ZH_DEMO"):
     flag_demo = True
     service_map = {
-        "Google": ("google", None, None),
+        "Google": GoogleTranslator,
     }
     page_map = {
         "First": [0],
@@ -147,14 +65,10 @@ if os.environ.get("PDF2ZH_DEMO"):
 
 def verify_recaptcha(response):
     recaptcha_url = "https://www.google.com/recaptcha/api/siteverify"
-
     print("reCAPTCHA", server_key, response)
-
     data = {"secret": server_key, "response": response}
     result = requests.post(recaptcha_url, data=data).json()
-
     print("reCAPTCHA", result.get("success"))
-
     return result.get("success")
 
 
@@ -167,18 +81,8 @@ def pdf_preview(file):
 
 
 def upload_file(file, service, progress=gr.Progress()):
-    """Handle file upload, validation, and initial preview."""
-    if not file or not os.path.exists(file):
-        return None, None
-
-    try:
-        # Convert first page for preview
-        preview_image = pdf_preview(file)
-
-        return file, preview_image
-    except Exception as e:
-        print(f"Error converting PDF: {e}")
-        return None, None
+    preview_image = pdf_preview(file)
+    return file, preview_image
 
 
 def download_with_limit(url, save_path, size_limit):
@@ -187,10 +91,10 @@ def download_with_limit(url, save_path, size_limit):
     with requests.get(url, stream=True, timeout=10) as response:
         response.raise_for_status()
         content = response.headers.get("Content-Disposition")
-        try:
+        try:  # filename from header
             _, params = cgi.parse_header(content)
             filename = params["filename"]
-        except Exception:
+        except Exception:  # filename from url
             filename = os.path.basename(url)
         with open(save_path / filename, "wb") as file:
             for chunk in response.iter_content(chunk_size=chunk_size):
@@ -508,45 +412,46 @@ with gr.Blocks(
                 return details_wrapper(envs_status)
 
             def on_select_service(service, evt: gr.EventData):
-                if service in service_config:
-                    config = service_config[service]
-                    apikey_content = gr.update(
-                        **(
-                            config["apikey_content"](service_map[service])
-                            if callable(config["apikey_content"])
-                            else config["apikey_content"]
-                        )
-                    )
-                    apikey2_visibility = gr.update(
-                        **(
-                            config["apikey2_visibility"](service_map[service])
-                            if callable(config["apikey2_visibility"])
-                            else config["apikey2_visibility"]
-                        )
-                    )
-                    model_visibility = gr.update(
-                        **(
-                            config["model_visibility"](service_map[service])
-                            if callable(config["model_visibility"])
-                            else config["model_visibility"]
-                        )
-                    )
-                    apikey3_visibility = gr.update(
-                        **(
-                            config["apikey3_visibility"](service_map[service])
-                            if callable(config["apikey3_visibility"])
-                            else config["apikey3_visibility"]
-                        )
-                    )
-                else:
-                    raise gr.Error("Strange Service")
-                return (
-                    env_var_checker(service_map[service]),
-                    model_visibility,
-                    apikey_content,
-                    apikey2_visibility,
-                    apikey3_visibility,
-                )
+                # if service in service_config:
+                #     config = service_config[service]
+                #     apikey_content = gr.update(
+                #         **(
+                #             config["apikey_content"](service_map[service])
+                #             if callable(config["apikey_content"])
+                #             else config["apikey_content"]
+                #         )
+                #     )
+                #     apikey2_visibility = gr.update(
+                #         **(
+                #             config["apikey2_visibility"](service_map[service])
+                #             if callable(config["apikey2_visibility"])
+                #             else config["apikey2_visibility"]
+                #         )
+                #     )
+                #     model_visibility = gr.update(
+                #         **(
+                #             config["model_visibility"](service_map[service])
+                #             if callable(config["model_visibility"])
+                #             else config["model_visibility"]
+                #         )
+                #     )
+                #     apikey3_visibility = gr.update(
+                #         **(
+                #             config["apikey3_visibility"](service_map[service])
+                #             if callable(config["apikey3_visibility"])
+                #             else config["apikey3_visibility"]
+                #         )
+                #     )
+                # else:
+                #     raise gr.Error("Strange Service")
+                # return (
+                #     env_var_checker(service_map[service]),
+                #     model_visibility,
+                #     apikey_content,
+                #     apikey2_visibility,
+                #     apikey3_visibility,
+                # )
+                pass
 
             def on_select_filetype(file_type):
                 return (

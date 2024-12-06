@@ -136,23 +136,12 @@ class TranslateConverter(PDFConverterEx):
         self.noto = noto
         self.translator: BaseTranslator = None
         param = service.split(":", 1)
-        service_id = param[0]
+        service_name = param[0]
         service_model = param[1] if len(param) > 1 else None
-        if service_id == "google":
-            self.translator = GoogleTranslator(service, lang_out, lang_in, None)
-        elif service_id == "deepl":
-            self.translator = DeepLTranslator(service, lang_out, lang_in, None)
-        elif service_id == "deeplx":
-            self.translator = DeepLXTranslator(service, lang_out, lang_in, None)
-        elif service_id == "ollama":
-            self.translator = OllamaTranslator(service, lang_out, lang_in, service_model)
-        elif service_id == "openai":
-            self.translator = OpenAITranslator(service, lang_out, lang_in, service_model)
-        elif service_id == "azure":
-            self.translator = AzureTranslator(service, lang_out, lang_in, None)
-        elif service_id == "tencent":
-            self.translator = TencentTranslator(service, lang_out, lang_in, None)
-        else:
+        for translator in [GoogleTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, OpenAITranslator, AzureTranslator, TencentTranslator]:
+            if service_name == translator.name:
+                self.translator = translator(service, lang_out, lang_in, service_model)
+        if not self.translator:
             raise ValueError("Unsupported translation service")
 
     def receive_layout(self, ltpage: LTPage):
