@@ -32,6 +32,18 @@ class BaseTranslator:
     def translate(self, text):
         pass
 
+    def prompt(self, text):
+        return [
+            {
+                "role": "system",
+                "content": "You are a professional,authentic machine translation engine.",
+            },
+            {
+                "role": "user",
+                "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation $v*$ unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
+            },
+        ]
+
     def __str__(self):
         return f"{self.service} {self.lang_out} {self.lang_in}"
 
@@ -140,11 +152,14 @@ class OllamaTranslator(BaseTranslator):
     # https://github.com/ollama/ollama-python
     envs = {
         "OLLAMA_HOST": "http://127.0.0.1:11434",
+        "OLLAMA_MODEL": "gemma2",
     }
 
     def __init__(self, service, lang_out, lang_in, model):
         lang_out = "zh-CN" if lang_out == "auto" else lang_out
         lang_in = "en" if lang_in == "auto" else lang_in
+        if not model:
+            model = os.getenv("OLLAMA_MODEL", self.envs["OLLAMA_MODEL"])
         super().__init__(service, lang_out, lang_in, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = ollama.Client()
@@ -153,16 +168,7 @@ class OllamaTranslator(BaseTranslator):
         response = self.client.chat(
             model=self.model,
             options=self.options,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a professional,authentic machine translation engine.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation $v*$ unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
-                },
-            ],
+            messages=self.prompt(text),
         )
         return response["message"]["content"].strip()
 
@@ -172,11 +178,14 @@ class OpenAITranslator(BaseTranslator):
     envs = {
         "OPENAI_BASE_URL": "https://api.openai.com/v1",
         "OPENAI_API_KEY": None,
+        "OPENAI_MODEL": "gpt-4o",
     }
 
     def __init__(self, service, lang_out, lang_in, model):
         lang_out = "zh-CN" if lang_out == "auto" else lang_out
         lang_in = "en" if lang_in == "auto" else lang_in
+        if not model:
+            model = os.getenv("OPENAI_MODEL", self.envs["OPENAI_MODEL"])
         super().__init__(service, lang_out, lang_in, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = openai.OpenAI()
@@ -185,16 +194,7 @@ class OpenAITranslator(BaseTranslator):
         response = self.client.chat.completions.create(
             model=self.model,
             **self.options,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a professional,authentic machine translation engine.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation $v*$ unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
-                },
-            ],
+            messages=self.prompt(text),
         )
         return response.choices[0].message.content.strip()
 
