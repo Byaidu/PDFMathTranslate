@@ -25,6 +25,7 @@ dependencies = [
     "onnx",
     "onnxruntime",
     "opencv-python-headless",
+    "tencentcloud-sdk-python",
     "pdfminer.six>=20240706",
 ]
 
