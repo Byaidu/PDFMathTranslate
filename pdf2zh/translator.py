@@ -222,15 +222,15 @@ class OpenAITranslator(BaseTranslator):
     envs = {
         "OPENAI_BASE_URL": "https://api.openai.com/v1",
         "OPENAI_API_KEY": None,
-        "OPENAI_MODEL": "gpt-4o",
+        "OPENAI_MODEL": "gpt-4o-mini",
     }
 
-    def __init__(self, service, lang_out, lang_in, model):
+    def __init__(self, service, lang_out, lang_in, model, base_url=None, api_key=None):
         if not model:
             model = os.getenv("OPENAI_MODEL", self.envs["OPENAI_MODEL"])
         super().__init__(service, lang_out, lang_in, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        self.client = openai.OpenAI()
+        self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
 
     def translate(self, text) -> str:
         response = self.client.chat.completions.create(
@@ -241,19 +241,55 @@ class OpenAITranslator(BaseTranslator):
         return response.choices[0].message.content.strip()
 
 
+class ZhipuTranslator(OpenAITranslator):
+    # https://bigmodel.cn/dev/api/thirdparty-frame/openai-sdk
+    name = "zhipu"
+    envs = {
+        "ZHIPU_API_KEY": None,
+        "ZHIPU_MODEL": "glm-4-flash",
+    }
+
+    def __init__(self, service, lang_out, lang_in, model):
+        base_url = "https://open.bigmodel.cn/api/paas/v4"
+        api_key = os.getenv("ZHIPU_API_KEY")
+        if not model:
+            model = os.getenv("ZHIPU_MODEL", self.envs["ZHIPU_MODEL"])
+        super().__init__(
+            service, lang_out, lang_in, model, base_url=base_url, api_key=api_key
+        )
+
+
+class SiliconTranslator(OpenAITranslator):
+    # https://docs.siliconflow.cn/quickstart
+    name = "silicon"
+    envs = {
+        "SILICON_API_KEY": None,
+        "SILICON_MODEL": "Qwen/Qwen2.5-7B-Instruct",
+    }
+
+    def __init__(self, service, lang_out, lang_in, model):
+        base_url = "https://api.siliconflow.cn/v1"
+        api_key = os.getenv("SILICON_API_KEY")
+        if not model:
+            model = os.getenv("SILICON_MODEL", self.envs["SILICON_MODEL"])
+        super().__init__(
+            service, lang_out, lang_in, model, base_url=base_url, api_key=api_key
+        )
+
+
 class AzureTranslator(BaseTranslator):
     # https://github.com/Azure/azure-sdk-for-python
     name = "azure"
     envs = {
         "AZURE_ENDPOINT": "https://api.translator.azure.cn",
-        "AZURE_APIKEY": None,
+        "AZURE_API_KEY": None,
     }
     lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, service, lang_out, lang_in, model):
         super().__init__(service, lang_out, lang_in, model)
         endpoint = os.getenv("AZURE_ENDPOINT", self.envs["AZURE_ENDPOINT"])
-        api_key = os.getenv("AZURE_APIKEY")
+        api_key = os.getenv("AZURE_API_KEY")
         credential = AzureKeyCredential(api_key)
         self.client = TextTranslationClient(
             endpoint=endpoint, credential=credential, region="chinaeast2"

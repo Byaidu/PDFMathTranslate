@@ -238,7 +238,7 @@ pdf2zh example.pdf -s ollama:gemma2
 - `OPENAI_API_KEY`, e.g., `export OPENAI_API_KEY=xxx`
 
 ```bash
-pdf2zh example.pdf -s openai:gpt-4o
+pdf2zh example.pdf -s openai:gpt-4o-mini
 ```
 
 - **Azure**
