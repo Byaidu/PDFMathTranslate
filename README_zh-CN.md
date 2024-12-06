@@ -163,8 +163,6 @@
 | `-o`  | 输出目录 | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 
-某些服务需要 [设置环境变量](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)
-
 <h3 id="partial">全文或部分文档翻译</h3>
 
 - **全文翻译**
@@ -189,7 +187,7 @@ pdf2zh example.pdf -li en -lo ja
 
 <h3 id="services">使用不同的翻译服务</h3>
 
-下表列出了每个翻译服务所需的环境变量，在使用相应服务之前，请确保已设置这些变量
+下表列出了每个翻译服务所需的 [环境变量](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)，在使用相应服务之前，请确保已设置这些变量
 
 |**Translator**|**Service**|**Environment Variables**|**Default Values**|**Notes**|
 |-|-|-|-|-|

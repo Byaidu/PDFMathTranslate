@@ -163,8 +163,6 @@ In the following table, we list all advanced options for reference:
 | `-o`  | Output dir | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [Exceptions](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 
-Some services require setting [environmental variables](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4).
-
 <h3 id="partial">Full / partial document translation</h3>
 
 - Entire document
@@ -189,7 +187,7 @@ pdf2zh example.pdf -li en -lo ja
 
 <h3 id="services">Translate with Different Services</h3>
 
-The table below outlines the required environment variables for each translation service. Make sure to set them before using the respective service.
+The table below outlines the required [environment variables](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4) for each translation service. Make sure to set them before using the respective service.
 
 |**Translator**|**Service**|**Environment Variables**|**Default Values**|**Notes**|
 |-|-|-|-|-|
