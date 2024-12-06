@@ -85,33 +85,31 @@ class BingTranslator(BaseTranslator):
     name = "bing"
 
     def __init__(self, service, lang_out, lang_in, model):
-        lang_out = "zh" if lang_out == "auto" else lang_out
+        lang_out = "zh-Hans" if lang_out == "auto" else lang_out
         lang_in = "en" if lang_in == "auto" else lang_in
         super().__init__(service, lang_out, lang_in, model)
         self.session = requests.Session()
-        self.endpoint = "https://www.bing.com/ttranslatev3?isVertical=1"
+        self.endpoint = "https://www.bing.com/ttranslatev3"
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",  # noqa: E501
+        }
 
     def fineSID(self):
         resp = self.session.get("https://www.bing.com/translator")
-        result = re.findall(
+        ig = re.findall(r"\"ig\":\"(.*?)\"", resp.text)[0]
+        iid = re.findall(r"data-iid=\"(.*?)\"", resp.text)[-1]
+        key, token = re.findall(
             r"params_AbusePreventionHelper\s=\s\[(.*?),\"(.*?)\",", resp.text
         )[0]
-        return result
+        return ig, iid, key, token
 
     def translate(self, text):
-        sid = self.fineSID()
+        ig, iid, key, token = self.fineSID()
         resp = self.session.post(
-            self.endpoint,
-            data={
-                "fromLang": self.lang_in,
-                "text": text,
-                "to": self.lang_out,
-                "tryFetchingGenderDebiasedTranslations": True,
-                "token": sid[1],
-                "key": sid[0],
-            },
+            f"{self.endpoint}?IG={ig}&IID={iid}",
+            data={"fromLang": self.lang_in, "to": self.lang_out, "text": text, "token": token, "key": key},
+            headers=self.headers,
         )
-        print(resp.json())
         return resp.json()[0]["translations"][0]["text"]
 
 

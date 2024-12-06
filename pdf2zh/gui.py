@@ -6,6 +6,7 @@ from pdf2zh.pdf2zh import extract_text
 from pdf2zh.translator import (
     BaseTranslator,
     GoogleTranslator,
+    BingTranslator,
     DeepLTranslator,
     DeepLXTranslator,
     OllamaTranslator,
@@ -25,6 +26,7 @@ import cgi
 # five value, padding with None
 service_map: dict[str, BaseTranslator] = {
     "Google": GoogleTranslator,
+    "Bing": BingTranslator,
     "DeepL": DeepLTranslator,
     "DeepLX": DeepLXTranslator,
     "Ollama": OllamaTranslator,

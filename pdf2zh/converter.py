@@ -19,6 +19,7 @@ from pdf2zh import cache
 from pdf2zh.translator import (
     BaseTranslator,
     GoogleTranslator,
+    BingTranslator,
     DeepLTranslator,
     DeepLXTranslator,
     OllamaTranslator,
@@ -138,7 +139,7 @@ class TranslateConverter(PDFConverterEx):
         param = service.split(":", 1)
         service_name = param[0]
         service_model = param[1] if len(param) > 1 else None
-        for translator in [GoogleTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, OpenAITranslator, AzureTranslator, TencentTranslator]:
+        for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, OpenAITranslator, AzureTranslator, TencentTranslator]:
             if service_name == translator.name:
                 self.translator = translator(service, lang_out, lang_in, service_model)
         if not self.translator:
@@ -320,6 +321,8 @@ class TranslateConverter(PDFConverterEx):
 
         @retry(wait=wait_fixed(1))
         def worker(s: str):  # 多线程翻译
+            if re.match(r"^\$v\d+\$$", s):  # 公式不翻译
+                return s
             try:
                 hash_key_paragraph = cache.deterministic_hash(
                     (s, str(self.translator))
