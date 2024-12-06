@@ -121,29 +121,6 @@ class BingTranslator(BaseTranslator):
         return resp.json()[0]["translations"][0]["text"]
 
 
-class TencentTranslator(BaseTranslator):
-    # https://github.com/TencentCloud/tencentcloud-sdk-python
-    name = "tencent"
-    envs = {
-        "TENCENTCLOUD_SECRET_ID": None,
-        "TENCENTCLOUD_SECRET_KEY": None,
-    }
-
-    def __init__(self, service, lang_out, lang_in, model):
-        super().__init__(service, lang_out, lang_in, model)
-        cred = credential.DefaultCredentialProvider().get_credential()
-        self.client = TmtClient(cred, "ap-beijing")
-        self.req = TextTranslateRequest()
-        self.req.Source = self.lang_in
-        self.req.Target = self.lang_out
-        self.req.ProjectId = 0
-
-    def translate(self, text):
-        self.req.SourceText = text
-        resp: TextTranslateResponse = self.client.TextTranslate(self.req)
-        return resp.TargetText
-
-
 class DeepLTranslator(BaseTranslator):
     # https://github.com/DeepLcom/deepl-python
     name = "deepl"
@@ -306,3 +283,26 @@ class AzureTranslator(BaseTranslator):
         )
         translated_text = response[0].translations[0].text
         return translated_text
+
+
+class TencentTranslator(BaseTranslator):
+    # https://github.com/TencentCloud/tencentcloud-sdk-python
+    name = "tencent"
+    envs = {
+        "TENCENTCLOUD_SECRET_ID": None,
+        "TENCENTCLOUD_SECRET_KEY": None,
+    }
+
+    def __init__(self, service, lang_out, lang_in, model):
+        super().__init__(service, lang_out, lang_in, model)
+        cred = credential.DefaultCredentialProvider().get_credential()
+        self.client = TmtClient(cred, "ap-beijing")
+        self.req = TextTranslateRequest()
+        self.req.Source = self.lang_in
+        self.req.Target = self.lang_out
+        self.req.ProjectId = 0
+
+    def translate(self, text):
+        self.req.SourceText = text
+        resp: TextTranslateResponse = self.client.TextTranslate(self.req)
+        return resp.TargetText

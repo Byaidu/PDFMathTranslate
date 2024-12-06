@@ -9,20 +9,20 @@ English | [简体中文](README_zh-CN.md)
 <p>
   <!-- PyPI -->
   <a href="https://pypi.org/project/pdf2zh/">
-    <img src="https://img.shields.io/pypi/v/pdf2zh"/></a>
+    <img src="https://img.shields.io/pypi/v/pdf2zh"></a>
   <a href="https://pepy.tech/projects/pdf2zh">
     <img src="https://static.pepy.tech/badge/pdf2zh"></a>
   <a href="https://hub.docker.com/repository/docker/byaidu/pdf2zh">
     <img src="https://img.shields.io/docker/pulls/byaidu/pdf2zh"></a>
   <!-- License -->
   <a href="./LICENSE">
-    <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/></a>
+    <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"></a>
   <a href="https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker">
-    <img src="https://img.shields.io/badge/%F0%9F%A4%97-Online%20Demo-FF9E0D"/></a>
+    <img src="https://img.shields.io/badge/%F0%9F%A4%97-Online%20Demo-FF9E0D"></a>
   <a href="https://github.com/Byaidu/PDFMathTranslate/pulls">
-    <img src="https://img.shields.io/badge/contributions-welcome-green"/></a>
+    <img src="https://img.shields.io/badge/contributions-welcome-green"></a>
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
-    <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"/></a>
+    <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"></a>
 </p>
 
 </div>
@@ -131,17 +131,16 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
 
 For docker deployment on cloud service:
 
+<div>
 <a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" height="26"></a>
-
 <a href="https://render.com/deploy">
   <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Koyeb" height="26"></a>
-
 <a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
   <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="26"></a>
-
 <a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
   <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
+</div>
 
 <h2 id="usage">Advanced Options</h2>
 
@@ -190,76 +189,33 @@ pdf2zh example.pdf -li en -lo ja
 
 <h3 id="services">Translate with Different Services</h3>
 
-- **DeepL**
+The table below outlines the required environment variables for each translation service. Make sure to set them before using the respective service.
 
-  See [DeepL](https://support.deepl.com/hc/en-us/articles/360020695820-API-Key-for-DeepL-s-API)
+|**Translator**|**Service**|**Environment Variables**|**Default Values**|**Notes**|
+|-|-|-|-|-|
+|**Google (Default)**|`google`|None|N/A|None|
+|**Bing**|`bing`|None|N/A|None|
+|**DeepL**|`deepl`|`DEEPL_SERVER_URL`,`DEEPL_AUTH_KEY`|`https://api.deepl.com`, `[Your Key]`|See [DeepL](https://support.deepl.com/hc/en-us/articles/360020695820-API-Key-for-DeepL-s-API)|
+|**DeepLX**|`deeplx`|`DEEPLX_ENDPOINT`|`https://api.deepl.com/translate`|See [DeepLX](https://github.com/OwO-Network/DeepLX)|
+|**Ollama**|`ollama`|`OLLAMA_HOST`, `OLLAMA_MODEL`|`http://127.0.0.1:11434`, `gemma2`|See [Ollama](https://github.com/ollama/ollama)|
+|**OpenAI**|`openai`|`OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`|`https://api.openai.com/v1`, `[Your Key]`, `gpt-4o-mini`|See [OpenAI](https://platform.openai.com/docs/overview)|
+|**Zhipu**|`zhipu`|`ZHIPU_API_KEY`, `ZHIPU_MODEL`|`[Your Key]`, `glm-4-flash`|See [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)|
+|**Silicon**|`silicon`|`SILICON_API_KEY`, `SILICON_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-7B-Instruct`|See [SiliconCloud](https://docs.siliconflow.cn/quickstart)|
+|**Azure**|`azure`|`AZURE_ENDPOINT`, `AZURE_API_KEY`|`https://api.translator.azure.cn`, `[Your Key]`|See [Azure](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)|
+|**Tencent**|`tencent`|`TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`|`[Your ID]`, `[Your Key]`|See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)|
 
-  Set ENVs to construct an endpoint like: `{DEEPL_SERVER_URL}/translate`
-  - `DEEPL_SERVER_URL` (Optional), e.g., `export DEEPL_SERVER_URL=https://api.deepl.com`
-  - `DEEPL_AUTH_KEY`, e.g., `export DEEPL_AUTH_KEY=xxx`
+Use `-s service` or `-s service:model` to specify service:
 
-  ```bash
-  pdf2zh example.pdf -s deepl
-  ```
+```bash
+pdf2zh example.pdf -s openai:gpt-4o-mini
+```
 
-- **DeepLX**
+Or specify model with environment variables:
 
-  See [DeepLX](https://github.com/OwO-Network/DeepLX)
-
-  Set ENVs to construct an endpoint like: `{DEEPLX_SERVER_URL}/{DEEPLX_AUTH_KEY}/translate`
-  - `DEEPLX_SERVER_URL` (Optional), e.g., `export DEEPLX_SERVER_URL=https://api.deeplx.org`
-  - `DEEPLX_AUTH_KEY`, e.g., `export DEEPLX_AUTH_KEY=xxx`
-
-  ```bash
-  pdf2zh example.pdf -s deeplx
-  ```
-
-- **Ollama**
-
-  See [Ollama](https://github.com/ollama/ollama)
-
-  Set ENVs to construct an endpoint like: `{OLLAMA_HOST}/api/chat`
-  - `OLLAMA_HOST` (Optional), e.g., `export OLLAMA_HOST=https://localhost:11434`
-
-  ```bash
-  pdf2zh example.pdf -s ollama:gemma2
-  ```
-
-- **LLM with OpenAI compatible schemas (OpenAI / SiliconCloud / Zhipu)**
-
-  See [SiliconCloud](https://docs.siliconflow.cn/quickstart), [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)
-
-  Set ENVs to construct an endpoint like: `{OPENAI_BASE_URL}/chat/completions`
-  - `OPENAI_BASE_URL` (Optional), e.g., `export OPENAI_BASE_URL=https://api.openai.com/v1`
-  - `OPENAI_API_KEY`, e.g., `export OPENAI_API_KEY=xxx`
-
-  ```bash
-  pdf2zh example.pdf -s openai:gpt-4o-mini
-  ```
-
-- **Azure**
-
-  See [Azure Text Translation](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)
-
-  Following ENVs are required:
-  - `AZURE_APIKEY`, e.g., `export AZURE_APIKEY=xxx`
-  - `AZURE_ENDPOINT`, e.g, `export AZURE_ENDPOINT=https://api.translator.azure.cn/`
-  - `AZURE_REGION`, e.g., `export AZURE_REGION=chinaeast2`
-
-  ```bash
-  pdf2zh example.pdf -s azure
-  ```
-- **Tencent Machine Translation**
-
-  See [Tencent Machine Translation](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)
-
-  Following ENVs are required:
-  - `TENCENT_SECRET_ID`, e.g., `export TENCENT_SECRET_ID=AKIDxxx`
-  - `TENCENT_SECRET_KEY`, e.g, `export TENCENT_SECRET_KEY=xxx`
-
-  ```bash
-  pdf2zh example.pdf -s tencent
-  ```
+```bash
+set OPENAI_MODEL=gpt-4o-mini
+pdf2zh example.pdf -s openai
+```
 
 <h3 id="exceptions">Translate wih exceptions</h3>
 
