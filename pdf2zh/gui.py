@@ -12,91 +12,104 @@ import requests
 import cgi
 
 # Map service names to pdf2zh service options
+# five value, padding with None
 service_map = {
-    "Google": ("google", None, None),
-    "DeepL": ("deepl", "DEEPL_SERVER_URL", "DEEPL_AUTH_KEY"),
-    "DeepLX": ("deeplx", "DEEPLX_SERVER_URL", "DEEPLX_AUTH_KEY"),
-    "Ollama": ("ollama", None, None),
-    "OpenAI": ("openai", "OPENAI_API_KEY", None),
-    "Azure": ("azure", "AZURE_APIKEY", "AZURE_ENDPOINT", "AZURE_REGION"),
-    "Tencent": ("tencent", "TENCENT_SECRET_KEY", "TENCENT_SECRET_ID"),
+    "Google": (None, None, None),
+    "DeepL": ("DEEPL_SERVER_URL", "DEEPL_AUTH_KEY", None),
+    "DeepLX": ("DEEPLX_SERVER_URL", "DEEPLX_AUTH_KEY", None),
+    "Ollama": ("OLLAMA_HOST", None, None),
+    "OpenAI": ("OPENAI_BASE_URL", None, "OPENAI_API_KEY"),
+    "Azure": ("AZURE_APIKEY", "AZURE_ENDPOINT", "AZURE_REGION"),
+    "Tencent": ("TENCENT_SECRET_KEY", "TENCENT_SECRET_ID", None),
 }
 service_config = {
-    "google": {
+    "Google": {
         "apikey_content": {"visible": False},
         "apikey2_visibility": {"visible": False},
         "model_visibility": {"visible": False},
         "apikey3_visibility": {"visible": False},
     },
-    "deepl": {
+    "DeepL": {
         "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[0]),
+            "label": s[0],
+        },
+        "apikey2_visibility": lambda s: {
             "visible": True,
             "value": os.environ.get(s[1]),
             "label": s[1],
         },
-        "apikey2_visibility": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[2]),
-            "label": s[2],
-        },
         "model_visibility": {"visible": False},
         "apikey3_visibility": {"visible": False},
     },
-    "deeplx": {
+    "DeepLX": {
         "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[0]),
+            "label": s[0],
+        },
+        "apikey2_visibility": lambda s: {
             "visible": True,
             "value": os.environ.get(s[1]),
             "label": s[1],
         },
-        "apikey2_visibility": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[2]),
-            "label": s[2],
-        },
         "model_visibility": {"visible": False},
         "apikey3_visibility": {"visible": False},
     },
-    "ollama": {
-        "apikey_content": {"visible": False},
+    "Ollama": {
+        "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[0]),
+            "label": s[0],
+        },
         "apikey2_visibility": {"visible": False},
         "model_visibility": lambda s: {"visible": True, "value": s[1]},
         "apikey3_visibility": {"visible": False},
     },
-    "openai": {
+    "OpenAI": {
         "apikey_content": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[1]),
-            "label": s[1],
-        },
-        "apikey2_visibility": {"visible": False},
-        "model_visibility": {"visible": True, "value": "gpt-4o"},
-        "apikey3_visibility": {"visible": False},
-    },
-    "azure": {
-        "apikey_content": lambda s: {
-            "visible": True,
-            "value": os.environ.get(s[1]),
-            "label": s[1],
-        },
-        "apikey2_visibility": lambda s: {
             "visible": True,
             "value": os.environ.get(s[2]),
             "label": s[2],
         },
-        "model_visibility": {"visible": False},
-        "apikey3_visibility": lambda s: {
+        "apikey2_visibility": lambda s: {
             "visible": True,
-            "value": os.environ.get(s[3]),
-            "label": s[3],
+            "value": os.environ.get(s[0]),
+            "label": s[0],
         },
+        "model_visibility": {"visible": True, "value": "gpt-4o"},
+        "apikey3_visibility": {"visible": False},
     },
-    "tencent": {
+    "Azure": {
         "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[0]),
+            "label": s[0],
+        },
+        "apikey2_visibility": lambda s: {
             "visible": True,
             "value": os.environ.get(s[1]),
             "label": s[1],
         },
-        "apikey2_visibility": lambda s: {"visible": True, "value": "", "label": s[2]},
+        "model_visibility": {"visible": False},
+        "apikey3_visibility": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[2]),
+            "label": s[2],
+        },
+    },
+    "Tencent": {
+        "apikey_content": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[0]),
+            "label": s[0],
+        },
+        "apikey2_visibility": lambda s: {
+            "visible": True,
+            "value": os.environ.get(s[1]),
+            "label": s[1],
+        },
         "model_visibility": {"visible": False},
         "apikey3_visibility": {"visible": False},
     },
@@ -230,41 +243,13 @@ def translate(
     file_zh = output / f"{filename}-zh.pdf"
     file_dual = output / f"{filename}-dual.pdf"
 
-    selected_service = service_map[service][0]
+    selected_service = service
     selected_page = page_map[page_range]
     lang_from = lang_map[lang_from]
     lang_to = lang_map[lang_to]
 
-    if selected_service == "google":
-        lang_from = "zh-CN" if lang_from == "zh" else lang_from
-        lang_to = "zh-CN" if lang_to == "zh" else lang_to
-    elif selected_service == "deepl":
-        if service_map[service][1]:
-            os.environ.setdefault(service_map[service][1], apikey)
-        if service_map[service][2]:
-            os.environ.setdefault(service_map[service][2], apikey2)
-    elif selected_service == "deeplx":
-        if service_map[service][1]:
-            os.environ.setdefault(service_map[service][1], apikey)
-        if service_map[service][2]:
-            os.environ.setdefault(service_map[service][2], apikey2)
-    elif selected_service == "openai":
-        if service_map[service][1]:
-            os.environ.setdefault(service_map[service][1], apikey)
-    elif selected_service == "azure":
-        if service_map[service][1]:
-            os.environ.setdefault(service_map[service][1], apikey)
-        if service_map[service][2]:
-            os.environ.setdefault(service_map[service][2], apikey2)
-        if service_map[service][3]:
-            os.environ.setdefault(service_map[service][3], apikey3)
-    elif selected_service == "tencent":
-        if service_map[service][1]:
-            os.environ.setdefault(service_map[service][1], apikey)
-        if service_map[service][2]:
-            os.environ.setdefault(service_map[service][2], apikey2)
-    else:
-        raise gr.Error("Strange Service")
+    VariablesSetter = TranslationVariables(service_map, apikey, apikey2, apikey3)
+    VariablesSetter.process_service(lang_from, lang_to, selected_service)
 
     print(f"Files before translation: {os.listdir(output)}")
 
@@ -303,6 +288,44 @@ def translate(
         gr.update(visible=True),
         gr.update(visible=True),
     )
+
+
+class TranslationVariables:
+    def __init__(self, service_map, apikey, apikey2=None, apikey3=None):
+        self.service_map = service_map
+        self.apikey = apikey
+        self.apikey2 = apikey2
+        self.apikey3 = apikey3
+
+    def set_language(self, lang_from, lang_to, selected_service):
+        """Sets the language parameters based on the selected service."""
+        if selected_service == "google":
+            lang_from = "zh-CN" if lang_from == "zh" else lang_from
+            lang_to = "zh-CN" if lang_to == "zh" else lang_to
+        return lang_from, lang_to
+
+    def set_environment_variables(self, selected_service):
+        """Sets the environment variables based on the selected service."""
+        print(self.service_map, selected_service)
+        if selected_service in self.service_map:
+            service_info = self.service_map[selected_service]
+            if service_info[0]:
+                os.environ.setdefault(service_info[0], self.apikey)
+                print(service_info[0], self.apikey)
+            if service_info[1]:
+                os.environ.setdefault(service_info[1], self.apikey2)
+                print(service_info[1], self.apikey2)
+            if service_info[2]:
+                os.environ.setdefault(service_info[2], self.apikey3)
+                print(service_info[2], self.apikey3)
+        else:
+            raise gr.Error("Strange Service")
+
+    def process_service(self, lang_from, lang_to, selected_service):
+        """Main processing method for the selected service."""
+        lang_from, lang_to = self.set_language(lang_from, lang_to, selected_service)
+        self.set_environment_variables(selected_service)
+        return lang_from, lang_to
 
 
 # Global setup
@@ -464,7 +487,7 @@ with gr.Blocks(
             def env_var_checker(env_var_name: str) -> str:
                 envvarflag = True
                 envs_status = ""
-                for envvar in env_var_name[1:]:
+                for envvar in env_var_name:
                     if envvar:
                         if not os.environ.get(envvar):
                             envs_status += f"<span class='env-warning'>- Warning: environmental not found or error ({envvar}).</span><br>"
@@ -485,10 +508,8 @@ with gr.Blocks(
                 return details_wrapper(envs_status)
 
             def on_select_service(service, evt: gr.EventData):
-                service_type = service_map[service][0]
-
-                if service_type in service_config:
-                    config = service_config[service_type]
+                if service in service_config:
+                    config = service_config[service]
                     apikey_content = gr.update(
                         **(
                             config["apikey_content"](service_map[service])
