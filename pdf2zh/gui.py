@@ -154,7 +154,7 @@ def translate(
     lang_to = lang_map[lang_to]
 
     for i, env in enumerate(translator.envs.items()):
-        os.environ[env[0]]=envs[i]
+        os.environ[env[0]] = envs[i]
 
     print(f"Files before translation: {os.listdir(output)}")
 
