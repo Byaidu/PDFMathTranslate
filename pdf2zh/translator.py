@@ -23,8 +23,13 @@ def remove_control_characters(s):
 class BaseTranslator:
     name = "base"
     envs = {}
+    lang_map = {}
 
     def __init__(self, service, lang_out, lang_in, model):
+        lang_out = "zh" if lang_out == "auto" else lang_out
+        lang_in = "en" if lang_in == "auto" else lang_in
+        lang_out = self.lang_map.get(lang_out, lang_out)
+        lang_in = self.lang_map.get(lang_in, lang_in)
         self.service = service
         self.lang_out = lang_out
         self.lang_in = lang_in
@@ -51,6 +56,7 @@ class BaseTranslator:
 
 class GoogleTranslator(BaseTranslator):
     name = "google"
+    lang_map = {"zh": "zh-CN"}
 
     def __init__(self, service, lang_out, lang_in, model):
         lang_out = "zh-CN" if lang_out == "auto" else lang_out
@@ -83,6 +89,7 @@ class BingTranslator(BaseTranslator):
     # https://github.com/immersive-translate/old-immersive-translate/blob/6df13da22664bea2f51efe5db64c63aca59c4e79/src/background/translationService.js
     # TODO: IID & IG
     name = "bing"
+    lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, service, lang_out, lang_in, model):
         lang_out = "zh-Hans" if lang_out == "auto" else lang_out
@@ -104,6 +111,7 @@ class BingTranslator(BaseTranslator):
         return ig, iid, key, token
 
     def translate(self, text):
+        text = text[:1000]  # bing translate max length
         ig, iid, key, token = self.fineSID()
         resp = self.session.post(
             f"{self.endpoint}?IG={ig}&IID={iid}",
@@ -151,6 +159,7 @@ class DeepLTranslator(BaseTranslator):
         "DEEPL_SERVER_URL": "https://api.deepl.com",
         "DEEPL_AUTH_KEY": None,
     }
+    lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, service, lang_out, lang_in, model):
         lang_out = "zh" if lang_out == "auto" else lang_out
@@ -174,6 +183,7 @@ class DeepLXTranslator(BaseTranslator):
     envs = {
         "DEEPLX_ENDPOINT": "https://api.deepl.com/translate",
     }
+    lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, service, lang_out, lang_in, model):
         lang_out = "zh" if lang_out == "auto" else lang_out
@@ -254,6 +264,7 @@ class AzureTranslator(BaseTranslator):
         "AZURE_ENDPOINT": "https://api.translator.azure.cn",
         "AZURE_APIKEY": None,
     }
+    lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, service, lang_out, lang_in, model):
         lang_out = "zh-Hans" if lang_out == "auto" else lang_out
