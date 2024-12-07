@@ -1,5 +1,5 @@
 from pdfminer.pdfinterp import PDFGraphicState, PDFResourceManager
-from pdfminer.pdffont import PDFFont, PDFCIDFont
+from pdfminer.pdffont import PDFCIDFont
 from pdfminer.converter import PDFConverter
 from pdfminer.pdffont import PDFUnicodeNotDefined
 from pdfminer.utils import apply_matrix_pt, mult_matrix
@@ -105,13 +105,12 @@ class PDFConverterEx(PDFConverter):
 
 
 class Paragraph:
-    def __init__(self, y, x, x0, x1, size, font, brk):
+    def __init__(self, y, x, x0, x1, size, brk):
         self.y: float = y  # 初始纵坐标
         self.x: float = x  # 初始横坐标
         self.x0: float = x0  # 左边界
         self.x1: float = x1  # 右边界
         self.size: float = size  # 字体大小
-        self.font: PDFFont = font  # 字体
         self.brk: bool = brk  # 换行标记
 
 
@@ -258,21 +257,14 @@ class TranslateConverter(PDFConverterEx):
                             pstk[-1].brk = True
                     else:                           # 根据当前字符构建一个新的段落
                         sstk.append("")
-                        pstk.append(Paragraph(child.y0, child.x0, child.x0, child.x0, child.size, child.font, False))
+                        pstk.append(Paragraph(child.y0, child.x0, child.x0, child.x0, child.size, False))
                 if not cur_v:                                               # 文字入栈
                     if (                                                    # 根据当前字符修正段落属性
                         child.size > pstk[-1].size / 0.79                   # 1. 当前字符显著比段落字体大
                         or len(sstk[-1].strip()) == 1                       # 2. 当前字符为段落第二个文字（考虑首字母放大的情况）
-                        or vflag(pstk[-1].font.fontname, "")                # 3. 段落字体为公式字体
-                        or re.match(                                        # 4. 段落字体为粗体
-                            r"(.*Medi|.*Bold)",
-                            pstk[-1].font.fontname,
-                            re.IGNORECASE,
-                        )
                     ):
                         pstk[-1].y -= child.size - pstk[-1].size             # hack 这个段落纵向位置的修正有问题，不过先凑合用吧
                         pstk[-1].size = child.size
-                        pstk[-1].font = child.font
                     sstk[-1] += child.get_text()
                 else:                                                       # 公式入栈
                     if (                                                    # 根据公式左侧的文字修正公式的纵向偏移
@@ -358,18 +350,17 @@ class TranslateConverter(PDFConverterEx):
         _x, _y = 0, 0
         for id, new in enumerate(news):
             x: float = pstk[id].x           # 段落初始横坐标
-            y: float = pstk[id].y           # 段落上边界
+            y: float = pstk[id].y           # 段落初始纵坐标
             x0: float = pstk[id].x0         # 段落左边界
             x1: float = pstk[id].x1         # 段落右边界
             size: float = pstk[id].size     # 段落字体大小
-            font: PDFFont = pstk[id].font   # 段落字体
-            brk: bool = pstk[id].brk        # 段落属性
+            brk: bool = pstk[id].brk        # 段落换行标记
             cstk: str = ""                  # 当前文字栈
-            fcur: str = None                # 当前字体ID
+            fcur: str = None                # 当前字体 ID
             tx = x
             fcur_ = fcur
             ptr = 0
-            log.debug(f"< {y} {x} {x0} {x1} {size} {font.fontname} {brk} > {sstk[id]} | {new}")
+            log.debug(f"< {y} {x} {x0} {x1} {size} {brk} > {sstk[id]} | {new}")
             while ptr < len(new):
                 vy_regex = re.match(
                     r"\$?\s*v([\d\s]+)\$", new[ptr:], re.IGNORECASE
@@ -387,12 +378,6 @@ class TranslateConverter(PDFConverterEx):
                 else:  # 加载文字
                     ch = new[ptr]
                     fcur_ = None
-                    # 原字体编码容易出问题，这里直接放弃掉
-                    # try:
-                    #     if font.widths.get(ord(ch)) and font.to_unichr(ord(ch))==ch:
-                    #         fcur_=self.fontid[font] # 原字体
-                    # except:
-                    #     pass
                     try:
                         if fcur_ is None and self.fontmap["tiro"].to_unichr(ord(ch)) == ch:
                             fcur_ = "tiro"  # 默认拉丁字体
@@ -400,7 +385,6 @@ class TranslateConverter(PDFConverterEx):
                         pass
                     if fcur_ is None:
                         fcur_ = self.resfont  # 默认非拉丁字体
-                    # print(self.fontid[font],fcur_,ch,font.char_width(ord(ch)))
                     if fcur_ == 'noto':
                         adv = self.noto.char_lengths(ch, size)[0]
                     else:
