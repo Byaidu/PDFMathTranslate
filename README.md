@@ -87,7 +87,7 @@ We provide three methods for using this project: [Commandline](#cmd), [Portable]
 
 No need to pre-install Python environment
 
-Download and double-click to run [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat)
+Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat) and double-click to run
 
 <h3 id="gui">Method III. GUI</h3>
 

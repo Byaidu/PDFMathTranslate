@@ -87,7 +87,7 @@
 
 无需预先安装 Python 环境
 
-下载并双击运行 [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat)
+下载 [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat) 并双击运行
 
 <h3 id="gui">方法三、图形交互界面</h3>
 
