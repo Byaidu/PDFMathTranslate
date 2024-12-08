@@ -4,6 +4,7 @@ setlocal enabledelayedexpansion
 set PYTHON_URL=https://www.python.org/ftp/python/3.12.7/python-3.12.7-embed-amd64.zip
 set PIP_URL=https://bootstrap.pypa.io/get-pip.py
 set HF_ENDPOINT=https://hf-mirror.com
+set PIP_MIRROR=https://mirrors.aliyun.com/pypi/simple
 
 if not exist pdf2zh_dist/python.exe (
     powershell -Command "& {Invoke-WebRequest -Uri !PYTHON_URL! -OutFile python.zip}"
@@ -19,7 +20,7 @@ if not exist Scripts/pip.exe (
 )
 path Scripts
 
-pip install --no-warn-script-location --upgrade pdf2zh
+pip install --no-warn-script-location --upgrade pdf2zh -i !PIP_MIRROR!
 pdf2zh -i
 
 pause
