@@ -231,7 +231,11 @@ class TranslateConverter(PDFConverterEx):
                 if (                                                        # 判定当前公式是否结束
                     not cur_v                                               # 1. 当前字符不属于公式
                     or cls != xt_cls                                        # 2. 当前字符与前一个字符不属于同一段落
-                    or (abs(child.x0 - xt.x0) > vmax and cls != 0)          # 3. 段落内换行，可能是一长串斜体的段落，也可能是段内分式换行，这里设个阈值进行区分
+                    # or (abs(child.x0 - xt.x0) > vmax and cls != 0)        # 3. 段落内换行，可能是一长串斜体的段落，也可能是段内分式换行，这里设个阈值进行区分
+                    # 禁止纯公式（代码）段落换行，直到文字开始再重开文字段落，保证只存在两种情况
+                    # A. 纯公式（代码）段落（锚定绝对位置）sstk[-1]=="" -> sstk[-1]=="$v*$"
+                    # B. 文字开头段落（排版相对位置）sstk[-1]!=""
+                    or (sstk[-1] != "" and abs(child.x0 - xt.x0) > vmax)    # 因为 cls==xt_cls==0 一定有 sstk[-1]==""，所以这里不需要再判定 cls!=0
                 ):
                     if vstk:
                         if (                                                # 根据公式右侧的文字修正公式的纵向偏移
@@ -240,6 +244,8 @@ class TranslateConverter(PDFConverterEx):
                             and child.x0 > max([vch.x0 for vch in vstk])    # 3. 当前字符在公式右侧
                         ):
                             vfix = vstk[0].y0 - child.y0
+                        if sstk[-1] == "":
+                            xt_cls = -1 # 禁止纯公式段落（sstk[-1]=="$v*$"）的后续连接，但是要考虑新字符和后续字符的连接，所以这里修改的是上个字符的类别
                         sstk[-1] += f"$v{len(var)}$"
                         var.append(vstk)
                         varl.append(vlstk)
@@ -263,7 +269,7 @@ class TranslateConverter(PDFConverterEx):
                         child.size > pstk[-1].size / 0.79                   # 1. 当前字符显著比段落字体大
                         or len(sstk[-1].strip()) == 1                       # 2. 当前字符为段落第二个文字（考虑首字母放大的情况）
                     ):
-                        pstk[-1].y -= child.size - pstk[-1].size             # hack 这个段落纵向位置的修正有问题，不过先凑合用吧
+                        pstk[-1].y -= child.size - pstk[-1].size            # 修正段落初始纵坐标，假设两个不同大小字符的上边界对齐
                         pstk[-1].size = child.size
                     sstk[-1] += child.get_text()
                 else:                                                       # 公式入栈

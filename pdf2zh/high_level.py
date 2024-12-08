@@ -48,13 +48,11 @@ def extract_text_to_fp(
 
     parser = PDFParser(inf)
     doc = PDFDocument(parser, password=password)
-    with tqdm.tqdm(
-        enumerate(PDFPage.create_pages(doc)),
-        total=total_pages,
-    ) as progress:
-        for pageno, page in progress:
+    with tqdm.tqdm(total=total_pages) as progress:
+        for pageno, page in enumerate(PDFPage.create_pages(doc)):
             if pages and (pageno not in pages):
                 continue
+            progress.update()
             if callback:
                 callback(progress)
             page.pageno = pageno
