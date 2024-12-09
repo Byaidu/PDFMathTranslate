@@ -194,7 +194,7 @@ The table below outlines the required [environment variables](https://chatgpt.co
 |**Google (Default)**|`google`|None|N/A|None|
 |**Bing**|`bing`|None|N/A|None|
 |**DeepL**|`deepl`|`DEEPL_SERVER_URL`,`DEEPL_AUTH_KEY`|`https://api.deepl.com`, `[Your Key]`|See [DeepL](https://support.deepl.com/hc/en-us/articles/360020695820-API-Key-for-DeepL-s-API)|
-|**DeepLX**|`deeplx`|`DEEPLX_ENDPOINT`|`https://api.deepl.com/translate`|See [DeepLX](https://github.com/OwO-Network/DeepLX)|
+|**DeepLX**|`deeplx`|`DEEPLX_ENDPOINT`,`DEEPLX_AUTH_KEY`|`https://api.deepl.com/translate`, `[Your Key]`|See [DeepLX](https://github.com/OwO-Network/DeepLX)|
 |**Ollama**|`ollama`|`OLLAMA_HOST`, `OLLAMA_MODEL`|`http://127.0.0.1:11434`, `gemma2`|See [Ollama](https://github.com/ollama/ollama)|
 |**OpenAI**|`openai`|`OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`|`https://api.openai.com/v1`, `[Your Key]`, `gpt-4o-mini`|See [OpenAI](https://platform.openai.com/docs/overview)|
 |**Zhipu**|`zhipu`|`ZHIPU_API_KEY`, `ZHIPU_MODEL`|`[Your Key]`, `glm-4-flash`|See [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)|
