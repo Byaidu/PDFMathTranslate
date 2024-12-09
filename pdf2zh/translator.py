@@ -160,7 +160,7 @@ class DeepLXTranslator(BaseTranslator):
         auth_key = os.getenv("DEEPLX_AUTH_KEY", self.envs["DEEPLX_AUTH_KEY"])
         self.header = {"Content-Type": "application/json"}
         if auth_key:
-            self.header["Authorization"] = auth_key
+            self.header["Authorization"] = f"Bearer {auth_key}"
 
     def translate(self, text):
         resp = self.session.post(
