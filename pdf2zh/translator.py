@@ -223,13 +223,12 @@ class AzureOpenAITranslator(BaseTranslator):
     envs = {
         "AZURE_OPENAI_BASE_URL": None, # e.g. "https://xxx.openai.azure.com"
         "AZURE_OPENAI_API_KEY": None,
-        "AZURE_OPENAI_MODEL": "gpt-4o-mini",
-        "AZURE_OPENAI_API_VERSION": "2024-06-01",
+        "AZURE_OPENAI_MODEL": "gpt-4o-mini"
     }
 
     def __init__(self, service, lang_out, lang_in, model, base_url=None, api_key=None):
         base_url = os.getenv("AZURE_OPENAI_BASE_URL", self.envs["AZURE_OPENAI_BASE_URL"])
-        api_version = os.getenv("AZURE_OPENAI_API_VERSION", self.envs["AZURE_OPENAI_API_VERSION"])
+        api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-06-01")
         if not model:
             model = os.getenv("AZURE_OPENAI_MODEL", self.envs["AZURE_OPENAI_MODEL"])
         super().__init__(service, lang_out, lang_in, model)
