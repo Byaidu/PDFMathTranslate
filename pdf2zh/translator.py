@@ -149,7 +149,7 @@ class DeepLXTranslator(BaseTranslator):
     name = "deeplx"
     envs = {
         "DEEPLX_ENDPOINT": "https://api.deepl.com/translate",
-        "DEEPLX_AUTH_KEY": None,
+        "DEEPLX_ACCESS_TOKEN": None,
     }
     lang_map = {"zh": "zh-Hans"}
 
@@ -157,10 +157,9 @@ class DeepLXTranslator(BaseTranslator):
         super().__init__(service, lang_out, lang_in, model)
         self.endpoint = os.getenv("DEEPLX_ENDPOINT", self.envs["DEEPLX_ENDPOINT"])
         self.session = requests.Session()
-        auth_key = os.getenv("DEEPLX_AUTH_KEY", self.envs["DEEPLX_AUTH_KEY"])
-        self.header = {"Content-Type": "application/json"}
+        auth_key = os.getenv("DEEPLX_ACCESS_TOKEN", self.envs["DEEPLX_ACCESS_TOKEN"])
         if auth_key:
-            self.header["Authorization"] = f"Bearer {auth_key}"
+            self.endpoint = f"{self.endpoint}?token={auth_key}"
 
     def translate(self, text):
         resp = self.session.post(
@@ -170,7 +169,6 @@ class DeepLXTranslator(BaseTranslator):
                 "target_lang": self.lang_out,
                 "text": text,
             },
-            headers=self.header,
         )
         return resp.json()["data"]
 
