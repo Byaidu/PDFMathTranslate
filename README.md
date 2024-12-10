@@ -246,6 +246,10 @@ pdf2zh example.pdf -t 1
 
 - [ ] Support non-PDF/A files
 
+- [ ] Provide API interface
+
+- [ ] Plugins of [Zotero](https://github.com/zotero/zotero) and [Obsidian](https://github.com/obsidianmd/obsidian-releases)
+
 <h2 id="acknowledgement">Acknowledgements</h2>
 
 - Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
