@@ -285,6 +285,12 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Enable Gradio Share",
     )
+    parse_params.add_argument(
+        "--interface",
+        "-X",
+        action="store_true",
+        help="test interface.",
+    )
 
     return parser
 
@@ -314,11 +320,15 @@ def main(args: Optional[List[str]] = None) -> int:
         for file in missing_files:
             print(f"  {file}", file=sys.stderr)
         return -1
-    if parsed_args.interactive:
-        from pdf2zh.gui import setup_gui
+    
+    from pdf2zh.gui import setup_gui
 
-        setup_gui(parsed_args.share)
-        return 0
+    setup_gui(parsed_args.share)
+    # if parsed_args.interface:
+    #     from pdf2zh.interface import setup_interface
+
+    #     setup_interface(parsed_args.share)
+    #     return 0
 
     extract_text(**vars(parsed_args))
     return 0
