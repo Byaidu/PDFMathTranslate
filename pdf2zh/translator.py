@@ -216,6 +216,33 @@ class OpenAITranslator(BaseTranslator):
             messages=self.prompt(text),
         )
         return response.choices[0].message.content.strip()
+    
+
+class AzureOpenAITranslator(BaseTranslator):
+    name = "azure-openai"
+    envs = {
+        "AZURE_OPENAI_BASE_URL": None, # e.g. "https://xxx.openai.azure.com"
+        "AZURE_OPENAI_API_KEY": None,
+        "AZURE_OPENAI_MODEL": "gpt-4o-mini",
+        "AZURE_OPENAI_API_VERSION": "2024-06-01",
+    }
+
+    def __init__(self, service, lang_out, lang_in, model, base_url=None, api_key=None):
+        base_url = os.getenv("AZURE_OPENAI_BASE_URL", self.envs["AZURE_OPENAI_BASE_URL"])
+        api_version = os.getenv("AZURE_OPENAI_API_VERSION", self.envs["AZURE_OPENAI_API_VERSION"])
+        if not model:
+            model = os.getenv("AZURE_OPENAI_MODEL", self.envs["AZURE_OPENAI_MODEL"])
+        super().__init__(service, lang_out, lang_in, model)
+        self.options = {"temperature": 0}  
+        self.client = openai.AzureOpenAI(azure_endpoint=base_url, azure_deployment=model, api_version=api_version, api_key=api_key)
+
+    def translate(self, text) -> str:
+        response = self.client.chat.completions.create(
+            model=self.model,
+            **self.options,
+            messages=self.prompt(text),
+        )
+        return response.choices[0].message.content.strip()    
 
 
 class ZhipuTranslator(OpenAITranslator):

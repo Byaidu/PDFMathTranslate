@@ -17,6 +17,7 @@ import unicodedata
 from tenacity import retry, wait_fixed
 from pdf2zh import cache
 from pdf2zh.translator import (
+    AzureOpenAITranslator,
     BaseTranslator,
     GoogleTranslator,
     BingTranslator,
@@ -140,7 +141,8 @@ class TranslateConverter(PDFConverterEx):
         param = service.split(":", 1)
         service_name = param[0]
         service_model = param[1] if len(param) > 1 else None
-        for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, OpenAITranslator, ZhipuTranslator, SiliconTranslator, AzureTranslator, TencentTranslator]:
+        for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, AzureOpenAITranslator,
+                           OpenAITranslator, ZhipuTranslator, SiliconTranslator, AzureTranslator, TencentTranslator]:
             if service_name == translator.name:
                 self.translator = translator(service, lang_out, lang_in, service_model)
         if not self.translator:
