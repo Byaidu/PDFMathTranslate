@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 from pdf2zh import __version__
-from pdf2zh.pdf2zh import extract_text
+from pdf2zh.high_level import translate
 from pdf2zh.translator import (
     BaseTranslator,
     GoogleTranslator,
@@ -111,7 +111,7 @@ def download_with_limit(url, save_path, size_limit):
     return save_path / filename
 
 
-def translate(
+def translate_file(
     file_type,
     file_input,
     link_input,
@@ -174,7 +174,7 @@ def translate(
         "callback": progress_bar,
     }
     print(param)
-    extract_text(**param)
+    translate(**param)
     print(f"Files after translation: {os.listdir(output)}")
 
     if not file_zh.exists() or not file_dual.exists():
@@ -405,7 +405,7 @@ with gr.Blocks(
     )
 
     translate_btn.click(
-        translate,
+        translate_file,
         inputs=[
             file_type,
             file_input,
