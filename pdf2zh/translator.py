@@ -82,7 +82,6 @@ class GoogleTranslator(BaseTranslator):
 
 class BingTranslator(BaseTranslator):
     # https://github.com/immersive-translate/old-immersive-translate/blob/6df13da22664bea2f51efe5db64c63aca59c4e79/src/background/translationService.js
-    # TODO: IID & IG
     name = "bing"
     lang_map = {"zh": "zh-Hans"}
 

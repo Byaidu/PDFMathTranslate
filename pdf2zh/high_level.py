@@ -19,6 +19,7 @@ import urllib.request
 import requests
 import tempfile
 import os
+import io
 
 model = DocLayoutModel.load_available()
 
@@ -78,8 +79,7 @@ def translate_patch(
     vfont: str = "",
     vchar: str = "",
     thread: int = 0,
-    doc_en: Document = None,
-    model=None,
+    doc_zh: Document = None,
     lang_in: str = "",
     lang_out: str = "",
     service: str = "",
@@ -112,7 +112,7 @@ def translate_patch(
             if callback:
                 callback(progress)
             page.pageno = pageno
-            pix = doc_en[page.pageno].get_pixmap()
+            pix = doc_zh[page.pageno].get_pixmap()
             image = np.fromstring(pix.samples, np.uint8).reshape(
                 pix.height, pix.width, 3
             )[:, :, ::-1]
@@ -143,10 +143,10 @@ def translate_patch(
                     box[y0:y1, x0:x1] = 0
             layout[page.pageno] = box
             # 新建一个 xref 存放新指令流
-            page.page_xref = doc_en.get_new_xref()  # hack 插入页面的新 xref
-            doc_en.update_object(page.page_xref, "<<>>")
-            doc_en.update_stream(page.page_xref, b"")
-            doc_en[page.pageno].set_contents(page.page_xref)
+            page.page_xref = doc_zh.get_new_xref()  # hack 插入页面的新 xref
+            doc_zh.update_object(page.page_xref, "<<>>")
+            doc_zh.update_stream(page.page_xref, b"")
+            doc_zh[page.pageno].set_contents(page.page_xref)
             interpreter.process_page(page)
 
     device.close()
@@ -220,51 +220,51 @@ def translate(
             font_list.append(("china-ss", None))
 
         doc_en = Document(file)
-        page_count = doc_en.page_count
+        if doc_en.is_encrypted:
+            doc_en.authenticate(password)
+        doc_zh = Document(doc_en)
+        page_count = doc_zh.page_count
         # font_list = [("china-ss", None), ("tiro", None)]
         font_id = {}
-        for page in doc_en:
+        for page in doc_zh:
             for font in font_list:
                 font_id[font[0]] = page.insert_font(font[0], font[1])
-        xreflen = doc_en.xref_length()
+        xreflen = doc_zh.xref_length()
         for xref in range(1, xreflen):
             for label in ["Resources/", ""]:  # 可能是基于 xobj 的 res
                 try:  # xref 读写可能出错
-                    font_res = doc_en.xref_get_key(xref, f"{label}Font")
+                    font_res = doc_zh.xref_get_key(xref, f"{label}Font")
                     if font_res[0] == "dict":
                         for font in font_list:
-                            font_exist = doc_en.xref_get_key(
+                            font_exist = doc_zh.xref_get_key(
                                 xref, f"{label}Font/{font[0]}"
                             )
                             if font_exist[0] == "null":
-                                doc_en.xref_set_key(
+                                doc_zh.xref_set_key(
                                     xref,
                                     f"{label}Font/{font[0]}",
                                     f"{font_id[font[0]]} 0 R",
                                 )
                 except Exception:
                     pass
-        doc_en.save(Path(output) / f"{filename}-en.pdf")
 
-        with open(Path(output) / f"{filename}-en.pdf", "rb") as fp:
-            obj_patch: dict = translate_patch(fp, model=model, **locals())
+        fp = io.BytesIO()
+        doc_zh.save(fp)
+        obj_patch: dict = translate_patch(fp, **locals())
 
         for obj_id, ops_new in obj_patch.items():
             # ops_old=doc_en.xref_stream(obj_id)
             # print(obj_id)
             # print(ops_old)
             # print(ops_new.encode())
-            doc_en.update_stream(obj_id, ops_new.encode())
+            doc_zh.update_stream(obj_id, ops_new.encode())
 
-        doc_zh = doc_en
-        doc_dual = Document(Path(output) / f"{filename}-en.pdf")
-        doc_dual.insert_file(doc_zh)
+        doc_en.insert_file(doc_zh)
         for id in range(page_count):
-            doc_dual.move_page(page_count + id, id * 2 + 1)
+            doc_en.move_page(page_count + id, id * 2 + 1)
         doc_zh.save(Path(output) / f"{filename}-zh.pdf", deflate=1)
-        doc_dual.save(Path(output) / f"{filename}-dual.pdf", deflate=1)
+        doc_en.save(Path(output) / f"{filename}-dual.pdf", deflate=1)
         doc_zh.close()
-        doc_dual.close()
-        os.remove(Path(output) / f"{filename}-en.pdf")
+        doc_en.close()
 
     return
