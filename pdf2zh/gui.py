@@ -146,8 +146,8 @@ def translate_file(
         )
 
     filename = os.path.splitext(os.path.basename(file_path))[0]
-    file_en = output / f"{filename}.pdf"
-    file_zh = output / f"{filename}-zh.pdf"
+    file_raw = output / f"{filename}.pdf"
+    file_mono = output / f"{filename}-mono.pdf"
     file_dual = output / f"{filename}-dual.pdf"
 
     translator = service_map[service]
@@ -164,7 +164,7 @@ def translate_file(
         progress(t.n / t.total, desc="Translating...")
 
     param = {
-        "files": [file_en],
+        "files": [file_raw],
         "pages": selected_page,
         "lang_in": lang_from,
         "lang_out": lang_to,
@@ -177,18 +177,18 @@ def translate_file(
     translate(**param)
     print(f"Files after translation: {os.listdir(output)}")
 
-    if not file_zh.exists() or not file_dual.exists():
+    if not file_mono.exists() or not file_dual.exists():
         raise gr.Error("No output")
 
     try:
-        translated_preview = pdf_preview(str(file_zh))
+        translated_preview = pdf_preview(str(file_mono))
     except Exception:
         raise gr.Error("No preview")
 
     progress(1.0, desc="Translation complete!")
 
     return (
-        str(file_zh),
+        str(file_mono),
         translated_preview,
         str(file_dual),
         gr.update(visible=True),

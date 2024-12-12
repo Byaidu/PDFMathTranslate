@@ -144,7 +144,7 @@ For docker deployment on cloud service:
 
 <h2 id="usage">Advanced Options</h2>
 
-Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service.
+Execute the translation command in the command line to generate the translated document `example-mono.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service.
 
 <img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
 

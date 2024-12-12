@@ -144,7 +144,7 @@
 
 <h2 id="usage">高级选项</h2>
 
-在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
+在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-mono.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
 
 <img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
 

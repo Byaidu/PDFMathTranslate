@@ -1,12 +1,8 @@
 import os
-import tempfile
-
 from flask import Flask, request, send_file
 from celery import Celery, Task
-from celery.result import AsyncResult
-from pathlib import Path
-from tasks import translate_task
-
+from pdf2zh import translate_stream
+import tqdm
 
 app = Flask("pdf2zh")
 app.config.from_mapping(
@@ -36,28 +32,42 @@ def celery_init_app(app: Flask) -> Celery:
 celery_app = celery_init_app(app)
 
 
+@app.task(bind=True)
+def translate_task(
+    stream: bytes,
+    lang_in: str = "",
+    lang_out: str = "",
+    service: str = "",
+):
+    def progress_bar(t: tqdm.tqdm):
+        self.update_state(state="PROGRESS", meta={"n": t.n, "total": t.total})  # noqa
+        print(f"Translating {t.n} / {t.total} pages")
+
+    doc_mono, doc_dual = translate_stream(
+        stream,
+        lang_in=lang_in,
+        lang_out=lang_out,
+        service=service,
+        thread=4,
+        callback=progress_bar,
+    )
+    return doc_mono, doc_dual
+
+
 @app.route("/api/translate", methods=["POST"])
 def create_translate_tasks():
-    f = request.files["source"]
-    output_dir = Path(tempfile.mkdtemp())
-    file_basename = ".".join(f.filename.split(".")[:-1])
-    if len(file_basename) == 0:
-        file_basename = "input"
-    origin_pdf = output_dir / f"{file_basename}.pdf"
-    f.save(origin_pdf)
-    lang_in = request.args.get("lang_in", "auto")
+    stream = request.files["file"]
+    lang_in = request.args.get("lang_in", "en")
     lang_out = request.args.get("lang_out", "zh")
     service = request.args.get("service", "google")
-    task = translate_task.delay(
-        str(output_dir), file_basename, lang_in, lang_out, service
-    )
-    return {"result_id": task.id}
+    task = translate_task.delay(stream, lang_in, lang_out, service)
+    return {"id": task.id}
 
 
 @app.route("/api/results/<id>", methods=["GET"])
 def check_translate_result(id: str):
-    result = AsyncResult(id)
-    return {"ready": result.ready(), "successful": result.successful()}
+    result = celery_app.AsyncResult(id)
+    return {"state": result.state, "info": result.info}
 
 
 @app.route("/api/results/<id>/<format>")
@@ -67,8 +77,8 @@ def get_translate_result(id: str, format: str):
         return {"error": "task not finished"}, 400
     if not result.successful():
         return {"error": "task failed"}, 400
-    translated_pdf, dual_pdf = result.get()
-    to_send = translated_pdf if format == "translated" else dual_pdf
+    doc_mono, doc_dual = result.get()
+    to_send = doc_mono if format == "mono" else doc_dual
     return send_file(to_send, "application/pdf")
 
 

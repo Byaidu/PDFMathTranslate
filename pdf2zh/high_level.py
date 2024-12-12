@@ -14,7 +14,7 @@ from pdf2zh.converter import TranslateConverter
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
 from pdf2zh.doclayout import DocLayoutModel
 from pathlib import Path
-from typing import Any, Container, Iterable, List, Optional
+from typing import Any, Iterable, List
 import urllib.request
 import requests
 import tempfile
@@ -75,7 +75,6 @@ def translate_patch(
     inf: BinaryIO,
     pages=None,
     password: str = "",
-    page_count: int = 0,
     vfont: str = "",
     vchar: str = "",
     thread: int = 0,
@@ -86,7 +85,7 @@ def translate_patch(
     resfont: str = "",
     noto: Font = None,
     callback: object = None,
-    **kwarg,
+    **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
     layout = {}
@@ -100,7 +99,7 @@ def translate_patch(
     if pages:
         total_pages = len(pages)
     else:
-        total_pages = page_count
+        total_pages = doc_zh.page_count
 
     parser = PDFParser(inf)
     doc = PDFDocument(parser, password=password)
@@ -153,9 +152,89 @@ def translate_patch(
     return obj_patch
 
 
+def translate_stream(
+    stream,
+    pages=None,
+    password: str = "",
+    vfont: str = "",
+    vchar: str = "",
+    thread: int = 0,
+    doc_zh: Document = None,
+    lang_in: str = "",
+    lang_out: str = "",
+    service: str = "",
+    callback: object = None,
+    **kwarg: Any,
+):
+    font_list = [("tiro", None)]
+    noto = None
+    if lang_out.lower() in resfont_map:  # CJK
+        resfont = resfont_map[lang_out.lower()]
+        font_list.append((resfont, None))
+    elif lang_out.lower() in noto_list:  # noto
+        resfont = "noto"
+        ttf_path = os.path.join(tempfile.gettempdir(), "GoNotoKurrent-Regular.ttf")
+        if not os.path.exists(ttf_path):
+            print("Downloading Noto font...")
+            urllib.request.urlretrieve(
+                "https://github.com/satbyy/go-noto-universal/releases/download/v7.0/GoNotoKurrent-Regular.ttf",
+                ttf_path,
+            )
+        font_list.append(("noto", ttf_path))
+        noto = Font("noto", ttf_path)
+    else:  # fallback
+        resfont = "china-ss"
+        font_list.append(("china-ss", None))
+
+    doc_en = Document(stream=stream)
+    if doc_en.is_encrypted:
+        doc_en.authenticate(password)
+    doc_zh = Document(stream=stream)
+    page_count = doc_zh.page_count
+    # font_list = [("china-ss", None), ("tiro", None)]
+    font_id = {}
+    for page in doc_zh:
+        for font in font_list:
+            font_id[font[0]] = page.insert_font(font[0], font[1])
+    xreflen = doc_zh.xref_length()
+    for xref in range(1, xreflen):
+        for label in ["Resources/", ""]:  # 可能是基于 xobj 的 res
+            try:  # xref 读写可能出错
+                font_res = doc_zh.xref_get_key(xref, f"{label}Font")
+                if font_res[0] == "dict":
+                    for font in font_list:
+                        font_exist = doc_zh.xref_get_key(xref, f"{label}Font/{font[0]}")
+                        if font_exist[0] == "null":
+                            doc_zh.xref_set_key(
+                                xref,
+                                f"{label}Font/{font[0]}",
+                                f"{font_id[font[0]]} 0 R",
+                            )
+            except Exception:
+                pass
+
+    fp = io.BytesIO()
+    doc_zh.save(fp)
+    obj_patch: dict = translate_patch(fp, **locals())
+
+    for obj_id, ops_new in obj_patch.items():
+        # ops_old=doc_en.xref_stream(obj_id)
+        # print(obj_id)
+        # print(ops_old)
+        # print(ops_new.encode())
+        doc_zh.update_stream(obj_id, ops_new.encode())
+
+    doc_en.insert_file(doc_zh)
+    for id in range(page_count):
+        doc_en.move_page(page_count + id, id * 2 + 1)
+
+    return doc_zh.write(deflate=1), doc_en.write(deflate=1)
+
+
 def translate(
     files: Iterable[str] = [],
-    pages: Optional[Container[int]] = None,
+    output: str = "",
+    pages=None,
     password: str = "",
     vfont: str = "",
     vchar: str = "",
@@ -164,8 +243,7 @@ def translate(
     lang_out: str = "",
     service: str = "",
     callback: object = None,
-    output: str = "",
-    **kwargs: Any,
+    **kwarg: Any,
 ):
     if not files:
         raise PDFValueError("No files to process.")
@@ -199,72 +277,12 @@ def translate(
                 )
         filename = os.path.splitext(os.path.basename(file))[0]
 
-        font_list = [("tiro", None)]
-        noto = None
-        if lang_out.lower() in resfont_map:  # CJK
-            resfont = resfont_map[lang_out.lower()]
-            font_list.append((resfont, None))
-        elif lang_out.lower() in noto_list:  # noto
-            resfont = "noto"
-            ttf_path = os.path.join(tempfile.gettempdir(), "GoNotoKurrent-Regular.ttf")
-            if not os.path.exists(ttf_path):
-                print("Downloading Noto font...")
-                urllib.request.urlretrieve(
-                    "https://github.com/satbyy/go-noto-universal/releases/download/v7.0/GoNotoKurrent-Regular.ttf",
-                    ttf_path,
-                )
-            font_list.append(("noto", ttf_path))
-            noto = Font("noto", ttf_path)
-        else:  # fallback
-            resfont = "china-ss"
-            font_list.append(("china-ss", None))
-
-        doc_en = Document(file)
-        if doc_en.is_encrypted:
-            doc_en.authenticate(password)
-        doc_zh = Document(doc_en)
-        page_count = doc_zh.page_count
-        # font_list = [("china-ss", None), ("tiro", None)]
-        font_id = {}
-        for page in doc_zh:
-            for font in font_list:
-                font_id[font[0]] = page.insert_font(font[0], font[1])
-        xreflen = doc_zh.xref_length()
-        for xref in range(1, xreflen):
-            for label in ["Resources/", ""]:  # 可能是基于 xobj 的 res
-                try:  # xref 读写可能出错
-                    font_res = doc_zh.xref_get_key(xref, f"{label}Font")
-                    if font_res[0] == "dict":
-                        for font in font_list:
-                            font_exist = doc_zh.xref_get_key(
-                                xref, f"{label}Font/{font[0]}"
-                            )
-                            if font_exist[0] == "null":
-                                doc_zh.xref_set_key(
-                                    xref,
-                                    f"{label}Font/{font[0]}",
-                                    f"{font_id[font[0]]} 0 R",
-                                )
-                except Exception:
-                    pass
-
-        fp = io.BytesIO()
-        doc_zh.save(fp)
-        obj_patch: dict = translate_patch(fp, **locals())
-
-        for obj_id, ops_new in obj_patch.items():
-            # ops_old=doc_en.xref_stream(obj_id)
-            # print(obj_id)
-            # print(ops_old)
-            # print(ops_new.encode())
-            doc_zh.update_stream(obj_id, ops_new.encode())
-
-        doc_en.insert_file(doc_zh)
-        for id in range(page_count):
-            doc_en.move_page(page_count + id, id * 2 + 1)
-        doc_zh.save(Path(output) / f"{filename}-zh.pdf", deflate=1)
-        doc_en.save(Path(output) / f"{filename}-dual.pdf", deflate=1)
-        doc_zh.close()
-        doc_en.close()
+        doc_raw = open(file, "rb")
+        s_raw = doc_raw.read()
+        s_mono, s_dual = translate_stream(s_raw, **locals())
+        doc_mono = open(Path(output) / f"{filename}-mono.pdf", "wb")
+        doc_dual = open(Path(output) / f"{filename}-dual.pdf", "wb")
+        doc_mono.write(s_mono)
+        doc_dual.write(s_dual)
 
     return

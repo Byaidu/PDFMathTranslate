@@ -12,8 +12,6 @@ from typing import List, Optional
 from pdf2zh import __version__, log
 from pdf2zh.high_level import translate
 
-logging.basicConfig()
-
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, add_help=True)
@@ -135,6 +133,8 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
 
 
 def main(args: Optional[List[str]] = None) -> int:
+    logging.basicConfig()
+
     parsed_args = parse_args(args)
 
     if parsed_args.debug:
