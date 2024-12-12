@@ -35,6 +35,11 @@ dev = [
     "flake8",
     "pre-commit"
 ]
+backend = [
+    "flask",
+    "celery",
+    "redis"
+]
 
 [project.urls]
 Homepage = "https://github.com/Byaidu/PDFMathTranslate"
