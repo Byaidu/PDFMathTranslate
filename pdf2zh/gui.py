@@ -19,6 +19,7 @@ from pdf2zh.translator import (
 )
 
 import gradio as gr
+from gradio_pdf import PDF
 import numpy as np
 import pymupdf
 import tqdm
@@ -88,7 +89,7 @@ def pdf_preview(file):
 
 def upload_file(file, service, progress=gr.Progress()):
     preview_image = pdf_preview(file)
-    return file, preview_image
+    return file, file
 
 
 def download_with_limit(url, save_path, size_limit):
@@ -189,7 +190,7 @@ def translate_file(
 
     return (
         str(file_mono),
-        translated_preview,
+        str(file_mono),
         str(file_dual),
         gr.update(visible=True),
         gr.update(visible=True),
@@ -380,7 +381,7 @@ with gr.Blocks(
 
         with gr.Column(scale=2):
             gr.Markdown("## Preview")
-            preview = gr.Image(label="Document Preview", visible=True)
+            preview = PDF(label="Document Preview", visible=True)
 
     # Event handlers
     file_input.upload(
