@@ -1,15 +1,16 @@
 import os
 from flask import Flask, request, send_file
 from celery import Celery, Task
+from celery.result import AsyncResult
 from pdf2zh import translate_stream
 import tqdm
+import json
 
-app = Flask("pdf2zh")
-app.config.from_mapping(
+flask_app = Flask("pdf2zh")
+flask_app.config.from_mapping(
     CELERY=dict(
         broker_url=os.environ.get("CELERY_BROKER", "redis://127.0.0.1:6379/0"),
         result_backend=os.environ.get("CELERY_RESULT", "redis://127.0.0.1:6379/0"),
-        ignore_task_result=False,
     )
 )
 
@@ -29,15 +30,14 @@ def celery_init_app(app: Flask) -> Celery:
     return celery_app
 
 
-celery_app = celery_init_app(app)
+celery_app = celery_init_app(flask_app)
 
 
-@app.task(bind=True)
+@celery_app.task(bind=True)
 def translate_task(
+    self: Task,
     stream: bytes,
-    lang_in: str = "",
-    lang_out: str = "",
-    service: str = "",
+    args: dict,
 ):
     def progress_bar(t: tqdm.tqdm):
         self.update_state(state="PROGRESS", meta={"n": t.n, "total": t.total})  # noqa
@@ -45,32 +45,36 @@ def translate_task(
 
     doc_mono, doc_dual = translate_stream(
         stream,
-        lang_in=lang_in,
-        lang_out=lang_out,
-        service=service,
-        thread=4,
         callback=progress_bar,
+        **args,
     )
     return doc_mono, doc_dual
 
 
-@app.route("/api/translate", methods=["POST"])
+@flask_app.route("/v1/translate", methods=["POST"])
 def create_translate_tasks():
-    stream = request.files["file"]
-    lang_in = request.args.get("lang_in", "en")
-    lang_out = request.args.get("lang_out", "zh")
-    service = request.args.get("service", "google")
-    task = translate_task.delay(stream, lang_in, lang_out, service)
+    file = request.files["file"]
+    stream = file.stream.read()
+    print(request.form.get("data"))
+    args = json.loads(request.form.get("data"))
+    task = translate_task.delay(stream, args)
     return {"id": task.id}
 
 
-@app.route("/api/results/<id>", methods=["GET"])
-def check_translate_result(id: str):
-    result = celery_app.AsyncResult(id)
+@flask_app.route("/v1/tasks/<id>", methods=["GET"])
+def get_translate_task(id: str):
+    result: AsyncResult = celery_app.AsyncResult(id)
     return {"state": result.state, "info": result.info}
 
 
-@app.route("/api/results/<id>/<format>")
+@flask_app.route("/v1/tasks/<id>", methods=["DELETE"])
+def delete_translate_task(id: str):
+    result: AsyncResult = celery_app.AsyncResult(id)
+    result.revoke(terminate=True)
+    return {"state": result.state, "info": result.info}
+
+
+@flask_app.route("/v1/tasks/<id>/<format>")
 def get_translate_result(id: str, format: str):
     result = celery_app.AsyncResult(id)
     if not result.ready():
@@ -83,4 +87,4 @@ def get_translate_result(id: str, format: str):
 
 
 if __name__ == "__main__":
-    app.run()
+    flask_app.run()
