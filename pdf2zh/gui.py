@@ -164,7 +164,7 @@ def translate_file(
         progress(t.n / t.total, desc="Translating...")
 
     param = {
-        "files": [file_raw],
+        "files": [str(file_raw)],
         "pages": selected_page,
         "lang_in": lang_from,
         "lang_out": lang_to,
