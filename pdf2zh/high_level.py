@@ -14,7 +14,7 @@ from pdf2zh.converter import TranslateConverter
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
 from pdf2zh.doclayout import DocLayoutModel
 from pathlib import Path
-from typing import Any, Iterable, List
+from typing import Any, List, Optional
 import urllib.request
 import requests
 import tempfile
@@ -73,8 +73,7 @@ def check_files(files: List[str]) -> List[str]:
 
 def translate_patch(
     inf: BinaryIO,
-    pages=None,
-    password: str = "",
+    pages: Optional[list[int]] = None,
     vfont: str = "",
     vchar: str = "",
     thread: int = 0,
@@ -102,7 +101,7 @@ def translate_patch(
         total_pages = doc_zh.page_count
 
     parser = PDFParser(inf)
-    doc = PDFDocument(parser, password=password)
+    doc = PDFDocument(parser)
     with tqdm.tqdm(total=total_pages) as progress:
         for pageno, page in enumerate(PDFPage.create_pages(doc)):
             if pages and (pageno not in pages):
@@ -153,16 +152,14 @@ def translate_patch(
 
 
 def translate_stream(
-    stream,
-    pages=None,
-    password: str = "",
-    vfont: str = "",
-    vchar: str = "",
-    thread: int = 0,
-    doc_zh: Document = None,
+    stream: bytes,
+    pages: Optional[list[int]] = None,
     lang_in: str = "",
     lang_out: str = "",
     service: str = "",
+    thread: int = 0,
+    vfont: str = "",
+    vchar: str = "",
     callback: object = None,
     **kwarg: Any,
 ):
@@ -187,8 +184,6 @@ def translate_stream(
         font_list.append(("china-ss", None))
 
     doc_en = Document(stream=stream)
-    if doc_en.is_encrypted:
-        doc_en.authenticate(password)
     doc_zh = Document(stream=stream)
     page_count = doc_zh.page_count
     # font_list = [("china-ss", None), ("tiro", None)]
@@ -232,16 +227,15 @@ def translate_stream(
 
 
 def translate(
-    files: Iterable[str] = [],
+    files: list[str],
     output: str = "",
-    pages=None,
-    password: str = "",
-    vfont: str = "",
-    vchar: str = "",
-    thread: int = 0,
+    pages: Optional[list[int]] = None,
     lang_in: str = "",
     lang_out: str = "",
     service: str = "",
+    thread: int = 0,
+    vfont: str = "",
+    vchar: str = "",
     callback: object = None,
     **kwarg: Any,
 ):
@@ -280,9 +274,11 @@ def translate(
         doc_raw = open(file, "rb")
         s_raw = doc_raw.read()
         s_mono, s_dual = translate_stream(s_raw, **locals())
-        doc_mono = open(Path(output) / f"{filename}-mono.pdf", "wb")
-        doc_dual = open(Path(output) / f"{filename}-dual.pdf", "wb")
+        file_mono = Path(output) / f"{filename}-mono.pdf"
+        file_dual = Path(output) / f"{filename}-dual.pdf"
+        doc_mono = open(file_mono, "wb")
+        doc_dual = open(file_dual, "wb")
         doc_mono.write(s_mono)
         doc_dual.write(s_dual)
 
-    return
+    return str(file_mono), str(file_dual)

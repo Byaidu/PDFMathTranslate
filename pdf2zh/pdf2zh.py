@@ -46,13 +46,6 @@ def create_parser() -> argparse.ArgumentParser:
         help="The list of page numbers to parse.",
     )
     parse_params.add_argument(
-        "--password",
-        "-P",
-        type=str,
-        default="",
-        help="The password to use for decrypting PDF file.",
-    )
-    parse_params.add_argument(
         "--vfont",
         "-f",
         type=str,
