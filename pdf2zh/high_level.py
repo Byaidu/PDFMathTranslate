@@ -250,6 +250,8 @@ def translate(
             print(f"  {file}", file=sys.stderr)
         raise PDFValueError("Some files do not exist.")
 
+    result_files = []
+
     for file in files:
         if file is str and (file.startswith("http://") or file.startswith("https://")):
             print("Online files detected, downloading...")
@@ -280,5 +282,6 @@ def translate(
         doc_dual = open(file_dual, "wb")
         doc_mono.write(s_mono)
         doc_dual.write(s_dual)
+        result_files.append((str(file_mono), str(file_dual)))
 
-    return str(file_mono), str(file_dual)
+    return result_files

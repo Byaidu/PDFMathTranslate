@@ -241,7 +241,7 @@ pdf2zh example.pdf -t 1
 from pdf2zh import translate, translate_stream
 
 params = {"lang_in": "en", "lang_out": "zh", "service": "google", "thread": 4}
-doc_mono, doc_dual = translate(files=["example.pdf"], **params)
+file_mono, file_dual = translate(files=["example.pdf"], **params)[0]
 with open("example.pdf", "rb") as f:
     stream_mono, stream_dual = translate_stream(stream=f.read(), **params)
 ```
