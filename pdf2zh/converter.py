@@ -323,7 +323,7 @@ class TranslateConverter(PDFConverterEx):
 
         @retry(wait=wait_fixed(1))
         def worker(s: str):  # 多线程翻译
-            if re.match(r"^\$v\d+\$$", s):  # 公式不翻译
+            if not s.strip() or re.match(r"^\$v\d+\$$", s):  # 空白和公式不翻译
                 return s
             try:
                 hash_key_paragraph = cache.deterministic_hash(
