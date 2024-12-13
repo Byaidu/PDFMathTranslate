@@ -262,7 +262,7 @@ ang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
 curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
 {"info":{"n":13,"total":506},"state":"PROGRESS"}
 
-curl http://localhost:11008/v1/tasks/d9894125-2f4e-45ea-9d93-1a9068d2045a
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
 {"state":"SUCCESS"}
 
 curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/mono --output example-mono.pdf
