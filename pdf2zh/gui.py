@@ -20,8 +20,6 @@ from pdf2zh.translator import (
 
 import gradio as gr
 from gradio_pdf import PDF
-import numpy as np
-import pymupdf
 import tqdm
 import requests
 import cgi
@@ -77,19 +75,6 @@ def verify_recaptcha(response):
     result = requests.post(recaptcha_url, data=data).json()
     print("reCAPTCHA", result.get("success"))
     return result.get("success")
-
-
-def pdf_preview(file):
-    doc = pymupdf.open(file)
-    page = doc[0]
-    pix = page.get_pixmap()
-    image = np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
-    return image
-
-
-def upload_file(file, service, progress=gr.Progress()):
-    preview_image = pdf_preview(file)
-    return file, file
 
 
 def download_with_limit(url, save_path, size_limit):
@@ -180,11 +165,6 @@ def translate_file(
 
     if not file_mono.exists() or not file_dual.exists():
         raise gr.Error("No output")
-
-    try:
-        translated_preview = pdf_preview(str(file_mono))
-    except Exception:
-        raise gr.Error("No preview")
 
     progress(1.0, desc="Translation complete!")
 
@@ -335,7 +315,9 @@ with gr.Blocks(
                 )
 
             output_title = gr.Markdown("## Translated", visible=False)
-            output_file = gr.File(label="Download Translation", visible=False)
+            output_file_mono = gr.File(
+                label="Download Translation (Mono)", visible=False
+            )
             output_file_dual = gr.File(
                 label="Download Translation (Dual)", visible=False
             )
@@ -385,9 +367,9 @@ with gr.Blocks(
 
     # Event handlers
     file_input.upload(
-        upload_file,
-        inputs=[file_input, service],
-        outputs=[file_input, preview],
+        lambda x: x,
+        inputs=file_input,
+        outputs=preview,
         js=(
             f"""
             (a,b)=>{{
@@ -419,10 +401,10 @@ with gr.Blocks(
             *envs,
         ],
         outputs=[
-            output_file,
+            output_file_mono,
             preview,
             output_file_dual,
-            output_file,
+            output_file_mono,
             output_file_dual,
             output_title,
         ],
