@@ -152,13 +152,13 @@ def main(args: Optional[List[str]] = None) -> int:
     if parsed_args.flask:
         from pdf2zh.backend import flask_app
 
-        flask_app.run()
+        flask_app.run(port=11008)
         return 0
 
     if parsed_args.celery:
         from pdf2zh.backend import celery_app
 
-        celery_app.start(argv=["worker", "--pool=prefork"])
+        celery_app.start(argv=sys.argv[2:])
         return 0
 
     translate(**vars(parsed_args))

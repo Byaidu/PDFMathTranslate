@@ -233,6 +233,45 @@ Use `-t` to specify how many threads to use in translation:
 pdf2zh example.pdf -t 1
 ```
 
+<h2 id="todo">API</h2>
+
+### Python
+
+```python
+from pdf2zh import translate, translate_stream
+
+params = {"lang_in": "en", "lang_out": "zh", "service": "google", "thread": 4}
+doc_mono, doc_dual = translate(files=["example.pdf"], **params)
+with open("example.pdf", "rb") as f:
+    stream_mono, stream_dual = translate_stream(stream=f.read(), **params)
+```
+
+### HTTP
+
+```bash
+pip install pdf2zh[backend]
+pdf2zh --flask
+pdf2zh --celery worker
+```
+
+```bash
+curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"l
+ang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
+{"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
+{"info":{"n":13,"total":506},"state":"PROGRESS"}
+
+curl http://localhost:11008/v1/tasks/d9894125-2f4e-45ea-9d93-1a9068d2045a
+{"state":"SUCCESS"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/mono --output example-mono.pdf
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/dual --output example-dual.pdf
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X DELETE
+```
+
 <h2 id="todo">TODO</h2>
 
 - [ ] Parse layout with DocLayNet based models, [PaddleX](https://github.com/PaddlePaddle/PaddleX/blob/17cc27ac3842e7880ca4aad92358d3ef8555429a/paddlex/repo_apis/PaddleDetection_api/object_det/official_categories.py#L81), [PaperMage](https://github.com/allenai/papermage/blob/9cd4bb48cbedab45d0f7a455711438f1632abebe/README.md?plain=1#L102), [SAM2](https://github.com/facebookresearch/sam2)
@@ -246,8 +285,6 @@ pdf2zh example.pdf -t 1
 - [ ] Knuth–Plass algorithm for western languages
 
 - [ ] Support non-PDF/A files
-
-- [ ] Provide API interface
 
 - [ ] Plugins of [Zotero](https://github.com/zotero/zotero) and [Obsidian](https://github.com/obsidianmd/obsidian-releases)
 

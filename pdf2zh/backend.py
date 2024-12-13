@@ -5,6 +5,7 @@ from celery.result import AsyncResult
 from pdf2zh import translate_stream
 import tqdm
 import json
+import io
 
 flask_app = Flask("pdf2zh")
 flask_app.config.from_mapping(
@@ -61,20 +62,23 @@ def create_translate_tasks():
     return {"id": task.id}
 
 
-@flask_app.route("/v1/tasks/<id>", methods=["GET"])
+@flask_app.route("/v1/translate/<id>", methods=["GET"])
 def get_translate_task(id: str):
     result: AsyncResult = celery_app.AsyncResult(id)
-    return {"state": result.state, "info": result.info}
+    if str(result.state) == "PROGRESS":
+        return {"state": str(result.state), "info": result.info}
+    else:
+        return {"state": str(result.state)}
 
 
-@flask_app.route("/v1/tasks/<id>", methods=["DELETE"])
+@flask_app.route("/v1/translate/<id>", methods=["DELETE"])
 def delete_translate_task(id: str):
     result: AsyncResult = celery_app.AsyncResult(id)
     result.revoke(terminate=True)
-    return {"state": result.state, "info": result.info}
+    return {"state": str(result.state)}
 
 
-@flask_app.route("/v1/tasks/<id>/<format>")
+@flask_app.route("/v1/translate/<id>/<format>")
 def get_translate_result(id: str, format: str):
     result = celery_app.AsyncResult(id)
     if not result.ready():
@@ -83,7 +87,7 @@ def get_translate_result(id: str, format: str):
         return {"error": "task failed"}, 400
     doc_mono, doc_dual = result.get()
     to_send = doc_mono if format == "mono" else doc_dual
-    return send_file(to_send, "application/pdf")
+    return send_file(io.BytesIO(to_send), "application/pdf")
 
 
 if __name__ == "__main__":

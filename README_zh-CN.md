@@ -233,6 +233,45 @@ pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\u
 pdf2zh example.pdf -t 1
 ```
 
+<h2 id="todo">API</h2>
+
+### Python
+
+```python
+from pdf2zh import translate, translate_stream
+
+params = {"lang_in": "en", "lang_out": "zh", "service": "google", "thread": 4}
+doc_mono, doc_dual = translate(files=["example.pdf"], **params)
+with open("example.pdf", "rb") as f:
+    stream_mono, stream_dual = translate_stream(stream=f.read(), **params)
+```
+
+### HTTP
+
+```bash
+pip install pdf2zh[backend]
+pdf2zh --flask
+pdf2zh --celery worker
+```
+
+```bash
+curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"l
+ang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
+{"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
+{"info":{"n":13,"total":506},"state":"PROGRESS"}
+
+curl http://localhost:11008/v1/tasks/d9894125-2f4e-45ea-9d93-1a9068d2045a
+{"state":"SUCCESS"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/mono --output example-mono.pdf
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/dual --output example-dual.pdf
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X DELETE
+```
+
 <h2 id="acknowledgement">致谢</h2>
 
 - 文档合并：[PyMuPDF](https://github.com/pymupdf/PyMuPDF)
