@@ -62,10 +62,10 @@ noto_list = [
 
 def check_files(files: List[str]) -> List[str]:
     files = [
-        f for f in files if not f.startswith("http://")
+        f for f in files if not str(f).startswith("http://")
     ]  # exclude online files, http
     files = [
-        f for f in files if not f.startswith("https://")
+        f for f in files if not str(f).startswith("https://")
     ]  # exclude online files, https
     missing_files = [file for file in files if not os.path.exists(file)]
     return missing_files
