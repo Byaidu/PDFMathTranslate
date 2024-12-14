@@ -208,16 +208,6 @@ with gr.Blocks(
     .input-file {
         border: 1.2px dashed #165DFF !important;
         border-radius: 6px !important;
-        # background-color: #ffffff !important;
-        transition: background-color 0.4s ease-out;
-    }
-
-    .input-file:hover {
-        border: 1.2px dashed #165DFF !important;
-        border-radius: 6px !important;
-        color: #165DFF !important;
-        background-color: #E8F3FF !important;
-        transition: background-color 0.2s ease-in;
     }
 
     .progress-bar-wrap {

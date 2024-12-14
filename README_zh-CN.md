@@ -66,7 +66,7 @@
 
 <h2 id="install">安装和使用</h2>
 
-我们提供了三种使用该项目的方法：[命令行工具](#cmd)、[便携式安装](#portable)、[图形交互界面](#gui) 和 [容器化部署](#docker).
+我们提供了四种使用该项目的方法：[命令行工具](#cmd)、[便携式安装](#portable)、[图形交互界面](#gui) 和 [容器化部署](#docker).
 
 <h3 id="cmd">方法一、命令行工具</h3>
 
@@ -223,6 +223,12 @@ pdf2zh example.pdf -s openai
 
 ```bash
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
+```
+
+默认保留 `Latex`, `Mono`, `Code`, `Italic`, `Symbol` 以及 `Math` 字体：
+
+```bash
+pdf2zh example.pdf -f "(CM[^R]|(MS|XY|MT|BL|RM|EU|LA|RS)[A-Z]|LINE|LCIRCLE|TeX-|rsfs|txsy|wasy|stmary|.*Mono|.*Code|.*Ital|.*Sym|.*Math)"
 ```
 
 <h3 id="threads">指定线程数量</h3>
