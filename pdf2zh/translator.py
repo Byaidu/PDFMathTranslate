@@ -284,6 +284,22 @@ class SiliconTranslator(OpenAITranslator):
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
 
 
+class GeminiTranslator(OpenAITranslator):
+    # https://ai.google.dev/gemini-api/docs/openai
+    name = "gemini"
+    envs = {
+        "GEMINI_API_KEY": None,
+        "GEMINI_MODEL": "gemini-1.5-flash",
+    }
+
+    def __init__(self, lang_in, lang_out, model):
+        base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not model:
+            model = os.getenv("GEMINI_MODEL", self.envs["GEMINI_MODEL"])
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+
+
 class AzureTranslator(BaseTranslator):
     # https://github.com/Azure/azure-sdk-for-python
     name = "azure"

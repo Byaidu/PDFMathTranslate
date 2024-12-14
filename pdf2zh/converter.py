@@ -27,6 +27,7 @@ from pdf2zh.translator import (
     OpenAITranslator,
     ZhipuTranslator,
     SiliconTranslator,
+    GeminiTranslator,
     AzureTranslator,
     TencentTranslator,
 )
@@ -142,7 +143,7 @@ class TranslateConverter(PDFConverterEx):
         service_name = param[0]
         service_model = param[1] if len(param) > 1 else None
         for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, AzureOpenAITranslator,
-                           OpenAITranslator, ZhipuTranslator, SiliconTranslator, AzureTranslator, TencentTranslator]:
+                           OpenAITranslator, ZhipuTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator]:
             if service_name == translator.name:
                 self.translator = translator(lang_in, lang_out, service_model)
         if not self.translator:
@@ -170,6 +171,8 @@ class TranslateConverter(PDFConverterEx):
         ops: str = ""                   # 渲染结果
 
         def vflag(font: str, char: str):    # 匹配公式（和角标）字体
+            if isinstance(font, bytes):     # hack 嵌入的 china-ss 会变成 b'Song'
+                font = font.decode()
             font = font.split("+")[-1]      # 字体名截断
             if re.match(r"\(cid:", char):
                 return True

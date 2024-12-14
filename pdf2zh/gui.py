@@ -14,6 +14,7 @@ from pdf2zh.translator import (
     OpenAITranslator,
     ZhipuTranslator,
     SiliconTranslator,
+    GeminiTranslator,
     AzureTranslator,
     TencentTranslator,
 )
@@ -34,6 +35,7 @@ service_map: dict[str, BaseTranslator] = {
     "OpenAI": OpenAITranslator,
     "Zhipu": ZhipuTranslator,
     "Silicon": SiliconTranslator,
+    "Gemini": GeminiTranslator,
     "Azure": AzureTranslator,
     "Tencent": TencentTranslator,
 }
