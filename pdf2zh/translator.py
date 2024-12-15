@@ -89,26 +89,27 @@ class BingTranslator(BaseTranslator):
     def __init__(self, lang_in, lang_out, model):
         super().__init__(lang_in, lang_out, model)
         self.session = requests.Session()
-        self.endpoint = "https://www.bing.com/ttranslatev3"
+        self.endpoint = "https://www.bing.com/translator"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",  # noqa: E501
         }
 
     def fineSID(self):
-        response = self.session.get("https://www.bing.com/translator")
+        response = self.session.get(self.endpoint)
         response.raise_for_status()
+        url = response.url[:-10]
         ig = re.findall(r"\"ig\":\"(.*?)\"", response.text)[0]
         iid = re.findall(r"data-iid=\"(.*?)\"", response.text)[-1]
         key, token = re.findall(
             r"params_AbusePreventionHelper\s=\s\[(.*?),\"(.*?)\",", response.text
         )[0]
-        return ig, iid, key, token
+        return url, ig, iid, key, token
 
     def translate(self, text):
         text = text[:1000]  # bing translate max length
-        ig, iid, key, token = self.fineSID()
+        url, ig, iid, key, token = self.fineSID()
         response = self.session.post(
-            f"{self.endpoint}?IG={ig}&IID={iid}",
+            f"{url}ttranslatev3?IG={ig}&IID={iid}",
             data={
                 "fromLang": self.lang_in,
                 "to": self.lang_out,
