@@ -94,7 +94,7 @@ class BingTranslator(BaseTranslator):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",  # noqa: E501
         }
 
-    def fineSID(self):
+    def findSID(self):
         response = self.session.get(self.endpoint)
         response.raise_for_status()
         url = response.url[:-10]
@@ -107,7 +107,7 @@ class BingTranslator(BaseTranslator):
 
     def translate(self, text):
         text = text[:1000]  # bing translate max length
-        url, ig, iid, key, token = self.fineSID()
+        url, ig, iid, key, token = self.findSID()
         response = self.session.post(
             f"{url}ttranslatev3?IG={ig}&IID={iid}",
             data={
@@ -232,7 +232,6 @@ class AzureOpenAITranslator(BaseTranslator):
         base_url = os.getenv(
             "AZURE_OPENAI_BASE_URL", self.envs["AZURE_OPENAI_BASE_URL"]
         )
-        api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-06-01")
         if not model:
             model = os.getenv("AZURE_OPENAI_MODEL", self.envs["AZURE_OPENAI_MODEL"])
         super().__init__(lang_in, lang_out, model)
@@ -240,7 +239,7 @@ class AzureOpenAITranslator(BaseTranslator):
         self.client = openai.AzureOpenAI(
             azure_endpoint=base_url,
             azure_deployment=model,
-            api_version=api_version,
+            api_version="2024-06-01",
             api_key=api_key,
         )
 

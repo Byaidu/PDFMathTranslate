@@ -264,8 +264,7 @@ pdf2zh --celery worker
 ```
 
 ```bash
-curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"l
-ang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
+curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"lang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
 {"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
 
 curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
