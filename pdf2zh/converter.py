@@ -173,8 +173,8 @@ class TranslateConverter(PDFConverterEx):
         ops: str = ""                   # 渲染结果
 
         def vflag(font: str, char: str):    # 匹配公式（和角标）字体
-            if isinstance(font, bytes):     # hack 嵌入的 china-ss 会变成 b'Song'
-                font = font.decode()
+            if isinstance(font, bytes):     # 不一定能 decode，直接转 str
+                font = str(font)
             font = font.split("+")[-1]      # 字体名截断
             if re.match(r"\(cid:", char):
                 return True
