@@ -282,7 +282,7 @@ class ZhipuTranslator(OpenAITranslator):
                 == "1301"
             ):
                 return ""
-            print("openai api error.")
+            raise ValueError("openai api error.")
         return response.choices[0].message.content.strip()
 
 
