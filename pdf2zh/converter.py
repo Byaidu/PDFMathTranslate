@@ -17,6 +17,7 @@ import unicodedata
 from tenacity import retry, wait_fixed
 from pdf2zh import cache
 from pdf2zh.translator import (
+    AzureOpenAITranslator,
     BaseTranslator,
     GoogleTranslator,
     BingTranslator,
@@ -26,6 +27,7 @@ from pdf2zh.translator import (
     OpenAITranslator,
     ZhipuTranslator,
     SiliconTranslator,
+    GeminiTranslator,
     AzureTranslator,
     TencentTranslator,
 )
@@ -140,9 +142,10 @@ class TranslateConverter(PDFConverterEx):
         param = service.split(":", 1)
         service_name = param[0]
         service_model = param[1] if len(param) > 1 else None
-        for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, OpenAITranslator, ZhipuTranslator, SiliconTranslator, AzureTranslator, TencentTranslator]:
+        for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, AzureOpenAITranslator,
+                           OpenAITranslator, ZhipuTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator]:
             if service_name == translator.name:
-                self.translator = translator(service, lang_out, lang_in, service_model)
+                self.translator = translator(lang_in, lang_out, service_model)
         if not self.translator:
             raise ValueError("Unsupported translation service")
 
@@ -168,6 +171,8 @@ class TranslateConverter(PDFConverterEx):
         ops: str = ""                   # 渲染结果
 
         def vflag(font: str, char: str):    # 匹配公式（和角标）字体
+            if isinstance(font, bytes):     # hack 嵌入的 china-ss 会变成 b'Song'
+                font = font.decode()
             font = font.split("+")[-1]      # 字体名截断
             if re.match(r"\(cid:", char):
                 return True
@@ -233,7 +238,7 @@ class TranslateConverter(PDFConverterEx):
                     or cls != xt_cls                                        # 2. 当前字符与前一个字符不属于同一段落
                     # or (abs(child.x0 - xt.x0) > vmax and cls != 0)        # 3. 段落内换行，可能是一长串斜体的段落，也可能是段内分式换行，这里设个阈值进行区分
                     # 禁止纯公式（代码）段落换行，直到文字开始再重开文字段落，保证只存在两种情况
-                    # A. 纯公式（代码）段落（锚定绝对位置）sstk[-1]=="" -> sstk[-1]=="$v*$"
+                    # A. 纯公式（代码）段落（锚定绝对位置）sstk[-1]=="" -> sstk[-1]=="{v*}"
                     # B. 文字开头段落（排版相对位置）sstk[-1]!=""
                     or (sstk[-1] != "" and abs(child.x0 - xt.x0) > vmax)    # 因为 cls==xt_cls==0 一定有 sstk[-1]==""，所以这里不需要再判定 cls!=0
                 ):
@@ -245,8 +250,8 @@ class TranslateConverter(PDFConverterEx):
                         ):
                             vfix = vstk[0].y0 - child.y0
                         if sstk[-1] == "":
-                            xt_cls = -1 # 禁止纯公式段落（sstk[-1]=="$v*$"）的后续连接，但是要考虑新字符和后续字符的连接，所以这里修改的是上个字符的类别
-                        sstk[-1] += f"$v{len(var)}$"
+                            xt_cls = -1 # 禁止纯公式段落（sstk[-1]=="{v*}"）的后续连接，但是要考虑新字符和后续字符的连接，所以这里修改的是上个字符的类别
+                        sstk[-1] += f"{{v{len(var)}}}"
                         var.append(vstk)
                         varl.append(vlstk)
                         varf.append(vfix)
@@ -303,14 +308,14 @@ class TranslateConverter(PDFConverterEx):
                 pass
         # 处理结尾
         if vstk:    # 公式出栈
-            sstk[-1] += f"$v{len(var)}$"
+            sstk[-1] += f"{{v{len(var)}}}"
             var.append(vstk)
             varl.append(vlstk)
             varf.append(vfix)
         log.debug("\n==========[VSTACK]==========\n")
         for id, v in enumerate(var):  # 计算公式宽度
             l = max([vch.x1 for vch in v]) - v[0].x0
-            log.debug(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])} > $v{id}$ = {"".join([ch.get_text() for ch in v])}')
+            log.debug(f'< {l:.1f} {v[0].x0:.1f} {v[0].y0:.1f} {v[0].cid} {v[0].fontname} {len(varl[id])} > v{id} = {"".join([ch.get_text() for ch in v])}')
             vlen.append(l)
 
         ############################################################
@@ -321,7 +326,7 @@ class TranslateConverter(PDFConverterEx):
 
         @retry(wait=wait_fixed(1))
         def worker(s: str):  # 多线程翻译
-            if re.match(r"^\$v\d+\$$", s):  # 公式不翻译
+            if not s.strip() or re.match(r"^\{v\d+\}$", s):  # 空白和公式不翻译
                 return s
             try:
                 hash_key_paragraph = cache.deterministic_hash(
@@ -369,8 +374,8 @@ class TranslateConverter(PDFConverterEx):
             log.debug(f"< {y} {x} {x0} {x1} {size} {brk} > {sstk[id]} | {new}")
             while ptr < len(new):
                 vy_regex = re.match(
-                    r"\$?\s*v([\d\s]+)\$", new[ptr:], re.IGNORECASE
-                )  # 匹配 $vn$ 公式标记，前面的 $ 有的时候会被丢掉
+                    r"\{\s*v([\d\s]+)\}", new[ptr:], re.IGNORECASE
+                )  # 匹配 {vn} 公式标记
                 mod = 0  # 文字修饰符
                 if vy_regex:  # 加载公式
                     ptr += len(vy_regex.group(0))

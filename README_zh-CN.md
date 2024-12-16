@@ -1,6 +1,6 @@
 <div align="center">
 
-[English](README.md) | 简体中文
+[English](README.md) | 简体中文 | [日本語](README_ja-JP.md)
 
 <img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
@@ -24,6 +24,8 @@
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
     <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"/></a>
 </p>
+
+<a href="https://trendshift.io/repositories/12424" target="_blank"><img src="https://trendshift.io/api/badge/repositories/12424" alt="Byaidu%2FPDFMathTranslate | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
 </div>
 
@@ -66,7 +68,7 @@
 
 <h2 id="install">安装和使用</h2>
 
-我们提供了三种使用该项目的方法：[命令行工具](#cmd)、[便携式安装](#portable)、[图形交互界面](#gui) 和 [容器化部署](#docker).
+我们提供了四种使用该项目的方法：[命令行工具](#cmd)、[便携式安装](#portable)、[图形交互界面](#gui) 和 [容器化部署](#docker).
 
 <h3 id="cmd">方法一、命令行工具</h3>
 
@@ -144,7 +146,7 @@
 
 <h2 id="usage">高级选项</h2>
 
-在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-zh.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
+在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-mono.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
 
 <img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
@@ -162,6 +164,7 @@
 | `-t`  | [多线程](#threads) | `pdf2zh example.pdf -t 1` |
 | `-o`  | 输出目录 | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
+| `--share` | 获取 gradio 公开链接 | `pdf2zh -i --share` |
 
 <h3 id="partial">全文或部分文档翻译</h3>
 
@@ -197,8 +200,10 @@ pdf2zh example.pdf -li en -lo ja
 |**DeepLX**|`deeplx`|`DEEPLX_ENDPOINT`,`DEEPLX_ACCESS_TOKEN`|`https://api.deepl.com/translate`, `[Your Access Token]`|See [DeepLX](https://github.com/OwO-Network/DeepLX)|
 |**Ollama**|`ollama`|`OLLAMA_HOST`, `OLLAMA_MODEL`|`http://127.0.0.1:11434`, `gemma2`|See [Ollama](https://github.com/ollama/ollama)|
 |**OpenAI**|`openai`|`OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`|`https://api.openai.com/v1`, `[Your Key]`, `gpt-4o-mini`|See [OpenAI](https://platform.openai.com/docs/overview)|
+|**AzureOpenAI**|`azure-openai`|`AZURE_OPENAI_BASE_URL`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_MODEL`|`[Your Endpoint]`, `[Your Key]`, `gpt-4o-mini`|See [Azure OpenAI](https://learn.microsoft.com/zh-cn/azure/ai-services/openai/chatgpt-quickstart?tabs=command-line%2Cjavascript-keyless%2Ctypescript-keyless%2Cpython&pivots=programming-language-python)|
 |**Zhipu**|`zhipu`|`ZHIPU_API_KEY`, `ZHIPU_MODEL`|`[Your Key]`, `glm-4-flash`|See [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)|
 |**Silicon**|`silicon`|`SILICON_API_KEY`, `SILICON_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-7B-Instruct`|See [SiliconCloud](https://docs.siliconflow.cn/quickstart)|
+|**Gemini**|`gemini`|`GEMINI_API_KEY`, `GEMINI_MODEL`|`[Your Key]`, `gemini-1.5-flash`|See [Gemini](https://ai.google.dev/gemini-api/docs/openai)|
 |**Azure**|`azure`|`AZURE_ENDPOINT`, `AZURE_API_KEY`|`https://api.translator.azure.cn`, `[Your Key]`|See [Azure](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)|
 |**Tencent**|`tencent`|`TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`|`[Your ID]`, `[Your Key]`|See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)|
 
@@ -223,12 +228,56 @@ pdf2zh example.pdf -s openai
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
 
+默认保留 `Latex`, `Mono`, `Code`, `Italic`, `Symbol` 以及 `Math` 字体：
+
+```bash
+pdf2zh example.pdf -f "(CM[^R]|(MS|XY|MT|BL|RM|EU|LA|RS)[A-Z]|LINE|LCIRCLE|TeX-|rsfs|txsy|wasy|stmary|.*Mono|.*Code|.*Ital|.*Sym|.*Math)"
+```
+
 <h3 id="threads">指定线程数量</h3>
 
 使用 `-t` 指定翻译时使用的线程数量：
 
 ```bash
 pdf2zh example.pdf -t 1
+```
+
+<h2 id="todo">API</h2>
+
+### Python
+
+```python
+from pdf2zh import translate, translate_stream
+
+params = {"lang_in": "en", "lang_out": "zh", "service": "google", "thread": 4}
+file_mono, file_dual = translate(files=["example.pdf"], **params)[0]
+with open("example.pdf", "rb") as f:
+    stream_mono, stream_dual = translate_stream(stream=f.read(), **params)
+```
+
+### HTTP
+
+```bash
+pip install pdf2zh[backend]
+pdf2zh --flask
+pdf2zh --celery worker
+```
+
+```bash
+curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"lang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
+{"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
+{"info":{"n":13,"total":506},"state":"PROGRESS"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
+{"state":"SUCCESS"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/mono --output example-mono.pdf
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/dual --output example-dual.pdf
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X DELETE
 ```
 
 <h2 id="acknowledgement">致谢</h2>
