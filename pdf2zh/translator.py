@@ -221,12 +221,6 @@ class OpenAITranslator(BaseTranslator):
         except openai.BadRequestError:
             print("400 API BadRequestError")
             return ""
-        except openai.APIStatusError:
-            print("API Status Error.")
-            return ""
-        except openai.APIConnectionError:
-            print("API Connection Error")
-            return ""
         return response.choices[0].message.content.strip()
 
 
