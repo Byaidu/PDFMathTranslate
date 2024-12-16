@@ -15,6 +15,8 @@ from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 from tencentcloud.tmt.v20180321.models import TextTranslateRequest
 from tencentcloud.tmt.v20180321.models import TextTranslateResponse
 
+import json
+
 
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
@@ -264,6 +266,22 @@ class ZhipuTranslator(OpenAITranslator):
         if not model:
             model = os.getenv("ZHIPU_MODEL", self.envs["ZHIPU_MODEL"])
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+
+    def translate(self, text) -> str:
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                **self.options,
+                messages=self.prompt(text),
+            )
+        except openai.APIError:
+            if (
+                json.loads(response.choices[0].message.content.strip())["error"]["code"]
+                == "1301"
+            ):
+                return ""
+            raise ValueError("openai api error.")
+        return response.choices[0].message.content.strip()
 
 
 class SiliconTranslator(OpenAITranslator):
