@@ -438,25 +438,82 @@ with gr.Blocks(
     )
 
 
-def setup_gui(share=False):
+def readuserandpasswd(file_path):
+    tuple_list = []
+    content = ""
+    if len(file_path) == 2:
+        try:
+            with open(file_path[1], "r", encoding="utf-8") as file:
+                content = file.read()
+        except FileNotFoundError:
+            print(f"Error: File '{file_path[1]}' not found.")
+    try:
+        with open(file_path[0], "r", encoding="utf-8") as file:
+            tuple_list = [
+                tuple(line.strip().split(",")) for line in file if line.strip()
+            ]
+    except FileNotFoundError:
+        print(f"Error: File '{file_path[0]}' not found.")
+    return tuple_list, content
+
+
+def setup_gui(share=False, authfile=["", ""]):
+    userlist, html = readuserandpasswd(authfile)
     if flag_demo:
         demo.launch(server_name="0.0.0.0", max_file_size="5mb", inbrowser=True)
     else:
-        try:
-            demo.launch(server_name="0.0.0.0", debug=True, inbrowser=True, share=share)
-        except Exception:
-            print(
-                "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
-            )
+        if len(userlist) == 0:
             try:
                 demo.launch(
-                    server_name="127.0.0.1", debug=True, inbrowser=True, share=share
+                    server_name="0.0.0.0", debug=True, inbrowser=True, share=share
                 )
             except Exception:
                 print(
-                    "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
+                    "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
                 )
-                demo.launch(debug=True, inbrowser=True, share=True)
+                try:
+                    demo.launch(
+                        server_name="127.0.0.1", debug=True, inbrowser=True, share=share
+                    )
+                except Exception:
+                    print(
+                        "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
+                    )
+                    demo.launch(debug=True, inbrowser=True, share=True)
+        else:
+            try:
+                demo.launch(
+                    server_name="0.0.0.0",
+                    debug=True,
+                    inbrowser=True,
+                    share=share,
+                    auth=userlist,
+                    auth_message=html,
+                )
+            except Exception:
+                print(
+                    "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
+                )
+                try:
+                    demo.launch(
+                        server_name="127.0.0.1",
+                        debug=True,
+                        inbrowser=True,
+                        share=share,
+                        auth=userlist,
+                        auth_message=html,
+                    )
+                except Exception:
+                    print(
+                        "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
+                    )
+                    demo.launch(
+                        debug=True,
+                        inbrowser=True,
+                        share=True,
+                        auth=userlist,
+                        auth_message=html,
+                    )
 
 
 # For auto-reloading while developing

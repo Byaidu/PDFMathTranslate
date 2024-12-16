@@ -115,6 +115,14 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="celery",
     )
+    parse_params.add_argument(
+        "--authorized",
+        "-a",
+        type=str,
+        nargs="+",
+        default=["./users.txt", "./auth.html"],
+        help="user name and password.",
+    )
 
     return parser
 
@@ -146,7 +154,7 @@ def main(args: Optional[List[str]] = None) -> int:
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
 
-        setup_gui(parsed_args.share)
+        setup_gui(parsed_args.share, parsed_args.authorized)
         return 0
 
     if parsed_args.flask:
