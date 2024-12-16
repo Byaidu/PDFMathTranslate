@@ -1,5 +1,6 @@
 """Functions that can be used for the most common use-cases for pdf2zh.six"""
-
+import asyncio
+from asyncio import CancelledError
 from typing import BinaryIO
 import numpy as np
 import tqdm
@@ -84,6 +85,7 @@ def translate_patch(
     resfont: str = "",
     noto: Font = None,
     callback: object = None,
+    cancellation_event : asyncio.Event = None,
     **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
@@ -104,6 +106,8 @@ def translate_patch(
     doc = PDFDocument(parser)
     with tqdm.tqdm(total=total_pages) as progress:
         for pageno, page in enumerate(PDFPage.create_pages(doc)):
+            if cancellation_event and cancellation_event.is_set():
+                raise CancelledError("task cancelled")
             if pages and (pageno not in pages):
                 continue
             progress.update()
@@ -161,6 +165,7 @@ def translate_stream(
     vfont: str = "",
     vchar: str = "",
     callback: object = None,
+    cancellation_event: asyncio.Event = None,
     **kwarg: Any,
 ):
     font_list = [("tiro", None)]
@@ -237,6 +242,7 @@ def translate(
     vfont: str = "",
     vchar: str = "",
     callback: object = None,
+    cancellation_event: asyncio.Event = None,
     **kwarg: Any,
 ):
     if not files:
