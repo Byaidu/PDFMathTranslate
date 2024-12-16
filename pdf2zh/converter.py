@@ -31,7 +31,7 @@ from pdf2zh.translator import (
     AzureTranslator,
     TencentTranslator,
     DifyTranslator,
-    AngthingLLMTranslator,
+    AnythingLLMTranslator,
 )
 from pymupdf import Font
 
@@ -145,7 +145,7 @@ class TranslateConverter(PDFConverterEx):
         service_name = param[0]
         service_model = param[1] if len(param) > 1 else None
         for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, AzureOpenAITranslator,
-                           OpenAITranslator, ZhipuTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AngthingLLMTranslator]:
+                           OpenAITranslator, ZhipuTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AnythingLLMTranslator]:
             if service_name == translator.name:
                 self.translator = translator(lang_in, lang_out, service_model)
         if not self.translator:

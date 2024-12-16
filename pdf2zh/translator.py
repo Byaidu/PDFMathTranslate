@@ -352,17 +352,17 @@ class TencentTranslator(BaseTranslator):
         self.req.SourceText = text
         resp: TextTranslateResponse = self.client.TextTranslate(self.req)
         return resp.TargetText
-class AngthingLLMTranslator(BaseTranslator):
-    name = "angthingllm"
+class AnythingLLMTranslator(BaseTranslator):
+    name = "anythingllm"
     envs = {
-        "AngthingLLM_URL": None,
-        "AngthingLLM_APIKEY": "api_key",
+        "AnythingLLM_URL": None,
+        "AnythingLLM_APIKEY": "api_key",
     }
 
     def __init__(self, lang_out, lang_in, model):
         super().__init__(lang_out, lang_in, model)
-        self.api_url = os.getenv("AngthingLLM_URL", self.envs["AngthingLLM_URL"])
-        self.api_key = os.getenv("AngthingLLM_APIKEY", self.envs["AngthingLLM_APIKEY"])
+        self.api_url = os.getenv("AnythingLLM_URL", self.envs["AnythingLLM_URL"])
+        self.api_key = os.getenv("AnythingLLM_APIKEY", self.envs["AnythingLLM_APIKEY"])
         self.headers = {
             "accept": "application/json",
             "Authorization": f"Bearer {self.api_key}",

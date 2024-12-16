@@ -18,7 +18,7 @@ from pdf2zh.translator import (
     AzureTranslator,
     TencentTranslator,
     DifyTranslator,
-    AngthingLLMTranslator,
+    AnythingLLMTranslator,
 )
 
 import gradio as gr
@@ -41,7 +41,7 @@ service_map: dict[str, BaseTranslator] = {
     "Azure": AzureTranslator,
     "Tencent": TencentTranslator,
     "Dify": DifyTranslator,
-    "AnythingLLM": AngthingLLMTranslator,
+    "AnythingLLM": AnythingLLMTranslator,
 }
 lang_map = {
     "Chinese": "zh",
