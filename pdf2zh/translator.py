@@ -127,16 +127,14 @@ class DeepLTranslator(BaseTranslator):
     # https://github.com/DeepLcom/deepl-python
     name = "deepl"
     envs = {
-        "DEEPL_SERVER_URL": "https://api.deepl.com",
         "DEEPL_AUTH_KEY": None,
     }
     lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, lang_in, lang_out, model):
         super().__init__(lang_in, lang_out, model)
-        server_url = os.getenv("DEEPL_SERVER_URL", self.envs["DEEPL_SERVER_URL"])
         auth_key = os.getenv("DEEPL_AUTH_KEY")
-        self.client = deepl.Translator(auth_key, server_url=server_url)
+        self.client = deepl.Translator(auth_key)
 
     def translate(self, text):
         response = self.client.translate_text(
