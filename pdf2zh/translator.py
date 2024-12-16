@@ -274,13 +274,13 @@ class ZhipuTranslator(OpenAITranslator):
                 **self.options,
                 messages=self.prompt(text),
             )
-        except openai.APIError:
+        except openai.BadRequestError as e:
             if (
                 json.loads(response.choices[0].message.content.strip())["error"]["code"]
                 == "1301"
             ):
-                return ""
-            raise ValueError("openai api error.")
+                return "IRREPARABLE TRANSLATION ERROR"
+            raise e
         return response.choices[0].message.content.strip()
 
 
@@ -368,6 +368,8 @@ class TencentTranslator(BaseTranslator):
         self.req.SourceText = text
         resp: TextTranslateResponse = self.client.TextTranslate(self.req)
         return resp.TargetText
+
+
 class AnythingLLMTranslator(BaseTranslator):
     name = "anythingllm"
     envs = {
@@ -393,18 +395,21 @@ class AnythingLLMTranslator(BaseTranslator):
             "sessionId": "translation_expert",
         }
 
-        response = requests.post(self.api_url, headers=self.headers, data=json.dumps(payload))
+        response = requests.post(
+            self.api_url, headers=self.headers, data=json.dumps(payload)
+        )
         response.raise_for_status()
         data = response.json()
 
         if "textResponse" in data:
             return data["textResponse"].strip()
 
+
 class DifyTranslator(BaseTranslator):
     name = "dify"
     envs = {
         "DIFY_API_URL": None,  # 填写实际 Dify API 地址
-        "DIFY_API_KEY": "api_key"  # 替换为实际 API 密钥
+        "DIFY_API_KEY": "api_key",  # 替换为实际 API 密钥
     }
 
     def __init__(self, lang_out, lang_in, model):
@@ -415,27 +420,25 @@ class DifyTranslator(BaseTranslator):
     def translate(self, text):
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         payload = {
             "inputs": {
                 "lang_out": self.lang_out,
                 "lang_in": self.lang_in,
-                "text": text
+                "text": text,
             },
             "response_mode": "blocking",
-            "user": "translator-service"
+            "user": "translator-service",
         }
 
         # 向 Dify 服务器发送请求
         response = requests.post(
-            self.api_url,
-            headers=headers,
-            data=json.dumps(payload)
+            self.api_url, headers=headers, data=json.dumps(payload)
         )
         response.raise_for_status()
         response_data = response.json()
 
         # 解析响应
-        return response_data.get('data', {}).get('outputs', {}).get('text', [])
+        return response_data.get("data", {}).get("outputs", {}).get("text", [])

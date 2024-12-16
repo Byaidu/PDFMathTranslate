@@ -1,4 +1,5 @@
 """Functions that can be used for the most common use-cases for pdf2zh.six"""
+
 import asyncio
 from asyncio import CancelledError
 from typing import BinaryIO
@@ -85,7 +86,7 @@ def translate_patch(
     resfont: str = "",
     noto: Font = None,
     callback: object = None,
-    cancellation_event : asyncio.Event = None,
+    cancellation_event: asyncio.Event = None,
     **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()

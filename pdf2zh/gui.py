@@ -105,12 +105,14 @@ def download_with_limit(url, save_path, size_limit):
                 file.write(chunk)
     return save_path / filename
 
+
 def stop_translate_file(state):
     session_id = state["session_id"]
     if session_id is None:
         return
     if session_id in cancellation_event_map:
         cancellation_event_map[session_id].set()
+
 
 def translate_file(
     file_type,
@@ -182,7 +184,7 @@ def translate_file(
     print(param)
     try:
         translate(**param)
-    except CancelledError as e:
+    except CancelledError:
         del cancellation_event_map[session_id]
         raise gr.Error("Translation cancelled")
     print(f"Files after translation: {os.listdir(output)}")
