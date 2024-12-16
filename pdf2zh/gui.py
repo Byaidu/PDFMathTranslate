@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 from pdf2zh import __version__
-from pdf2zh.pdf2zh import extract_text
+from pdf2zh.high_level import translate
 from pdf2zh.translator import (
     BaseTranslator,
     GoogleTranslator,
@@ -10,16 +10,17 @@ from pdf2zh.translator import (
     DeepLTranslator,
     DeepLXTranslator,
     OllamaTranslator,
+    AzureOpenAITranslator,
     OpenAITranslator,
     ZhipuTranslator,
     SiliconTranslator,
+    GeminiTranslator,
     AzureTranslator,
     TencentTranslator,
 )
 
 import gradio as gr
-import numpy as np
-import pymupdf
+from gradio_pdf import PDF
 import tqdm
 import requests
 import cgi
@@ -30,9 +31,11 @@ service_map: dict[str, BaseTranslator] = {
     "DeepL": DeepLTranslator,
     "DeepLX": DeepLXTranslator,
     "Ollama": OllamaTranslator,
+    "AzureOpenAI": AzureOpenAITranslator,
     "OpenAI": OpenAITranslator,
     "Zhipu": ZhipuTranslator,
     "Silicon": SiliconTranslator,
+    "Gemini": GeminiTranslator,
     "Azure": AzureTranslator,
     "Tencent": TencentTranslator,
 }
@@ -76,19 +79,6 @@ def verify_recaptcha(response):
     return result.get("success")
 
 
-def pdf_preview(file):
-    doc = pymupdf.open(file)
-    page = doc[0]
-    pix = page.get_pixmap()
-    image = np.frombuffer(pix.samples, np.uint8).reshape(pix.height, pix.width, 3)
-    return image
-
-
-def upload_file(file, service, progress=gr.Progress()):
-    preview_image = pdf_preview(file)
-    return file, preview_image
-
-
 def download_with_limit(url, save_path, size_limit):
     chunk_size = 1024
     total_size = 0
@@ -109,7 +99,7 @@ def download_with_limit(url, save_path, size_limit):
     return save_path / filename
 
 
-def translate(
+def translate_file(
     file_type,
     file_input,
     link_input,
@@ -144,8 +134,8 @@ def translate(
         )
 
     filename = os.path.splitext(os.path.basename(file_path))[0]
-    file_en = output / f"{filename}.pdf"
-    file_zh = output / f"{filename}-zh.pdf"
+    file_raw = output / f"{filename}.pdf"
+    file_mono = output / f"{filename}-mono.pdf"
     file_dual = output / f"{filename}-dual.pdf"
 
     translator = service_map[service]
@@ -162,7 +152,7 @@ def translate(
         progress(t.n / t.total, desc="Translating...")
 
     param = {
-        "files": [file_en],
+        "files": [str(file_raw)],
         "pages": selected_page,
         "lang_in": lang_from,
         "lang_out": lang_to,
@@ -172,22 +162,17 @@ def translate(
         "callback": progress_bar,
     }
     print(param)
-    extract_text(**param)
+    translate(**param)
     print(f"Files after translation: {os.listdir(output)}")
 
-    if not file_zh.exists() or not file_dual.exists():
+    if not file_mono.exists() or not file_dual.exists():
         raise gr.Error("No output")
-
-    try:
-        translated_preview = pdf_preview(str(file_zh))
-    except Exception:
-        raise gr.Error("No preview")
 
     progress(1.0, desc="Translation complete!")
 
     return (
-        str(file_zh),
-        translated_preview,
+        str(file_mono),
+        str(file_mono),
         str(file_dual),
         gr.update(visible=True),
         gr.update(visible=True),
@@ -225,16 +210,6 @@ with gr.Blocks(
     .input-file {
         border: 1.2px dashed #165DFF !important;
         border-radius: 6px !important;
-        # background-color: #ffffff !important;
-        transition: background-color 0.4s ease-out;
-    }
-
-    .input-file:hover {
-        border: 1.2px dashed #165DFF !important;
-        border-radius: 6px !important;
-        color: #165DFF !important;
-        background-color: #E8F3FF !important;
-        transition: background-color 0.2s ease-in;
     }
 
     .progress-bar-wrap {
@@ -332,7 +307,9 @@ with gr.Blocks(
                 )
 
             output_title = gr.Markdown("## Translated", visible=False)
-            output_file = gr.File(label="Download Translation", visible=False)
+            output_file_mono = gr.File(
+                label="Download Translation (Mono)", visible=False
+            )
             output_file_dual = gr.File(
                 label="Download Translation (Dual)", visible=False
             )
@@ -378,13 +355,13 @@ with gr.Blocks(
 
         with gr.Column(scale=2):
             gr.Markdown("## Preview")
-            preview = gr.Image(label="Document Preview", visible=True)
+            preview = PDF(label="Document Preview", visible=True)
 
     # Event handlers
     file_input.upload(
-        upload_file,
-        inputs=[file_input, service],
-        outputs=[file_input, preview],
+        lambda x: x,
+        inputs=file_input,
+        outputs=preview,
         js=(
             f"""
             (a,b)=>{{
@@ -403,7 +380,7 @@ with gr.Blocks(
     )
 
     translate_btn.click(
-        translate,
+        translate_file,
         inputs=[
             file_type,
             file_input,
@@ -416,10 +393,10 @@ with gr.Blocks(
             *envs,
         ],
         outputs=[
-            output_file,
+            output_file_mono,
             preview,
             output_file_dual,
-            output_file,
+            output_file_mono,
             output_file_dual,
             output_title,
         ],

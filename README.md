@@ -1,6 +1,6 @@
 <div align="center">
 
-English | [简体中文](README_zh-CN.md)
+English | [简体中文](README_zh-CN.md) | [日本語](README_ja-JP.md)
 
 <img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
@@ -24,6 +24,8 @@ English | [简体中文](README_zh-CN.md)
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
     <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"></a>
 </p>
+
+<a href="https://trendshift.io/repositories/12424" target="_blank"><img src="https://trendshift.io/api/badge/repositories/12424" alt="Byaidu%2FPDFMathTranslate | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
 </div>
 
@@ -66,7 +68,7 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 <h2 id="install">Installation and Usage</h2>
 
-We provide three methods for using this project: [Commandline](#cmd), [Portable](#portable), [GUI](#gui), and [Docker](#docker).
+We provide four methods for using this project: [Commandline](#cmd), [Portable](#portable), [GUI](#gui), and [Docker](#docker).
 
 <h3 id="cmd">Method I. Commandline</h3>
 
@@ -144,7 +146,7 @@ For docker deployment on cloud service:
 
 <h2 id="usage">Advanced Options</h2>
 
-Execute the translation command in the command line to generate the translated document `example-zh.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service.
+Execute the translation command in the command line to generate the translated document `example-mono.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service.
 
 <img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
@@ -162,6 +164,7 @@ In the following table, we list all advanced options for reference:
 | `-t`  | [Multi-threads](#threads) | `pdf2zh example.pdf -t 1` |
 | `-o`  | Output dir | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [Exceptions](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
+| `--share` | Get gradio public link | `pdf2zh -i --share` |
 
 <h3 id="partial">Full / partial document translation</h3>
 
@@ -197,8 +200,10 @@ The table below outlines the required [environment variables](https://chatgpt.co
 |**DeepLX**|`deeplx`|`DEEPLX_ENDPOINT`,`DEEPLX_ACCESS_TOKEN`|`https://api.deepl.com/translate`, `[Your Acccess Token]`|See [DeepLX](https://github.com/OwO-Network/DeepLX)|
 |**Ollama**|`ollama`|`OLLAMA_HOST`, `OLLAMA_MODEL`|`http://127.0.0.1:11434`, `gemma2`|See [Ollama](https://github.com/ollama/ollama)|
 |**OpenAI**|`openai`|`OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`|`https://api.openai.com/v1`, `[Your Key]`, `gpt-4o-mini`|See [OpenAI](https://platform.openai.com/docs/overview)|
+|**AzureOpenAI**|`azure-openai`|`AZURE_OPENAI_BASE_URL`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_MODEL`|`[Your Endpoint]`, `[Your Key]`, `gpt-4o-mini`|See [Azure OpenAI](https://learn.microsoft.com/zh-cn/azure/ai-services/openai/chatgpt-quickstart?tabs=command-line%2Cjavascript-keyless%2Ctypescript-keyless%2Cpython&pivots=programming-language-python)|
 |**Zhipu**|`zhipu`|`ZHIPU_API_KEY`, `ZHIPU_MODEL`|`[Your Key]`, `glm-4-flash`|See [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)|
 |**Silicon**|`silicon`|`SILICON_API_KEY`, `SILICON_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-7B-Instruct`|See [SiliconCloud](https://docs.siliconflow.cn/quickstart)|
+|**Gemini**|`gemini`|`GEMINI_API_KEY`, `GEMINI_MODEL`|`[Your Key]`, `gemini-1.5-flash`|See [Gemini](https://ai.google.dev/gemini-api/docs/openai)|
 |**Azure**|`azure`|`AZURE_ENDPOINT`, `AZURE_API_KEY`|`https://api.translator.azure.cn`, `[Your Key]`|See [Azure](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)|
 |**Tencent**|`tencent`|`TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`|`[Your ID]`, `[Your Key]`|See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)|
 
@@ -223,12 +228,56 @@ Use regex to specify formula fonts and characters that need to be preserved:
 pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
 ```
 
+Preserve `Latex`, `Mono`, `Code`, `Italic`, `Symbol` and `Math` fonts by default:
+
+```bash
+pdf2zh example.pdf -f "(CM[^R]|(MS|XY|MT|BL|RM|EU|LA|RS)[A-Z]|LINE|LCIRCLE|TeX-|rsfs|txsy|wasy|stmary|.*Mono|.*Code|.*Ital|.*Sym|.*Math)"
+```
+
 <h3 id="threads">Specify threads</h3>
 
 Use `-t` to specify how many threads to use in translation:
 
 ```bash
 pdf2zh example.pdf -t 1
+```
+
+<h2 id="todo">API</h2>
+
+### Python
+
+```python
+from pdf2zh import translate, translate_stream
+
+params = {"lang_in": "en", "lang_out": "zh", "service": "google", "thread": 4}
+file_mono, file_dual = translate(files=["example.pdf"], **params)[0]
+with open("example.pdf", "rb") as f:
+    stream_mono, stream_dual = translate_stream(stream=f.read(), **params)
+```
+
+### HTTP
+
+```bash
+pip install pdf2zh[backend]
+pdf2zh --flask
+pdf2zh --celery worker
+```
+
+```bash
+curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"lang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
+{"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
+{"info":{"n":13,"total":506},"state":"PROGRESS"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
+{"state":"SUCCESS"}
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/mono --output example-mono.pdf
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/dual --output example-dual.pdf
+
+curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X DELETE
 ```
 
 <h2 id="todo">TODO</h2>
@@ -244,6 +293,8 @@ pdf2zh example.pdf -t 1
 - [ ] Knuth–Plass algorithm for western languages
 
 - [ ] Support non-PDF/A files
+
+- [ ] Plugins of [Zotero](https://github.com/zotero/zotero) and [Obsidian](https://github.com/obsidianmd/obsidian-releases)
 
 <h2 id="acknowledgement">Acknowledgements</h2>
 

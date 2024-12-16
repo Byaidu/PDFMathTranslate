@@ -25,12 +25,11 @@ class BaseTranslator:
     envs = {}
     lang_map = {}
 
-    def __init__(self, service, lang_out: str, lang_in: str, model):
-        lang_out = self.lang_map.get(lang_out.lower(), lang_out)
+    def __init__(self, lang_in, lang_out, model):
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
-        self.service = service
-        self.lang_out = lang_out
+        lang_out = self.lang_map.get(lang_out.lower(), lang_out)
         self.lang_in = lang_in
+        self.lang_out = lang_out
         self.model = model
 
     def translate(self, text):
@@ -44,20 +43,20 @@ class BaseTranslator:
             },
             {
                 "role": "user",
-                "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation $v*$ unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
+                "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
             },
         ]
 
     def __str__(self):
-        return f"{self.service} {self.lang_out} {self.lang_in}"
+        return f"{self.name} {self.lang_in} {self.lang_out} {self.model}"
 
 
 class GoogleTranslator(BaseTranslator):
     name = "google"
     lang_map = {"zh": "zh-CN"}
 
-    def __init__(self, service, lang_out, lang_in, model):
-        super().__init__(service, lang_out, lang_in, model)
+    def __init__(self, lang_in, lang_out, model):
+        super().__init__(lang_in, lang_out, model)
         self.session = requests.Session()
         self.endpoint = "http://translate.google.com/m"
         self.headers = {
@@ -77,38 +76,40 @@ class GoogleTranslator(BaseTranslator):
         if response.status_code == 400:
             result = "IRREPARABLE TRANSLATION ERROR"
         else:
+            response.raise_for_status()
             result = html.unescape(re_result[0])
         return remove_control_characters(result)
 
 
 class BingTranslator(BaseTranslator):
     # https://github.com/immersive-translate/old-immersive-translate/blob/6df13da22664bea2f51efe5db64c63aca59c4e79/src/background/translationService.js
-    # TODO: IID & IG
     name = "bing"
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, service, lang_out, lang_in, model):
-        super().__init__(service, lang_out, lang_in, model)
+    def __init__(self, lang_in, lang_out, model):
+        super().__init__(lang_in, lang_out, model)
         self.session = requests.Session()
-        self.endpoint = "https://www.bing.com/ttranslatev3"
+        self.endpoint = "https://www.bing.com/translator"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",  # noqa: E501
         }
 
-    def fineSID(self):
-        resp = self.session.get("https://www.bing.com/translator")
-        ig = re.findall(r"\"ig\":\"(.*?)\"", resp.text)[0]
-        iid = re.findall(r"data-iid=\"(.*?)\"", resp.text)[-1]
+    def findSID(self):
+        response = self.session.get(self.endpoint)
+        response.raise_for_status()
+        url = response.url[:-10]
+        ig = re.findall(r"\"ig\":\"(.*?)\"", response.text)[0]
+        iid = re.findall(r"data-iid=\"(.*?)\"", response.text)[-1]
         key, token = re.findall(
-            r"params_AbusePreventionHelper\s=\s\[(.*?),\"(.*?)\",", resp.text
+            r"params_AbusePreventionHelper\s=\s\[(.*?),\"(.*?)\",", response.text
         )[0]
-        return ig, iid, key, token
+        return url, ig, iid, key, token
 
     def translate(self, text):
         text = text[:1000]  # bing translate max length
-        ig, iid, key, token = self.fineSID()
-        resp = self.session.post(
-            f"{self.endpoint}?IG={ig}&IID={iid}",
+        url, ig, iid, key, token = self.findSID()
+        response = self.session.post(
+            f"{url}ttranslatev3?IG={ig}&IID={iid}",
             data={
                 "fromLang": self.lang_in,
                 "to": self.lang_out,
@@ -118,7 +119,8 @@ class BingTranslator(BaseTranslator):
             },
             headers=self.headers,
         )
-        return resp.json()[0]["translations"][0]["text"]
+        response.raise_for_status()
+        return response.json()[0]["translations"][0]["text"]
 
 
 class DeepLTranslator(BaseTranslator):
@@ -130,9 +132,8 @@ class DeepLTranslator(BaseTranslator):
     }
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, service, lang_out, lang_in, model):
-        super().__init__(service, lang_out, lang_in, model)
-        self.session = requests.Session()
+    def __init__(self, lang_in, lang_out, model):
+        super().__init__(lang_in, lang_out, model)
         server_url = os.getenv("DEEPL_SERVER_URL", self.envs["DEEPL_SERVER_URL"])
         auth_key = os.getenv("DEEPL_AUTH_KEY")
         self.client = deepl.Translator(auth_key, server_url=server_url)
@@ -153,8 +154,8 @@ class DeepLXTranslator(BaseTranslator):
     }
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, service, lang_out, lang_in, model):
-        super().__init__(service, lang_out, lang_in, model)
+    def __init__(self, lang_in, lang_out, model):
+        super().__init__(lang_in, lang_out, model)
         self.endpoint = os.getenv("DEEPLX_ENDPOINT", self.envs["DEEPLX_ENDPOINT"])
         self.session = requests.Session()
         auth_key = os.getenv("DEEPLX_ACCESS_TOKEN", self.envs["DEEPLX_ACCESS_TOKEN"])
@@ -162,7 +163,7 @@ class DeepLXTranslator(BaseTranslator):
             self.endpoint = f"{self.endpoint}?token={auth_key}"
 
     def translate(self, text):
-        resp = self.session.post(
+        response = self.session.post(
             self.endpoint,
             json={
                 "source_lang": self.lang_in,
@@ -170,7 +171,8 @@ class DeepLXTranslator(BaseTranslator):
                 "text": text,
             },
         )
-        return resp.json()["data"]
+        response.raise_for_status()
+        return response.json()["data"]
 
 
 class OllamaTranslator(BaseTranslator):
@@ -181,10 +183,10 @@ class OllamaTranslator(BaseTranslator):
         "OLLAMA_MODEL": "gemma2",
     }
 
-    def __init__(self, service, lang_out, lang_in, model):
+    def __init__(self, lang_in, lang_out, model):
         if not model:
             model = os.getenv("OLLAMA_MODEL", self.envs["OLLAMA_MODEL"])
-        super().__init__(service, lang_out, lang_in, model)
+        super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = ollama.Client()
 
@@ -206,12 +208,44 @@ class OpenAITranslator(BaseTranslator):
         "OPENAI_MODEL": "gpt-4o-mini",
     }
 
-    def __init__(self, service, lang_out, lang_in, model, base_url=None, api_key=None):
+    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None):
         if not model:
             model = os.getenv("OPENAI_MODEL", self.envs["OPENAI_MODEL"])
-        super().__init__(service, lang_out, lang_in, model)
+        super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
+
+    def translate(self, text) -> str:
+        response = self.client.chat.completions.create(
+            model=self.model,
+            **self.options,
+            messages=self.prompt(text),
+        )
+        return response.choices[0].message.content.strip()
+
+
+class AzureOpenAITranslator(BaseTranslator):
+    name = "azure-openai"
+    envs = {
+        "AZURE_OPENAI_BASE_URL": None,  # e.g. "https://xxx.openai.azure.com"
+        "AZURE_OPENAI_API_KEY": None,
+        "AZURE_OPENAI_MODEL": "gpt-4o-mini",
+    }
+
+    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None):
+        base_url = os.getenv(
+            "AZURE_OPENAI_BASE_URL", self.envs["AZURE_OPENAI_BASE_URL"]
+        )
+        if not model:
+            model = os.getenv("AZURE_OPENAI_MODEL", self.envs["AZURE_OPENAI_MODEL"])
+        super().__init__(lang_in, lang_out, model)
+        self.options = {"temperature": 0}
+        self.client = openai.AzureOpenAI(
+            azure_endpoint=base_url,
+            azure_deployment=model,
+            api_version="2024-06-01",
+            api_key=api_key,
+        )
 
     def translate(self, text) -> str:
         response = self.client.chat.completions.create(
@@ -230,14 +264,12 @@ class ZhipuTranslator(OpenAITranslator):
         "ZHIPU_MODEL": "glm-4-flash",
     }
 
-    def __init__(self, service, lang_out, lang_in, model):
+    def __init__(self, lang_in, lang_out, model):
         base_url = "https://open.bigmodel.cn/api/paas/v4"
         api_key = os.getenv("ZHIPU_API_KEY")
         if not model:
             model = os.getenv("ZHIPU_MODEL", self.envs["ZHIPU_MODEL"])
-        super().__init__(
-            service, lang_out, lang_in, model, base_url=base_url, api_key=api_key
-        )
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
 
 
 class SiliconTranslator(OpenAITranslator):
@@ -248,14 +280,28 @@ class SiliconTranslator(OpenAITranslator):
         "SILICON_MODEL": "Qwen/Qwen2.5-7B-Instruct",
     }
 
-    def __init__(self, service, lang_out, lang_in, model):
+    def __init__(self, lang_in, lang_out, model):
         base_url = "https://api.siliconflow.cn/v1"
         api_key = os.getenv("SILICON_API_KEY")
         if not model:
             model = os.getenv("SILICON_MODEL", self.envs["SILICON_MODEL"])
-        super().__init__(
-            service, lang_out, lang_in, model, base_url=base_url, api_key=api_key
-        )
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+
+
+class GeminiTranslator(OpenAITranslator):
+    # https://ai.google.dev/gemini-api/docs/openai
+    name = "gemini"
+    envs = {
+        "GEMINI_API_KEY": None,
+        "GEMINI_MODEL": "gemini-1.5-flash",
+    }
+
+    def __init__(self, lang_in, lang_out, model):
+        base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not model:
+            model = os.getenv("GEMINI_MODEL", self.envs["GEMINI_MODEL"])
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
 
 
 class AzureTranslator(BaseTranslator):
@@ -267,8 +313,8 @@ class AzureTranslator(BaseTranslator):
     }
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, service, lang_out, lang_in, model):
-        super().__init__(service, lang_out, lang_in, model)
+    def __init__(self, lang_in, lang_out, model):
+        super().__init__(lang_in, lang_out, model)
         endpoint = os.getenv("AZURE_ENDPOINT", self.envs["AZURE_ENDPOINT"])
         api_key = os.getenv("AZURE_API_KEY")
         credential = AzureKeyCredential(api_key)
@@ -297,8 +343,8 @@ class TencentTranslator(BaseTranslator):
         "TENCENTCLOUD_SECRET_KEY": None,
     }
 
-    def __init__(self, service, lang_out, lang_in, model):
-        super().__init__(service, lang_out, lang_in, model)
+    def __init__(self, lang_in, lang_out, model):
+        super().__init__(lang_in, lang_out, model)
         cred = credential.DefaultCredentialProvider().get_credential()
         self.client = TmtClient(cred, "ap-beijing")
         self.req = TextTranslateRequest()
