@@ -212,11 +212,21 @@ class OpenAITranslator(BaseTranslator):
         self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
 
     def translate(self, text) -> str:
-        response = self.client.chat.completions.create(
-            model=self.model,
-            **self.options,
-            messages=self.prompt(text),
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                **self.options,
+                messages=self.prompt(text),
+            )
+        except openai.BadRequestError as e:
+            print("400 API BadRequestError")
+            return ""
+        except openai.APIStatusError as e:
+            print("API Status Error.")
+            return ""
+        except openai.APIConnectionError as e:
+            print("API Connection Error")
+            return ""
         return response.choices[0].message.content.strip()
 
 
