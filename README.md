@@ -164,7 +164,8 @@ In the following table, we list all advanced options for reference:
 | `-t`  | [Multi-threads](#threads) | `pdf2zh example.pdf -t 1` |
 | `-o`  | Output dir | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [Exceptions](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
-| `--share` | Get gradio public link | `pdf2zh -i --share` |
+| `--share` | [Get gradio public link] | `pdf2zh -i --share` |
+| `-a` | [add authorization and custom login page] | `pdf2zh -i -a users.txt [auth.html]` |
 
 <h3 id="partial">Full / partial document translation</h3>
 

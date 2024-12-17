@@ -279,7 +279,7 @@ class TranslateConverter(PDFConverterEx):
                     if (                                                    # 根据当前字符修正段落属性
                         child.size > pstk[-1].size / 0.79                   # 1. 当前字符显著比段落字体大
                         or len(sstk[-1].strip()) == 1                       # 2. 当前字符为段落第二个文字（考虑首字母放大的情况）
-                    ):
+                    ) and child.get_text() != " ":                          # 3. 当前字符不是空格
                         pstk[-1].y -= child.size - pstk[-1].size            # 修正段落初始纵坐标，假设两个不同大小字符的上边界对齐
                         pstk[-1].size = child.size
                     sstk[-1] += child.get_text()
