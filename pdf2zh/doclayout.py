@@ -1,4 +1,6 @@
 import abc
+import os.path
+
 import cv2
 import numpy as np
 import ast
@@ -11,7 +13,7 @@ class DocLayoutModel(abc.ABC):
     @staticmethod
     def load_onnx():
         model = OnnxModel.from_pretrained(
-            repo_id="wybxc/DocLayout-YOLO-DocStructBench-onnx",
+            repo_id='AI-ModelScope/DocLayout-YOLO-DocStructBench-onnx',
             filename="doclayout_yolo_docstructbench_imgsz1024.onnx",
         )
         return model
@@ -70,7 +72,9 @@ class OnnxModel(DocLayoutModel):
 
     @staticmethod
     def from_pretrained(repo_id: str, filename: str):
-        pth = hf_hub_download(repo_id=repo_id, filename=filename, etag_timeout=1)
+        from modelscope import snapshot_download
+        model_dir = snapshot_download(repo_id)
+        pth = os.path.join(model_dir, filename)
         return OnnxModel(pth)
 
     @property
