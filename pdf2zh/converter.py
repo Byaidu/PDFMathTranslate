@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Dict
 
 from pdfminer.pdfinterp import PDFGraphicState, PDFResourceManager
 from pdfminer.pdffont import PDFCIDFont
