@@ -164,7 +164,8 @@
 | `-t`  | [多线程](#threads) | `pdf2zh example.pdf -t 1` |
 | `-o`  | 输出目录 | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
-| `--share` | 获取 gradio 公开链接 | `pdf2zh -i --share` |
+| `--share` | [获取 gradio 公开链接] | `pdf2zh -i --share` |
+| `-a` | [添加网页认证和自定义认证页] | `pdf2zh -i -a users.txt [auth.html]` |
 
 <h3 id="partial">全文或部分文档翻译</h3>
 
