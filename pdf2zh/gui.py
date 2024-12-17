@@ -49,7 +49,8 @@ service_map: dict[str, BaseTranslator] = {
     "AnythingLLM": AnythingLLMTranslator,
 }
 lang_map = {
-    "Chinese": "zh",
+    "Simplified Chinese": "zh",
+    "Traditional Chinese": "zh-TW",
     "English": "en",
     "French": "fr",
     "German": "de",
@@ -309,7 +310,7 @@ with gr.Blocks(
                 lang_to = gr.Dropdown(
                     label="Translate to",
                     choices=lang_map.keys(),
-                    value="Chinese",
+                    value="Simplified Chinese",
                 )
             page_range = gr.Radio(
                 choices=page_map.keys(),
