@@ -290,7 +290,7 @@ with gr.Blocks(
             service = gr.Dropdown(
                 label="Service",
                 choices=service_map.keys(),
-                value="Google",
+                value="ModelScope",
             )
             envs = []
             for i in range(3):
