@@ -296,7 +296,7 @@ with gr.Blocks(
             for i in range(3):
                 envs.append(
                     gr.Textbox(
-                        visible=False,
+                        visible=True,
                         interactive=True,
                     )
                 )
