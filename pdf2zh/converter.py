@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from pdfminer.pdfinterp import PDFGraphicState, PDFResourceManager
 from pdfminer.pdffont import PDFCIDFont
 from pdfminer.converter import PDFConverter
@@ -133,6 +135,7 @@ class TranslateConverter(PDFConverterEx):
         service: str = "",
         resfont: str = "",
         noto: Font = None,
+        envs: Dict = None,
     ) -> None:
         super().__init__(rsrcmgr)
         self.vfont = vfont
@@ -148,7 +151,7 @@ class TranslateConverter(PDFConverterEx):
         for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, AzureOpenAITranslator,
                            OpenAITranslator, ZhipuTranslator, ModelScopeTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AnythingLLMTranslator]:
             if service_name == translator.name:
-                self.translator = translator(lang_in, lang_out, service_model)
+                self.translator = translator(lang_in, lang_out, service_model, envs=envs)
         if not self.translator:
             raise ValueError("Unsupported translation service")
 

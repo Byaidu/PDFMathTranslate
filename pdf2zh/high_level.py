@@ -92,7 +92,7 @@ def translate_patch(
     rsrcmgr = PDFResourceManager()
     layout = {}
     device = TranslateConverter(
-        rsrcmgr, vfont, vchar, thread, layout, lang_in, lang_out, service, resfont, noto
+        rsrcmgr, vfont, vchar, thread, layout, lang_in, lang_out, service, resfont, noto, kwarg.get('envs', {})
     )
 
     assert device is not None

@@ -9,11 +9,11 @@ import argparse
 import sys
 import logging
 from typing import List, Optional
-from pdf2zh import __version__, log
 from pdf2zh.high_level import translate
 
 
 def create_parser() -> argparse.ArgumentParser:
+    from pdf2zh import __version__
     parser = argparse.ArgumentParser(description=__doc__, add_help=True)
     parser.add_argument(
         "files",
@@ -136,6 +136,7 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
 
 
 def main(args: Optional[List[str]] = None) -> int:
+    from pdf2zh import log
     logging.basicConfig()
 
     parsed_args = parse_args(args)

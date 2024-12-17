@@ -164,6 +164,10 @@ def translate_file(
     lang_from = lang_map[lang_from]
     lang_to = lang_map[lang_to]
 
+    _envs = {}
+    for i, env in enumerate(translator.envs.items()):
+        _envs[env[0]] = envs[i]
+
     print(f"Files before translation: {os.listdir(output)}")
 
     def progress_bar(t: tqdm.tqdm):
@@ -179,8 +183,8 @@ def translate_file(
         "thread": 4,
         "callback": progress_bar,
         "cancellation_event": cancellation_event_map[session_id],
+        "envs": _envs,
     }
-    print(param)
     try:
         translate(**param)
     except CancelledError:

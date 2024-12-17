@@ -50,4 +50,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-pdf2zh = "pdf2zh.pdf2zh:main"
+pdf2zh = "pdf2zh.entrance:main"

@@ -34,6 +34,14 @@ class BaseTranslator:
         self.lang_out = lang_out
         self.model = model
 
+    def set_envs(self, envs):
+        for key in self.envs:
+            if key in os.environ:
+                self.envs[key] = os.environ[key]
+        if envs is not None:
+            for key in envs:
+                self.envs[key] = envs[key]
+
     def translate(self, text):
         pass
 
@@ -57,7 +65,7 @@ class GoogleTranslator(BaseTranslator):
     name = "google"
     lang_map = {"zh": "zh-CN"}
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, **kwargs):
         super().__init__(lang_in, lang_out, model)
         self.session = requests.Session()
         self.endpoint = "http://translate.google.com/m"
@@ -88,7 +96,7 @@ class BingTranslator(BaseTranslator):
     name = "bing"
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, **kwargs):
         super().__init__(lang_in, lang_out, model)
         self.session = requests.Session()
         self.endpoint = "https://www.bing.com/translator"
@@ -133,9 +141,10 @@ class DeepLTranslator(BaseTranslator):
     }
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, envs=None):
+        self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
-        auth_key = os.getenv("DEEPL_AUTH_KEY")
+        auth_key = self.envs["DEEPL_AUTH_KEY"]
         self.client = deepl.Translator(auth_key)
 
     def translate(self, text):
@@ -153,9 +162,10 @@ class DeepLXTranslator(BaseTranslator):
     }
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, envs=None):
+        self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
-        self.endpoint = os.getenv("DEEPLX_ENDPOINT", self.envs["DEEPLX_ENDPOINT"])
+        self.endpoint = self.envs["DEEPLX_ENDPOINT"]
         self.session = requests.Session()
 
     def translate(self, text):
@@ -179,9 +189,10 @@ class OllamaTranslator(BaseTranslator):
         "OLLAMA_MODEL": "gemma2",
     }
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, envs=None):
+        self.set_envs(envs)
         if not model:
-            model = os.getenv("OLLAMA_MODEL", self.envs["OLLAMA_MODEL"])
+            model = self.envs["OLLAMA_MODEL"]
         super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = ollama.Client()
@@ -204,9 +215,10 @@ class OpenAITranslator(BaseTranslator):
         "OPENAI_MODEL": "gpt-4o-mini",
     }
 
-    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None):
+    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None, envs=None):
+        self.set_envs(envs)
         if not model:
-            model = os.getenv("OPENAI_MODEL", self.envs["OPENAI_MODEL"])
+            model = self.envs["OPENAI_MODEL"]
         super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
@@ -228,12 +240,11 @@ class AzureOpenAITranslator(BaseTranslator):
         "AZURE_OPENAI_MODEL": "gpt-4o-mini",
     }
 
-    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None):
-        base_url = os.getenv(
-            "AZURE_OPENAI_BASE_URL", self.envs["AZURE_OPENAI_BASE_URL"]
-        )
+    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None, envs=None):
+        self.set_envs(envs)
+        base_url = self.envs["AZURE_OPENAI_BASE_URL"]
         if not model:
-            model = os.getenv("AZURE_OPENAI_MODEL", self.envs["AZURE_OPENAI_MODEL"])
+            model = self.envs["AZURE_OPENAI_MODEL"]
         super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}
         self.client = openai.AzureOpenAI(
@@ -260,11 +271,12 @@ class ModelScopeTranslator(OpenAITranslator):
         "MODELSCOPE_MODEL": "Qwen/Qwen2.5-32B-Instruct",
     }
 
-    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None):
+    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None, envs=None):
+        self.set_envs(envs)
         base_url = "https://api-inference.modelscope.cn/v1"
-        api_key = os.getenv("MODELSCOPE_API_KEY")
+        api_key = self.envs["MODELSCOPE_API_KEY"]
         if not model:
-            model = os.getenv("MODELSCOPE_MODEL", self.envs["MODELSCOPE_MODEL"])
+            model = self.envs["MODELSCOPE_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
 
 
@@ -276,11 +288,12 @@ class ZhipuTranslator(OpenAITranslator):
         "ZHIPU_MODEL": "glm-4-flash",
     }
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, envs=None):
+        self.set_envs(envs)
         base_url = "https://open.bigmodel.cn/api/paas/v4"
-        api_key = os.getenv("ZHIPU_API_KEY")
+        api_key = self.envs["ZHIPU_API_KEY"]
         if not model:
-            model = os.getenv("ZHIPU_MODEL", self.envs["ZHIPU_MODEL"])
+            model = self.envs["ZHIPU_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
 
     def translate(self, text) -> str:
@@ -308,11 +321,12 @@ class SiliconTranslator(OpenAITranslator):
         "SILICON_MODEL": "Qwen/Qwen2.5-7B-Instruct",
     }
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, envs=None):
+        self.set_envs(envs)
         base_url = "https://api.siliconflow.cn/v1"
-        api_key = os.getenv("SILICON_API_KEY")
+        api_key = self.envs["SILICON_API_KEY"]
         if not model:
-            model = os.getenv("SILICON_MODEL", self.envs["SILICON_MODEL"])
+            model = self.envs["SILICON_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
 
 
@@ -324,11 +338,12 @@ class GeminiTranslator(OpenAITranslator):
         "GEMINI_MODEL": "gemini-1.5-flash",
     }
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, envs=None):
+        self.set_envs(envs)
         base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = self.envs["GEMINI_API_KEY"]
         if not model:
-            model = os.getenv("GEMINI_MODEL", self.envs["GEMINI_MODEL"])
+            model = self.envs["GEMINI_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
 
 
@@ -341,9 +356,10 @@ class AzureTranslator(BaseTranslator):
     }
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, envs=None):
+        self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
-        endpoint = os.getenv("AZURE_ENDPOINT", self.envs["AZURE_ENDPOINT"])
+        endpoint = self.envs["AZURE_ENDPOINT"]
         api_key = os.getenv("AZURE_API_KEY")
         credential = AzureKeyCredential(api_key)
         self.client = TextTranslationClient(
@@ -371,7 +387,8 @@ class TencentTranslator(BaseTranslator):
         "TENCENTCLOUD_SECRET_KEY": None,
     }
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in, lang_out, model, envs=None):
+        self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
         cred = credential.DefaultCredentialProvider().get_credential()
         self.client = TmtClient(cred, "ap-beijing")
@@ -393,10 +410,11 @@ class AnythingLLMTranslator(BaseTranslator):
         "AnythingLLM_APIKEY": "api_key",
     }
 
-    def __init__(self, lang_out, lang_in, model):
+    def __init__(self, lang_out, lang_in, model, envs=None):
+        self.set_envs(envs)
         super().__init__(lang_out, lang_in, model)
-        self.api_url = os.getenv("AnythingLLM_URL", self.envs["AnythingLLM_URL"])
-        self.api_key = os.getenv("AnythingLLM_APIKEY", self.envs["AnythingLLM_APIKEY"])
+        self.api_url = self.envs["AnythingLLM_URL"]
+        self.api_key = self.envs["AnythingLLM_APIKEY"]
         self.headers = {
             "accept": "application/json",
             "Authorization": f"Bearer {self.api_key}",
@@ -428,10 +446,11 @@ class DifyTranslator(BaseTranslator):
         "DIFY_API_KEY": "api_key",  # 替换为实际 API 密钥
     }
 
-    def __init__(self, lang_out, lang_in, model):
+    def __init__(self, lang_out, lang_in, model, envs=None):
+        self.set_envs(envs)
         super().__init__(lang_out, lang_in, model)
-        self.api_url = os.getenv("DIFY_API_URL", self.envs["DIFY_API_URL"])
-        self.api_key = os.getenv("DIFY_API_KEY", self.envs["DIFY_API_KEY"])
+        self.api_url = self.envs["DIFY_API_URL"]
+        self.api_key = self.envs["DIFY_API_KEY"]
 
     def translate(self, text):
         headers = {
