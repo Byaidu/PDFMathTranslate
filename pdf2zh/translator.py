@@ -252,6 +252,22 @@ class AzureOpenAITranslator(BaseTranslator):
         return response.choices[0].message.content.strip()
 
 
+class ModelScopeTranslator(OpenAITranslator):
+    name = "modelscope"
+    envs = {
+        "MODELSCOPE_BASE_URL": "https://api-inference.modelscope.cn/v1",
+        "MODELSCOPE_API_KEY": None,
+        "MODELSCOPE_MODEL": "Qwen/Qwen2.5-Coder-32B-Instruct",
+    }
+
+    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None):
+        base_url = "https://api-inference.modelscope.cn/v1"
+        api_key = os.getenv("MODELSCOPE_API_KEY")
+        if not model:
+            model = os.getenv("MODELSCOPE_MODEL", self.envs["MODELSCOPE_MODEL"])
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+
+
 class ZhipuTranslator(OpenAITranslator):
     # https://bigmodel.cn/dev/api/thirdparty-frame/openai-sdk
     name = "zhipu"
