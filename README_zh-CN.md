@@ -19,6 +19,8 @@
     <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/></a>
   <a href="https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker">
     <img src="https://img.shields.io/badge/%F0%9F%A4%97-Online%20Demo-FF9E0D"/></a>
+  <a href="https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate">
+    <img src="https://img.shields.io/badge/ModelScope-Demo-blue"></a>
   <a href="https://github.com/Byaidu/PDFMathTranslate/pulls">
     <img src="https://img.shields.io/badge/contributions-welcome-green"/></a>
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
@@ -63,12 +65,17 @@
 
 ### Hugging Face 在线演示
 
-你可以立即尝试 [在 HuggingFace 上的在线演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker) 而无需安装
+你可以立即尝试 [在 HuggingFace 上的在线演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)和[魔搭的在线演示](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate)而无需安装
 请注意，演示的计算资源有限，因此请避免滥用
 
 <h2 id="install">安装和使用</h2>
 
 我们提供了四种使用该项目的方法：[命令行工具](#cmd)、[便携式安装](#portable)、[图形交互界面](#gui) 和 [容器化部署](#docker).
+
+pdf2zh的运行依赖于额外模型(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)，该模型在魔搭上也可以找到。如果你在启动时下载该模型遇到问题，请使用如下环境变量：
+```shell
+USE_MODELSCOPE=1 pdf2zh
+```
 
 <h3 id="cmd">方法一、命令行工具</h3>
 

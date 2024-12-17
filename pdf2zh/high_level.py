@@ -92,7 +92,17 @@ def translate_patch(
     rsrcmgr = PDFResourceManager()
     layout = {}
     device = TranslateConverter(
-        rsrcmgr, vfont, vchar, thread, layout, lang_in, lang_out, service, resfont, noto
+        rsrcmgr,
+        vfont,
+        vchar,
+        thread,
+        layout,
+        lang_in,
+        lang_out,
+        service,
+        resfont,
+        noto,
+        kwarg.get("envs", {}),
     )
 
     assert device is not None
@@ -216,7 +226,7 @@ def translate_stream(
 
     fp = io.BytesIO()
     doc_zh.save(fp)
-    obj_patch: dict = translate_patch(fp, **locals())
+    obj_patch: dict = translate_patch(fp, envs=kwarg["envs"], **locals())
 
     for obj_id, ops_new in obj_patch.items():
         # ops_old=doc_en.xref_stream(obj_id)
@@ -282,7 +292,7 @@ def translate(
 
         doc_raw = open(file, "rb")
         s_raw = doc_raw.read()
-        s_mono, s_dual = translate_stream(s_raw, **locals())
+        s_mono, s_dual = translate_stream(s_raw, envs=kwarg["envs"], **locals())
         file_mono = Path(output) / f"{filename}-mono.pdf"
         file_dual = Path(output) / f"{filename}-dual.pdf"
         doc_mono = open(file_mono, "wb")
