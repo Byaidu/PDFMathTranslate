@@ -257,7 +257,7 @@ class ModelScopeTranslator(OpenAITranslator):
     envs = {
         "MODELSCOPE_BASE_URL": "https://api-inference.modelscope.cn/v1",
         "MODELSCOPE_API_KEY": None,
-        "MODELSCOPE_MODEL": "Qwen/Qwen2.5-Coder-32B-Instruct",
+        "MODELSCOPE_MODEL": "Qwen/Qwen2.5-32B-Instruct",
     }
 
     def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None):
