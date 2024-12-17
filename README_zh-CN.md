@@ -19,6 +19,8 @@
     <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"/></a>
   <a href="https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker">
     <img src="https://img.shields.io/badge/%F0%9F%A4%97-Online%20Demo-FF9E0D"/></a>
+  <a href="https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate">
+    <img src="https://img.shields.io/badge/ModelScope-Demo-blue"></a>
   <a href="https://github.com/Byaidu/PDFMathTranslate/pulls">
     <img src="https://img.shields.io/badge/contributions-welcome-green"/></a>
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
@@ -63,7 +65,7 @@
 
 ### Hugging Face 在线演示
 
-你可以立即尝试 [在 HuggingFace 上的在线演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker) 而无需安装
+你可以立即尝试 [在 HuggingFace 上的在线演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)和[魔搭的在线演示](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate)而无需安装
 请注意，演示的计算资源有限，因此请避免滥用
 
 <h2 id="install">安装和使用</h2>
