@@ -296,7 +296,7 @@ with gr.Blocks(
             for i in range(3):
                 envs.append(
                     gr.Textbox(
-                        visible=True,
+                        visible=False,
                         interactive=True,
                     )
                 )
@@ -438,6 +438,7 @@ with gr.Blocks(
         stop_translate_file,
         inputs=[state],
     )
+    demo.load(on_select_service, service, envs)
 
 
 def setup_gui(share=False):
