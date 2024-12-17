@@ -35,7 +35,10 @@ class BaseTranslator:
         self.model = model
 
     def set_envs(self, envs):
-        self.envs = copy(self.__class__.envs)
+        # Detach from self.__class__.envs
+        # Cannot use self.envs = copy(self.__class__.envs)
+        # because if set_envs called twice, the second call will override the first call
+        self.envs = copy(self.envs)
         for key in self.envs:
             if key in os.environ:
                 self.envs[key] = os.environ[key]
@@ -216,7 +219,10 @@ class OpenAITranslator(BaseTranslator):
         "OPENAI_MODEL": "gpt-4o-mini",
     }
 
-    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None):
+    def __init__(
+        self, lang_in, lang_out, model, base_url=None, api_key=None, envs=None
+    ):
+        self.set_envs(envs)
         if not model:
             model = self.envs["OPENAI_MODEL"]
         super().__init__(lang_in, lang_out, model)
