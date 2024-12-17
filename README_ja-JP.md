@@ -164,7 +164,8 @@ Python環境を事前にインストールする必要はありません
 | `-t`  | [マルチスレッド](#threads) | `pdf2zh example.pdf -t 1` |
 | `-o`  | 出力ディレクトリ | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
-| `--share` | gradio公開リンクを取得 | `pdf2zh -i --share` |
+| `--share` | [gradio公開リンクを取得] | `pdf2zh -i --share` |
+| `-a` | [ウェブ認証とカスタム認証ページの追加] | `pdf2zh -i -a users.txt [auth.html]` |
 
 <h3 id="partial">全文または部分的なドキュメント翻訳</h3>
 
