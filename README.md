@@ -72,6 +72,11 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 We provide four methods for using this project: [Commandline](#cmd), [Portable](#portable), [GUI](#gui), and [Docker](#docker).
 
+pdf2zh needs an extra model(`wybxc/DocLayout-YOLO-DocStructBench-onnx`), which can be found in modelscope. if you have a problem with downloading this model, try this environment variable:
+```shell
+USE_MODELSCOPE=1 pdf2zh
+```
+
 <h3 id="cmd">Method I. Commandline</h3>
 
   1. Python installed (3.8 <= version <= 3.12)

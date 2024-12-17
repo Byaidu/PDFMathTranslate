@@ -72,6 +72,12 @@
 
 このプロジェクトを使用するための4つの方法を提供しています：[コマンドライン](#cmd)、[ポータブル](#portable)、[GUI](#gui)、および [Docker](#docker)。
 
+pdf2zhの実行には追加モデル（`wybxc/DocLayout-YOLO-DocStructBench-onnx`）が必要です。このモデルはModelScopeでも見つけることができます。起動時にこのモデルのダウンロードに問題がある場合は、以下の環境変数を使用してください：
+
+```shell
+USE_MODELSCOPE=1 pdf2zh
+```
+
 <h3 id="cmd">方法1. コマンドライン</h3>
 
   1. Pythonがインストールされていること (バージョン3.8 <= バージョン <= 3.12)

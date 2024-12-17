@@ -72,6 +72,11 @@
 
 我们提供了四种使用该项目的方法：[命令行工具](#cmd)、[便携式安装](#portable)、[图形交互界面](#gui) 和 [容器化部署](#docker).
 
+pdf2zh的运行依赖于额外模型(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)，该模型在魔搭上也可以找到。如果你在启动时下载该模型遇到问题，请使用如下环境变量：
+```shell
+USE_MODELSCOPE=1 pdf2zh
+```
+
 <h3 id="cmd">方法一、命令行工具</h3>
 
   1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
