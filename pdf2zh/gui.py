@@ -168,7 +168,7 @@ def translate_file(
     _envs = {}
     for i, env in enumerate(translator.envs.items()):
         _envs[env[0]] = envs[i]
-    
+
     print(f"Files before translation: {os.listdir(output)}")
 
     def progress_bar(t: tqdm.tqdm):

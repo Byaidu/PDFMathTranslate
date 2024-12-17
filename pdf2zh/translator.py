@@ -240,7 +240,9 @@ class AzureOpenAITranslator(BaseTranslator):
         "AZURE_OPENAI_MODEL": "gpt-4o-mini",
     }
 
-    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None, envs=None):
+    def __init__(
+        self, lang_in, lang_out, model, base_url=None, api_key=None, envs=None
+    ):
         self.set_envs(envs)
         base_url = self.envs["AZURE_OPENAI_BASE_URL"]
         if not model:
@@ -271,7 +273,9 @@ class ModelScopeTranslator(OpenAITranslator):
         "MODELSCOPE_MODEL": "Qwen/Qwen2.5-32B-Instruct",
     }
 
-    def __init__(self, lang_in, lang_out, model, base_url=None, api_key=None, envs=None):
+    def __init__(
+        self, lang_in, lang_out, model, base_url=None, api_key=None, envs=None
+    ):
         self.set_envs(envs)
         base_url = "https://api-inference.modelscope.cn/v1"
         api_key = self.envs["MODELSCOPE_API_KEY"]

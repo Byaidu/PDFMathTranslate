@@ -78,6 +78,7 @@ class OnnxModel(DocLayoutModel):
                 "wybxc/DocLayout-YOLO-DocStructBench-onnx": "AI-ModelScope/DocLayout-YOLO-DocStructBench-onnx"
             }
             from modelscope import snapshot_download
+
             model_dir = snapshot_download(repo_mapping[repo_id])
             pth = os.path.join(model_dir, filename)
         else:
