@@ -445,6 +445,8 @@ with gr.Blocks(
 def readuserandpasswd(file_path):
     tuple_list = []
     content = ""
+    if file_path is None or len(file_path) == 0:
+        return tuple_list, content
     if len(file_path) == 2:
         try:
             with open(file_path[1], "r", encoding="utf-8") as file:
