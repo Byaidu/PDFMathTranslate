@@ -155,21 +155,21 @@ Execute the translation command in the command line to generate the translated d
 
 In the following table, we list all advanced options for reference:
 
-| Option         | Function                                  | Example                                        |
-| -------------- | ----------------------------------------- | ---------------------------------------------- |
-| files          | Local files                               | `pdf2zh ~/local.pdf`                           |
-| links          | Online files                              | `pdf2zh http://arxiv.org/paper.pdf`            |
-| `-i`           | [Enter GUI](#gui)                         | `pdf2zh -i`                                    |
-| `-p`           | [Partial document translation](#partial)  | `pdf2zh example.pdf -p 1`                      |
-| `-li`          | [Source language](#languages)             | `pdf2zh example.pdf -li en`                    |
-| `-lo`          | [Target language](#languages)             | `pdf2zh example.pdf -lo zh`                    |
-| `-s`           | [Translation service](#services)          | `pdf2zh example.pdf -s deepl`                  |
-| `-t`           | [Multi-threads](#threads)                 | `pdf2zh example.pdf -t 1`                      |
-| `-o`           | Output dir                                | `pdf2zh example.pdf -o output`                 |
-| `-f`, `-c`     | [Exceptions](#exceptions)                 | `pdf2zh example.pdf -f "(MS.*)"`               |
-| `--share`      | [Get gradio public link]                  | `pdf2zh -i --share`                            |
-| `--authorized` | [add authorization and custom login page] | `pdf2zh -i --authorized users.txt [auth.html]` |
-| `--prompt`     | [custom llm prompt]                       | `pdf2zh --prompt [prompt.txt]`                 |
+| Option         | Function                                                                                                      | Example                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| files          | Local files                                                                                                   | `pdf2zh ~/local.pdf`                           |
+| links          | Online files                                                                                                  | `pdf2zh http://arxiv.org/paper.pdf`            |
+| `-i`           | [Enter GUI](#gui)                                                                                             | `pdf2zh -i`                                    |
+| `-p`           | [Partial document translation](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#partial) | `pdf2zh example.pdf -p 1`                      |
+| `-li`          | [Source language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -li en`                    |
+| `-lo`          | [Target language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -lo zh`                    |
+| `-s`           | [Translation service](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services)         | `pdf2zh example.pdf -s deepl`                  |
+| `-t`           | [Multi-threads](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#threads)                | `pdf2zh example.pdf -t 1`                      |
+| `-o`           | Output dir                                                                                                    | `pdf2zh example.pdf -o output`                 |
+| `-f`, `-c`     | [Exceptions](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                | `pdf2zh example.pdf -f "(MS.*)"`               |
+| `--share`      | Public link                                                                                                   | `pdf2zh -i --share`                            |
+| `--authorized` | Authorization                                                                                                 | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--prompt`     | [Custom Prompt](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                 | `pdf2zh --prompt [prompt.txt]`                 |
 
 For detailed explanations, please refer to our document about [Advanced Usage](./docs/ADVANCED.md) for a full list of each option.
 
