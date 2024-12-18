@@ -13,24 +13,14 @@ from gradio_pdf import PDF
 
 from pdf2zh import __version__
 from pdf2zh.high_level import translate
-from pdf2zh.translator import (
-    AnythingLLMTranslator,
-    AzureOpenAITranslator,
-    AzureTranslator,
-    BaseTranslator,
-    BingTranslator,
-    DeepLTranslator,
-    DeepLXTranslator,
-    DifyTranslator,
-    GeminiTranslator,
-    GoogleTranslator,
-    ModelScopeTranslator,
-    OllamaTranslator,
-    OpenAITranslator,
-    SiliconTranslator,
-    TencentTranslator,
-    ZhipuTranslator,
-)
+from pdf2zh.translator import (AnythingLLMTranslator, AzureOpenAITranslator,
+                               AzureTranslator, BaseTranslator, BingTranslator,
+                               DeepLTranslator, DeepLXTranslator,
+                               DifyTranslator, GeminiTranslator,
+                               GoogleTranslator, ModelScopeTranslator,
+                               OllamaTranslator, OpenAITranslator,
+                               SiliconTranslator, TencentTranslator,
+                               ZhipuTranslator)
 
 service_map: dict[str, BaseTranslator] = {
     "Google": GoogleTranslator,
