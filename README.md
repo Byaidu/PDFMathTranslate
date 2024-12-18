@@ -174,7 +174,8 @@ In the following table, we list all advanced options for reference:
 | `-o`  | Output dir | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [Exceptions](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 | `--share` | [Get gradio public link] | `pdf2zh -i --share` |
-| `-a` | [add authorization and custom login page] | `pdf2zh -i -a users.txt [auth.html]` |
+| `--authorized` | [add authorization and custom login page] | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--prompt` | [custom llm prompt] | `pdf2zh --prompt [prompt.txt]` |
 
 <h3 id="partial">Full / partial document translation</h3>
 
@@ -254,7 +255,34 @@ Use `-t` to specify how many threads to use in translation:
 ```bash
 pdf2zh example.pdf -t 1
 ```
+<h3 id="prompt">custom prompt</h3>
+Use `--prompt` to specify which prompt to use in llm:
+```bash
+pdf2zh example.pdf -pr prompt.txt
+```
 
+
+example prompt.txt
+```
+[
+    {
+        "role": "system",
+        "content": "You are a professional,authentic machine translation engine.",
+    },
+    {
+        "role": "user",
+        "content": "Translate the following markdown source text to ${lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: ${text}\nTranslated Text:",
+    },
+]
+```
+
+
+In custom prompt file, there are three variables can be used.
+|**variables**|**comment**|
+|-|-|
+|`lang_in`|input language|
+|`lang_out`|output language|
+|`text`|text need to be translated|
 <h2 id="todo">API</h2>
 
 ### Python

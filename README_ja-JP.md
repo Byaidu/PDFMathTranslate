@@ -175,7 +175,8 @@ Python環境を事前にインストールする必要はありません
 | `-o`  | 出力ディレクトリ | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 | `--share` | [gradio公開リンクを取得] | `pdf2zh -i --share` |
-| `-a` | [ウェブ認証とカスタム認証ページの追加] | `pdf2zh -i -a users.txt [auth.html]` |
+| `--authorized` | [ウェブ認証とカスタム認証ページの追加] | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--prompt` | [カスタムビッグモデルのプロンプトを使用する] | `pdf2zh --prompt [prompt.txt]` |
 
 <h3 id="partial">全文または部分的なドキュメント翻訳</h3>
 
@@ -256,6 +257,35 @@ pdf2zh example.pdf -f "(CM[^R]|(MS|XY|MT|BL|RM|EU|LA|RS)[A-Z]|LINE|LCIRCLE|TeX-|
 pdf2zh example.pdf -t 1
 ```
 
+<h3 id="prompt">custom prompt</h3>
+(need Japenese translation)
+Use `--prompt` to specify which prompt to use in llm:
+```bash
+pdf2zh example.pdf -pr prompt.txt
+```
+
+
+example prompt.txt
+```
+[
+    {
+        "role": "system",
+        "content": "You are a professional,authentic machine translation engine.",
+    },
+    {
+        "role": "user",
+        "content": "Translate the following markdown source text to ${lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: ${text}\nTranslated Text:",
+    },
+]
+```
+
+
+In custom prompt file, there are three variables can be used.
+|**variables**|**comment**|
+|-|-|
+|`lang_in`|input language|
+|`lang_out`|output language|
+|`text`|text need to be translated|
 <h2 id="todo">API</h2>
 
 ### Python
