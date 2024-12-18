@@ -152,7 +152,7 @@ class TranslateConverter(PDFConverterEx):
         for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, AzureOpenAITranslator,
                            OpenAITranslator, ZhipuTranslator, ModelScopeTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AnythingLLMTranslator]:
             if service_name == translator.name:
-                self.translator = translator(lang_in, lang_out, service_model, envs=envs,prompt=prompt)
+                self.translator = translator(lang_in, lang_out, service_model, envs=envs, prompt=prompt)
         if not self.translator:
             raise ValueError("Unsupported translation service")
 
