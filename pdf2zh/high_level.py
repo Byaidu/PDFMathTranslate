@@ -1,187 +1,136 @@
 """Functions that can be used for the most common use-cases for pdf2zh.six"""
 
-import logging
-import sys
-from io import StringIO
-from typing import Any, BinaryIO, Container, Iterator, Optional, cast
-import torch
+import asyncio
+from asyncio import CancelledError
+from typing import BinaryIO
 import numpy as np
 import tqdm
-from pymupdf import Document
+import sys
+from pymupdf import Font, Document
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfinterp import PDFResourceManager
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfparser import PDFParser
+from pdfminer.pdfexceptions import PDFValueError
+from pdf2zh.converter import TranslateConverter
+from pdf2zh.pdfinterp import PDFPageInterpreterEx
+from pdf2zh.doclayout import DocLayoutModel
+from pathlib import Path
+from typing import Any, List, Optional
+import urllib.request
+import requests
+import tempfile
+import os
+import io
 
-from pdf2zh.converter import (
-    HOCRConverter,
-    HTMLConverter,
-    PDFPageAggregator,
-    TextConverter,
-    XMLConverter,
-)
-from pdf2zh.image import ImageWriter
-from pdf2zh.layout import LAParams, LTPage
-from pdf2zh.pdfdevice import PDFDevice, TagExtractor
-from pdf2zh.pdfexceptions import PDFValueError
-from pdf2zh.pdfinterp import PDFPageInterpreter, PDFResourceManager
-from pdf2zh.pdfpage import PDFPage
-from pdf2zh.utils import AnyIO, FileOrName, open_filename
+model = DocLayoutModel.load_available()
+
+resfont_map = {
+    "zh-cn": "china-ss",
+    "zh-tw": "china-ts",
+    "zh-hans": "china-ss",
+    "zh-hant": "china-ts",
+    "zh": "china-ss",
+    "ja": "japan-s",
+    "ko": "korea-s",
+}
+
+noto_list = [
+    "am",  # Amharic
+    "ar",  # Arabic
+    "bn",  # Bengali
+    "bg",  # Bulgarian
+    "chr",  # Cherokee
+    "el",  # Greek
+    "gu",  # Gujarati
+    "iw",  # Hebrew
+    "hi",  # Hindi
+    # "ja",  # Japanese
+    "kn",  # Kannada
+    # "ko",  # Korean
+    "ml",  # Malayalam
+    "mr",  # Marathi
+    "ru",  # Russian
+    "sr",  # Serbian
+    # "zh-cn",# SC
+    "ta",  # Tamil
+    "te",  # Telugu
+    "th",  # Thai
+    # "zh-tw",# TC
+    "ur",  # Urdu
+    "uk",  # Ukrainian
+]
 
 
-def extract_text_to_fp(
+def check_files(files: List[str]) -> List[str]:
+    files = [
+        f for f in files if not f.startswith("http://")
+    ]  # exclude online files, http
+    files = [
+        f for f in files if not f.startswith("https://")
+    ]  # exclude online files, https
+    missing_files = [file for file in files if not os.path.exists(file)]
+    return missing_files
+
+
+def translate_patch(
     inf: BinaryIO,
-    outfp: AnyIO,
-    output_type: str = "text",
-    codec: str = "utf-8",
-    laparams: Optional[LAParams] = None,
-    maxpages: int = 0,
-    pages: Optional[Container[int]] = None,
-    password: str = "",
-    scale: float = 1.0,
-    rotation: int = 0,
-    layoutmode: str = "normal",
-    output_dir: Optional[str] = None,
-    strip_control: bool = False,
-    debug: bool = False,
-    disable_caching: bool = False,
-    page_count: int = 0,
+    pages: Optional[list[int]] = None,
     vfont: str = "",
     vchar: str = "",
     thread: int = 0,
-    doc_en: Document = None,
-    model=None,
+    doc_zh: Document = None,
     lang_in: str = "",
     lang_out: str = "",
     service: str = "",
+    resfont: str = "",
+    noto: Font = None,
     callback: object = None,
-    **kwargs: Any,
+    cancellation_event: asyncio.Event = None,
+    **kwarg: Any,
 ) -> None:
-    """Parses text from inf-file and writes to outfp file-like object.
-
-    Takes loads of optional arguments but the defaults are somewhat sane.
-    Beware laparams: Including an empty LAParams is not the same as passing
-    None!
-
-    :param inf: a file-like object to read PDF structure from, such as a
-        file handler (using the builtin `open()` function) or a `BytesIO`.
-    :param outfp: a file-like object to write the text to.
-    :param output_type: May be 'text', 'xml', 'html', 'hocr', 'tag'.
-        Only 'text' works properly.
-    :param codec: Text decoding codec
-    :param laparams: An LAParams object from pdf2zh.layout. Default is None
-        but may not layout correctly.
-    :param maxpages: How many pages to stop parsing after
-    :param page_numbers: zero-indexed page numbers to operate on.
-    :param password: For encrypted PDFs, the password to decrypt.
-    :param scale: Scale factor
-    :param rotation: Rotation factor
-    :param layoutmode: Default is 'normal', see
-        pdf2zh.converter.HTMLConverter
-    :param output_dir: If given, creates an ImageWriter for extracted images.
-    :param strip_control: Does what it says on the tin
-    :param debug: Output more logging data
-    :param disable_caching: Does what it says on the tin
-    :param other:
-    :return: nothing, acting as it does on two streams. Use StringIO to get
-        strings.
-    """
-    if debug:
-        logging.getLogger().setLevel(logging.DEBUG)
-
-    imagewriter = None
-    if output_dir:
-        imagewriter = ImageWriter(output_dir)
-
-    rsrcmgr = PDFResourceManager(caching=not disable_caching)
-    device: Optional[PDFDevice] = None
+    rsrcmgr = PDFResourceManager()
     layout = {}
-
-    if output_type != "text" and outfp == sys.stdout:
-        outfp = sys.stdout.buffer
-
-    if output_type == "text":
-        device = TextConverter(
-            rsrcmgr,
-            outfp,
-            codec=codec,
-            laparams=laparams,
-            imagewriter=imagewriter,
-            vfont=vfont,
-            vchar=vchar,
-            thread=thread,
-            layout=layout,
-            lang_in=lang_in,
-            lang_out=lang_out,
-            service=service,
-        )
-
-    elif output_type == "xml":
-        device = XMLConverter(
-            rsrcmgr,
-            outfp,
-            codec=codec,
-            laparams=laparams,
-            imagewriter=imagewriter,
-            stripcontrol=strip_control,
-        )
-
-    elif output_type == "html":
-        device = HTMLConverter(
-            rsrcmgr,
-            outfp,
-            codec=codec,
-            scale=scale,
-            layoutmode=layoutmode,
-            laparams=laparams,
-            imagewriter=imagewriter,
-        )
-
-    elif output_type == "hocr":
-        device = HOCRConverter(
-            rsrcmgr,
-            outfp,
-            codec=codec,
-            laparams=laparams,
-            stripcontrol=strip_control,
-        )
-
-    elif output_type == "tag":
-        # Binary I/O is required, but we have no good way to test it here.
-        device = TagExtractor(rsrcmgr, cast(BinaryIO, outfp), codec=codec)
-
-    else:
-        msg = f"Output type can be text, html, xml or tag but is {output_type}"
-        raise PDFValueError(msg)
+    device = TranslateConverter(
+        rsrcmgr,
+        vfont,
+        vchar,
+        thread,
+        layout,
+        lang_in,
+        lang_out,
+        service,
+        resfont,
+        noto,
+        kwarg.get("envs", {}),
+        kwarg.get("prompt", []),
+    )
 
     assert device is not None
     obj_patch = {}
-    interpreter = PDFPageInterpreter(rsrcmgr, device, obj_patch)
+    interpreter = PDFPageInterpreterEx(rsrcmgr, device, obj_patch)
     if pages:
         total_pages = len(pages)
     else:
-        total_pages = page_count
-    with tqdm.tqdm(
-        PDFPage.get_pages(
-            inf,
-            pages,
-            maxpages=maxpages,
-            password=password,
-            caching=not disable_caching,
-        ),
-        total=total_pages,
-        position=0,
-    ) as progress:
-        for page in progress:
+        total_pages = doc_zh.page_count
+
+    parser = PDFParser(inf)
+    doc = PDFDocument(parser)
+    with tqdm.tqdm(total=total_pages) as progress:
+        for pageno, page in enumerate(PDFPage.create_pages(doc)):
+            if cancellation_event and cancellation_event.is_set():
+                raise CancelledError("task cancelled")
+            if pages and (pageno not in pages):
+                continue
+            progress.update()
             if callback:
                 callback(progress)
-            pix = doc_en[page.pageno].get_pixmap()
+            page.pageno = pageno
+            pix = doc_zh[page.pageno].get_pixmap()
             image = np.fromstring(pix.samples, np.uint8).reshape(
                 pix.height, pix.width, 3
             )[:, :, ::-1]
-            page_layout = model.predict(
-                image,
-                imgsz=int(pix.height / 32) * 32,
-                device=(
-                    "cuda:0" if torch.cuda.is_available() else "cpu"
-                ),  # Auto-select GPU if available
-            )[0]
+            page_layout = model.predict(image, imgsz=int(pix.height / 32) * 32)[0]
             # kdtree 是不可能 kdtree 的，不如直接渲染成图片，用空间换时间
             box = np.ones((pix.height, pix.width))
             h, w = box.shape
@@ -207,97 +156,152 @@ def extract_text_to_fp(
                     )
                     box[y0:y1, x0:x1] = 0
             layout[page.pageno] = box
-            # print(page.number,page_layout)
-            page.rotate = (page.rotate + rotation) % 360
             # 新建一个 xref 存放新指令流
-            page.page_xref = doc_en.get_new_xref()  # hack
-            doc_en.update_object(page.page_xref, "<<>>")
-            doc_en.update_stream(page.page_xref, b"")
-            doc_en[page.pageno].set_contents(page.page_xref)
+            page.page_xref = doc_zh.get_new_xref()  # hack 插入页面的新 xref
+            doc_zh.update_object(page.page_xref, "<<>>")
+            doc_zh.update_stream(page.page_xref, b"")
+            doc_zh[page.pageno].set_contents(page.page_xref)
             interpreter.process_page(page)
 
     device.close()
     return obj_patch
 
 
-def extract_text(
-    pdf_file: FileOrName,
-    password: str = "",
-    page_numbers: Optional[Container[int]] = None,
-    maxpages: int = 0,
-    caching: bool = True,
-    codec: str = "utf-8",
-    laparams: Optional[LAParams] = None,
-) -> str:
-    """Parse and return the text contained in a PDF file.
+def translate_stream(
+    stream: bytes,
+    pages: Optional[list[int]] = None,
+    lang_in: str = "",
+    lang_out: str = "",
+    service: str = "",
+    thread: int = 0,
+    vfont: str = "",
+    vchar: str = "",
+    callback: object = None,
+    cancellation_event: asyncio.Event = None,
+    **kwarg: Any,
+):
+    font_list = [("tiro", None)]
+    noto = None
+    if lang_out.lower() in resfont_map:  # CJK
+        resfont = resfont_map[lang_out.lower()]
+        font_list.append((resfont, None))
+    elif lang_out.lower() in noto_list:  # noto
+        resfont = "noto"
+        ttf_path = os.path.join(tempfile.gettempdir(), "GoNotoKurrent-Regular.ttf")
+        if not os.path.exists(ttf_path):
+            print("Downloading Noto font...")
+            urllib.request.urlretrieve(
+                "https://github.com/satbyy/go-noto-universal/releases/download/v7.0/GoNotoKurrent-Regular.ttf",
+                ttf_path,
+            )
+        font_list.append(("noto", ttf_path))
+        noto = Font("noto", ttf_path)
+    else:  # fallback
+        resfont = "china-ss"
+        font_list.append(("china-ss", None))
 
-    :param pdf_file: Either a file path or a file-like object for the PDF file
-        to be worked on.
-    :param password: For encrypted PDFs, the password to decrypt.
-    :param page_numbers: List of zero-indexed page numbers to extract.
-    :param maxpages: The maximum number of pages to parse
-    :param caching: If resources should be cached
-    :param codec: Text decoding codec
-    :param laparams: An LAParams object from pdf2zh.layout. If None, uses
-        some default settings that often work well.
-    :return: a string containing all of the text extracted.
-    """
-    if laparams is None:
-        laparams = LAParams()
+    doc_en = Document(stream=stream)
+    doc_zh = Document(stream=stream)
+    page_count = doc_zh.page_count
+    # font_list = [("china-ss", None), ("tiro", None)]
+    font_id = {}
+    for page in doc_zh:
+        for font in font_list:
+            font_id[font[0]] = page.insert_font(font[0], font[1])
+    xreflen = doc_zh.xref_length()
+    for xref in range(1, xreflen):
+        for label in ["Resources/", ""]:  # 可能是基于 xobj 的 res
+            try:  # xref 读写可能出错
+                font_res = doc_zh.xref_get_key(xref, f"{label}Font")
+                if font_res[0] == "dict":
+                    for font in font_list:
+                        font_exist = doc_zh.xref_get_key(xref, f"{label}Font/{font[0]}")
+                        if font_exist[0] == "null":
+                            doc_zh.xref_set_key(
+                                xref,
+                                f"{label}Font/{font[0]}",
+                                f"{font_id[font[0]]} 0 R",
+                            )
+            except Exception:
+                pass
 
-    with open_filename(pdf_file, "rb") as fp, StringIO() as output_string:
-        fp = cast(BinaryIO, fp)  # we opened in binary mode
-        rsrcmgr = PDFResourceManager(caching=caching)
-        device = TextConverter(rsrcmgr, output_string, codec=codec, laparams=laparams)
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
+    fp = io.BytesIO()
+    doc_zh.save(fp)
+    obj_patch: dict = translate_patch(fp, prompt=kwarg["prompt"], **locals())
 
-        for page in PDFPage.get_pages(
-            fp,
-            page_numbers,
-            maxpages=maxpages,
-            password=password,
-            caching=caching,
-        ):
-            interpreter.process_page(page)
+    for obj_id, ops_new in obj_patch.items():
+        # ops_old=doc_en.xref_stream(obj_id)
+        # print(obj_id)
+        # print(ops_old)
+        # print(ops_new.encode())
+        doc_zh.update_stream(obj_id, ops_new.encode())
 
-        return output_string.getvalue()
+    doc_en.insert_file(doc_zh)
+    for id in range(page_count):
+        doc_en.move_page(page_count + id, id * 2 + 1)
+
+    return doc_zh.write(deflate=1), doc_en.write(deflate=1)
 
 
-def extract_pages(
-    pdf_file: FileOrName,
-    password: str = "",
-    page_numbers: Optional[Container[int]] = None,
-    maxpages: int = 0,
-    caching: bool = True,
-    laparams: Optional[LAParams] = None,
-) -> Iterator[LTPage]:
-    """Extract and yield LTPage objects
+def translate(
+    files: list[str],
+    output: str = "",
+    pages: Optional[list[int]] = None,
+    lang_in: str = "",
+    lang_out: str = "",
+    service: str = "",
+    thread: int = 0,
+    vfont: str = "",
+    vchar: str = "",
+    callback: object = None,
+    cancellation_event: asyncio.Event = None,
+    **kwarg: Any,
+):
+    if not files:
+        raise PDFValueError("No files to process.")
 
-    :param pdf_file: Either a file path or a file-like object for the PDF file
-        to be worked on.
-    :param password: For encrypted PDFs, the password to decrypt.
-    :param page_numbers: List of zero-indexed page numbers to extract.
-    :param maxpages: The maximum number of pages to parse
-    :param caching: If resources should be cached
-    :param laparams: An LAParams object from pdf2zh.layout. If None, uses
-        some default settings that often work well.
-    :return: LTPage objects
-    """
-    if laparams is None:
-        laparams = LAParams()
+    missing_files = check_files(files)
 
-    with open_filename(pdf_file, "rb") as fp:
-        fp = cast(BinaryIO, fp)  # we opened in binary mode
-        resource_manager = PDFResourceManager(caching=caching)
-        device = PDFPageAggregator(resource_manager, laparams=laparams)
-        interpreter = PDFPageInterpreter(resource_manager, device)
-        for page in PDFPage.get_pages(
-            fp,
-            page_numbers,
-            maxpages=maxpages,
-            password=password,
-            caching=caching,
-        ):
-            interpreter.process_page(page)
-            layout = device.get_result()
-            yield layout
+    if missing_files:
+        print("The following files do not exist:", file=sys.stderr)
+        for file in missing_files:
+            print(f"  {file}", file=sys.stderr)
+        raise PDFValueError("Some files do not exist.")
+
+    result_files = []
+
+    for file in files:
+        if file is str and (file.startswith("http://") or file.startswith("https://")):
+            print("Online files detected, downloading...")
+            try:
+                r = requests.get(file, allow_redirects=True)
+                if r.status_code == 200:
+                    if not os.path.exists("./pdf2zh_files"):
+                        print("Making a temporary dir for downloading PDF files...")
+                        os.mkdir(os.path.dirname("./pdf2zh_files"))
+                    with open("./pdf2zh_files/tmp_download.pdf", "wb") as f:
+                        print(f"Writing the file: {file}...")
+                        f.write(r.content)
+                    file = "./pdf2zh_files/tmp_download.pdf"
+                else:
+                    r.raise_for_status()
+            except Exception as e:
+                raise PDFValueError(
+                    f"Errors occur in downloading the PDF file. Please check the link(s).\nError:\n{e}"
+                )
+        filename = os.path.splitext(os.path.basename(file))[0]
+
+        doc_raw = open(file, "rb")
+        s_raw = doc_raw.read()
+        s_mono, s_dual = translate_stream(
+            s_raw, envs=kwarg.get("envs"), prompt=kwarg["prompt"], **locals()
+        )
+        file_mono = Path(output) / f"{filename}-mono.pdf"
+        file_dual = Path(output) / f"{filename}-dual.pdf"
+        doc_mono = open(file_mono, "wb")
+        doc_dual = open(file_dual, "wb")
+        doc_mono.write(s_mono)
+        doc_dual.write(s_dual)
+        result_files.append((str(file_mono), str(file_dual)))
+
+    return result_files

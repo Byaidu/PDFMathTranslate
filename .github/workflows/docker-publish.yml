@@ -10,6 +10,7 @@ on:
     types: [published]
 
 env:
+  TARGET_PLATFORMS: linux/amd64,linux/arm64
   # Use docker.io for Docker Hub if empty
   REGISTRY: docker.io
   # github.repository as <account>/<repo>
@@ -63,6 +64,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v6
         with:
+          platforms: linux/amd64,linux/arm64
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
