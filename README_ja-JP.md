@@ -63,7 +63,7 @@
 
 インストールなしで [公共サービス](https://pdf2zh.com/) をオンラインで試すことができます。  
 
-### Hugging Face デモ
+### デモ
 
 インストールなしで [HuggingFace上のデモ](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker), [ModelScope上のデモ](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) を試すことができます。
 デモの計算リソースは限られているため、乱用しないようにしてください。
