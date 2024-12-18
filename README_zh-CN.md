@@ -172,8 +172,8 @@ USE_MODELSCOPE=1 pdf2zh
 | `-o`  | 输出目录 | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 | `--share` | [获取 gradio 公开链接] | `pdf2zh -i --share` |
-| `-a` | [添加网页认证和自定义认证页] | `pdf2zh -i -a users.txt [auth.html]` |
-| `-pr` | [使用自定义的大模型prompt] | `pdf2zh -pr [prompt.txt]` |
+| `--authorized` | [添加网页认证和自定义认证页] | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--prompt` | [使用自定义的大模型prompt] | `pdf2zh --prompt [prompt.txt]` |
 
 <h3 id="partial">全文或部分文档翻译</h3>
 
@@ -255,7 +255,7 @@ pdf2zh example.pdf -t 1
 ```
 <h3 id="prompt">自定义大模型prompt</h3>
 
-使用 `-pr` 或 `--prompt` 指定使用大模型翻译时使用的 Prompt 文件。
+使用 `--prompt` 指定使用大模型翻译时使用的 Prompt 文件。
 
 ```bash
 pdf2zh example.pdf -pr prompt.txt

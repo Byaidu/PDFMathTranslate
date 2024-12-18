@@ -172,8 +172,8 @@ In the following table, we list all advanced options for reference:
 | `-o`  | Output dir | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [Exceptions](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 | `--share` | [Get gradio public link] | `pdf2zh -i --share` |
-| `-a` | [add authorization and custom login page] | `pdf2zh -i -a users.txt [auth.html]` |
-| `-pr` | [custom llm prompt] | `pdf2zh -pr [prompt.txt]` |
+| `--authorized` | [add authorization and custom login page] | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--prompt` | [custom llm prompt] | `pdf2zh --prompt [prompt.txt]` |
 
 <h3 id="partial">Full / partial document translation</h3>
 
@@ -254,7 +254,7 @@ Use `-t` to specify how many threads to use in translation:
 pdf2zh example.pdf -t 1
 ```
 <h3 id="prompt">custom prompt</h3>
-Use `-pr` or `--prompt` to specify which prompt to use in llm:
+Use `--prompt` to specify which prompt to use in llm:
 ```bash
 pdf2zh example.pdf -pr prompt.txt
 ```

@@ -173,8 +173,8 @@ Python環境を事前にインストールする必要はありません
 | `-o`  | 出力ディレクトリ | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 | `--share` | [gradio公開リンクを取得] | `pdf2zh -i --share` |
-| `-a` | [ウェブ認証とカスタム認証ページの追加] | `pdf2zh -i -a users.txt [auth.html]` |
-| `-pr` | [カスタムビッグモデルのプロンプトを使用する] | `pdf2zh -pr [prompt.txt]` |
+| `--authorized` | [ウェブ認証とカスタム認証ページの追加] | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--prompt` | [カスタムビッグモデルのプロンプトを使用する] | `pdf2zh --prompt [prompt.txt]` |
 
 <h3 id="partial">全文または部分的なドキュメント翻訳</h3>
 
@@ -257,7 +257,7 @@ pdf2zh example.pdf -t 1
 
 <h3 id="prompt">custom prompt</h3>
 (need Japenese translation)
-Use `-pr` or `--prompt` to specify which prompt to use in llm:
+Use `--prompt` to specify which prompt to use in llm:
 ```bash
 pdf2zh example.pdf -pr prompt.txt
 ```
