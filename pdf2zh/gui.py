@@ -198,7 +198,7 @@ def translate_file(
         "callback": progress_bar,
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
-        "prompt":prompt,
+        "prompt": prompt,
     }
     try:
         translate(**param)
@@ -332,7 +332,7 @@ with gr.Blocks(
                 label="Pages",
                 value=list(page_map.keys())[0],
             )
-            
+
             page_input = gr.Textbox(
                 label="Page range",
                 visible=False,
@@ -341,14 +341,9 @@ with gr.Blocks(
 
             with gr.Accordion("Open for More Experimental Options!", open=False):
                 gr.Markdown("#### Experimental")
-                threads=gr.Textbox(
-                    label="number of threads",
-                    interactive=True
-                )
-                prompt=gr.Textbox(
-                    label="Custom Prompt for llm",
-                    interactive=True,
-                    visible=False
+                threads = gr.Textbox(label="number of threads", interactive=True)
+                prompt = gr.Textbox(
+                    label="Custom Prompt for llm", interactive=True, visible=False
                 )
                 envs.append(prompt)
 
@@ -375,6 +370,7 @@ with gr.Blocks(
                     return gr.update(visible=True)
                 else:
                     return gr.update(visible=False)
+
             output_title = gr.Markdown("## Translated", visible=False)
             output_file_mono = gr.File(
                 label="Download Translation (Mono)", visible=False
@@ -397,7 +393,7 @@ with gr.Blocks(
                 """,
                 elem_classes=["secondary-text"],
             )
-            page_range.select(on_select_page,page_range,page_input)
+            page_range.select(on_select_page, page_range, page_input)
             service.select(
                 on_select_service,
                 service,

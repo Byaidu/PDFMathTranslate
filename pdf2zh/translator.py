@@ -49,6 +49,7 @@ class BaseTranslator:
 
     def translate(self, text):
         pass
+
     def prompt(self, text, prompt):
         if prompt:
             context = {
@@ -201,7 +202,7 @@ class OllamaTranslator(BaseTranslator):
         "OLLAMA_MODEL": "gemma2",
     }
     CustomPrompt = True
-    
+
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
         if not model:
