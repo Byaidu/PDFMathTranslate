@@ -188,7 +188,7 @@ def translate_stream(
     elif lang_out.lower() in noto_list:  # noto
         resfont = "noto"
         # docker
-        ttf_path = '/app/GoNotoKurrent-Regular.ttf'
+        ttf_path = "/app/GoNotoKurrent-Regular.ttf"
         if not os.path.exists(ttf_path):
             ttf_path = os.path.join(tempfile.gettempdir(), "GoNotoKurrent-Regular.ttf")
         if not os.path.exists(ttf_path):
@@ -297,7 +297,10 @@ def translate(
         doc_raw = open(file, "rb")
         s_raw = doc_raw.read()
         s_mono, s_dual = translate_stream(
-            s_raw, envs=kwarg.get("envs", {}), prompt=kwarg.get("prompt", []), **locals()
+            s_raw,
+            envs=kwarg.get("envs", {}),
+            prompt=kwarg.get("prompt", []),
+            **locals(),
         )
         file_mono = Path(output) / f"{filename}-mono.pdf"
         file_dual = Path(output) / f"{filename}-dual.pdf"
