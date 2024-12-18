@@ -26,6 +26,7 @@ class BaseTranslator:
     name = "base"
     envs = {}
     lang_map = {}
+    CustomPrompt = False
 
     def __init__(self, lang_in, lang_out, model):
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
@@ -48,7 +49,6 @@ class BaseTranslator:
 
     def translate(self, text):
         pass
-
     def prompt(self, text, prompt):
         if prompt:
             context = {
@@ -200,7 +200,8 @@ class OllamaTranslator(BaseTranslator):
         "OLLAMA_HOST": "http://127.0.0.1:11434",
         "OLLAMA_MODEL": "gemma2",
     }
-
+    CustomPrompt = True
+    
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
         if not model:
@@ -230,6 +231,7 @@ class OpenAITranslator(BaseTranslator):
         "OPENAI_API_KEY": None,
         "OPENAI_MODEL": "gpt-4o-mini",
     }
+    CustomPrompt = True
 
     def __init__(
         self,
@@ -265,6 +267,7 @@ class AzureOpenAITranslator(BaseTranslator):
         "AZURE_OPENAI_API_KEY": None,
         "AZURE_OPENAI_MODEL": "gpt-4o-mini",
     }
+    CustomPrompt = True
 
     def __init__(
         self,
@@ -306,6 +309,7 @@ class ModelScopeTranslator(OpenAITranslator):
         "MODELSCOPE_API_KEY": None,
         "MODELSCOPE_MODEL": "Qwen/Qwen2.5-32B-Instruct",
     }
+    CustomPrompt = True
 
     def __init__(
         self,
@@ -333,6 +337,7 @@ class ZhipuTranslator(OpenAITranslator):
         "ZHIPU_API_KEY": None,
         "ZHIPU_MODEL": "glm-4-flash",
     }
+    CustomPrompt = True
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -367,6 +372,7 @@ class SiliconTranslator(OpenAITranslator):
         "SILICON_API_KEY": None,
         "SILICON_MODEL": "Qwen/Qwen2.5-7B-Instruct",
     }
+    CustomPrompt = True
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -385,6 +391,7 @@ class GeminiTranslator(OpenAITranslator):
         "GEMINI_API_KEY": None,
         "GEMINI_MODEL": "gemini-1.5-flash",
     }
+    CustomPrompt = True
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -458,6 +465,7 @@ class AnythingLLMTranslator(BaseTranslator):
         "AnythingLLM_URL": None,
         "AnythingLLM_APIKEY": None,
     }
+    CustomPrompt = True
 
     def __init__(self, lang_out, lang_in, model, envs=None, prompt=None):
         self.set_envs(envs)
