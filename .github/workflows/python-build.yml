@@ -12,12 +12,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python and install dependencies
+    - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.x'
-        cache: 'pip' # caching pip dependencies
-    - run: 
+
+    - name: Install dependencies
+      run: |
         python -m pip install --upgrade pip
         pip install build flake8 black
 
@@ -36,7 +37,7 @@ jobs:
 
     - name: Test - Start GUI
       run: 
-        timeout 10 ping google.com
+        timeout 5 ping google.com
 
     - name: Build package
       run: python -m build
