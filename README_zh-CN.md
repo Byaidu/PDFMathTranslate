@@ -173,6 +173,7 @@ USE_MODELSCOPE=1 pdf2zh
 | `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 | `--share` | [获取 gradio 公开链接] | `pdf2zh -i --share` |
 | `-a` | [添加网页认证和自定义认证页] | `pdf2zh -i -a users.txt [auth.html]` |
+| `-pr` | [使用自定义的大模型prompt] | `pdf2zh -pr [prompt.txt]` |
 
 <h3 id="partial">全文或部分文档翻译</h3>
 
@@ -252,6 +253,34 @@ pdf2zh example.pdf -f "(CM[^R]|(MS|XY|MT|BL|RM|EU|LA|RS)[A-Z]|LINE|LCIRCLE|TeX-|
 ```bash
 pdf2zh example.pdf -t 1
 ```
+<h3 id="prompt">自定义大模型prompt</h3>
+使用 `-pr` 或 `--prompt` 指定使用大模型翻译时使用的prompt文件。
+```bash
+pdf2zh example.pdf -pr prompt.txt
+```
+
+
+示例prompt.txt文件
+```
+[
+    {
+        "role": "system",
+        "content": "You are a professional,authentic machine translation engine.",
+    },
+    {
+        "role": "user",
+        "content": "Translate the following markdown source text to ${lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: ${text}\nTranslated Text:",
+    },
+]
+```
+
+
+自定义prompt文件中，可以使用三个内置变量用来传递参数。
+|**变量名**|**说明**|
+|-|-|
+|`lang_in`|输入的语言|
+|`lang_out`|输出的语言|
+|`text`|需要翻译的文本|
 
 <h2 id="todo">API</h2>
 
