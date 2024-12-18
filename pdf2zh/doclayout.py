@@ -2,7 +2,6 @@ import abc
 import os.path
 
 import cv2
-import huggingface_hub.utils
 import numpy as np
 import ast
 import onnx
