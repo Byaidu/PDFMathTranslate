@@ -65,15 +65,12 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 <h2 id="install">Installation and Usage</h2>
 
-We provide four methods for using this project: [Commandline](#cmd), [Portable](#portable), [GUI](#gui), and [Docker](#docker).
+### Methods
 
-pdf2zh needs an extra model(`wybxc/DocLayout-YOLO-DocStructBench-onnx`), which can be found in modelscope. if you have a problem with downloading this model, try this environment variable:
+For different use cases, we provide four distinct methods to use our program:
 
-```shell
-USE_MODELSCOPE=1 pdf2zh
-```
-
-<h3 id="cmd">Method I. Commandline</h3>
+<details>
+  <summary>1. Commandline</summary>
 
 1. Python installed (3.8 <= version <= 3.12)
 2. Install our package:
@@ -88,20 +85,25 @@ USE_MODELSCOPE=1 pdf2zh
    pdf2zh document.pdf
    ```
 
-<h3 id="portable">Method II. Portable</h3>
+</details>
 
-No need to pre-install Python environment
+<details>
+  <summary>2. Portable (w/o Python installed)</summary>
 
-Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat) and double-click to run
+1. Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat)
 
-<h3 id="gui">Method III. GUI</h3>
+2. Double-click to run.
 
+</details>
+
+<details>
+  <summary>3. Graphic user interface</summary>
 1. Python installed (3.8 <= version <= 3.12)
 2. Install our package:
 
-   ```bash
-   pip install pdf2zh
-   ```
+```bash
+pip install pdf2zh
+```
 
 3. Start using in browser:
 
@@ -119,7 +121,10 @@ Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/r
 
 See [documentation for GUI](./docs/README_GUI.md) for more details.
 
-<h3 id="docker">Method IV. Docker</h3>
+</details>
+
+<details>
+  <summary>4. Docker</summary>
 
 1. Pull and run:
 
@@ -146,6 +151,18 @@ For docker deployment on cloud service:
 <a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
   <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
 </div>
+
+</details>
+
+### Unable to install?
+
+The present program needs an AI model(`wybxc/DocLayout-YOLO-DocStructBench-onnx`) before working and some users are not able to download due to network issues. If you have a problem with downloading this model, we provide a workaround using the following environment variable:
+
+    ```shell
+    USE_MODELSCOPE=1 pdf2zh
+    ```
+
+If the solution does not work to you / you encountered other issues, please refer to [frequently asked questions](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98).
 
 <h2 id="usage">Advanced Options</h2>
 
