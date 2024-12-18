@@ -23,6 +23,8 @@
     <img src="https://img.shields.io/badge/ModelScope-Demo-blue"></a>
   <a href="https://github.com/Byaidu/PDFMathTranslate/pulls">
     <img src="https://img.shields.io/badge/contributions-welcome-green"/></a>
+  <a href="https://gitcode.com/Byaidu/PDFMathTranslate/overview">
+    <img src="https://gitcode.com/Byaidu/PDFMathTranslate/star/badge.svg"></a>
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
     <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"/></a>
 </p>
