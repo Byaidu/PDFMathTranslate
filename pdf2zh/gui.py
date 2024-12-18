@@ -355,6 +355,8 @@ with gr.Blocks(
             def on_select_page(choice):
                 if choice == "Others":
                     return gr.update(visible=True)
+                else:
+                    return gr.update(visible=False)
             output_title = gr.Markdown("## Translated", visible=False)
             output_file_mono = gr.File(
                 label="Download Translation (Mono)", visible=False
