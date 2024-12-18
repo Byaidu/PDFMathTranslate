@@ -1,4 +1,4 @@
-name: Build Python Package
+name: Test and Build Python Package
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
 
     - name: Test - Start GUI
       run: 
-        timeout 5 ping google.com
+        timeout 5 pdf2zh -i  || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
     - name: Build package
       run: python -m build
