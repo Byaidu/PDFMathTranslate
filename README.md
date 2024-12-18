@@ -1,6 +1,6 @@
 <div align="center">
 
-English | [简体中文](README_zh-CN.md) | [日本語](README_ja-JP.md)
+English | [简体中文](docs/README_zh-CN.md) | [日本語](docs/README_ja-JP.md)
 
 <img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
@@ -98,7 +98,7 @@ USE_MODELSCOPE=1 pdf2zh
 
 No need to pre-install Python environment
 
-Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat) and double-click to run
+Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat) and double-click to run
 
 <h3 id="gui">Method III. GUI</h3>
 
