@@ -1,3 +1,8 @@
+.github
+docs
+.git
+.pre-commit-config.yaml
+uv.lock
 pdf2zh_files
 gui/pdf2zh_files
 gradio_files
@@ -168,4 +173,3 @@ cython_debug/
 .idea/
 .vscode
 .DS_Store
-uv.lock
