@@ -177,9 +177,9 @@ def main(args: Optional[List[str]] = None) -> int:
 
     if parsed_args.prompt:
         try:
-            with open(parsed_args.prompt,'r',encoding='utf-8') as file:
-                content=file.read()
-            parsed_args.prompt=Template(content)
+            with open(parsed_args.prompt, "r", encoding="utf-8") as file:
+                content = file.read()
+            parsed_args.prompt = Template(content)
         except Exception as e:
             raise ValueError("prompt error.")
 

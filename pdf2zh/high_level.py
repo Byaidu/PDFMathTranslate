@@ -293,7 +293,9 @@ def translate(
 
         doc_raw = open(file, "rb")
         s_raw = doc_raw.read()
-        s_mono, s_dual = translate_stream(s_raw, envs=kwarg.get('envs'), prompt=kwarg["prompt"], **locals())
+        s_mono, s_dual = translate_stream(
+            s_raw, envs=kwarg.get("envs"), prompt=kwarg["prompt"], **locals()
+        )
         file_mono = Path(output) / f"{filename}-mono.pdf"
         file_dual = Path(output) / f"{filename}-dual.pdf"
         doc_mono = open(file_mono, "wb")

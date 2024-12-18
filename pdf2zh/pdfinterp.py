@@ -236,9 +236,9 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
                     pos_inv = -np.mat(ctm[4:]) * ctm_inv
                 a, b, c, d = ctm_inv.reshape(4).tolist()
                 e, f = pos_inv.tolist()[0]
-                self.obj_patch[self.xobjmap[xobjid].objid] = (
-                    f"q {ops_base}Q {a} {b} {c} {d} {e} {f} cm {ops_new}"
-                )
+                self.obj_patch[
+                    self.xobjmap[xobjid].objid
+                ] = f"q {ops_base}Q {a} {b} {c} {d} {e} {f} cm {ops_new}"
             except Exception:
                 pass
         elif subtype is LITERAL_IMAGE and "Width" in xobj and "Height" in xobj:
@@ -269,9 +269,9 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
         self.device.fontmap = self.fontmap
         ops_new = self.device.end_page(page)
         # 上面渲染的时候会根据 cropbox 减掉页面偏移得到真实坐标，这里输出的时候需要用 cm 把页面偏移加回来
-        self.obj_patch[page.page_xref] = (
-            f"q {ops_base}Q 1 0 0 1 {x0} {y0} cm {ops_new}"  # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
-        )
+        self.obj_patch[
+            page.page_xref
+        ] = f"q {ops_base}Q 1 0 0 1 {x0} {y0} cm {ops_new}"  # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
         for obj in page.contents:
             self.obj_patch[obj.objid] = ""
 
