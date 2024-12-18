@@ -22,13 +22,16 @@ params = {
     'lang_out': 'zh',
     'service': 'google',
     'thread': 4,
-    }
+}
+```
+Translate with files:
+```python
 (file_mono, file_dual) = translate(files=['example.pdf'], **params)[0]
-
+```
+Translate with stream:
+```python
 with open('example.pdf', 'rb') as f:
-    (stream_mono, stream_dual) = translate_stream(stream=f.read(),
-            **params)
-
+    (stream_mono, stream_dual) = translate_stream(stream=f.read(), **params)
 ```
 
 [⬆️ Back to top](#toc)
@@ -39,7 +42,7 @@ with open('example.pdf', 'rb') as f:
 
 In a more flexible way, you can communicate with the program using HTTP protocols, if:
 
-1. You have the backend installed & running
+1. Install and run backend
 
    ```bash
    pip install pdf2zh[backend]
@@ -49,7 +52,7 @@ In a more flexible way, you can communicate with the program using HTTP protocol
 
 2. Using HTTP protocols as follows:
 
-   - Translate
+   - Submit translate task
 
      ```bash
      curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"lang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
@@ -70,19 +73,19 @@ In a more flexible way, you can communicate with the program using HTTP protocol
      {"state":"SUCCESS"}
      ```
 
-   - Specifying output
+   - Save monolingual file
 
      ```bash
      curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/mono --output example-mono.pdf
      ```
 
-   - Specifying the output as a bilingual file
+   - Save bilingual file
 
      ```bash
      curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/dual --output example-dual.pdf
      ```
 
-   - Or delete it after the whole process
+   - Interrupt if running and delete the task
      ```bash
      curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X DELETE
      ```
