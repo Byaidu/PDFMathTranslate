@@ -555,3 +555,4 @@ def setup_gui(share=False, authfile=["", ""]):
 # For auto-reloading while developing
 if __name__ == "__main__":
     setup_gui()
+    
