@@ -77,7 +77,7 @@
 pdf2zhの実行には追加モデル（`wybxc/DocLayout-YOLO-DocStructBench-onnx`）が必要です。このモデルはModelScopeでも見つけることができます。起動時にこのモデルのダウンロードに問題がある場合は、以下の環境変数を使用してください：
 
 ```shell
-USE_MODELSCOPE=1 pdf2zh
+set HF_ENDPOINT=https://hf-mirror.com
 ```
 
 <h3 id="cmd">方法1. コマンドライン</h3>

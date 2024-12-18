@@ -76,7 +76,7 @@
 
 pdf2zh的运行依赖于额外模型(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)，该模型在魔搭上也可以找到。如果你在启动时下载该模型遇到问题，请使用如下环境变量：
 ```shell
-USE_MODELSCOPE=1 pdf2zh
+set HF_ENDPOINT=https://hf-mirror.com
 ```
 
 <h3 id="cmd">方法一、命令行工具</h3>

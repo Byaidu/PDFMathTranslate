@@ -69,7 +69,7 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 For different use cases, we provide four distinct methods to use our program:
 
-<details>
+<details open>
   <summary>1. Commandline</summary>
 
 1. Python installed (3.8 <= version <= 3.12)
@@ -158,9 +158,9 @@ For docker deployment on cloud service:
 
 The present program needs an AI model(`wybxc/DocLayout-YOLO-DocStructBench-onnx`) before working and some users are not able to download due to network issues. If you have a problem with downloading this model, we provide a workaround using the following environment variable:
 
-    ```shell
-    USE_MODELSCOPE=1 pdf2zh
-    ```
+```shell
+set HF_ENDPOINT=https://hf-mirror.com
+```
 
 If the solution does not work to you / you encountered other issues, please refer to [frequently asked questions](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98).
 
