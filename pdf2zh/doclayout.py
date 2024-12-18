@@ -2,6 +2,7 @@ import abc
 import os.path
 
 import cv2
+import huggingface_hub.utils
 import numpy as np
 import ast
 import onnx
@@ -82,7 +83,12 @@ class OnnxModel(DocLayoutModel):
             model_dir = snapshot_download(repo_mapping[repo_id])
             pth = os.path.join(model_dir, filename)
         else:
-            pth = hf_hub_download(repo_id=repo_id, filename=filename, etag_timeout=1)
+            try:
+                pth = hf_hub_download(repo_id=repo_id, filename=filename, etag_timeout=1, local_files_only=True)
+                print("Using local DocLayout-YOLO-DocStructBench-onnx file", pth)
+            except huggingface_hub.utils.LocalEntryNotFoundError:
+                print("Downloading DocLayout-YOLO-DocStructBench-onnx from Huggingface Hub...")
+                pth = hf_hub_download(repo_id=repo_id, filename=filename, etag_timeout=1)
         return OnnxModel(pth)
 
     @property

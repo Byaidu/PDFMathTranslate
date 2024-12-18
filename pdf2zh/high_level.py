@@ -186,7 +186,10 @@ def translate_stream(
         font_list.append((resfont, None))
     elif lang_out.lower() in noto_list:  # noto
         resfont = "noto"
-        ttf_path = os.path.join(tempfile.gettempdir(), "GoNotoKurrent-Regular.ttf")
+        # docker
+        ttf_path = '/app/GoNotoKurrent-Regular.ttf'
+        if not os.path.exists(ttf_path):
+            ttf_path = os.path.join(tempfile.gettempdir(), "GoNotoKurrent-Regular.ttf")
         if not os.path.exists(ttf_path):
             print("Downloading Noto font...")
             urllib.request.urlretrieve(
