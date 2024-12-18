@@ -63,7 +63,7 @@
 
 你可以立即尝试 [免费公共服务](https://pdf2zh.com/) 而无需安装
 
-### Hugging Face 在线演示
+### 在线演示
 
 你可以立即尝试 [在 HuggingFace 上的在线演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)和[魔搭的在线演示](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate)而无需安装
 请注意，演示的计算资源有限，因此请避免滥用

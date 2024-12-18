@@ -417,7 +417,7 @@ class AnythingLLMTranslator(BaseTranslator):
     name = "anythingllm"
     envs = {
         "AnythingLLM_URL": None,
-        "AnythingLLM_APIKEY": "api_key",
+        "AnythingLLM_APIKEY": None,
     }
 
     def __init__(self, lang_out, lang_in, model, envs=None):
@@ -453,7 +453,7 @@ class DifyTranslator(BaseTranslator):
     name = "dify"
     envs = {
         "DIFY_API_URL": None,  # 填写实际 Dify API 地址
-        "DIFY_API_KEY": "api_key",  # 替换为实际 API 密钥
+        "DIFY_API_KEY": None,  # 替换为实际 API 密钥
     }
 
     def __init__(self, lang_out, lang_in, model, envs=None):
