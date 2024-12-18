@@ -254,13 +254,16 @@ pdf2zh example.pdf -f "(CM[^R]|(MS|XY|MT|BL|RM|EU|LA|RS)[A-Z]|LINE|LCIRCLE|TeX-|
 pdf2zh example.pdf -t 1
 ```
 <h3 id="prompt">自定义大模型prompt</h3>
-使用 `-pr` 或 `--prompt` 指定使用大模型翻译时使用的prompt文件。
+
+使用 `-pr` 或 `--prompt` 指定使用大模型翻译时使用的 Prompt 文件。
+
 ```bash
 pdf2zh example.pdf -pr prompt.txt
 ```
 
 
-示例prompt.txt文件
+示例 `prompt.txt` 文件
+
 ```
 [
     {
@@ -275,7 +278,7 @@ pdf2zh example.pdf -pr prompt.txt
 ```
 
 
-自定义prompt文件中，可以使用三个内置变量用来传递参数。
+自定义 Prompt 文件中，可以使用三个内置变量用来传递参数。
 |**变量名**|**说明**|
 |-|-|
 |`lang_in`|输入的语言|

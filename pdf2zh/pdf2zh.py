@@ -118,14 +118,12 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parse_params.add_argument(
         "--authorized",
-        "-a",
         type=str,
         nargs="+",
         help="user name and password.",
     )
     parse_params.add_argument(
         "--prompt",
-        "-pr",
         type=str,
         help="user custom prompt.",
     )
