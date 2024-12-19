@@ -373,6 +373,10 @@ custom_css = """
         .env-success {
         color: #559900 !important;
         }
+        .lang-row {
+        border: none !important;
+
+        }
         .logo {
         border: transparent;
         filter: saturate(0%);
@@ -666,9 +670,21 @@ def cancel_options():
 
 # First Tab: Local Document
 with gr.Blocks() as tab_main:
+    with gr.Row(elem_classes=["lang-row"]):
+        gui_li = gr.Dropdown(
+            label="Translate from",
+            choices=["Auto", "English"],
+            value=env_lo.value,
+            interactive=True,
+        )
+        gui_lo = gr.Dropdown(
+            label="To",
+            choices=["Chinese", "English"],
+            value=env_lo.value,
+            interactive=True,
+        )
     with gr.Row(elem_classes=["preview-row"]):
         preview = PDF(
-            label="Translated",
             visible=False,
             height=1200,
             elem_classes=["preview-block"],
@@ -789,20 +805,20 @@ with gr.Blocks() as tab_url:
 with gr.Blocks(visible=True, elem_classes=["options-modal"]) as tab_option:
     with gr.Row():
         with gr.Column():
-            gr.Markdown("### Translation")
-            with gr.Group():
-                gui_li = gr.Dropdown(
-                    label="Source",
-                    choices=["Chinese", "English"],
-                    value=env_lo.value,
-                    interactive=True,
-                )
-                gui_lo = gr.Dropdown(
-                    label="Target",
-                    choices=["Chinese", "English"],
-                    value=env_lo.value,
-                    interactive=True,
-                )
+            # gr.Markdown("### Translation")
+            # with gr.Group():
+            #     gui_li = gr.Dropdown(
+            #         label="Source",
+            #         choices=["Chinese", "English"],
+            #         value=env_lo.value,
+            #         interactive=True,
+            #     )
+            #     gui_lo = gr.Dropdown(
+            #         label="Target",
+            #         choices=["Chinese", "English"],
+            #         value=env_lo.value,
+            #         interactive=True,
+            #     )
             gr.Markdown("### Service")
             gui_service = gr.Dropdown(
                 label="Provider",
@@ -895,7 +911,12 @@ with gr.Blocks(
         [tab_main, tab_url, tab_option],
         ["Local Document", "Online Document", "Advanced Options"],
     )
-    gr.Markdown(tech_details_string, elem_classes=["secondary-text"])
+    gr.Markdown(
+        """The file will be translated into Chinese.  
+        More languages supported in [advanced options](https://github.com/Byaidu/PDFMathTranslate/issues).""",
+        elem_classes=["info-text"],
+    )
+    # gr.Markdown(tech_details_string, elem_classes=["secondary-text"])
 
 
 # state = gr.State({"session_id": None})
