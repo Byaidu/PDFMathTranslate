@@ -11,7 +11,7 @@ import requests
 import tqdm
 from gradio_pdf import PDF
 
-from pdf2zh import __version__
+# from pdf2zh import __version__
 from pdf2zh.high_level import translate
 from pdf2zh.translator import (
     AnythingLLMTranslator,
@@ -94,6 +94,44 @@ if os.getenv("PDF2ZH_INIT") is not False:
     service_map = {
         "Google": GoogleTranslator,
     }
+
+
+class EnvSync:
+    """Two-way synchronization between a variable and its system environment counterpart."""
+
+    def __init__(self, env_name: str, default_value: str = ""):
+        self._name = env_name
+        self._value = os.environ.get(env_name, default_value)
+        # Initialize the environment variable if it doesn't exist
+        if env_name not in os.environ:
+            os.environ[env_name] = default_value
+
+    @property
+    def value(self) -> str:
+        """Get the current value, ensuring sync with system env."""
+        sys_value = os.environ.get(self._name)
+        if sys_value != self._value:
+            self._value = sys_value
+        return self._value
+
+    @value.setter
+    def value(self, new_value: str):
+        """Set the value and sync with system env."""
+        self._value = new_value
+        os.environ[self._name] = new_value
+
+    def __str__(self) -> str:
+        return self.value
+
+    def __bool__(self) -> bool:
+        return bool(self.value)
+
+
+env_services = EnvSync("PDF2ZH_GUI_SERVICE")
+env_lo = EnvSync("PDF2ZH_GUI_LO")
+env_lo = EnvSync("PDF2ZH_GUI_LI")
+env_deeplx_auth_key = EnvSync("DEEPLX_AUTH_KEY")
+env_deeplx_server_url = EnvSync("DEEPLX_SERVER_URL")
 
 
 # Public demo control
@@ -308,28 +346,272 @@ custom_blue = gr.themes.Color(
 )
 
 custom_css = """
-    .secondary-text {color: #999 !important;}
-    footer {visibility: hidden}
-    .env-warning {color: #dd5500 !important;}
-    .env-success {color: #559900 !important;}
+    body {
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE 10 and IE 11 */
+        user-select: none; /* Standard syntax */}
+        gradio-app {
+        # background: 
+        #     radial-gradient(farthest-side at -33.33% 50%,#0000 52%,#fcfcfc 54% 57%,#0000 59%) 0 calc(224px/2),
+        #     radial-gradient(farthest-side at 50% 133.33%,#0000 52%,#fcfcfc 54% 57%,#0000 59%) calc(224px/2) 0,
+        #     radial-gradient(farthest-side at 133.33% 50%,#0000 52%,#fcfcfc 54% 57%,#0000 59%),
+        #     radial-gradient(farthest-side at 50% -33.33%,#0000 52%,#fcfcfc 54% 57%,#0000 59%),
+        #     #ffffff !important;
+        # background-size: calc(224px/4.667) 224px,224px calc(224px/4.667) !important;
 
-    /* Add dashed border to input-file class */
-    .input-file {
-        border: 1.2px dashed #165DFF !important;
-        border-radius: 6px !important;
-    }
-
-    .progress-bar-wrap {
-        border-radius: 8px !important;
-    }
-
-    .progress-bar {
-        border-radius: 8px !important;
-    }
-
-    .pdf-canvas canvas {
-        width: 100%;
-    }
+        }
+        # .secondary-text {
+        color: #999 !important;
+        }
+        footer {
+        visibility: hidden
+        }
+        .env-warning {
+        color: #dd5500 !important;
+        }
+        .env-success {
+        color: #559900 !important;
+        }
+        .logo {
+        border: transparent;
+        filter: saturate(0%);
+        background-color:transparent !important;
+        max-width: 4vh;
+        margin-bottom: -1.2em;
+        }
+        .logo label {
+        display: none;
+        }
+        .logo .top-panel {
+        display: none;
+        }
+        .title {
+        text-align: center;
+        }
+        .title h2 {
+        color: #999999 !important;
+        }
+        .question {
+        text-align: center;
+        }
+        .question h2 {
+        color: #165DFF !important;
+        }
+        .info-text {
+        text-align: center;
+            margin-top: -5px;
+        }
+        .info-text p {
+        color: #aaaaaa !important;
+        }
+        @keyframes pulse-background {
+            0% {
+                background-color: #FFFFFF;
+        }
+            25% {
+                background-color: #FFFFFF;
+        }
+            50% {
+                background-color: #E8F3FF;
+        }
+            75% {
+                background-color: #FFFFFF;
+        }
+            100% {
+                background-color: #FFFFFF;
+        }
+        }
+        /* Add dashed border to input-file class */
+        .input-file {
+            border: 1.2px dashed #165DFF !important;
+            border-radius: 6px !important;
+            # background-color: #ffffff !important;
+            animation: pulse-background 2s ease-in-out;
+            transition: background-color 0.4s ease-out;
+            width: 80vw;
+            height: 50vh;
+            margin: 0 auto;
+        }
+        .input-file:hover {
+            border: 1.2px dashed #165DFF !important;
+            border-radius: 6px !important;
+            color: #165DFF !important;
+            background-color: #E8F3FF !important;
+            transition: background-color 0.2s ease-in;
+            box-shadow: 4px 4px 20px rgba(22, 93, 255, 0.1);
+        }
+        .input-file label {
+            color: #165DFF !important;
+            border: 1.2px dashed #165DFF !important;
+            border-left: none !important;
+            border-top: none !important;
+        }
+        .input-file .top-panel {
+            color: #165DFF !important;
+            border: 1.2px dashed #165DFF !important;
+            border-right: none !important;
+            border-top: none !important;
+        }
+        .input-file .filename {
+            color: #165DFF !important;
+            background-color: #FFFFFF !important;
+        }
+        .input-file .download {
+            color: #165DFF !important;
+            background-color: #FFFFFF !important;
+        }
+        .input-file .wrap {
+            color: #165DFF !important;
+        }
+        .input-file .or {
+            color: #165DFF !important;
+        }
+        .progress-bar-wrap {
+            border-radius: 8px !important;
+        }
+        .progress-bar {
+            border-radius: 8px !important;
+        }
+        .options-row {
+            align-items: center;
+            display: flex;
+            padding: 0 20vw 0 20vw !important;
+        }
+        .options-row .wrap {
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .options-row .form label {
+            color: #999;
+        }
+        .options-row .form {
+            border: none !important;
+            align-items: center !important;
+        }
+        .options-row [data-testid="block-info"] {
+            display: none !important;
+        }
+        .logo-row {
+            align-items: center;
+        }
+        .title-row {
+            align-items: center;
+        }
+        .details-row {
+            align-items: center;
+        }
+        .hide-frame {
+            border: none !important;
+        }
+        .hide-frame .top-panel {
+            display: none !important;
+        }
+        .hide-frame label {
+            display: none !important;
+        }
+        .options-icon {
+            height: 2em;
+            width: 2em;
+        }
+        .preview-block .top-panel {
+            display: none !important;
+        }
+        .preview-block {
+            # width: 80vw !important;
+            margin: 0 auto !important;
+            justify-content: center !important;
+            align-items: center !important;
+            background-color: #eeeeee !important;
+        }
+        .preview-block .image-frame {
+            width: 100% !important;
+            # height: auto !important;
+            object-fit: cover !important;
+        }
+        .preview-block .image-frame img {width: var(--size-full);
+            object-fit: cover !important;
+        }
+        .options-modal {
+            position: absolute !important;
+            # top: 20vh !important;
+            left: 50vw !important;
+            transform: translate(-25vw,-0vh) !important;
+            z-index: 1000 !important;
+            background: white !important;
+            padding: 2rem !important;
+            border-radius: 8px !important;
+            box-shadow: 4px 4px 10px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.02) !important;
+            width: 400px !important;
+        }
+        .options-modal .gr-group {
+            background: white !important;
+        }
+        .options-modal .styler{
+            background: white !important;
+        }
+        .options-modal h3 {
+            margin-top: 0 !important;
+            margin-bottom: 1.5rem !important;
+            color: #333 !important;
+        }
+        .options-modal .form {
+            margin-bottom: 1.5rem !important;
+        }
+        .options-modal .row {
+            justify-content: flex-end !important;
+            gap: 1rem !important;
+        }
+        .options-modal div button .secondary {
+            background-color: white !important;
+        }
+        .options-modal button {
+            min-width: 80px !important;
+        }
+        .options-btn {
+            line-height: var(--line-md);
+            background-color: #FFFFFF;
+            border: 1.2px solid var(--checkbox-label-border-color) !important;
+            border-radius: 6px !important;
+            # color: var(--checkbox-label-border-color) !important;
+            color: #999;
+            font-weight: 500;
+            font-size: var(--text-md);
+            padding: 0.8em 1em 0.8em 1em !important;
+            margin: 0.5em !important;
+            transition: background-color 0.2s ease-in;
+        }
+        .options-btn:hover {
+            background-color: #fafafa;
+            # border: 1.2px solid #fcfcfc !important;
+        }
+        .form {
+            background-color: rgba(0, 0, 0, 0) !important;
+        }
+        .first-page-checkbox {
+            border: 1.2px solid var(--checkbox-label-border-color) !important;
+            border-radius: 6px !important;
+            font-weight: 500;
+            padding: 0.8em 1em 0.8em 1em !important;
+            background-color: #ffffff;
+            !important;
+            margin: 0.5em !important;
+            align-items: center !important;
+            font-size: var(--text-md);
+            # color: var(--checkbox-label-border-color) !important;
+            color: #999;
+            transition: background-color 0.2s ease-in;
+        }
+        .first-page-checkbox label {
+            align-items: center !important;
+        }
+        .first-page-checkbox:hover {
+            border: 1.2px solid var(--checkbox-label-border-color) !important;
+            color: #165DFF !important;
+            background-color: #fafafa;
+            !important;
+            
     """
 
 demo_recaptcha = """
@@ -343,16 +625,111 @@ demo_recaptcha = """
     </script>
     """
 
-tech_details_string = f"""
-                    <summary>Technical details</summary>
-                    - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
-                    - GUI by: <a href="https://github.com/reycn">Rongxin</a><br>
-                    - Version: {__version__}
+tech_details_string = """Opensourced at <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a> | GUI by <a href="https://github.com/reycn">Rongxin</a> | Version: Dev
                 """
 cancellation_event_map = {}
 
 
 # The following code creates the GUI
+# with gr.Blocks(
+#     title="PDFMathTranslate - PDF Translation with preserved formats",
+#     theme=gr.themes.Default(
+#         primary_hue=custom_blue, spacing_size="md", radius_size="lg"
+#     ),
+#     css=custom_css,
+#     head=demo_recaptcha if flag_demo else "",
+# ) as demo:
+
+
+def show_options():
+    return gr.update(visible=True)
+
+
+def save_options(api_key, api_url, model):
+    # env_api_key.value = api_key
+    # env_api_url.value = api_url
+    # env_model.value = model
+    return gr.update(visible=False)
+
+
+def cancel_options():
+    return gr.update(visible=False)
+
+
+# First Tab: Local Document
+with gr.Blocks() as tab_main:
+    with gr.Row(elem_classes=["input-file-row"]):
+        file_input = gr.File(
+            label="Document",
+            file_count="single",
+            file_types=[".pdf"],
+            interactive=True,
+            elem_classes=["input-file", "secondary-text"],
+            visible=True,
+        )
+        preview = gr.Image(
+            label="Preview", visible=False, elem_classes=["preview-block"]
+        )
+    with gr.Row(elem_classes=["outputs-row"]):
+        output_file = gr.File(
+            label="Translated", visible=False, elem_classes=["secondary-text"]
+        )
+        output_file_dual = gr.File(
+            label="Translated (Bilingual)",
+            visible=False,
+            elem_classes=["secondary-text"],
+        )
+
+# Second Tab: Online Document
+with gr.Blocks() as tab_url:
+    link_input = gr.Textbox(
+        label="Link", visible=True, interactive=True, elem_classes=["link-value"]
+    )
+    paste_btn = gr.Button("Paste from Clipboard", variant="secondary")
+    translate_btn = gr.Button("Translate", variant="primary")
+
+# Third Tab: Advanced Options
+with gr.Blocks(visible=True, elem_classes=["options-modal"]) as tab_option:
+    gr.Markdown("## Advanced Options")
+    with gr.Group():
+        gui_service = gr.Dropdown(
+            label="Translation Service",
+            choices=list(service_map.keys()),
+            value=env_services.value,
+            interactive=True,
+        )
+        api_key_input = gr.Textbox(
+            label="DeepLX Auth Key (required)",
+            value=env_deeplx_auth_key.value,
+            interactive=True,
+        )
+        api_url_input = gr.Textbox(
+            label="DeepLX ServerURL (optional)",
+            value=env_deeplx_server_url.value,
+            interactive=True,
+        )
+        gui_lo = gr.Dropdown(
+            label="Target Language",
+            choices=["Chinese", "English"],
+            value=env_lo.value,
+            interactive=True,
+        )
+        with gr.Row():
+            cancel_btn = gr.Button("Cancel")
+            save_btn = gr.Button("Save", variant="primary")
+
+    # Connect the options events
+    # more_options.click(show_options, outputs=[options_modal])
+
+    # cancel_btn.click(cancel_options, outputs=[options_modal])
+
+    # save_btn.click(
+    #     save_options,
+    #     inputs=[api_key_input, api_url_input, model_input],
+    #     outputs=[options_modal],
+    # )
+
+# Main Interface
 with gr.Blocks(
     title="PDFMathTranslate - PDF Translation with preserved formats",
     theme=gr.themes.Default(
@@ -361,148 +738,18 @@ with gr.Blocks(
     css=custom_css,
     head=demo_recaptcha if flag_demo else "",
 ) as demo:
-    gr.Markdown(
-        "# [PDFMathTranslate @ GitHub](https://github.com/Byaidu/PDFMathTranslate)"
+    with gr.Row(elem_classes=["logo-row"]):
+        gr.Image("./docs/images/banner.png", elem_classes=["logo"])
+    with gr.Row(elem_classes=["title-row"]):
+        gr.Markdown(
+            "## PDFMathTranslate",
+            elem_classes=["title"],
+        )
+    gr.TabbedInterface(
+        [tab_main, tab_url, tab_option],
+        ["Local Document", "Online Document", "Advanced Options"],
     )
-
-    with gr.Row():
-        with gr.Column(scale=1):
-            gr.Markdown("## File | < 5 MB" if flag_demo else "## File")
-            file_type = gr.Radio(
-                choices=["File", "Link"],
-                label="Type",
-                value="File",
-            )
-            file_input = gr.File(
-                label="File",
-                file_count="single",
-                file_types=[".pdf"],
-                type="filepath",
-                elem_classes=["input-file"],
-            )
-            link_input = gr.Textbox(
-                label="Link",
-                visible=False,
-                interactive=True,
-            )
-            gr.Markdown("## Option")
-            service = gr.Dropdown(
-                label="Service",
-                choices=service_map.keys(),
-                value="Google",
-            )
-            envs = []
-            for i in range(3):
-                envs.append(
-                    gr.Textbox(
-                        visible=False,
-                        interactive=True,
-                    )
-                )
-            with gr.Row():
-                lang_from = gr.Dropdown(
-                    label="Translate from",
-                    choices=lang_map.keys(),
-                    value="English",
-                )
-                lang_to = gr.Dropdown(
-                    label="Translate to",
-                    choices=lang_map.keys(),
-                    value="Simplified Chinese",
-                )
-            page_range = gr.Radio(
-                choices=page_map.keys(),
-                label="Pages",
-                value=list(page_map.keys())[0],
-            )
-
-            page_input = gr.Textbox(
-                label="Page range",
-                visible=False,
-                interactive=True,
-            )
-
-            with gr.Accordion("Open for More Experimental Options!", open=False):
-                gr.Markdown("#### Experimental")
-                threads = gr.Textbox(
-                    label="number of threads", interactive=True, value="1"
-                )
-                prompt = gr.Textbox(
-                    label="Custom Prompt for llm", interactive=True, visible=False
-                )
-                envs.append(prompt)
-
-            def on_select_service(service, evt: gr.EventData):
-                translator = service_map[service]
-                _envs = []
-                for i in range(4):
-                    _envs.append(gr.update(visible=False, value=""))
-                for i, env in enumerate(translator.envs.items()):
-                    _envs[i] = gr.update(
-                        visible=True, label=env[0], value=os.getenv(env[0], env[1])
-                    )
-                _envs[-1] = gr.update(visible=translator.CustomPrompt)
-                return _envs
-
-            def on_select_filetype(file_type):
-                return (
-                    gr.update(visible=file_type == "File"),
-                    gr.update(visible=file_type == "Link"),
-                )
-
-            def on_select_page(choice):
-                if choice == "Others":
-                    return gr.update(visible=True)
-                else:
-                    return gr.update(visible=False)
-
-            output_title = gr.Markdown("## Translated", visible=False)
-            output_file_mono = gr.File(
-                label="Download Translation (Mono)", visible=False
-            )
-            output_file_dual = gr.File(
-                label="Download Translation (Dual)", visible=False
-            )
-            recaptcha_response = gr.Textbox(
-                label="reCAPTCHA Response", elem_id="verify", visible=False
-            )
-            recaptcha_box = gr.HTML('<div id="recaptcha-box"></div>')
-            translate_btn = gr.Button("Translate", variant="primary")
-            cancellation_btn = gr.Button("Cancel", variant="secondary")
-            tech_details_tog = gr.Markdown(
-                tech_details_string,
-                elem_classes=["secondary-text"],
-            )
-            page_range.select(on_select_page, page_range, page_input)
-            service.select(
-                on_select_service,
-                service,
-                envs,
-            )
-            file_type.select(
-                on_select_filetype,
-                file_type,
-                [file_input, link_input],
-                js=(
-                    f"""
-                    (a,b)=>{{
-                        try{{
-                            grecaptcha.render('recaptcha-box',{{
-                                'sitekey':'{client_key}',
-                                'callback':'onVerify'
-                            }});
-                        }}catch(error){{}}
-                        return [a];
-                    }}
-                    """
-                    if flag_demo
-                    else ""
-                ),
-            )
-
-        with gr.Column(scale=2):
-            gr.Markdown("## Preview")
-            preview = PDF(label="Document Preview", visible=True, height=2000)
+    gr.Markdown(tech_details_string, elem_classes=["secondary-text"])
 
     # Event handlers
     def on_file_upload_immediate(file):
@@ -568,39 +815,40 @@ with gr.Blocks(
         ),
     )
 
-    state = gr.State({"session_id": None})
 
-    translate_btn.click(
-        translate_file,
-        inputs=[
-            file_type,
-            file_input,
-            link_input,
-            service,
-            lang_from,
-            lang_to,
-            page_range,
-            page_input,
-            prompt,
-            threads,
-            recaptcha_response,
-            state,
-            *envs,
-        ],
-        outputs=[
-            output_file_mono,
-            preview,
-            output_file_dual,
-            output_file_mono,
-            output_file_dual,
-            output_title,
-        ],
-    ).then(lambda: None, js="()=>{grecaptcha.reset()}" if flag_demo else "")
+# state = gr.State({"session_id": None})
 
-    cancellation_btn.click(
-        stop_translate_file,
-        inputs=[state],
-    )
+# translate_btn.click(
+#     translate_file,
+#     inputs=[
+#         file_type,
+#         file_input,
+#         link_input,
+#         service,
+#         lang_from,
+#         lang_to,
+#         page_range,
+#         page_input,
+#         prompt,
+#         threads,
+#         recaptcha_response,
+#         state,
+#         *envs,
+#     ],
+#     outputs=[
+#         output_file_mono,
+#         preview,
+#         output_file_dual,
+#         output_file_mono,
+#         output_file_dual,
+#         output_title,
+#     ],
+# ).then(lambda: None, js="()=>{grecaptcha.reset()}" if flag_demo else "")
+
+# cancellation_btn.click(
+#     stop_translate_file,
+#     inputs=[state],
+# )
 
 
 def parse_user_passwd(file_path: str) -> tuple:
@@ -631,6 +879,17 @@ def parse_user_passwd(file_path: str) -> tuple:
     except FileNotFoundError:
         print(f"Error: File '{file_path[0]}' not found.")
     return tuple_list, content
+
+    # Connect the options events
+    # more_options.click(show_options, outputs=[options_modal])
+
+    # cancel_btn.click(cancel_options, outputs=[options_modal])
+
+    # save_btn.click(
+    #     save_options,
+    #     inputs=[api_key_input, api_url_input, model_input],
+    #     outputs=[options_modal],
+    # )
 
 
 def setup_gui(share: bool = False, auth_file: list = ["", ""]) -> None:
@@ -675,6 +934,7 @@ def setup_gui(share: bool = False, auth_file: list = ["", ""]) -> None:
                     share=share,
                     auth=user_list,
                     auth_message=html,
+                    reload=True,
                 )
             except Exception:
                 print(
