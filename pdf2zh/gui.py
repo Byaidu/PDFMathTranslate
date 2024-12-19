@@ -252,6 +252,11 @@ def translate_file(
     def progress_bar(t: tqdm.tqdm):
         progress(t.n / t.total, desc="Translating...")
 
+    try:
+        threads = int(threads)
+    except ValueError:
+        threads = 1
+
     param = {
         "files": [str(file_raw)],
         "pages": selected_page,
@@ -415,7 +420,9 @@ with gr.Blocks(
 
             with gr.Accordion("Open for More Experimental Options!", open=False):
                 gr.Markdown("#### Experimental")
-                threads = gr.Textbox(label="number of threads", interactive=True)
+                threads = gr.Textbox(
+                    label="number of threads", interactive=True, value="1"
+                )
                 prompt = gr.Textbox(
                     label="Custom Prompt for llm", interactive=True, visible=False
                 )
