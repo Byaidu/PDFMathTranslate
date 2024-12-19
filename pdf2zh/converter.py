@@ -16,7 +16,7 @@ import re
 import concurrent.futures
 import numpy as np
 import unicodedata
-from tenacity import retry, wait_fixed
+from tenacity import retry, wait_fixed, stop_after_attempt, RetryCallState
 from pdf2zh import cache
 from pdf2zh.translator import (
     AzureOpenAITranslator,
@@ -331,7 +331,16 @@ class TranslateConverter(PDFConverterEx):
         hash_key = cache.deterministic_hash("PDFMathTranslate")
         cache.create_cache(hash_key)
 
-        @retry(wait=wait_fixed(1))
+        retry_error = None
+
+        def record_retry_error(retry_state: RetryCallState):
+            nonlocal retry_error
+            retry_error = retry_state
+            return None
+
+        @retry(wait=wait_fixed(1) ,
+               stop=stop_after_attempt(3),
+               retry_error_callback=lambda retry_state: record_retry_error(retry_state))
         def worker(s: str):  # 多线程翻译
             if not s.strip() or re.match(r"^\{v\d+\}$", s):  # 空白和公式不翻译
                 return s
@@ -354,6 +363,9 @@ class TranslateConverter(PDFConverterEx):
             max_workers=self.thread
         ) as executor:
             news = list(executor.map(worker, sstk))
+
+        if retry_error and isinstance(retry_error.outcome.exception(), Exception):
+            raise retry_error.outcome.exception()
 
         ############################################################
         # C. 新文档排版
