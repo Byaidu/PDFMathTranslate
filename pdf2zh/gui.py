@@ -690,34 +690,83 @@ with gr.Blocks() as tab_url:
 
 # Third Tab: Advanced Options
 with gr.Blocks(visible=True, elem_classes=["options-modal"]) as tab_option:
-    gr.Markdown("## Advanced Options")
-    with gr.Group():
-        gui_service = gr.Dropdown(
-            label="Translation Service",
-            choices=list(service_map.keys()),
-            value=env_services.value,
-            interactive=True,
-        )
-        api_key_input = gr.Textbox(
-            label="DeepLX Auth Key (required)",
-            value=env_deeplx_auth_key.value,
-            interactive=True,
-        )
-        api_url_input = gr.Textbox(
-            label="DeepLX ServerURL (optional)",
-            value=env_deeplx_server_url.value,
-            interactive=True,
-        )
-        gui_lo = gr.Dropdown(
-            label="Target Language",
-            choices=["Chinese", "English"],
-            value=env_lo.value,
-            interactive=True,
-        )
-        with gr.Row():
-            cancel_btn = gr.Button("Cancel")
-            save_btn = gr.Button("Save", variant="primary")
+    with gr.Row():
+        with gr.Column():
+            gr.Markdown("### Translation")
+            with gr.Group():
+                gui_li = gr.Dropdown(
+                    label="Source",
+                    choices=["Chinese", "English"],
+                    value=env_lo.value,
+                    interactive=True,
+                )
+                gui_lo = gr.Dropdown(
+                    label="Target",
+                    choices=["Chinese", "English"],
+                    value=env_lo.value,
+                    interactive=True,
+                )
+            gr.Markdown("### Service")
+            gui_service = gr.Dropdown(
+                label="Provider",
+                choices=list(service_map.keys()),
+                value=env_services.value,
+                interactive=True,
+            )
+            api_key_input = gr.Textbox(
+                label="API Key",
+                value=env_deeplx_auth_key.value,
+                interactive=True,
+            )
+            api_url_input = gr.Textbox(
+                label="Endpoint",
+                value=env_deeplx_server_url.value,
+                interactive=True,
+                placeholder=" (optional) e.g., https://api.openaixxxx.com/v1",
+            )
+            gui_llm_prompt = gr.Textbox(
+                label="Prompt",
+                lines=2,
+                max_lines=8,
+                placeholder=" (optional) Customized prompt are only available for LLM-based translators.",
+            )
 
+        with gr.Column():
+            gr.Markdown("### Document")
+            gui_doc_type = gr.Radio(
+                label="Output Type",
+                choices=[
+                    "Both",
+                    "Mono-",
+                    "Bi-lingual",
+                ],
+                value="Both",
+            )
+            gui_page_range = gr.Radio(
+                label="Output Type",
+                choices=["All", "First", "First 5 pages", "Others"],
+                value="All",
+            )
+            gr.Markdown("### Technical")
+            gui_exception = gr.Textbox(
+                label="Rules for Exception",
+                lines=2,
+                max_lines=8,
+                placeholder=" (optional) Texts matching the regex rule here will not be translated.",
+            )
+            gui_threads = gr.Slider(
+                label="Multi-threads",
+                minimum=1,
+                maximum=32,
+                step=1,
+                interactive=True,
+                value=1,
+            )
+            gui_compatile = gr.Checkbox(
+                label="Improved compatibility",
+            )
+            gr.Markdown("""Version: Dev  
+            [Need help? Report issues](https://github.com/Byaidu/PDFMathTranslate/issues)""")
     # Connect the options events
     # more_options.click(show_options, outputs=[options_modal])
 
