@@ -264,7 +264,7 @@ def translate_file(
         "lang_out": lang_to,
         "service": f"{translator.name}",
         "output": output,
-        "thread": int(threads) if threads else 1,
+        "thread": int(threads),
         "callback": progress_bar,
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
