@@ -254,7 +254,7 @@ def convert_to_pdfa(input_path, output_path):
     Args:
         input_path: Path to source PDF file
         output_path: Path to save PDF/A file
-    """pikepdf
+    """
     from pikepdf import Dictionary, Name, Pdf
 
     # Open the PDF file
