@@ -326,6 +326,10 @@ custom_css = """
     .progress-bar {
         border-radius: 8px !important;
     }
+
+    .pdf-canvas canvas {
+        width: 100%;
+    }
     """
 
 demo_recaptcha = """
@@ -498,7 +502,7 @@ with gr.Blocks(
 
         with gr.Column(scale=2):
             gr.Markdown("## Preview")
-            preview = PDF(label="Document Preview", visible=True)
+            preview = PDF(label="Document Preview", visible=True, height=2000)
 
     # Event handlers
     file_input.upload(
