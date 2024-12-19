@@ -6,12 +6,13 @@ output it to plain text, html, xml or tags.
 from __future__ import annotations
 
 import argparse
-import sys
 import logging
+import sys
+from string import Template
 from typing import List, Optional
+
 from pdf2zh import __version__, log
 from pdf2zh.high_level import translate
-from string import Template
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -126,6 +127,13 @@ def create_parser() -> argparse.ArgumentParser:
         "--prompt",
         type=str,
         help="user custom prompt.",
+    )
+
+    parse_params.add_argument(
+        "--compatible",
+        "-cp",
+        action="store_true",
+        help="Convert the PDF file into PDF/A format to improve compatibility.",
     )
 
     return parser

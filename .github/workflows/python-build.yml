@@ -35,6 +35,14 @@ jobs:
       run: 
         pdf2zh ./test/file/translate.cli.plain.text.pdf
 
+    - name: Test - Translate a PDF file figure
+      run: 
+        pdf2zh ./test/file/translate.cli.text.with.figure.pdf
+
+    # - name: Test - Translate a PDF file with unknown font
+    #   run: 
+    #     pdf2zh ./test/file/translate.cli.font.unknown.pdf
+
     - name: Test - Start GUI and exit
       run: 
         timeout 10 pdf2zh -i  || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi

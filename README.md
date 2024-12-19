@@ -43,9 +43,9 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 
 <h2 id="updates">Updates</h2>
 
-- [Nov. 26 2024] CLI now supports online file(s) _(by [@reycn](https://github.com/reycn))_
-- [Nov. 24 2024] [ONNX](https://github.com/onnx/onnx) support to reduce dependency sizes _(by [@Wybxc](https://github.com/Wybxc))_
-- [Nov. 23 2024] 🌟 [Public Service](#demo) online! _(by [@Byaidu](https://github.com/Byaidu))_
+- [Dec. 19 2024] Non-PDF/A documents are now supported using `-cp` _(by [@reycn](https://github.com/reycn))_
+- [Dec. 13 2024] Additional support for backend by _(by [@YadominJinta](https://github.com/YadominJinta))_
+- [Dec. 10 2024] The translator now supports OpenAI models on Azure _(by [@yidasanqian](https://github.com/yidasanqian))_
 
 <h2 id="preview">Preview</h2>
 
@@ -184,6 +184,7 @@ In the following table, we list all advanced options for reference:
 | `-t`           | [Multi-threads](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#threads)                | `pdf2zh example.pdf -t 1`                      |
 | `-o`           | Output dir                                                                                                    | `pdf2zh example.pdf -o output`                 |
 | `-f`, `-c`     | [Exceptions](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                | `pdf2zh example.pdf -f "(MS.*)"`               |
+| `-cp`          | Compatibility Mode                                                                                            | `pdf2zh example.pdf --compatible`              |
 | `--share`      | Public link                                                                                                   | `pdf2zh -i --share`                            |
 | `--authorized` | Authorization                                                                                                 | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt`     | [Custom Prompt](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                 | `pdf2zh --prompt [prompt.txt]`                 |
