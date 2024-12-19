@@ -525,7 +525,7 @@ with gr.Blocks(
     )
 
 
-def readuserandpasswd(file_path):
+def parse_user_passwd(file_path):
     tuple_list = []
     content = ""
     if not file_path:
@@ -547,7 +547,7 @@ def readuserandpasswd(file_path):
 
 
 def setup_gui(share=False, authfile=["", ""]):
-    userlist, html = readuserandpasswd(authfile)
+    userlist, html = parse_user_passwd(authfile)
     if flag_demo:
         demo.launch(server_name="0.0.0.0", max_file_size="5mb", inbrowser=True)
     else:
