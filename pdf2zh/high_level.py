@@ -254,8 +254,7 @@ def convert_to_pdfa(input_path, output_path):
     Args:
         input_path: Path to source PDF file
         output_path: Path to save PDF/A file
-    """
-    import pikepdf
+    """pikepdf
     from pikepdf import Dictionary, Name, Pdf
 
     # Open the PDF file
@@ -347,7 +346,7 @@ def translate(
         filename = os.path.splitext(os.path.basename(file))[0]
 
         # If the commandline has specified converting to PDF/A format
-        ## --compatible / -cp
+        # --compatible / -cp
         if compatible:
             file_pdfa = file.replace(".pdf", "-pdfa.pdf")
             print(f"Converting {file} to PDF/A format...")
