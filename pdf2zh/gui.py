@@ -32,6 +32,7 @@ from pdf2zh.translator import (
     ZhipuTranslator,
 )
 
+# The following variables associate strings with translators
 service_map: dict[str, BaseTranslator] = {
     "Google": GoogleTranslator,
     "Bing": BingTranslator,
@@ -49,6 +50,8 @@ service_map: dict[str, BaseTranslator] = {
     "Dify": DifyTranslator,
     "AnythingLLM": AnythingLLMTranslator,
 }
+
+# The following variables associate strings with specific languages
 lang_map = {
     "Simplified Chinese": "zh",
     "Traditional Chinese": "zh-TW",
@@ -61,6 +64,8 @@ lang_map = {
     "Spanish": "es",
     "Italian": "it",
 }
+
+# The following variable associate strings with page ranges
 page_map = {
     "All": None,
     "First": [0],
@@ -68,7 +73,10 @@ page_map = {
     "Others": None,
 }
 
+# Check if this is a public demo, which has resource limits
 flag_demo = False
+
+# Limit resources
 if os.getenv("PDF2ZH_DEMO"):
     flag_demo = True
     service_map = {
@@ -81,8 +89,18 @@ if os.getenv("PDF2ZH_DEMO"):
     client_key = os.getenv("PDF2ZH_CLIENT_KEY")
     server_key = os.getenv("PDF2ZH_SERVER_KEY")
 
+# Check if everything unconfigured
+if os.getenv("PDF2ZH_INIT") is not False:
+    service_map = {
+        "Google": GoogleTranslator,
+    }
 
+
+# Public demo control
 def verify_recaptcha(response):
+    """
+    This function verifies the reCAPTCHA response.
+    """
     recaptcha_url = "https://www.google.com/recaptcha/api/siteverify"
     print("reCAPTCHA", server_key, response)
     data = {"secret": server_key, "response": response}
@@ -91,7 +109,18 @@ def verify_recaptcha(response):
     return result.get("success")
 
 
-def download_with_limit(url, save_path, size_limit):
+def download_with_limit(url: str, save_path: str, size_limit: int) -> str:
+    """
+    This function downloads a file from a URL and saves it to a specified path.
+
+    Inputs:
+        - url: The URL to download the file from
+        - save_path: The path to save the file to
+        - size_limit: The maximum size of the file to download
+
+    Returns:
+        - The path of the downloaded file
+    """
     chunk_size = 1024
     total_size = 0
     with requests.get(url, stream=True, timeout=10) as response:
@@ -111,7 +140,15 @@ def download_with_limit(url, save_path, size_limit):
     return save_path / filename
 
 
-def stop_translate_file(state):
+def stop_translate_file(state: dict) -> None:
+    """
+    This function stops the translation process.
+
+    Inputs:
+        - state: The state of the translation process
+
+    Returns:- None
+    """
     session_id = state["session_id"]
     if session_id is None:
         return
@@ -135,10 +172,37 @@ def translate_file(
     progress=gr.Progress(),
     *envs,
 ):
+    """
+    This function translates a PDF file from one language to another.
+
+    Inputs:
+        - file_type: The type of file to translate
+        - file_input: The file to translate
+        - link_input: The link to the file to translate
+        - service: The translation service to use
+        - lang_from: The language to translate from
+        - lang_to: The language to translate to
+        - page_range: The range of pages to translate
+        - page_input: The input for the page range
+        - prompt: The custom prompt for the llm
+        - threads: The number of threads to use
+        - recaptcha_response: The reCAPTCHA response
+        - state: The state of the translation process
+        - progress: The progress bar
+        - envs: The environment variables
+
+    Returns:
+        - The translated file
+        - The translated file
+        - The translated file
+        - The progress bar
+        - The progress bar
+        - The progress bar
+    """
     session_id = uuid.uuid4()
     state["session_id"] = session_id
     cancellation_event_map[session_id] = asyncio.Event()
-    """Translate PDF content using selected service."""
+    # Translate PDF content using selected service.
     if flag_demo and not verify_recaptcha(recaptcha_response):
         raise gr.Error("reCAPTCHA fail")
 
@@ -195,7 +259,7 @@ def translate_file(
         "lang_out": lang_to,
         "service": f"{translator.name}",
         "output": output,
-        "thread": int(threads),
+        "thread": int(threads) if threads else 1,
         "callback": progress_bar,
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
@@ -238,14 +302,7 @@ custom_blue = gr.themes.Color(
     c950="#020B33",
 )
 
-cancellation_event_map = {}
-
-with gr.Blocks(
-    title="PDFMathTranslate - PDF Translation with preserved formats",
-    theme=gr.themes.Default(
-        primary_hue=custom_blue, spacing_size="md", radius_size="lg"
-    ),
-    css="""
+custom_css = """
     .secondary-text {color: #999 !important;}
     footer {visibility: hidden}
     .env-warning {color: #dd5500 !important;}
@@ -264,9 +321,9 @@ with gr.Blocks(
     .progress-bar {
         border-radius: 8px !important;
     }
-    """,
-    head=(
-        """
+    """
+
+demo_recaptcha = """
     <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
     <script type="text/javascript">
         var onVerify = function(token) {
@@ -276,9 +333,24 @@ with gr.Blocks(
         };
     </script>
     """
-        if flag_demo
-        else ""
+
+tech_details_string = f"""
+                    <summary>Technical details</summary>
+                    - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
+                    - GUI by: <a href="https://github.com/reycn">Rongxin</a><br>
+                    - Version: {__version__}
+                """
+cancellation_event_map = {}
+
+
+# The following code creates the GUI
+with gr.Blocks(
+    title="PDFMathTranslate - PDF Translation with preserved formats",
+    theme=gr.themes.Default(
+        primary_hue=custom_blue, spacing_size="md", radius_size="lg"
     ),
+    css=custom_css,
+    head=demo_recaptcha if flag_demo else "",
 ) as demo:
     gr.Markdown(
         "# [PDFMathTranslate @ GitHub](https://github.com/Byaidu/PDFMathTranslate)"
@@ -387,12 +459,7 @@ with gr.Blocks(
             translate_btn = gr.Button("Translate", variant="primary")
             cancellation_btn = gr.Button("Cancel", variant="secondary")
             tech_details_tog = gr.Markdown(
-                f"""
-                    <summary>Technical details</summary>
-                    - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
-                    - GUI by: <a href="https://github.com/reycn">Rongxin</a><br>
-                    - Version: {__version__}
-                """,
+                tech_details_string,
                 elem_classes=["secondary-text"],
             )
             page_range.select(on_select_page, page_range, page_input)
@@ -525,7 +592,16 @@ with gr.Blocks(
     )
 
 
-def parse_user_passwd(file_path):
+def parse_user_passwd(file_path: str) -> tuple:
+    """
+    Parse the user name and password from the file.
+
+    Inputs:
+        - file_path: The file path to read.
+    Outputs:
+        - tuple_list: The list of tuples of user name and password.
+        - content: The content of the file
+    """
     tuple_list = []
     content = ""
     if not file_path:
@@ -546,12 +622,22 @@ def parse_user_passwd(file_path):
     return tuple_list, content
 
 
-def setup_gui(share=False, authfile=["", ""]):
-    userlist, html = parse_user_passwd(authfile)
+def setup_gui(share: bool = False, auth_file: list = ["", ""]) -> None:
+    """
+    Setup the GUI with the given parameters.
+
+    Inputs:
+        - share: Whether to share the GUI.
+        - auth_file: The file path to read the user name and password.
+
+    Outputs:
+        - None
+    """
+    user_list, html = parse_user_passwd(auth_file)
     if flag_demo:
         demo.launch(server_name="0.0.0.0", max_file_size="5mb", inbrowser=True)
     else:
-        if len(userlist) == 0:
+        if len(user_list) == 0:
             try:
                 demo.launch(
                     server_name="0.0.0.0", debug=True, inbrowser=True, share=share
@@ -576,7 +662,7 @@ def setup_gui(share=False, authfile=["", ""]):
                     debug=True,
                     inbrowser=True,
                     share=share,
-                    auth=userlist,
+                    auth=user_list,
                     auth_message=html,
                 )
             except Exception:
@@ -589,7 +675,7 @@ def setup_gui(share=False, authfile=["", ""]):
                         debug=True,
                         inbrowser=True,
                         share=share,
-                        auth=userlist,
+                        auth=user_list,
                         auth_message=html,
                     )
                 except Exception:
@@ -600,12 +686,11 @@ def setup_gui(share=False, authfile=["", ""]):
                         debug=True,
                         inbrowser=True,
                         share=True,
-                        auth=userlist,
+                        auth=user_list,
                         auth_message=html,
                     )
 
 
 # For auto-reloading while developing
 if __name__ == "__main__":
-    setup_gui()
     setup_gui()
