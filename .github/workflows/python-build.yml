@@ -1,4 +1,4 @@
-name: Build Python Package
+name: Test and Build Python Package
 
 on:
   push:
@@ -19,13 +19,25 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install build flake8 black
+        pip3 install -U pip
+        pip3 install -e .[dev]
 
-    - name: Check code format
+    - name: Test - Code format
       run: |
         black --check --diff --color pdf2zh/*.py
         flake8 --ignore E203,E261,E501,W503,E741
+    
+    - name: Test - Unit Test
+      run: |
+        pytest .
 
-    - name: Build package
+    - name: Test - Translate a PDF file with plain text only
+      run: 
+        pdf2zh ./test/file/translate.cli.plain.text.pdf
+
+    - name: Test - Start GUI and exit
+      run: 
+        timeout 10 pdf2zh -i  || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
+
+    - name: Build as a package
       run: python -m build

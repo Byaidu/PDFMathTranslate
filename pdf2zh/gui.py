@@ -65,6 +65,7 @@ page_map = {
     "All": None,
     "First": [0],
     "First 5 pages": list(range(0, 5)),
+    "Others": None,
 }
 
 flag_demo = False
@@ -126,6 +127,9 @@ def translate_file(
     lang_from,
     lang_to,
     page_range,
+    page_input,
+    prompt,
+    threads,
     recaptcha_response,
     state,
     progress=gr.Progress(),
@@ -162,7 +166,16 @@ def translate_file(
     file_dual = output / f"{filename}-dual.pdf"
 
     translator = service_map[service]
-    selected_page = page_map[page_range]
+    if page_range != "Others":
+        selected_page = page_map[page_range]
+    else:
+        selected_page = []
+        for p in page_input.split(","):
+            if "-" in p:
+                start, end = p.split("-")
+                selected_page.extend(range(int(start) - 1, int(end)))
+            else:
+                selected_page.append(int(p) - 1)
     lang_from = lang_map[lang_from]
     lang_to = lang_map[lang_to]
 
@@ -182,10 +195,11 @@ def translate_file(
         "lang_out": lang_to,
         "service": f"{translator.name}",
         "output": output,
-        "thread": 4,
+        "thread": int(threads),
         "callback": progress_bar,
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
+        "prompt": prompt,
     }
     try:
         translate(**param)
@@ -321,15 +335,30 @@ with gr.Blocks(
                 value=list(page_map.keys())[0],
             )
 
+            page_input = gr.Textbox(
+                label="Page range",
+                visible=False,
+                interactive=True,
+            )
+
+            with gr.Accordion("Open for More Experimental Options!", open=False):
+                gr.Markdown("#### Experimental")
+                threads = gr.Textbox(label="number of threads", interactive=True)
+                prompt = gr.Textbox(
+                    label="Custom Prompt for llm", interactive=True, visible=False
+                )
+                envs.append(prompt)
+
             def on_select_service(service, evt: gr.EventData):
                 translator = service_map[service]
                 _envs = []
-                for i in range(3):
+                for i in range(4):
                     _envs.append(gr.update(visible=False, value=""))
                 for i, env in enumerate(translator.envs.items()):
                     _envs[i] = gr.update(
                         visible=True, label=env[0], value=os.getenv(env[0], env[1])
                     )
+                _envs[-1] = gr.update(visible=translator.CustomPrompt)
                 return _envs
 
             def on_select_filetype(file_type):
@@ -337,6 +366,12 @@ with gr.Blocks(
                     gr.update(visible=file_type == "File"),
                     gr.update(visible=file_type == "Link"),
                 )
+
+            def on_select_page(choice):
+                if choice == "Others":
+                    return gr.update(visible=True)
+                else:
+                    return gr.update(visible=False)
 
             output_title = gr.Markdown("## Translated", visible=False)
             output_file_mono = gr.File(
@@ -360,6 +395,7 @@ with gr.Blocks(
                 """,
                 elem_classes=["secondary-text"],
             )
+            page_range.select(on_select_page, page_range, page_input)
             service.select(
                 on_select_service,
                 service,
@@ -466,6 +502,9 @@ with gr.Blocks(
             lang_from,
             lang_to,
             page_range,
+            page_input,
+            prompt,
+            threads,
             recaptcha_response,
             state,
             *envs,
@@ -489,6 +528,8 @@ with gr.Blocks(
 def readuserandpasswd(file_path):
     tuple_list = []
     content = ""
+    if not file_path:
+        return tuple_list, content
     if len(file_path) == 2:
         try:
             with open(file_path[1], "r", encoding="utf-8") as file:

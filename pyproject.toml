@@ -34,7 +34,9 @@ dependencies = [
 dev = [
     "black",
     "flake8",
-    "pre-commit"
+    "pre-commit",
+    "pytest",
+    "build"
 ]
 backend = [
     "flask",

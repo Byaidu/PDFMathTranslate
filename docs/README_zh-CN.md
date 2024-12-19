@@ -1,6 +1,6 @@
 <div align="center">
 
-[English](README.md) | 简体中文 | [日本語](README_ja-JP.md)
+[English](../README.md) | 简体中文 | [日本語](README_ja-JP.md)
 
 <img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
@@ -76,7 +76,7 @@
 
 pdf2zh的运行依赖于额外模型(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)，该模型在魔搭上也可以找到。如果你在启动时下载该模型遇到问题，请使用如下环境变量：
 ```shell
-USE_MODELSCOPE=1 pdf2zh
+set HF_ENDPOINT=https://hf-mirror.com
 ```
 
 <h3 id="cmd">方法一、命令行工具</h3>
@@ -98,7 +98,7 @@ USE_MODELSCOPE=1 pdf2zh
 
 无需预先安装 Python 环境
 
-下载 [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat) 并双击运行
+下载 [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat) 并双击运行
 
 <h3 id="gui">方法三、图形交互界面</h3>
 
