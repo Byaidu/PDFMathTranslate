@@ -1,35 +1,26 @@
+import asyncio
+import cgi
 import os
 import shutil
 import uuid
-import asyncio
 from asyncio import CancelledError
 from pathlib import Path
-from pdf2zh import __version__
-from pdf2zh.high_level import translate
-from pdf2zh.translator import (
-    BaseTranslator,
-    GoogleTranslator,
-    BingTranslator,
-    DeepLTranslator,
-    DeepLXTranslator,
-    OllamaTranslator,
-    AzureOpenAITranslator,
-    OpenAITranslator,
-    ZhipuTranslator,
-    ModelScopeTranslator,
-    SiliconTranslator,
-    GeminiTranslator,
-    AzureTranslator,
-    TencentTranslator,
-    DifyTranslator,
-    AnythingLLMTranslator,
-)
 
 import gradio as gr
-from gradio_pdf import PDF
-import tqdm
 import requests
-import cgi
+import tqdm
+from gradio_pdf import PDF
+
+from pdf2zh import __version__
+from pdf2zh.high_level import translate
+from pdf2zh.translator import (AnythingLLMTranslator, AzureOpenAITranslator,
+                               AzureTranslator, BaseTranslator, BingTranslator,
+                               DeepLTranslator, DeepLXTranslator,
+                               DifyTranslator, GeminiTranslator,
+                               GoogleTranslator, ModelScopeTranslator,
+                               OllamaTranslator, OpenAITranslator,
+                               SiliconTranslator, TencentTranslator,
+                               ZhipuTranslator)
 
 service_map: dict[str, BaseTranslator] = {
     "Google": GoogleTranslator,
@@ -481,7 +472,7 @@ with gr.Blocks(
     )
 
 
-def readuserandpasswd(file_path):
+def parse_user_passwd(file_path):
     tuple_list = []
     content = ""
     if not file_path:
@@ -503,7 +494,7 @@ def readuserandpasswd(file_path):
 
 
 def setup_gui(share=False, authfile=["", ""]):
-    userlist, html = readuserandpasswd(authfile)
+    userlist, html = parse_user_passwd(authfile)
     if flag_demo:
         demo.launch(server_name="0.0.0.0", max_file_size="5mb", inbrowser=True)
     else:
