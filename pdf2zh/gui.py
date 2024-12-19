@@ -327,6 +327,7 @@ def translate_file(
         gr.update(visible=True),
         gr.update(visible=True),
         gr.update(visible=True),
+        gr.update(visible=False),
     )
 
 
@@ -521,9 +522,13 @@ custom_css = """
         .preview-block {
             # width: 80vw !important;
             margin: 0 auto !important;
+            padding-top: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            padding-bottom: 0.8em !important;
+            background-color: #ffffff !important;
             justify-content: center !important;
             align-items: center !important;
-            background-color: #eeeeee !important;
         }
         .preview-block .image-frame {
             width: 100% !important;
@@ -532,6 +537,9 @@ custom_css = """
         }
         .preview-block .image-frame img {width: var(--size-full);
             object-fit: cover !important;
+        }
+        button .secondary {
+            background-color: white !important;
         }
         .options-modal {
             position: absolute !important;
@@ -658,6 +666,13 @@ def cancel_options():
 
 # First Tab: Local Document
 with gr.Blocks() as tab_main:
+    with gr.Row(elem_classes=["preview-row"]):
+        preview = PDF(
+            label="Translated",
+            visible=False,
+            height=1200,
+            elem_classes=["preview-block"],
+        )
     with gr.Row(elem_classes=["input-file-row"]):
         file_input = gr.File(
             label="Document",
@@ -667,11 +682,22 @@ with gr.Blocks() as tab_main:
             elem_classes=["input-file", "secondary-text"],
             visible=True,
         )
-        preview = gr.Image(
-            label="Preview", visible=False, elem_classes=["preview-block"]
-        )
+        with gr.Row(visible=False) as hidden_inputs:
+            input_type = gr.Textbox(value="File", label="Type")
+            input_link = gr.Textbox(value="", label="Link")
+            input_service = gr.Textbox(value="Google", label="Service")
+            input_src_lang = gr.Textbox(value="English", label="Source Language")
+            input_tgt_lang = gr.Textbox(
+                value="Simplified Chinese", label="Target Language"
+            )
+            input_page_range = gr.Textbox(value="All", label="Page Range")
+            input_pages = gr.Textbox(value="", label="Pages")
+            input_prompt = gr.Textbox(value="", label="Prompt")
+            input_threads = gr.Number(value=4, label="Threads")
+            input_recaptcha = gr.Textbox(value="", label="Recaptcha")
+
     with gr.Row(elem_classes=["outputs-row"]):
-        output_file = gr.File(
+        output_file_mono = gr.File(
             label="Translated", visible=False, elem_classes=["secondary-text"]
         )
         output_file_dual = gr.File(
@@ -679,6 +705,77 @@ with gr.Blocks() as tab_main:
             visible=False,
             elem_classes=["secondary-text"],
         )
+
+    file_input.upload(
+        translate_file,
+        inputs=[
+            input_type,
+            file_input,
+            input_link,
+            input_service,
+            input_src_lang,
+            input_tgt_lang,
+            input_page_range,
+            input_pages,
+            input_prompt,
+            input_threads,
+            input_recaptcha,
+            gr.State({}),
+        ],
+        outputs=[
+            preview,
+            output_file_mono,
+            output_file_dual,
+            preview,
+            output_file_mono,
+            output_file_dual,
+            file_input,
+        ],
+    )
+
+    # Event handlers
+    def on_file_upload_immediate(file):
+        if file:
+            return [
+                gr.update(visible=False),  # Hide first-page checkbox
+                gr.update(visible=False),  # Hide options button
+            ]
+        return [gr.update(visible=True), gr.update(visible=True)]
+
+    def on_file_upload_translate(file, first_page_only):
+        option_first_page = "First" if first_page_only else "All"
+        option_service = (
+            service_map[gui_service.value] if gui_service.value else "Google"
+        )
+        if file:
+            (output, output_dual, preview) = translate(
+                file.name, option_service, "", "Chinese", option_first_page, ""
+            )
+            return [
+                gr.update(visible=False),  # Hide file upload
+                preview,  # Set preview image
+                gr.update(visible=True),  # Show preview
+                output,  # Set output file
+                gr.update(visible=True),  # Set output file
+                output_dual,  # Set output dual file
+                gr.update(visible=True),  # Set output dual file
+                gr.update(visible=False),  # Hide first-page checkbox
+                gr.update(visible=False),  # Hide options button
+                gr.update(visible=True),  # Show refresh button
+            ]
+        return [
+            gr.update(visible=True),  # Show file upload
+            None,  # Clear preview
+            gr.update(visible=False),  # Hide preview
+            None,  # Clear output file
+            gr.update(visible=False),  # Hide output file
+            None,  # Clear output dual file
+            gr.update(visible=False),  # Hide output dual file
+            gr.update(visible=True),  # Show first-page checkbox
+            gr.update(visible=True),  # Show options button
+            gr.update(visible=False),  # Hide refresh button
+        ]
+
 
 # Second Tab: Online Document
 with gr.Blocks() as tab_url:
@@ -799,70 +896,6 @@ with gr.Blocks(
         ["Local Document", "Online Document", "Advanced Options"],
     )
     gr.Markdown(tech_details_string, elem_classes=["secondary-text"])
-
-    # Event handlers
-    def on_file_upload_immediate(file):
-        if file:
-            return [
-                gr.update(visible=False),  # Hide first-page checkbox
-                gr.update(visible=False),  # Hide options button
-            ]
-        return [gr.update(visible=True), gr.update(visible=True)]
-
-    def on_file_upload_translate(file, first_page_only):
-        option_first_page = "First" if first_page_only else "All"
-        option_service = (
-            service_map[gui_service.value] if gui_service.value else "Google"
-        )
-        if file:
-            (output, output_dual, preview) = translate(
-                file.name, option_service, "", "Chinese", option_first_page, ""
-            )
-            return [
-                gr.update(visible=False),  # Hide file upload
-                preview,  # Set preview image
-                gr.update(visible=True),  # Show preview
-                output,  # Set output file
-                gr.update(visible=True),  # Set output file
-                output_dual,  # Set output dual file
-                gr.update(visible=True),  # Set output dual file
-                gr.update(visible=False),  # Hide first-page checkbox
-                gr.update(visible=False),  # Hide options button
-                gr.update(visible=True),  # Show refresh button
-            ]
-        return [
-            gr.update(visible=True),  # Show file upload
-            None,  # Clear preview
-            gr.update(visible=False),  # Hide preview
-            None,  # Clear output file
-            gr.update(visible=False),  # Hide output file
-            None,  # Clear output dual file
-            gr.update(visible=False),  # Hide output dual file
-            gr.update(visible=True),  # Show first-page checkbox
-            gr.update(visible=True),  # Show options button
-            gr.update(visible=False),  # Hide refresh button
-        ]
-
-    file_input.upload(
-        lambda x: x,
-        inputs=file_input,
-        outputs=preview,
-        js=(
-            f"""
-            (a,b)=>{{
-                try{{
-                    grecaptcha.render('recaptcha-box',{{
-                        'sitekey':'{client_key}',
-                        'callback':'onVerify'
-                    }});
-                }}catch(error){{}}
-                return [a];
-            }}
-            """
-            if flag_demo
-            else ""
-        ),
-    )
 
 
 # state = gr.State({"session_id": None})
