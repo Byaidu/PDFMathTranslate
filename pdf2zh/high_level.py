@@ -1,27 +1,28 @@
 """Functions that can be used for the most common use-cases for pdf2zh.six"""
 
 import asyncio
-from asyncio import CancelledError
-from typing import BinaryIO
-import numpy as np
-import tqdm
-import sys
-from pymupdf import Font, Document
-from pdfminer.pdfpage import PDFPage
-from pdfminer.pdfinterp import PDFResourceManager
-from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfparser import PDFParser
-from pdfminer.pdfexceptions import PDFValueError
-from pdf2zh.converter import TranslateConverter
-from pdf2zh.pdfinterp import PDFPageInterpreterEx
-from pdf2zh.doclayout import DocLayoutModel
-from pathlib import Path
-from typing import Any, List, Optional
-import urllib.request
-import requests
-import tempfile
-import os
 import io
+import os
+import sys
+import tempfile
+import urllib.request
+from asyncio import CancelledError
+from pathlib import Path
+from typing import Any, BinaryIO, List, Optional
+
+import numpy as np
+import requests
+import tqdm
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfexceptions import PDFValueError
+from pdfminer.pdfinterp import PDFResourceManager
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
+from pymupdf import Document, Font
+
+from pdf2zh.converter import TranslateConverter
+from pdf2zh.doclayout import DocLayoutModel
+from pdf2zh.pdfinterp import PDFPageInterpreterEx
 
 model = DocLayoutModel.load_available()
 
@@ -136,7 +137,7 @@ def translate_patch(
             h, w = box.shape
             vcls = ["abandon", "figure", "table", "isolate_formula", "formula_caption"]
             for i, d in enumerate(page_layout.boxes):
-                if not page_layout.names[int(d.cls)] in vcls:
+                if page_layout.names[int(d.cls)] not in vcls:
                     x0, y0, x1, y1 = d.xyxy.squeeze()
                     x0, y0, x1, y1 = (
                         np.clip(int(x0 - 1), 0, w - 1),
@@ -246,6 +247,56 @@ def translate_stream(
     return doc_zh.write(deflate=1), doc_en.write(deflate=1)
 
 
+def convert_to_pdfa(input_path, output_path):
+    """
+    Convert PDF to PDF/A format
+
+    Args:
+        input_path: Path to source PDF file
+        output_path: Path to save PDF/A file
+    """
+    import pikepdf
+    from pikepdf import Dictionary, Name, Pdf
+
+    # Open the PDF file
+    pdf = Pdf.open(input_path)
+
+    # Add PDF/A conformance metadata
+    metadata = {
+        "pdfa_part": "2",
+        "pdfa_conformance": "B",
+        "title": pdf.docinfo.get("/Title", ""),
+        "author": pdf.docinfo.get("/Author", ""),
+        "creator": "PDF Math Translate",
+    }
+
+    with pdf.open_metadata() as meta:
+        meta.load_from_docinfo(pdf.docinfo)
+        meta["pdfaid:part"] = metadata["pdfa_part"]
+        meta["pdfaid:conformance"] = metadata["pdfa_conformance"]
+
+    # Create OutputIntent dictionary
+    output_intent = Dictionary(
+        {
+            "/Type": Name("/OutputIntent"),
+            "/S": Name("/GTS_PDFA1"),
+            "/OutputConditionIdentifier": "sRGB IEC61966-2.1",
+            "/RegistryName": "http://www.color.org",
+            "/Info": "sRGB IEC61966-2.1",
+        }
+    )
+
+    # Add output intent to PDF root
+    if "/OutputIntents" not in pdf.Root:
+        pdf.Root.OutputIntents = [output_intent]
+    else:
+        pdf.Root.OutputIntents.append(output_intent)
+
+    # Save as PDF/A
+    pdf.save(output_path, linearize=True)
+    pdf.close()
+
+
 def translate(
     files: list[str],
     output: str = "",
@@ -257,6 +308,7 @@ def translate(
     vfont: str = "",
     vchar: str = "",
     callback: object = None,
+    compatible: bool = False,
     cancellation_event: asyncio.Event = None,
     **kwarg: Any,
 ):
@@ -294,7 +346,15 @@ def translate(
                 )
         filename = os.path.splitext(os.path.basename(file))[0]
 
-        doc_raw = open(file, "rb")
+        # If the commandline has specified converting to PDF/A format
+        ## --compatible / -cp
+        if compatible:
+            file_pdfa = file.replace(".pdf", "-pdfa.pdf")
+            print(f"Converting {file} to PDF/A format...")
+            convert_to_pdfa(file, file_pdfa)
+            doc_raw = open(file_pdfa, "rb")
+        else:
+            doc_raw = open(file, "rb")
         s_raw = doc_raw.read()
         s_mono, s_dual = translate_stream(
             s_raw,
@@ -310,4 +370,5 @@ def translate(
         doc_dual.write(s_dual)
         result_files.append((str(file_mono), str(file_dual)))
 
+    return result_files
     return result_files
