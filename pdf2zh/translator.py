@@ -213,37 +213,25 @@ class OllamaTranslator(BaseTranslator):
         self.prompttext = prompt
 
     def translate(self, text):
-        print(len(self.prompt(text, self.prompttext)))
-        print(self.prompt(text, self.prompttext)[0])
-        print(self.prompt(text, self.prompttext)[1])
-        maxlen = max(2000, len(text) * 3)
+        maxlen = max(2000, len(text) * 5)
         for model in self.model.split(";"):
-            for i in range(2):
-                if i:
-                    print("[Retry]")
+            try:
                 response = ""
-                try:
-                    stream = self.client.chat(
-                        model=model,
-                        options=self.options,
-                        messages=self.prompt(text, self.prompttext),
-                        stream=True,
-                    )
-                    for chunk in stream:
-                        chunk = chunk["message"]["content"]
-                        print(chunk, end="", flush=True)
-                        response += chunk
-                        if len(response) > maxlen:
-                            raise Exception("Response too long")
-                    if not response.endswith("\n"):
-                        print()
-                    return response.strip()
-                except Exception as e:
-                    print()
-                    print(e)
-        print("[Aborted.]")
-        # if translation fails after multiple retries, return the original text to prevent hang-up
-        return text
+                stream = self.client.chat(
+                    model=model,
+                    options=self.options,
+                    messages=self.prompt(text, self.prompttext),
+                    stream=True,
+                )
+                for chunk in stream:
+                    chunk = chunk["message"]["content"]
+                    response += chunk
+                    if len(response) > maxlen:
+                        raise Exception("Response too long")
+                return response.strip()
+            except Exception as e:
+                print(e)
+        raise Exception("All models failed")
 
 
 class OpenAITranslator(BaseTranslator):
