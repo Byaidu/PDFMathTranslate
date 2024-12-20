@@ -3,8 +3,8 @@ import os
 import tempfile
 import shutil
 import time
-from unittest.mock import patch, mock_open
 from pdf2zh import cache
+
 
 class TestCache(unittest.TestCase):
     def setUp(self):
@@ -36,7 +36,7 @@ class TestCache(unittest.TestCase):
         test_dirs = ["dir1", "dir2", "dir3"]
         for dir_name in test_dirs:
             os.makedirs(os.path.join(self.test_cache_dir, dir_name))
-        
+
         # Create a file (should be ignored)
         with open(os.path.join(self.test_cache_dir, "test.txt"), "w") as f:
             f.write("test")
@@ -51,7 +51,7 @@ class TestCache(unittest.TestCase):
         test_dir = os.path.join(self.test_cache_dir, "test_dir")
         os.makedirs(test_dir)
         test_time = 1234567890.0
-        
+
         with open(os.path.join(test_dir, cache.time_filename), "w") as f:
             f.write(str(test_time))
 
@@ -67,9 +67,9 @@ class TestCache(unittest.TestCase):
     def test_write_time(self):
         test_dir = os.path.join(self.test_cache_dir, "test_dir")
         os.makedirs(test_dir)
-        
+
         cache.write_time(test_dir)
-        
+
         self.assertTrue(os.path.exists(os.path.join(test_dir, cache.time_filename)))
         with open(os.path.join(test_dir, cache.time_filename)) as f:
             time_value = float(f.read())
@@ -84,7 +84,7 @@ class TestCache(unittest.TestCase):
             cache.write_time(dir_path)
 
         cache.remove_extra()
-        
+
         remaining_dirs = cache.get_dirs()
         self.assertLessEqual(len(remaining_dirs), cache.max_cache)
 
@@ -102,6 +102,7 @@ class TestCache(unittest.TestCase):
         self.assertIsNone(cache.load_paragraph(test_hash, test_para_hash))
         cache.write_paragraph(test_hash, test_para_hash, test_content)
         self.assertEqual(cache.load_paragraph(test_hash, test_para_hash), test_content)
+
 
 if __name__ == "__main__":
     unittest.main()
