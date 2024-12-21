@@ -189,7 +189,8 @@ def translate_stream(
     elif lang_out.lower() in noto_list:  # noto
         resfont = "noto"
         # docker
-        ttf_path = "/app/GoNotoKurrent-Regular.ttf"
+        ttf_path = os.environ.get("NOTO_FONT_PATH", "/app/GoNotoKurrent-Regular.ttf")
+
         if not os.path.exists(ttf_path):
             ttf_path = os.path.join(tempfile.gettempdir(), "GoNotoKurrent-Regular.ttf")
         if not os.path.exists(ttf_path):
@@ -330,13 +331,12 @@ def translate(
             try:
                 r = requests.get(file, allow_redirects=True)
                 if r.status_code == 200:
-                    if not os.path.exists("./pdf2zh_files"):
-                        print("Making a temporary dir for downloading PDF files...")
-                        os.mkdir(os.path.dirname("./pdf2zh_files"))
-                    with open("./pdf2zh_files/tmp_download.pdf", "wb") as f:
+                    with tempfile.NamedTemporaryFile(
+                        suffix=".pdf", delete=False
+                    ) as tmp_file:
                         print(f"Writing the file: {file}...")
-                        f.write(r.content)
-                    file = "./pdf2zh_files/tmp_download.pdf"
+                        tmp_file.write(r.content)
+                        file = tmp_file.name
                 else:
                     r.raise_for_status()
             except Exception as e:
@@ -348,13 +348,21 @@ def translate(
         # If the commandline has specified converting to PDF/A format
         # --compatible / -cp
         if compatible:
-            file_pdfa = file.replace(".pdf", "-pdfa.pdf")
-            print(f"Converting {file} to PDF/A format...")
-            convert_to_pdfa(file, file_pdfa)
-            doc_raw = open(file_pdfa, "rb")
+            with tempfile.NamedTemporaryFile(
+                suffix="-pdfa.pdf", delete=False
+            ) as tmp_pdfa:
+                print(f"Converting {file} to PDF/A format...")
+                convert_to_pdfa(file, tmp_pdfa.name)
+                doc_raw = open(tmp_pdfa.name, "rb")
+                os.unlink(tmp_pdfa.name)
         else:
             doc_raw = open(file, "rb")
         s_raw = doc_raw.read()
+        doc_raw.close()
+
+        if file.startswith(tempfile.gettempdir()):
+            os.unlink(file)
+
         s_mono, s_dual = translate_stream(
             s_raw,
             envs=kwarg.get("envs", {}),
@@ -367,7 +375,8 @@ def translate(
         doc_dual = open(file_dual, "wb")
         doc_mono.write(s_mono)
         doc_dual.write(s_dual)
+        doc_mono.close()
+        doc_dual.close()
         result_files.append((str(file_mono), str(file_dual)))
 
-    return result_files
     return result_files
