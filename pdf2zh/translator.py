@@ -171,7 +171,7 @@ class DeepLXTranslator(BaseTranslator):
     # https://deeplx.owo.network/endpoints/free.html
     name = "deeplx"
     envs = {
-        "DEEPLX_ENDPOINT": "https://api.deepl.com/translate",
+        "DEEPLX_ENDPOINT": "http://172.17.0.4:1188/translate",
     }
     lang_map = {"zh": "zh-Hans"}
 
@@ -198,8 +198,8 @@ class OllamaTranslator(BaseTranslator):
     # https://github.com/ollama/ollama-python
     name = "ollama"
     envs = {
-        "OLLAMA_HOST": "http://127.0.0.1:11434",
-        "OLLAMA_MODEL": "gemma2:2b-instruct-q4_K_M",
+        "OLLAMA_HOST": "http://172.17.0.2:11434",
+        "OLLAMA_MODEL": "gemma2:9b-instruct-q4_K_M",
     }
     CustomPrompt = True
 
