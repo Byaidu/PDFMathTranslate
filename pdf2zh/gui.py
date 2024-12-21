@@ -161,8 +161,8 @@ def translate_file(
     file_input,
     link_input,
     service,
-    lang_from,
-    lang_to,
+    # lang_from,
+    # lang_to,
     page_range,
     page_input,
     prompt,
@@ -240,8 +240,10 @@ def translate_file(
                 selected_page.extend(range(int(start) - 1, int(end)))
             else:
                 selected_page.append(int(p) - 1)
-    lang_from = lang_map[lang_from]
-    lang_to = lang_map[lang_to]
+    # lang_from = lang_map[lang_from]
+    # lang_to = lang_map[lang_to]
+    lang_from = "en"
+    lang_to = "ja"
 
     _envs = {}
     for i, env in enumerate(translator.envs.items()):
@@ -399,17 +401,17 @@ with gr.Blocks(
                         interactive=True,
                     )
                 )
-            with gr.Row():
-                lang_from = gr.Dropdown(
-                    label="Translate from",
-                    choices=lang_map.keys(),
-                    value="English",
-                )
-                lang_to = gr.Dropdown(
-                    label="Translate to",
-                    choices=lang_map.keys(),
-                    value="Simplified Chinese",
-                )
+            # with gr.Row():
+            #     lang_from = gr.Dropdown(
+            #         label="Translate from",
+            #         choices=lang_map.keys(),
+            #         value="English",
+            #     )
+            #     lang_to = gr.Dropdown(
+            #         label="Translate to",
+            #         choices=lang_map.keys(),
+            #         value="Simplified Chinese",
+            #     )
             page_range = gr.Radio(
                 choices=page_map.keys(),
                 label="Pages",
@@ -535,8 +537,8 @@ with gr.Blocks(
             file_input,
             link_input,
             service,
-            lang_from,
-            lang_to,
+            # lang_from,
+            # lang_to,
             page_range,
             page_input,
             prompt,
