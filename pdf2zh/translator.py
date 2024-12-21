@@ -199,7 +199,7 @@ class OllamaTranslator(BaseTranslator):
     name = "ollama"
     envs = {
         "OLLAMA_HOST": "http://127.0.0.1:11434",
-        "OLLAMA_MODEL": "gemma2",
+        "OLLAMA_MODEL": "gemma2:2b-instruct-q4_K_M",
     }
     CustomPrompt = True
 
