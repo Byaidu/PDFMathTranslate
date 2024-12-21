@@ -332,6 +332,8 @@ curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X
 
 - ドキュメントの抽出：[MinerU](https://github.com/opendatalab/MinerU)
 
+- ドキュメントプレビュー：[Gradio PDF](https://github.com/freddyaboulton/gradio-pdf)
+
 - マルチスレッド翻訳：[MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
 - レイアウト解析：[DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
