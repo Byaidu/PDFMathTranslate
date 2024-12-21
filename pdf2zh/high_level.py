@@ -206,6 +206,8 @@ def translate_stream(
         font_list.append(("china-ss", None))
 
     doc_en = Document(stream=stream)
+    stream = io.BytesIO()
+    doc_en.save(stream)
     doc_zh = Document(stream=stream)
     page_count = doc_zh.page_count
     # font_list = [("china-ss", None), ("tiro", None)]
