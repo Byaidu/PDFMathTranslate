@@ -222,6 +222,8 @@ For downstream applications, please refer to our document about [API Details](./
 
 - Document extraction: [MinerU](https://github.com/opendatalab/MinerU)
 
+- Document Preview: [Gradio PDF](https://github.com/freddyaboulton/gradio-pdf)
+
 - Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
 - Layout parsing: [DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)

@@ -333,6 +333,8 @@ curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X
 
 - 文档提取：[MinerU](https://github.com/opendatalab/MinerU)
 
+- 文档预览：[Gradio PDF](https://github.com/freddyaboulton/gradio-pdf)
+
 - 多线程翻译：[MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
 - 布局解析：[DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
