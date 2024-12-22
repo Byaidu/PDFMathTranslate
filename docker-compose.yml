@@ -7,7 +7,12 @@ services:
     ports:
       - 7860:7860
     environment:
-      HF_ENDPOINT: https://hf-mirror.com # if you don't want to use the mirror, rm this line
+      HF_ENDPOINT: https://hf-mirror.com  # if you don't want to use the mirror, rm this line
+      PDF2ZH_THREADS: 2                   # how many threads to use in translation:
+      PDF2ZH_SOURCE_LANG: en              # the source language
+      PDF2ZH_TARGET_LANG: zh              # the target language
+      PDF2ZH_AUTH_FILE: ""                # the path to the auth file, you should mount it to the container
+      PDF2ZH_OTHER_ARGS: ""               # other arguments to pass to the pdf2zh command, or you can use the command line
     volumes:
       - ${PDF2ZH_DATA_DIR:-./data}/files:/app/pdf2zh_files # the directory to store the files
       - ${PDF2ZH_DATA_DIR:-./data}/hf:/root/.cache/huggingface # if you want to keep the model cache at the host
