@@ -2,7 +2,7 @@
 
 ENV_PREFIX="PDF2ZH_"
 ENV_LIST=(THREADS SOURCE_LANG TARGET_LANG AUTH_FILE)
-ENV_LIST_ARGS=(-p -li -lo --authorized)
+ENV_LIST_ARGS=(-t -li -lo --authorized)
 
 
 _tmp_args=""
