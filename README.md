@@ -154,6 +154,17 @@ For docker deployment on cloud service:
 
 </details>
 
+<details>
+  <summary>5. Docker Compose</summary>
+
+1. Copy the contents from [docker-compose.yml](./docker-compose.yml) to your project.
+
+2. Set up the environment variables in the `docker-compose.yml` file as per your configuration.
+
+3. Run the command `docker compose up -d` to start your instance.
+
+</details>
+
 ### Unable to install?
 
 The present program needs an AI model(`wybxc/DocLayout-YOLO-DocStructBench-onnx`) before working and some users are not able to download due to network issues. If you have a problem with downloading this model, we provide a workaround using the following environment variable:
