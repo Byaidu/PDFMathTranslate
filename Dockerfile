@@ -20,4 +20,7 @@ RUN uv pip install --system --no-cache . && \
 
 ENV  PDF2ZH_THREADS=1 PDF2ZH_SOURCE_LANG=en PDF2ZH_TARGET_LANG=zh
 
+# Add HEALTHCHECK using curl to verify service health
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:7860 || exit 1
+
 ENTRYPOINT [ "/entrypoint.sh" ]
