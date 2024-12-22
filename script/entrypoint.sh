@@ -90,7 +90,7 @@ start_time=$(date "+%Y-%m-%d %H:%M:%S")
 # Trim whitespace from _tmp_args
 _tmp_args=$(echo "${_tmp_args}" | xargs)
 # Define the command
-cmd="pdf2zh -i ${_tmp_args} $PDF2ZH_OTHER_ARGS $@"
+cmd="pdf2zh --interactive ${_tmp_args} $PDF2ZH_OTHER_ARGS $@"
 
 # Print the command to be executed with the start time
 echo "[$start_time] Running: $cmd"
