@@ -8,7 +8,7 @@ services:
       - 7860:7860
     environment:
       HF_ENDPOINT: https://hf-mirror.com  # if you don't want to use the mirror, rm this line
-      PDF2ZH_DEBUG: false                 # true to enable debug mode
+      PDF2ZH_DEBUG: false                 # true or 1 or yes to enable debug mode, case insensitive
       PDF2ZH_THREADS: 1                   # how many threads to use in translation:
       PDF2ZH_SOURCE_LANG: en              # the source language
       PDF2ZH_TARGET_LANG: zh              # the target language

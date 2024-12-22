@@ -1,8 +1,15 @@
 #!/bin/env bash
 
 ENV_PREFIX="PDF2ZH_"
-ENV_LIST=(THREADS SOURCE_LANG TARGET_LANG)
-ENV_LIST_ARGS=(--thread --lang-in --lang-out)
+# define the list of environment variables. if the value is empty, it will be ignored
+# it will be passed to the command as arguments with value
+ENV_VALUE_LIST=(THREADS SOURCE_LANG TARGET_LANG)
+ENV_VALUE_LIST_ARGS=(--thread --lang-in --lang-out)
+# define the list of environment flags. if the value is not true, it will be ignored
+# it will be passed to the command as arguments without value
+ENV_FLAG_LIST=(DEBUG)
+ENV_FLAG_LIST_ARGS=(--debug)
+
 
 # define the default values
 _tmp_args=""
@@ -54,18 +61,33 @@ fi
 # Clean up sensitive environment variables
 unset PDF2ZH_AUTH_USER_FILE PDF2ZH_AUTH_PASS_FILE _user_lines _pass_lines
 
-# handle debug mode
-if [ "$PDF2ZH_DEBUG" = "true" ]; then
-    _tmp_args="${_tmp_args} --debug"
-fi
 
-for i in ${!ENV_LIST[@]}; do
-    ENV_NAME="${ENV_PREFIX}${ENV_LIST[$i]}"
+# handle the flag environment variables
+_tmp_args=$(echo "${_tmp_args}" | xargs)
+for i in "${!ENV_FLAG_LIST[@]}"; do
+    ENV_NAME="${ENV_PREFIX}${ENV_FLAG_LIST[$i]}"
     ENV_VALUE="${!ENV_NAME}"
     if [ -z "$ENV_VALUE" ]; then
         continue
     fi
-    ENV_ARGS="${ENV_LIST_ARGS[$i]}"
+    # Convert ENV_VALUE to uppercase for flexible matching
+    ENV_VALUE_UPPER=$(echo "$ENV_VALUE" | tr '[:lower:]' '[:upper:]')
+    # Check if the value indicates "true" or "1" or "yes"
+    if [ "$ENV_VALUE_UPPER" = "TRUE" ] || [ "$ENV_VALUE_UPPER" = "1" ] || [ "$ENV_VALUE_UPPER" = "YES" ]; then
+        ENV_ARGS="${ENV_FLAG_LIST_ARGS[$i]}"
+        _tmp_args="${_tmp_args} ${ENV_ARGS}"
+    fi
+done
+
+# handle the environment variables
+_tmp_args=$(echo "${_tmp_args}" | xargs)
+for i in ${!ENV_VALUE_LIST[@]}; do
+    ENV_NAME="${ENV_PREFIX}${ENV_VALUE_LIST[$i]}"
+    ENV_VALUE="${!ENV_NAME}"
+    if [ -z "$ENV_VALUE" ]; then
+        continue
+    fi
+    ENV_ARGS="${ENV_VALUE_LIST_ARGS[$i]}"
     _tmp_args="${_tmp_args} ${ENV_ARGS} ${ENV_VALUE}"
 done
 
