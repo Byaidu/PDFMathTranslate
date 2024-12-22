@@ -14,6 +14,11 @@ RUN apt-get update && \
 
 COPY . .
 
-RUN uv pip install --system --no-cache .
+RUN uv pip install --system --no-cache . && \
+    cp ./scripts/entrypoint.sh /entrypoint.sh && \
+    chmod +x /entrypoint.sh
 
-CMD ["pdf2zh", "-i"]
+ENV  PDF2ZH_THREADS=1 PDF2ZH_SOURCE_LANG=en PDF2ZH_TARGET_LANG=zh\
+     PDF2ZH_OTHER_ARGS=""  PDF2ZH_AUTH_FILE="" 
+
+ENTRYPOINT [ "/entrypoint.sh" ]
