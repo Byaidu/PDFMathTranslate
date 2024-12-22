@@ -1,0 +1,15 @@
+services:
+  pdf2zh:
+    image: byaidu/pdf2zh:${PDF2ZH_VERSION:-latest}
+    container_name: ${PDF2ZH_CONTAINER_NAME:-pdf2zh}
+    hostname: ${PDF2ZH_HOSTNAME:-pdf2zh}
+    restart: always
+    ports:
+      - 7860:7860
+    environment:
+      HF_ENDPOINT: https://hf-mirror.com # if you don't want to use the mirror, rm this line
+    volumes:
+      - ${PDF2ZH_DATA_DIR:-./data}/files:/app/pdf2zh_files # the directory to store the files
+      - ${PDF2ZH_DATA_DIR:-./data}/hf:/root/.cache/huggingface # if you want to keep the model cache at the host
+
+
