@@ -99,12 +99,18 @@ class TestRateLimiter(unittest.TestCase):
 
         # Verify timing
         total_time = timestamps[-1] - start_time
-        self.assertGreaterEqual(total_time, 1.0)  # Should take at least 1s for 20 requests at 10 QPS
+        self.assertGreaterEqual(
+            total_time, 1.0
+        )  # Should take at least 1s for 20 requests at 10 QPS
 
         # Check even distribution
-        intervals = [timestamps[i + 1] - timestamps[i] for i in range(len(timestamps) - 1)]
+        intervals = [
+            timestamps[i + 1] - timestamps[i] for i in range(len(timestamps) - 1)
+        ]
         avg_interval = sum(intervals) / len(intervals)
-        self.assertAlmostEqual(avg_interval, 0.1, delta=0.05)  # Should be close to 0.1s (1/10 QPS)
+        self.assertAlmostEqual(
+            avg_interval, 0.1, delta=0.05
+        )  # Should be close to 0.1s (1/10 QPS)
 
     def test_burst_handling(self):
         limiter = RateLimiter(10)  # 10 QPS

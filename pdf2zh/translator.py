@@ -93,7 +93,9 @@ class BaseTranslator:
 
     def __del__(self):
         print(f"{self.name} translate call count: {self.translate_call_count}")
-        print(f"{self.name} translate cache call count: {self.translate_cache_call_count}")
+        print(
+            f"{self.name} translate cache call count: {self.translate_cache_call_count}"
+        )
 
     def set_envs(self, envs):
         # Detach from self.__class__.envs
@@ -342,14 +344,14 @@ class OpenAITranslator(BaseTranslator):
     CustomPrompt = True
 
     def __init__(
-            self,
-            lang_in,
-            lang_out,
-            model,
-            base_url=None,
-            api_key=None,
-            envs=None,
-            prompt=None,
+        self,
+        lang_in,
+        lang_out,
+        model,
+        base_url=None,
+        api_key=None,
+        envs=None,
+        prompt=None,
     ):
         self.set_envs(envs)
         if not model:
@@ -381,14 +383,14 @@ class AzureOpenAITranslator(BaseTranslator):
     CustomPrompt = True
 
     def __init__(
-            self,
-            lang_in,
-            lang_out,
-            model,
-            base_url=None,
-            api_key=None,
-            envs=None,
-            prompt=None,
+        self,
+        lang_in,
+        lang_out,
+        model,
+        base_url=None,
+        api_key=None,
+        envs=None,
+        prompt=None,
     ):
         self.set_envs(envs)
         base_url = self.envs["AZURE_OPENAI_BASE_URL"]
@@ -426,14 +428,14 @@ class ModelScopeTranslator(OpenAITranslator):
     CustomPrompt = True
 
     def __init__(
-            self,
-            lang_in,
-            lang_out,
-            model,
-            base_url=None,
-            api_key=None,
-            envs=None,
-            prompt=None,
+        self,
+        lang_in,
+        lang_out,
+        model,
+        base_url=None,
+        api_key=None,
+        envs=None,
+        prompt=None,
     ):
         self.set_envs(envs)
         base_url = "https://api-inference.modelscope.cn/v1"
@@ -475,8 +477,8 @@ class ZhipuTranslator(OpenAITranslator):
             )
         except openai.BadRequestError as e:
             if (
-                    json.loads(response.choices[0].message.content.strip())["error"]["code"]
-                    == "1301"
+                json.loads(response.choices[0].message.content.strip())["error"]["code"]
+                == "1301"
             ):
                 return "IRREPARABLE TRANSLATION ERROR"
             raise e

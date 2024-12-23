@@ -108,7 +108,7 @@ def translate_patch(
         noto,
         kwarg.get("envs", {}),
         kwarg.get("prompt", []),
-        generate_cache_executor
+        generate_cache_executor,
     )
 
     assert device is not None
@@ -373,9 +373,7 @@ def translate(
         if file.startswith(tempfile.gettempdir()):
             os.unlink(file)
         generate_cache_start = time.time()
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=thread
-        ) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=thread) as executor:
             translate_stream(
                 s_raw,
                 envs=kwarg.get("envs", {}),
@@ -383,10 +381,8 @@ def translate(
                 generate_cache_executor=executor,
                 **locals(),
             )
-            print('Translating... Please wait...')
-        print(
-            f"Generate cache time: {time.time() - generate_cache_start:.2f} seconds"
-        )
+            print("Translating... Please wait...")
+        print(f"Generate cache time: {time.time() - generate_cache_start:.2f} seconds")
         s_mono, s_dual = translate_stream(
             s_raw,
             envs=kwarg.get("envs", {}),
