@@ -38,8 +38,7 @@ dev = [
     "flake8",
     "pre-commit",
     "pytest",
-    "build",
-    "pep8-naming"
+    "build"
 ]
 backend = [
     "flask",
