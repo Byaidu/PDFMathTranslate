@@ -13,7 +13,7 @@ from typing import List, Optional
 
 from pdf2zh import __version__, log
 from pdf2zh.high_level import translate
-
+from pdf2zh.doclayout import OnnxModel
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, add_help=True)
@@ -136,6 +136,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="Convert the PDF file into PDF/A format to improve compatibility.",
     )
 
+    parse_params.add_argument(
+        "--onnx",
+        type=str,
+        help="custom onnx model path.",
+    )
+
     return parser
 
 
@@ -188,8 +194,12 @@ def main(args: Optional[List[str]] = None) -> int:
             parsed_args.prompt = Template(content)
         except Exception:
             raise ValueError("prompt error.")
-
-    translate(**vars(parsed_args))
+    model = None
+    if parsed_args.onnx:
+        model = OnnxModel(parsed_args.onnx)
+    else:
+        model = OnnxModel.load_available()
+    translate(model=model,**vars(parsed_args))
     return 0
 
 
