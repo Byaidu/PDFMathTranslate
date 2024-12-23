@@ -1,7 +1,6 @@
 import unittest
 from pdf2zh.translator import BaseTranslator
 from pdf2zh import cache
-import asyncio
 
 
 class AutoIncreaseTranslator(BaseTranslator):
