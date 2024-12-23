@@ -25,6 +25,7 @@ from pymupdf import Document, Font
 from pdf2zh.converter import TranslateConverter
 from pdf2zh.doclayout import DocLayoutModel
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
+from pdf2zh.translator import set_translate_rate_limiter
 
 model = DocLayoutModel.load_available()
 
@@ -322,6 +323,7 @@ def translate(
     cancellation_event: asyncio.Event = None,
     **kwarg: Any,
 ):
+    set_translate_rate_limiter(thread)
     if not files:
         raise PDFValueError("No files to process.")
 
