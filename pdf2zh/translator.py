@@ -117,7 +117,7 @@ class BingTranslator(BaseTranslator):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",  # noqa: E501
         }
 
-    def findSID(self):
+    def find_sid(self):
         response = self.session.get(self.endpoint)
         response.raise_for_status()
         url = response.url[:-10]
@@ -130,7 +130,7 @@ class BingTranslator(BaseTranslator):
 
     def translate(self, text):
         text = text[:1000]  # bing translate max length
-        url, ig, iid, key, token = self.findSID()
+        url, ig, iid, key, token = self.find_sid()
         response = self.session.post(
             f"{url}ttranslatev3?IG={ig}&IID={iid}",
             data={
