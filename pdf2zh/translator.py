@@ -8,6 +8,7 @@ import deepl
 import ollama
 import openai
 import requests
+import asyncio
 from pdf2zh.cache import TranslationCache
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
@@ -69,6 +70,9 @@ class BaseTranslator:
     def translate(self, text, ignore_cache=False):
         """
         Translate the text, and the other part should call this method.
+
+        Don't call this method in asyncio since we use asyncio.run()
+        asyncio.run() will raise RuntimeError if the event loop is not running
         :param text: text to translate
         :return: translated text
         """
@@ -77,12 +81,45 @@ class BaseTranslator:
             if cache is not None:
                 return cache
 
-        translation = self.do_translate(text)
+        try:
+            translation = self.do_translate(text)
+        except NotImplementedError:
+            # asyncio.run() will raise RuntimeError if the event loop is not running
+            if asyncio.get_running_loop() is not None:
+                raise NotImplementedError
+
+            translation = asyncio.run(self.do_translate_async(text))
+        if not (self.ignore_cache or ignore_cache):
+            self.cache.set(text, translation)
+        return translation
+
+    async def translate_async(self, text, ignore_cache=False):
+        """
+        Translate the text, and the other part should call this method.
+        :param text: text to translate
+        :return: translated text
+        """
+        if not (self.ignore_cache or ignore_cache):
+            cache = self.cache.get(text)
+            if cache is not None:
+                return cache
+        try:
+            translation = await self.do_translate_async(text)
+        except NotImplementedError:
+            translation = await asyncio.to_thread(self.do_translate, text)
         if not (self.ignore_cache or ignore_cache):
             self.cache.set(text, translation)
         return translation
 
     def do_translate(self, text):
+        """
+        Actual translate text, override this method
+        :param text: text to translate
+        :return: translated text
+        """
+        raise NotImplementedError
+
+    async def do_translate_async(self, text):
         """
         Actual translate text, override this method
         :param text: text to translate
