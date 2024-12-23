@@ -67,6 +67,11 @@ class TestTranslator(unittest.TestCase):
         another_result = translator.translate(text)
         self.assertNotEqual(second_result, another_result)
 
+    def test_base_translator_throw(self):
+        translator = BaseTranslator("en", "zh", "test")
+        with self.assertRaises(NotImplementedError):
+            translator.translate("Hello World")
+
 
 if __name__ == "__main__":
     unittest.main()
