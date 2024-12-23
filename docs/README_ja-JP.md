@@ -177,6 +177,7 @@ Python環境を事前にインストールする必要はありません
 | `--share` | [gradio公開リンクを取得] | `pdf2zh -i --share` |
 | `--authorized` | [ウェブ認証とカスタム認証ページの追加] | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt` | [カスタムビッグモデルのプロンプトを使用する] | `pdf2zh --prompt [prompt.txt]` |
+| `--onnx` | [カスタムDocLayout-YOLO ONNXモデルの使用] | `pdf2zh --onnx [onnx/model/path]` |
 
 <h3 id="partial">全文または部分的なドキュメント翻訳</h3>
 
@@ -221,6 +222,7 @@ pdf2zh example.pdf -li en -lo ja
 |**Tencent**|`tencent`|`TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`|`[Your ID]`, `[Your Key]`|See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)|
 |**Dify**|`dify`|`DIFY_API_URL`, `DIFY_API_KEY`|`[Your DIFY URL]`, `[Your Key]`|See [Dify](https://github.com/langgenius/dify),Three variables, lang_out, lang_in, and text, need to be defined in Dify's workflow input.|
 |**AnythingLLM**|`anythingllm`|`AnythingLLM_URL`, `AnythingLLM_APIKEY`|`[Your AnythingLLM URL]`, `[Your Key]`|See [anything-llm](https://github.com/Mintplex-Labs/anything-llm)|
+|**Argos Translate**|`argos-translate`| | |See [argos-translate](https://github.com/argosopentech/argos-translate)|
 
 `-s service` または `-s service:model` を使用してサービスを指定します：
 

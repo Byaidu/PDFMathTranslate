@@ -64,6 +64,7 @@ We've provided a detailed table on the required [environment variables](https://
 | **Tencent**          | `tencent`      | `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`                   | `[Your ID]`, `[Your Key]`                                | See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)                                                                                                                            |
 | **Dify**             | `dify`         | `DIFY_API_URL`, `DIFY_API_KEY`                                        | `[Your DIFY URL]`, `[Your Key]`                          | See [Dify](https://github.com/langgenius/dify),Three variables, lang_out, lang_in, and text, need to be defined in Dify's workflow input.                                                                 |
 | **AnythingLLM**      | `anythingllm`  | `AnythingLLM_URL`, `AnythingLLM_APIKEY`                               | `[Your AnythingLLM URL]`, `[Your Key]`                   | See [anything-llm](https://github.com/Mintplex-Labs/anything-llm)                                                                                                                                         |
+|**Argos Translate**|`argos-translate`| | |See [argos-translate](https://github.com/argosopentech/argos-translate)|
 
 Use `-s service` or `-s service:model` to specify service:
 

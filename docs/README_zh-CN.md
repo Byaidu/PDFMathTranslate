@@ -176,6 +176,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 | `--share` | [获取 gradio 公开链接] | `pdf2zh -i --share` |
 | `--authorized` | [添加网页认证和自定义认证页] | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt` | [使用自定义的大模型prompt] | `pdf2zh --prompt [prompt.txt]` |
+| `--onnx` | [使用自定义的 DocLayout-YOLO ONNX 模型] | `pdf2zh --onnx [onnx/model/path]` |
 
 <h3 id="partial">全文或部分文档翻译</h3>
 
@@ -220,6 +221,7 @@ pdf2zh example.pdf -li en -lo ja
 |**Tencent**|`tencent`|`TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`|`[Your ID]`, `[Your Key]`|See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)|
 |**Dify**|`dify`|`DIFY_API_URL`, `DIFY_API_KEY`|`[Your DIFY URL]`, `[Your Key]`|See [Dify](https://github.com/langgenius/dify),Three variables, lang_out, lang_in, and text, need to be defined in Dify's workflow input.|
 |**AnythingLLM**|`anythingllm`|`AnythingLLM_URL`, `AnythingLLM_APIKEY`|`[Your AnythingLLM URL]`, `[Your Key]`|See [anything-llm](https://github.com/Mintplex-Labs/anything-llm)|
+|**Argos Translate**|`argos-translate`| | |See [argos-translate](https://github.com/argosopentech/argos-translate)|
 
 使用 `-s service` 或 `-s service:model` 指定翻译服务:
 
