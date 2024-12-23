@@ -40,10 +40,13 @@ class TranslationCache:
 
     def __init__(self, translate_engine, translate_engine_params):
         self.translate_engine = translate_engine
-        if not isinstance(translate_engine_params, str):
-            translate_engine_params = self._sort_dict_recursively(translate_engine_params)
-            translate_engine_params = json.dumps(translate_engine_params)
-        self.translate_engine_params = translate_engine_params
+        self.update_params(translate_engine_params)
+
+    def update_params(self, params):
+        if not isinstance(params, str):
+            params = self._sort_dict_recursively(params)
+            params = json.dumps(params)
+        self.translate_engine_params = params
 
     def get(self, original_text):
         return _TranslationCache.get_or_none(
