@@ -22,6 +22,7 @@ from pdf2zh.translator import (
     DeepLTranslator,
     DeepLXTranslator,
     DifyTranslator,
+    ArgosTranslator,
     GeminiTranslator,
     GoogleTranslator,
     ModelScopeTranslator,
@@ -49,6 +50,7 @@ service_map: dict[str, BaseTranslator] = {
     "Tencent": TencentTranslator,
     "Dify": DifyTranslator,
     "AnythingLLM": AnythingLLMTranslator,
+    "Argos Translate": ArgosTranslator,
 }
 
 # The following variables associate strings with specific languages
