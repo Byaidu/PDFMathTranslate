@@ -88,7 +88,7 @@ class BaseTranslator:
         :param text: text to translate
         :return: translated text
         """
-        pass
+        raise NotImplementedError
 
     def prompt(self, text, prompt):
         if prompt:
