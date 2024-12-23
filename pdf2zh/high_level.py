@@ -375,7 +375,7 @@ def translate(
         if file.startswith(tempfile.gettempdir()):
             os.unlink(file)
         generate_cache_start = time.time()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=thread) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=thread * 3) as executor:
             translate_stream(
                 s_raw,
                 envs=kwarg.get("envs", {}),
