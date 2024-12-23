@@ -46,21 +46,27 @@ class TranslationCache:
 
     def __init__(self, translate_engine: str, translate_engine_params: dict = None):
         self.translate_engine = translate_engine
-        self.update_params(translate_engine_params)
+        self.replace_params(translate_engine_params)
 
     # The program typically starts multi-threaded translation
     # only after cache parameters are fully configured,
     # so thread safety doesn't need to be considered here.
-    def update_params(self, params: dict = None):
+    def replace_params(self, params: dict = None):
         if params is None:
             params = {}
         self.params = params
         params = self._sort_dict_recursively(params)
         self.translate_engine_params = json.dumps(params)
+    
+    def update_params(self, params: dict = None):
+        if params is None:
+            params = {}
+        self.params.update(params)
+        self.replace_params(self.params)
 
     def append_params(self, k: str, v):
         self.params[k] = v
-        self.update_params(self.params)
+        self.replace_params(self.params)
 
     # Since peewee and the underlying sqlite are thread-safe,
     # get and set operations don't need locks.
