@@ -1,4 +1,5 @@
 import os
+import json
 from peewee import Model, SqliteDatabase, AutoField, CharField, TextField, SQL
 
 # we don't init the database here
@@ -29,8 +30,20 @@ class _TranslationCache(Model):
 
 
 class TranslationCache:
+    @staticmethod
+    def _sort_dict_recursively(obj):
+        if isinstance(obj, dict):
+            return {k: TranslationCache._sort_dict_recursively(v) for k in sorted(obj.keys()) for v in [obj[k]]}
+        elif isinstance(obj, list):
+            return [TranslationCache._sort_dict_recursively(item) for item in obj]
+        return obj
+
     def __init__(self, translate_engine, translate_engine_params):
         self.translate_engine = translate_engine
+        if not isinstance(translate_engine_params, str):
+            if isinstance(translate_engine_params, dict):
+                translate_engine_params = self._sort_dict_recursively(translate_engine_params)
+            translate_engine_params = json.dumps(translate_engine_params)
         self.translate_engine_params = translate_engine_params
 
     def get(self, original_text):
