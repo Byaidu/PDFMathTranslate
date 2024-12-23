@@ -9,15 +9,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install the latest version of uv
-      uses: astral-sh/setup-uv@v4
-      with:
-        version: "latest"
     - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x'
+
     - name: Install dependencies
       run: |
-        uv venv
-        uv pip install -e .[dev]
+        pip3 install -U pip
+        pip3 install -e .[dev]
 
     - name: Test - Code format
       run: |
