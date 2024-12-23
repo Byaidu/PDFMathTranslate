@@ -99,7 +99,9 @@ class TestTranslator(unittest.IsolatedAsyncioTestCase):
 
         # call async from sync
         with self.assertRaises(NotImplementedError):
-            self.assertEqual(async_translator.translate("Hello World", ignore_cache=True), "1")
+            self.assertEqual(
+                async_translator.translate("Hello World", ignore_cache=True), "1"
+            )
 
     async def test_call_async_from_sync_inside_running_loop(self):
         translator = AutoIncreaseAsyncTranslator("en", "zh", "test")
