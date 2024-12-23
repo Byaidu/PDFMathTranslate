@@ -106,6 +106,7 @@ def init_db(remove_exists=False):
 
 def init_test_db():
     import tempfile
+
     cache_db_path = tempfile.mktemp(suffix=".db")
     test_db = SqliteDatabase(
         cache_db_path,
