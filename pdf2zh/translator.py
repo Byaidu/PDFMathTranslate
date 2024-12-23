@@ -78,7 +78,8 @@ class BaseTranslator:
                 return cache
 
         translation = self.do_translate(text)
-        self.cache.set(text, translation)
+        if not self.ignore_cache:
+            self.cache.set(text, translation)
         return translation
 
     def do_translate(self, text):
