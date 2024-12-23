@@ -66,19 +66,19 @@ class BaseTranslator:
         """
         self.cache.add_params(k, v)
 
-    def translate(self, text):
+    def translate(self, text, ignore_cache=False):
         """
         Translate the text, and the other part should call this method.
         :param text: text to translate
         :return: translated text
         """
-        if not self.ignore_cache:
+        if not (self.ignore_cache or ignore_cache):
             cache = self.cache.get(text)
             if cache is not None:
                 return cache
 
         translation = self.do_translate(text)
-        if not self.ignore_cache:
+        if not (self.ignore_cache or ignore_cache):
             self.cache.set(text, translation)
         return translation
 
