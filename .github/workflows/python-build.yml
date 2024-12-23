@@ -6,15 +6,14 @@ on:
 
 jobs:
   build:
-    runs-on: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v3
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v4
       with:
-        python-version: '3.x'
-
+        version: "latest"
+    - uses: actions/checkout@v4
     - name: Install dependencies
       run: |
         uv pip install -e .[dev]
