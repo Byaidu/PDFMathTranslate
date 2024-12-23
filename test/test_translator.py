@@ -1,6 +1,7 @@
 import unittest
 from pdf2zh.translator import BaseTranslator
 from pdf2zh import cache
+import asyncio
 
 
 class AutoIncreaseTranslator(BaseTranslator):
@@ -12,7 +13,16 @@ class AutoIncreaseTranslator(BaseTranslator):
         return str(self.n)
 
 
-class TestTranslator(unittest.TestCase):
+class AutoIncreaseAsyncTranslator(BaseTranslator):
+    name = "auto_increase_async"
+    n = 0
+
+    async def do_translate_async(self, text):
+        self.n += 1
+        return str(self.n)
+
+
+class TestTranslator(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.test_db = cache.init_test_db()
 
@@ -67,8 +77,32 @@ class TestTranslator(unittest.TestCase):
         another_result = translator.translate(text)
         self.assertNotEqual(second_result, another_result)
 
-    def test_base_translator_throw(self):
+    async def test_base_translator_throw(self):
         translator = BaseTranslator("en", "zh", "test")
+        with self.assertRaises(NotImplementedError):
+            translator.do_translate("Hello World")
+        with self.assertRaises(NotImplementedError):
+            await translator.do_translate_async("Hello World")
+
+    async def test_async_and_sync_translator(self):
+        async_translator = AutoIncreaseAsyncTranslator("en", "zh", "test")
+        sync_translator = AutoIncreaseTranslator("en", "zh", "test")
+
+        # call async from async
+        self.assertEqual(await async_translator.translate_async("Hello World"), "1")
+
+        # call sync from async
+        self.assertEqual(await sync_translator.translate_async("Hello World"), "1")
+
+        # call sync from sync
+        self.assertEqual(sync_translator.translate("Hello World"), "1")
+
+        # call async from sync
+        with self.assertRaises(NotImplementedError):
+            self.assertEqual(async_translator.translate("Hello World", ignore_cache=True), "1")
+
+    async def test_call_async_from_sync_inside_running_loop(self):
+        translator = AutoIncreaseAsyncTranslator("en", "zh", "test")
         with self.assertRaises(NotImplementedError):
             translator.translate("Hello World")
 
