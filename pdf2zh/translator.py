@@ -2,6 +2,7 @@ import html
 import logging
 import os
 import re
+import time
 import unicodedata
 from copy import copy
 import deepl
@@ -22,6 +23,47 @@ import json
 
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
+
+
+class RateLimiter:
+    def __init__(self, max_qps: int):
+        self.max_qps = max_qps
+        self.min_interval = 1.0 / max_qps
+        self.last_requests = []  # Track last N requests
+        self.window_size = max_qps  # Track requests in a sliding window
+        self.lock = asyncio.Lock()
+    
+    async def wait_async(self):
+        async with self.lock:
+            now = time.time()
+            
+            # Clean up old requests outside the 1-second window
+            while self.last_requests and now - self.last_requests[0] > 1.0:
+                self.last_requests.pop(0)
+            
+            # If we have less than max_qps requests in the last second, allow immediately
+            if len(self.last_requests) < self.max_qps:
+                self.last_requests.append(now)
+                return
+            
+            # Otherwise, wait until we can make the next request
+            next_time = self.last_requests[0] + 1.0
+            if next_time > now:
+                await asyncio.sleep(next_time - now)
+            self.last_requests.pop(0)
+            self.last_requests.append(next_time)
+
+    def set_max_qps(self, max_qps):
+        self.max_qps = max_qps
+        self.min_interval = 1.0 / max_qps
+        self.window_size = max_qps
+
+
+_translate_rate_limiter = RateLimiter(5)
+
+
+def set_translate_rate_limiter(max_qps):
+    _translate_rate_limiter.set_max_qps(max_qps)
 
 
 class BaseTranslator:
@@ -77,6 +119,7 @@ class BaseTranslator:
             cache = self.cache.get(text)
             if cache is not None:
                 return cache
+        await _translate_rate_limiter.wait_async()
         try:
             translation = await self.do_translate_async(text)
         except NotImplementedError:
