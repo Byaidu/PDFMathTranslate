@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
     steps:
     - uses: actions/checkout@v4
@@ -17,8 +17,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip3 install -U pip
-        pip3 install -e .[dev]
+        uv pip install -e .[dev]
 
     - name: Test - Code format
       run: |
