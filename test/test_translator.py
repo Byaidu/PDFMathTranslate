@@ -1,6 +1,9 @@
 import unittest
 from pdf2zh.translator import BaseTranslator
 from pdf2zh import cache
+from pdf2zh.translator import RateLimiter
+import threading
+import time
 
 
 class AutoIncreaseTranslator(BaseTranslator):
@@ -71,6 +74,51 @@ class TestTranslator(unittest.TestCase):
         translator = BaseTranslator("en", "zh", "test")
         with self.assertRaises(NotImplementedError):
             translator.translate("Hello World")
+
+
+class TestRateLimiter(unittest.TestCase):
+    def test_concurrent_rate_limit(self):
+        limiter = RateLimiter(10)  # 10 QPS
+        start_time = time.time()
+        timestamps = [None for _ in range(20)]
+
+        def task(i):
+            limiter.wait()
+            timestamps[i] = time.time()
+
+        # Run 20 concurrent tasks
+        tasks = [threading.Thread(target=task, args=(i,)) for i in range(20)]
+
+        # Start the tasks
+        for task in tasks:
+            task.start()
+
+        # Wait for all tasks to complete
+        for task in tasks:
+            task.join()
+
+        # Verify timing
+        total_time = timestamps[-1] - start_time
+        self.assertGreaterEqual(total_time, 1.0)  # Should take at least 1s for 20 requests at 10 QPS
+
+        # Check even distribution
+        intervals = [timestamps[i + 1] - timestamps[i] for i in range(len(timestamps) - 1)]
+        avg_interval = sum(intervals) / len(intervals)
+        self.assertAlmostEqual(avg_interval, 0.1, delta=0.05)  # Should be close to 0.1s (1/10 QPS)
+
+    def test_burst_handling(self):
+        limiter = RateLimiter(10)  # 10 QPS
+
+        # First burst of 5 requests should be immediate
+        start = time.time()
+        tasks = [threading.Thread(target=limiter.wait) for _ in range(5)]
+        for task in tasks:
+            task.start()
+        for task in tasks:
+            task.join()
+        burst_time = time.time() - start
+
+        self.assertLess(burst_time, 0.1)  # Should complete quickly
 
 
 if __name__ == "__main__":
