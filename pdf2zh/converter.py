@@ -16,6 +16,7 @@ import re
 import concurrent.futures
 import numpy as np
 import unicodedata
+import asyncio
 from tenacity import retry, wait_fixed
 from pdf2zh.translator import (
     AzureOpenAITranslator,
@@ -333,7 +334,7 @@ class TranslateConverter(PDFConverterEx):
             if not s.strip() or re.match(r"^\{v\d+\}$", s):  # 空白和公式不翻译
                 return s
             try:
-                new = self.translator.translate(s)
+                new = asyncio.run(self.translator.translate_async(s))
                 return new
             except BaseException as e:
                 if log.isEnabledFor(logging.DEBUG):

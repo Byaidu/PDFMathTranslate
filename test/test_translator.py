@@ -28,52 +28,52 @@ class TestTranslator(unittest.IsolatedAsyncioTestCase):
     def tearDown(self):
         cache.clean_test_db(self.test_db)
 
-    def test_cache(self):
+    async def test_cache(self):
         translator = AutoIncreaseTranslator("en", "zh", "test")
         # First translation should be cached
         text = "Hello World"
-        first_result = translator.translate(text)
+        first_result = await translator.translate_async(text)
 
         # Second translation should return the same result from cache
-        second_result = translator.translate(text)
+        second_result = await translator.translate_async(text)
         self.assertEqual(first_result, second_result)
 
         # Different input should give different result
         different_text = "Different Text"
-        different_result = translator.translate(different_text)
+        different_result = await translator.translate_async(different_text)
         self.assertNotEqual(first_result, different_result)
 
         # Test cache with ignore_cache=True
         translator.ignore_cache = True
-        no_cache_result = translator.translate(text)
+        no_cache_result = await translator.translate_async(text)
         self.assertNotEqual(first_result, no_cache_result)
 
-    def test_add_cache_impact_parameters(self):
+    async def test_add_cache_impact_parameters(self):
         translator = AutoIncreaseTranslator("en", "zh", "test")
 
         # Test cache with added parameters
         text = "Hello World"
-        first_result = translator.translate(text)
+        first_result = await translator.translate_async(text)
         translator.add_cache_impact_parameters("test", "value")
-        second_result = translator.translate(text)
+        second_result = await translator.translate_async(text)
         self.assertNotEqual(first_result, second_result)
 
         # Test cache with ignore_cache=True
-        no_cache_result = translator.translate(text, ignore_cache=True)
+        no_cache_result = await translator.translate_async(text, ignore_cache=True)
         self.assertNotEqual(first_result, no_cache_result)
 
         translator.ignore_cache = True
-        no_cache_result = translator.translate(text)
+        no_cache_result = await translator.translate_async(text)
         self.assertNotEqual(first_result, no_cache_result)
 
         # Test cache with ignore_cache=False
         translator.ignore_cache = False
-        cache_result = translator.translate(text)
+        cache_result = await translator.translate_async(text)
         self.assertEqual(second_result, cache_result)
 
         # Test cache with another parameter
         translator.add_cache_impact_parameters("test2", "value2")
-        another_result = translator.translate(text)
+        another_result = await translator.translate_async(text)
         self.assertNotEqual(second_result, another_result)
 
     async def test_base_translator_throw(self):
@@ -83,29 +83,11 @@ class TestTranslator(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(NotImplementedError):
             await translator.do_translate_async("Hello World")
 
-    async def test_async_and_sync_translator(self):
-        async_translator = AutoIncreaseAsyncTranslator("en", "zh", "test")
+    async def test_call_sync_from_async(self):
         sync_translator = AutoIncreaseTranslator("en", "zh", "test")
-
-        # call async from async
-        self.assertEqual(await async_translator.translate_async("Hello World"), "1")
 
         # call sync from async
         self.assertEqual(await sync_translator.translate_async("Hello World"), "1")
-
-        # call sync from sync
-        self.assertEqual(sync_translator.translate("Hello World"), "1")
-
-        # call async from sync
-        with self.assertRaises(NotImplementedError):
-            self.assertEqual(
-                async_translator.translate("Hello World", ignore_cache=True), "1"
-            )
-
-    async def test_call_async_from_sync_inside_running_loop(self):
-        translator = AutoIncreaseAsyncTranslator("en", "zh", "test")
-        with self.assertRaises(NotImplementedError):
-            translator.translate("Hello World")
 
 
 if __name__ == "__main__":

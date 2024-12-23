@@ -67,32 +67,6 @@ class BaseTranslator:
         """
         self.cache.add_params(k, v)
 
-    def translate(self, text, ignore_cache=False):
-        """
-        Translate the text, and the other part should call this method.
-
-        Don't call this method in asyncio since we use asyncio.run()
-        asyncio.run() will raise RuntimeError if the event loop is not running
-        :param text: text to translate
-        :return: translated text
-        """
-        if not (self.ignore_cache or ignore_cache):
-            cache = self.cache.get(text)
-            if cache is not None:
-                return cache
-
-        try:
-            translation = self.do_translate(text)
-        except NotImplementedError:
-            # asyncio.run() will raise RuntimeError if the event loop is not running
-            if asyncio.get_running_loop() is not None:
-                raise NotImplementedError
-
-            translation = asyncio.run(self.do_translate_async(text))
-        if not (self.ignore_cache or ignore_cache):
-            self.cache.set(text, translation)
-        return translation
-
     async def translate_async(self, text, ignore_cache=False):
         """
         Translate the text, and the other part should call this method.
@@ -339,14 +313,14 @@ class OpenAITranslator(BaseTranslator):
             model = self.envs["OPENAI_MODEL"]
         super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
+        self.client = openai.AsyncOpenAI(base_url=base_url, api_key=api_key)
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         if prompt:
             self.add_cache_impact_parameters("prompt", prompt)
 
-    def do_translate(self, text) -> str:
-        response = self.client.chat.completions.create(
+    async def do_translate_async(self, text) -> str:
+        response = await self.client.chat.completions.create(
             model=self.model,
             **self.options,
             messages=self.prompt(text, self.prompttext),
@@ -449,9 +423,9 @@ class ZhipuTranslator(OpenAITranslator):
         if prompt:
             self.add_cache_impact_parameters("prompt", prompt)
 
-    def do_translate(self, text) -> str:
+    async def do_translate_async(self, text) -> str:
         try:
-            response = self.client.chat.completions.create(
+            response = await self.client.chat.completions.create(
                 model=self.model,
                 **self.options,
                 messages=self.prompt(text, self.prompttext),
