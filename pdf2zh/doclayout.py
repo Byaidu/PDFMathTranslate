@@ -21,7 +21,6 @@ class DocLayoutModel(abc.ABC):
     @staticmethod
     def load_available():
         return DocLayoutModel.load_onnx()
-        
 
     @property
     @abc.abstractmethod

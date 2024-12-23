@@ -15,6 +15,7 @@ from pdf2zh import __version__, log
 from pdf2zh.high_level import translate
 from pdf2zh.doclayout import OnnxModel
 
+
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, add_help=True)
     parser.add_argument(
@@ -199,7 +200,7 @@ def main(args: Optional[List[str]] = None) -> int:
         model = OnnxModel(parsed_args.onnx)
     else:
         model = OnnxModel.load_available()
-    translate(model=model,**vars(parsed_args))
+    translate(model=model, **vars(parsed_args))
     return 0
 
 
