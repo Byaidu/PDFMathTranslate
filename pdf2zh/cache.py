@@ -41,8 +41,7 @@ class TranslationCache:
     def __init__(self, translate_engine, translate_engine_params):
         self.translate_engine = translate_engine
         if not isinstance(translate_engine_params, str):
-            if isinstance(translate_engine_params, dict):
-                translate_engine_params = self._sort_dict_recursively(translate_engine_params)
+            translate_engine_params = self._sort_dict_recursively(translate_engine_params)
             translate_engine_params = json.dumps(translate_engine_params)
         self.translate_engine_params = translate_engine_params
 
