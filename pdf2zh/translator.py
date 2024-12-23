@@ -46,9 +46,6 @@ class BaseTranslator:
             }
         )
 
-        if self.envs:
-            self.cache.update_params(self.envs)
-
     def set_envs(self, envs):
         # Detach from self.__class__.envs
         # Cannot use self.envs = copy(self.__class__.envs)
@@ -60,9 +57,6 @@ class BaseTranslator:
         if envs is not None:
             for key in envs:
                 self.envs[key] = envs[key]
-
-        if getattr(self, 'cache', None) is not None:
-            self.cache.update_params(self.envs)
 
     def add_cache_impact_parameters(self, k: str, v):
         """
@@ -83,7 +77,9 @@ class BaseTranslator:
             if cache is not None:
                 return cache
 
-        return self.do_translate(text)
+        translation = self.do_translate(text)
+        self.cache.set(text, translation)
+        return translation
 
     def do_translate(self, text):
         """
