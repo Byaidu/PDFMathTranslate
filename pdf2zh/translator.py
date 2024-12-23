@@ -88,6 +88,13 @@ class BaseTranslator:
             },
         )
 
+        self.translate_call_count = 0
+        self.translate_cache_call_count = 0
+
+    def __del__(self):
+        print(f"{self.name} translate call count: {self.translate_call_count}")
+        print(f"{self.name} translate cache call count: {self.translate_cache_call_count}")
+
     def set_envs(self, envs):
         # Detach from self.__class__.envs
         # Cannot use self.envs = copy(self.__class__.envs)
@@ -114,9 +121,11 @@ class BaseTranslator:
         :param text: text to translate
         :return: translated text
         """
+        self.translate_call_count += 1
         if not (self.ignore_cache or ignore_cache):
             cache = self.cache.get(text)
             if cache is not None:
+                self.translate_cache_call_count += 1
                 return cache
         _translate_rate_limiter.wait()
         translation = self.do_translate(text)
@@ -148,7 +157,8 @@ class BaseTranslator:
                 },
                 {
                     "role": "user",
-                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
+                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",
+                    # noqa: E501
                 },
             ]
 
@@ -165,7 +175,8 @@ class GoogleTranslator(BaseTranslator):
         self.session = requests.Session()
         self.endpoint = "http://translate.google.com/m"
         self.headers = {
-            "User-Agent": "Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)"  # noqa: E501
+            "User-Agent": "Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)"
+            # noqa: E501
         }
 
     def do_translate(self, text):
@@ -196,7 +207,8 @@ class BingTranslator(BaseTranslator):
         self.session = requests.Session()
         self.endpoint = "https://www.bing.com/translator"
         self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",  # noqa: E501
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+            # noqa: E501
         }
 
     def find_sid(self):
@@ -330,14 +342,14 @@ class OpenAITranslator(BaseTranslator):
     CustomPrompt = True
 
     def __init__(
-        self,
-        lang_in,
-        lang_out,
-        model,
-        base_url=None,
-        api_key=None,
-        envs=None,
-        prompt=None,
+            self,
+            lang_in,
+            lang_out,
+            model,
+            base_url=None,
+            api_key=None,
+            envs=None,
+            prompt=None,
     ):
         self.set_envs(envs)
         if not model:
@@ -369,14 +381,14 @@ class AzureOpenAITranslator(BaseTranslator):
     CustomPrompt = True
 
     def __init__(
-        self,
-        lang_in,
-        lang_out,
-        model,
-        base_url=None,
-        api_key=None,
-        envs=None,
-        prompt=None,
+            self,
+            lang_in,
+            lang_out,
+            model,
+            base_url=None,
+            api_key=None,
+            envs=None,
+            prompt=None,
     ):
         self.set_envs(envs)
         base_url = self.envs["AZURE_OPENAI_BASE_URL"]
@@ -414,14 +426,14 @@ class ModelScopeTranslator(OpenAITranslator):
     CustomPrompt = True
 
     def __init__(
-        self,
-        lang_in,
-        lang_out,
-        model,
-        base_url=None,
-        api_key=None,
-        envs=None,
-        prompt=None,
+            self,
+            lang_in,
+            lang_out,
+            model,
+            base_url=None,
+            api_key=None,
+            envs=None,
+            prompt=None,
     ):
         self.set_envs(envs)
         base_url = "https://api-inference.modelscope.cn/v1"
@@ -463,8 +475,8 @@ class ZhipuTranslator(OpenAITranslator):
             )
         except openai.BadRequestError as e:
             if (
-                json.loads(response.choices[0].message.content.strip())["error"]["code"]
-                == "1301"
+                    json.loads(response.choices[0].message.content.strip())["error"]["code"]
+                    == "1301"
             ):
                 return "IRREPARABLE TRANSLATION ERROR"
             raise e

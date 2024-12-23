@@ -136,6 +136,7 @@ class TranslateConverter(PDFConverterEx):
         noto: Font = None,
         envs: Dict = None,
         prompt: List = None,
+        generate_cache_executor=None,
     ) -> None:
         super().__init__(rsrcmgr)
         self.vfont = vfont
@@ -154,6 +155,7 @@ class TranslateConverter(PDFConverterEx):
                 self.translator = translator(lang_in, lang_out, service_model, envs=envs, prompt=prompt)
         if not self.translator:
             raise ValueError("Unsupported translation service")
+        self.generate_cache_executor = generate_cache_executor
 
     def receive_layout(self, ltpage: LTPage):
         # 段落
@@ -341,10 +343,13 @@ class TranslateConverter(PDFConverterEx):
                 else:
                     log.exception(e, exc_info=False)
                 raise e
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=self.thread
-        ) as executor:
-            news = list(executor.map(worker, sstk))
+
+        if self.generate_cache_executor is not None:
+            self.generate_cache_executor.map(worker, sstk)
+            return
+        else:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.thread) as executor:
+                news = list(executor.map(worker, sstk))
 
         ############################################################
         # C. 新文档排版

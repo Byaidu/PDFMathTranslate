@@ -9,6 +9,7 @@ import urllib.request
 from asyncio import CancelledError
 from pathlib import Path
 from typing import Any, BinaryIO, List, Optional
+import concurrent.futures
 
 import numpy as np
 import requests
@@ -88,6 +89,7 @@ def translate_patch(
     noto: Font = None,
     callback: object = None,
     cancellation_event: asyncio.Event = None,
+    generate_cache_executor=None,
     **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
@@ -105,6 +107,7 @@ def translate_patch(
         noto,
         kwarg.get("envs", {}),
         kwarg.get("prompt", []),
+        generate_cache_executor
     )
 
     assert device is not None
@@ -179,6 +182,7 @@ def translate_stream(
     vchar: str = "",
     callback: object = None,
     cancellation_event: asyncio.Event = None,
+    generate_cache_executor=None,
     **kwarg: Any,
 ):
     font_list = [("tiro", None)]
@@ -235,6 +239,9 @@ def translate_stream(
     fp = io.BytesIO()
     doc_zh.save(fp)
     obj_patch: dict = translate_patch(fp, prompt=kwarg["prompt"], **locals())
+    if generate_cache_executor:
+        return
+    print()
 
     for obj_id, ops_new in obj_patch.items():
         # ops_old=doc_en.xref_stream(obj_id)
@@ -365,10 +372,22 @@ def translate(
         if file.startswith(tempfile.gettempdir()):
             os.unlink(file)
 
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=thread
+        ) as executor:
+            translate_stream(
+                s_raw,
+                envs=kwarg.get("envs", {}),
+                prompt=kwarg.get("prompt", []),
+                generate_cache_executor=executor,
+                **locals(),
+            )
+            print('Translating... Please wait...')
         s_mono, s_dual = translate_stream(
             s_raw,
             envs=kwarg.get("envs", {}),
             prompt=kwarg.get("prompt", []),
+            generate_cache_executor=None,
             **locals(),
         )
         file_mono = Path(output) / f"{filename}-mono.pdf"
