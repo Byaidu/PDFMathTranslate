@@ -138,7 +138,7 @@ class TestCache(unittest.TestCase):
         cache_instance = cache.TranslationCache("test_engine", {"initial": "value"})
 
         # Test appending new parameter
-        cache_instance.append_params("new_param", "new_value")
+        cache_instance.add_params("new_param", "new_value")
         self.assertEqual(cache_instance.params, {"initial": "value", "new_param": "new_value"})
 
         # Test that cache with appended params works correctly
@@ -146,7 +146,7 @@ class TestCache(unittest.TestCase):
         self.assertEqual(cache_instance.get("hello"), "你好")
 
         # Test overwriting existing parameter
-        cache_instance.append_params("initial", "new_value")
+        cache_instance.add_params("initial", "new_value")
         self.assertEqual(cache_instance.params, {"initial": "new_value", "new_param": "new_value"})
 
         # Cache should work with updated params

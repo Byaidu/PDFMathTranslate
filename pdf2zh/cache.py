@@ -57,14 +57,14 @@ class TranslationCache:
         self.params = params
         params = self._sort_dict_recursively(params)
         self.translate_engine_params = json.dumps(params)
-    
+
     def update_params(self, params: dict = None):
         if params is None:
             params = {}
         self.params.update(params)
         self.replace_params(self.params)
 
-    def append_params(self, k: str, v):
+    def add_params(self, k: str, v):
         self.params[k] = v
         self.replace_params(self.params)
 
