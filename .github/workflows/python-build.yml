@@ -16,7 +16,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install dependencies
       run: |
-        uv pip install --system -e .[dev]
+        uv venv
+        uv pip install -e .[dev]
 
     - name: Test - Code format
       run: |
