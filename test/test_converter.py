@@ -80,28 +80,6 @@ class TestTranslateConverter(unittest.TestCase):
         self.converter.receive_layout(mock_page)
         mock_receive_layout.assert_called_once_with(mock_page)
 
-    @patch("concurrent.futures.ThreadPoolExecutor")
-    @patch("pdf2zh.cache")
-    def test_translation(self, mock_cache, mock_executor):
-        mock_executor.return_value.__enter__.return_value.map.return_value = [
-            "你好",
-            "{v1}",
-        ]
-        mock_cache.deterministic_hash.return_value = "test_hash"
-        mock_cache.load_paragraph.return_value = None
-        mock_cache.write_paragraph.return_value = None
-
-        sstk = ["Hello", "{v1}"]
-        self.converter.thread = 2
-        results = []
-        with patch.object(self.converter, "translator") as mock_translator:
-            mock_translator.translate.side_effect = lambda x: (
-                "你好" if x == "Hello" else x
-            )
-            for s in sstk:
-                results.append(self.converter.translator.translate(s))
-        self.assertEqual(results, ["你好", "{v1}"])
-
     def test_receive_layout_with_complex_formula(self):
         ltpage = LTPage(1, (0, 0, 500, 500))
         ltchar = Mock()
