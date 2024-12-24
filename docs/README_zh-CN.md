@@ -174,7 +174,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 | `-o`  | 输出目录 | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 | `--share` | [获取 gradio 公开链接] | `pdf2zh -i --share` |
-| `--authorized` | [添加网页认证和自定义认证页] | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--authorized` | [[添加网页认证和自定义认证页](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.)] | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt` | [使用自定义的大模型prompt] | `pdf2zh --prompt [prompt.txt]` |
 | `--onnx` | [使用自定义的 DocLayout-YOLO ONNX 模型] | `pdf2zh --onnx [onnx/model/path]` |
 

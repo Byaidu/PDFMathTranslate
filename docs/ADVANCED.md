@@ -118,7 +118,7 @@ pdf2zh example.pdf -t 1
 Use `--prompt` to specify which prompt to use in llm:
 
 ```bash
-pdf2zh example.pdf -pr prompt.txt
+pdf2zh example.pdf --prompt prompt.txt
 ```
 
 example prompt.txt
@@ -142,6 +142,44 @@ In custom prompt file, there are three variables can be used.
 |`lang_in`|input language|
 |`lang_out`|output language|
 |`text`|text need to be translated|
+
+[⬆️ Back to top](#toc)
+
+---
+
+<h3 id="auth">Authorization</h3>
+
+Use `--authorized` to specify which user to use Web UI and custom the login page:
+
+```bash
+pdf2zh example.pdf --authorized users.txt auth.html
+```
+
+example users.txt
+Each line contains two elements, username, and password, separated by a comma.
+
+```
+admin,123456
+user1,password1
+user2,abc123
+guest,guest123
+test,test123
+```
+
+example auth.html
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple HTML</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    <p>Welcome to my simple HTML page.</p>
+</body>
+</html>
+```
 
 [⬆️ Back to top](#toc)
 
