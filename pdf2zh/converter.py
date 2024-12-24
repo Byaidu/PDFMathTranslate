@@ -17,7 +17,6 @@ import concurrent.futures
 import numpy as np
 import unicodedata
 from tenacity import retry, wait_fixed
-from pdf2zh import cache
 from pdf2zh.translator import (
     AzureOpenAITranslator,
     BaseTranslator,
@@ -137,6 +136,7 @@ class TranslateConverter(PDFConverterEx):
         noto: Font = None,
         envs: Dict = None,
         prompt: List = None,
+        generate_cache_executor=None,
     ) -> None:
         super().__init__(rsrcmgr)
         self.vfont = vfont
@@ -155,6 +155,7 @@ class TranslateConverter(PDFConverterEx):
                 self.translator = translator(lang_in, lang_out, service_model, envs=envs, prompt=prompt)
         if not self.translator:
             raise ValueError("Unsupported translation service")
+        self.generate_cache_executor = generate_cache_executor
 
     def receive_layout(self, ltpage: LTPage):
         # 段落
@@ -328,21 +329,13 @@ class TranslateConverter(PDFConverterEx):
         ############################################################
         # B. 段落翻译
         log.debug("\n==========[SSTACK]==========\n")
-        hash_key = cache.deterministic_hash("PDFMathTranslate")
-        cache.create_cache(hash_key)
 
         @retry(wait=wait_fixed(1))
         def worker(s: str):  # 多线程翻译
             if not s.strip() or re.match(r"^\{v\d+\}$", s):  # 空白和公式不翻译
                 return s
             try:
-                hash_key_paragraph = cache.deterministic_hash(
-                    (s, str(self.translator))
-                )
-                new = cache.load_paragraph(hash_key, hash_key_paragraph)  # 查询缓存
-                if new is None:
-                    new = self.translator.translate(s)
-                    cache.write_paragraph(hash_key, hash_key_paragraph, new)
+                new = self.translator.translate(s)
                 return new
             except BaseException as e:
                 if log.isEnabledFor(logging.DEBUG):
@@ -350,10 +343,13 @@ class TranslateConverter(PDFConverterEx):
                 else:
                     log.exception(e, exc_info=False)
                 raise e
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=self.thread
-        ) as executor:
-            news = list(executor.map(worker, sstk))
+
+        if self.generate_cache_executor is not None:
+            self.generate_cache_executor.map(worker, sstk)
+            return
+        else:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.thread) as executor:
+                news = list(executor.map(worker, sstk))
 
         ############################################################
         # C. 新文档排版

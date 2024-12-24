@@ -2,19 +2,21 @@ import html
 import logging
 import os
 import re
+import time
 import unicodedata
 from copy import copy
 import deepl
 import ollama
 import openai
 import requests
+from pdf2zh.cache import TranslationCache
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
 from tencentcloud.common import credential
 from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 from tencentcloud.tmt.v20180321.models import TextTranslateRequest
 from tencentcloud.tmt.v20180321.models import TextTranslateResponse
-
+import threading
 import json
 
 
@@ -22,11 +24,53 @@ def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
 
+class RateLimiter:
+    def __init__(self, max_qps: int):
+        self.max_qps = max_qps
+        self.min_interval = 1.0 / max_qps
+        self.last_requests = []  # Track last N requests
+        self.window_size = max_qps  # Track requests in a sliding window
+        self.lock = threading.Lock()
+
+    def wait(self):
+        with self.lock:
+            now = time.time()
+
+            # Clean up old requests outside the 1-second window
+            while self.last_requests and now - self.last_requests[0] > 1.0:
+                self.last_requests.pop(0)
+
+            # If we have less than max_qps requests in the last second, allow immediately
+            if len(self.last_requests) < self.max_qps:
+                self.last_requests.append(now)
+                return
+
+            # Otherwise, wait until we can make the next request
+            next_time = self.last_requests[0] + 1.0
+            if next_time > now:
+                time.sleep(next_time - now)
+            self.last_requests.pop(0)
+            self.last_requests.append(next_time)
+
+    def set_max_qps(self, max_qps):
+        self.max_qps = max_qps
+        self.min_interval = 1.0 / max_qps
+        self.window_size = max_qps
+
+
+_translate_rate_limiter = RateLimiter(5)
+
+
+def set_translate_rate_limiter(max_qps):
+    _translate_rate_limiter.set_max_qps(max_qps)
+
+
 class BaseTranslator:
     name = "base"
     envs = {}
     lang_map = {}
     CustomPrompt = False
+    ignore_cache = False
 
     def __init__(self, lang_in, lang_out, model):
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
@@ -34,6 +78,24 @@ class BaseTranslator:
         self.lang_in = lang_in
         self.lang_out = lang_out
         self.model = model
+
+        self.cache = TranslationCache(
+            self.name,
+            {
+                "lang_in": lang_in,
+                "lang_out": lang_out,
+                "model": model,
+            },
+        )
+
+        self.translate_call_count = 0
+        self.translate_cache_call_count = 0
+
+    def __del__(self):
+        print(f"{self.name} translate call count: {self.translate_call_count}")
+        print(
+            f"{self.name} translate cache call count: {self.translate_cache_call_count}"
+        )
 
     def set_envs(self, envs):
         # Detach from self.__class__.envs
@@ -47,8 +109,39 @@ class BaseTranslator:
             for key in envs:
                 self.envs[key] = envs[key]
 
-    def translate(self, text):
-        pass
+    def add_cache_impact_parameters(self, k: str, v):
+        """
+        Add parameters that affect the translation quality to distinguish the translation effects under different parameters.
+        :param k: key
+        :param v: value
+        """
+        self.cache.add_params(k, v)
+
+    def translate(self, text, ignore_cache=False):
+        """
+        Translate the text, and the other part should call this method.
+        :param text: text to translate
+        :return: translated text
+        """
+        self.translate_call_count += 1
+        if not (self.ignore_cache or ignore_cache):
+            cache = self.cache.get(text)
+            if cache is not None:
+                self.translate_cache_call_count += 1
+                return cache
+        _translate_rate_limiter.wait()
+        translation = self.do_translate(text)
+        if not (self.ignore_cache or ignore_cache):
+            self.cache.set(text, translation)
+        return translation
+
+    def do_translate(self, text):
+        """
+        Actual translate text, override this method
+        :param text: text to translate
+        :return: translated text
+        """
+        raise NotImplementedError
 
     def prompt(self, text, prompt):
         if prompt:
@@ -66,7 +159,8 @@ class BaseTranslator:
                 },
                 {
                     "role": "user",
-                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
+                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",
+                    # noqa: E501
                 },
             ]
 
@@ -83,10 +177,11 @@ class GoogleTranslator(BaseTranslator):
         self.session = requests.Session()
         self.endpoint = "http://translate.google.com/m"
         self.headers = {
-            "User-Agent": "Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)"  # noqa: E501
+            "User-Agent": "Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)"
+            # noqa: E501
         }
 
-    def translate(self, text):
+    def do_translate(self, text):
         text = text[:5000]  # google translate max length
         response = self.session.get(
             self.endpoint,
@@ -114,10 +209,11 @@ class BingTranslator(BaseTranslator):
         self.session = requests.Session()
         self.endpoint = "https://www.bing.com/translator"
         self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",  # noqa: E501
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+            # noqa: E501
         }
 
-    def findSID(self):
+    def find_sid(self):
         response = self.session.get(self.endpoint)
         response.raise_for_status()
         url = response.url[:-10]
@@ -128,9 +224,9 @@ class BingTranslator(BaseTranslator):
         )[0]
         return url, ig, iid, key, token
 
-    def translate(self, text):
+    def do_translate(self, text):
         text = text[:1000]  # bing translate max length
-        url, ig, iid, key, token = self.findSID()
+        url, ig, iid, key, token = self.find_sid()
         response = self.session.post(
             f"{url}ttranslatev3?IG={ig}&IID={iid}",
             data={
@@ -160,7 +256,7 @@ class DeepLTranslator(BaseTranslator):
         auth_key = self.envs["DEEPL_AUTH_KEY"]
         self.client = deepl.Translator(auth_key)
 
-    def translate(self, text):
+    def do_translate(self, text):
         response = self.client.translate_text(
             text, target_lang=self.lang_out, source_lang=self.lang_in
         )
@@ -181,7 +277,7 @@ class DeepLXTranslator(BaseTranslator):
         self.endpoint = self.envs["DEEPLX_ENDPOINT"]
         self.session = requests.Session()
 
-    def translate(self, text):
+    def do_translate(self, text):
         response = self.session.post(
             self.endpoint,
             json={
@@ -211,8 +307,11 @@ class OllamaTranslator(BaseTranslator):
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = ollama.Client()
         self.prompttext = prompt
+        self.add_cache_impact_parameters("temperature", self.options["temperature"])
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
 
-    def translate(self, text):
+    def do_translate(self, text):
         maxlen = max(2000, len(text) * 5)
         for model in self.model.split(";"):
             try:
@@ -261,8 +360,11 @@ class OpenAITranslator(BaseTranslator):
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
         self.prompttext = prompt
+        self.add_cache_impact_parameters("temperature", self.options["temperature"])
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
 
-    def translate(self, text) -> str:
+    def do_translate(self, text) -> str:
         response = self.client.chat.completions.create(
             model=self.model,
             **self.options,
@@ -303,8 +405,11 @@ class AzureOpenAITranslator(BaseTranslator):
             api_key=api_key,
         )
         self.prompttext = prompt
+        self.add_cache_impact_parameters("temperature", self.options["temperature"])
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
 
-    def translate(self, text) -> str:
+    def do_translate(self, text) -> str:
         response = self.client.chat.completions.create(
             model=self.model,
             **self.options,
@@ -339,6 +444,8 @@ class ModelScopeTranslator(OpenAITranslator):
             model = self.envs["MODELSCOPE_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
 
 
 class ZhipuTranslator(OpenAITranslator):
@@ -358,8 +465,10 @@ class ZhipuTranslator(OpenAITranslator):
             model = self.envs["ZHIPU_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
 
-    def translate(self, text) -> str:
+    def do_translate(self, text) -> str:
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -393,6 +502,8 @@ class SiliconTranslator(OpenAITranslator):
             model = self.envs["SILICON_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
 
 
 class GeminiTranslator(OpenAITranslator):
@@ -412,6 +523,8 @@ class GeminiTranslator(OpenAITranslator):
             model = self.envs["GEMINI_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
 
 
 class AzureTranslator(BaseTranslator):
@@ -436,7 +549,7 @@ class AzureTranslator(BaseTranslator):
         logger = logging.getLogger("azure.core.pipeline.policies.http_logging_policy")
         logger.setLevel(logging.WARNING)
 
-    def translate(self, text) -> str:
+    def do_translate(self, text) -> str:
         response = self.client.translate(
             body=[text],
             from_language=self.lang_in,
@@ -464,7 +577,7 @@ class TencentTranslator(BaseTranslator):
         self.req.Target = self.lang_out
         self.req.ProjectId = 0
 
-    def translate(self, text):
+    def do_translate(self, text):
         self.req.SourceText = text
         resp: TextTranslateResponse = self.client.TextTranslate(self.req)
         return resp.TargetText
@@ -489,8 +602,10 @@ class AnythingLLMTranslator(BaseTranslator):
             "Content-Type": "application/json",
         }
         self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
 
-    def translate(self, text):
+    def do_translate(self, text):
         messages = self.prompt(text, self.prompttext)
         payload = {
             "message": messages,
@@ -521,7 +636,7 @@ class DifyTranslator(BaseTranslator):
         self.api_url = self.envs["DIFY_API_URL"]
         self.api_key = self.envs["DIFY_API_KEY"]
 
-    def translate(self, text):
+    def do_translate(self, text):
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",

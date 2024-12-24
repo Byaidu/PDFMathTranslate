@@ -9,6 +9,8 @@ import urllib.request
 from asyncio import CancelledError
 from pathlib import Path
 from typing import Any, BinaryIO, List, Optional
+import concurrent.futures
+import time
 
 import numpy as np
 import requests
@@ -23,6 +25,7 @@ from pymupdf import Document, Font
 from pdf2zh.converter import TranslateConverter
 from pdf2zh.doclayout import DocLayoutModel
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
+from pdf2zh.translator import set_translate_rate_limiter
 
 model = DocLayoutModel.load_available()
 
@@ -88,6 +91,7 @@ def translate_patch(
     noto: Font = None,
     callback: object = None,
     cancellation_event: asyncio.Event = None,
+    generate_cache_executor=None,
     **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
@@ -105,6 +109,7 @@ def translate_patch(
         noto,
         kwarg.get("envs", {}),
         kwarg.get("prompt", []),
+        generate_cache_executor,
     )
 
     assert device is not None
@@ -179,6 +184,7 @@ def translate_stream(
     vchar: str = "",
     callback: object = None,
     cancellation_event: asyncio.Event = None,
+    generate_cache_executor=None,
     **kwarg: Any,
 ):
     font_list = [("tiro", None)]
@@ -235,6 +241,9 @@ def translate_stream(
     fp = io.BytesIO()
     doc_zh.save(fp)
     obj_patch: dict = translate_patch(fp, prompt=kwarg["prompt"], **locals())
+    if generate_cache_executor:
+        return
+    print()
 
     for obj_id, ops_new in obj_patch.items():
         # ops_old=doc_en.xref_stream(obj_id)
@@ -314,6 +323,7 @@ def translate(
     cancellation_event: asyncio.Event = None,
     **kwarg: Any,
 ):
+    set_translate_rate_limiter(thread)
     if not files:
         raise PDFValueError("No files to process.")
 
@@ -364,11 +374,22 @@ def translate(
 
         if file.startswith(tempfile.gettempdir()):
             os.unlink(file)
-
+        generate_cache_start = time.time()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=thread * 3) as executor:
+            translate_stream(
+                s_raw,
+                envs=kwarg.get("envs", {}),
+                prompt=kwarg.get("prompt", []),
+                generate_cache_executor=executor,
+                **locals(),
+            )
+            print("Translating... Please wait...")
+        print(f"Generate cache time: {time.time() - generate_cache_start:.2f} seconds")
         s_mono, s_dual = translate_stream(
             s_raw,
             envs=kwarg.get("envs", {}),
             prompt=kwarg.get("prompt", []),
+            generate_cache_executor=None,
             **locals(),
         )
         file_mono = Path(output) / f"{filename}-mono.pdf"
