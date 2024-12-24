@@ -89,12 +89,6 @@ if os.getenv("PDF2ZH_DEMO"):
     client_key = os.getenv("PDF2ZH_CLIENT_KEY")
     server_key = os.getenv("PDF2ZH_SERVER_KEY")
 
-# Check if everything unconfigured
-if os.getenv("PDF2ZH_INIT") is not False:
-    service_map = {
-        "Google": GoogleTranslator,
-    }
-
 
 # Public demo control
 def verify_recaptcha(response):
