@@ -257,16 +257,18 @@ pdf2zh example.pdf -f "(CM[^R]|(MS|XY|MT|BL|RM|EU|LA|RS)[A-Z]|LINE|LCIRCLE|TeX-|
 pdf2zh example.pdf -t 1
 ```
 
-<h3 id="prompt">custom prompt</h3>
-(need Japenese translation)
-Use `--prompt` to specify which prompt to use in llm:
+<h3 id="prompt">カスタム プロンプト</h3>
+
+`--prompt`を使用して、LLMで使用するプロンプトを指定します：
+
 ```bash
 pdf2zh example.pdf -pr prompt.txt
 ```
 
 
-example prompt.txt
-```
+`prompt.txt`の例：
+
+```txt
 [
     {
         "role": "system",
@@ -280,12 +282,14 @@ example prompt.txt
 ```
 
 
-In custom prompt file, there are three variables can be used.
-|**variables**|**comment**|
+カスタムプロンプトファイルでは、以下の3つの変数が使用できます。
+
+|**オプション**|**機能**|
 |-|-|
-|`lang_in`|input language|
-|`lang_out`|output language|
-|`text`|text need to be translated|
+|`lang_in`|ソース言語|
+|`lang_out`|ターゲット言語|
+|`text`|翻訳するテキスト|
+
 <h2 id="todo">API</h2>
 
 ### Python
