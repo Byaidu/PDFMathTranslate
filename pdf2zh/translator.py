@@ -14,6 +14,8 @@ from tencentcloud.common import credential
 from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 from tencentcloud.tmt.v20180321.models import TextTranslateRequest
 from tencentcloud.tmt.v20180321.models import TextTranslateResponse
+import argostranslate.package
+import argostranslate.translate
 
 import json
 
@@ -546,3 +548,43 @@ class DifyTranslator(BaseTranslator):
 
         # 解析响应
         return response_data.get("data", {}).get("outputs", {}).get("text", [])
+
+
+class ArgosTranslator(BaseTranslator):
+    name = "argos"
+
+    def __init__(self, lang_in, lang_out, model, **kwargs):
+        super().__init__(lang_in, lang_out, model)
+        lang_in = self.lang_map.get(lang_in.lower(), lang_in)
+        lang_out = self.lang_map.get(lang_out.lower(), lang_out)
+        self.lang_in = lang_in
+        self.lang_out = lang_out
+        argostranslate.package.update_package_index()
+        available_packages = argostranslate.package.get_available_packages()
+        try:
+            available_package = list(
+                filter(
+                    lambda x: x.from_code == self.lang_in
+                    and x.to_code == self.lang_out,
+                    available_packages,
+                )
+            )[0]
+        except Exception:
+            raise ValueError(
+                "lang_in and lang_out pair not supported by Argos Translate."
+            )
+        download_path = available_package.download()
+        argostranslate.package.install_from_path(download_path)
+
+    def translate(self, text):
+        # Translate
+        installed_languages = argostranslate.translate.get_installed_languages()
+        from_lang = list(filter(lambda x: x.code == self.lang_in, installed_languages))[
+            0
+        ]
+        to_lang = list(filter(lambda x: x.code == self.lang_out, installed_languages))[
+            0
+        ]
+        translation = from_lang.get_translation(to_lang)
+        translatedText = translation.translate(text)
+        return translatedText

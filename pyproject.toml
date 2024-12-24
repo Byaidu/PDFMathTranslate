@@ -29,6 +29,7 @@ dependencies = [
     "pdfminer.six>=20240706",
     "gradio_pdf>=0.0.21",
     "pikepdf",
+    "argostranslate",
 ]
 
 [project.optional-dependencies]
