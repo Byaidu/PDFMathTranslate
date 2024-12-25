@@ -194,10 +194,10 @@ def translate_stream(
     font_list = [("tiro", None)]
     noto = None
     shs = None
+    ttf_path = None
     if lang_out.lower() in resfont_map:  # CJK
         if not USE_SHS_FONT:
             resfont = resfont_map[lang_out.lower()]
-            font_list.append((resfont, None))
         else:
             resfont = shs_name
             # docker
@@ -212,7 +212,6 @@ def translate_stream(
                     "https://github.com/timelic/source-han-serif/releases/download/main/SourceHanSerif-Medium.ttc",
                     ttf_path,
                 )
-            font_list.append((shs_name, ttf_path))
             shs = Font(shs_name, ttf_path)
     elif lang_out.lower() in noto_list:  # noto
         resfont = noto_name
@@ -227,11 +226,10 @@ def translate_stream(
                 "https://github.com/satbyy/go-noto-universal/releases/download/v7.0/GoNotoKurrent-Regular.ttf",
                 ttf_path,
             )
-        font_list.append((noto_name, ttf_path))
         noto = Font(noto_name, ttf_path)
     else:  # fallback
         resfont = "china-ss"
-        font_list.append(("china-ss", None))
+    font_list.append((resfont, ttf_path))
 
     doc_en = Document(stream=stream)
     stream = io.BytesIO()
