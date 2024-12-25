@@ -4,6 +4,7 @@ import asyncio
 import io
 import os
 import sys
+from tabnanny import verbose
 import tempfile
 import urllib.request
 from asyncio import CancelledError
@@ -20,9 +21,12 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from pymupdf import Document, Font
 
-from pdf2zh.converter import TranslateConverter
+from pdf2zh.converter import TranslateConverter, shs_name, noto_name
 from pdf2zh.doclayout import OnnxModel
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
+
+# FIXME
+USE_SHS_FONT = True
 
 resfont_map = {
     "zh-cn": "china-ss",
@@ -83,6 +87,7 @@ def translate_patch(
     lang_out: str = "",
     service: str = "",
     resfont: str = "",
+    shs: Font = None,
     noto: Font = None,
     callback: object = None,
     cancellation_event: asyncio.Event = None,
@@ -103,6 +108,7 @@ def translate_patch(
         lang_out,
         service,
         resfont,
+        shs,
         noto,
         envs,
         prompt,
@@ -187,11 +193,29 @@ def translate_stream(
 ):
     font_list = [("tiro", None)]
     noto = None
+    shs = None
     if lang_out.lower() in resfont_map:  # CJK
-        resfont = resfont_map[lang_out.lower()]
-        font_list.append((resfont, None))
+        if not USE_SHS_FONT:
+            resfont = resfont_map[lang_out.lower()]
+            font_list.append((resfont, None))
+        else:
+            resfont = shs_name
+            # docker
+            ttf_path = os.environ.get("SHS_FONT_PATH", "/app/SourceHanSerif-Medium.ttc")
+            if not os.path.exists(ttf_path):
+                ttf_path = os.path.join(
+                    tempfile.gettempdir(), "SourceHanSerif-Medium.ttc"
+                )
+            if not os.path.exists(ttf_path):
+                print("Downloading SourceHanSerif font...")
+                urllib.request.urlretrieve(
+                    "https://github.com/timelic/source-han-serif/releases/download/main/SourceHanSerif-Medium.ttc",
+                    ttf_path,
+                )
+            font_list.append((shs_name, ttf_path))
+            shs = Font(shs_name, ttf_path)
     elif lang_out.lower() in noto_list:  # noto
-        resfont = "noto"
+        resfont = noto_name
         # docker
         ttf_path = os.environ.get("NOTO_FONT_PATH", "/app/GoNotoKurrent-Regular.ttf")
 
@@ -203,8 +227,8 @@ def translate_stream(
                 "https://github.com/satbyy/go-noto-universal/releases/download/v7.0/GoNotoKurrent-Regular.ttf",
                 ttf_path,
             )
-        font_list.append(("noto", ttf_path))
-        noto = Font("noto", ttf_path)
+        font_list.append((noto_name, ttf_path))
+        noto = Font(noto_name, ttf_path)
     else:  # fallback
         resfont = "china-ss"
         font_list.append(("china-ss", None))
@@ -237,6 +261,7 @@ def translate_stream(
                 pass
 
     fp = io.BytesIO()
+
     doc_zh.save(fp)
     obj_patch: dict = translate_patch(fp, **locals())
 
@@ -251,7 +276,12 @@ def translate_stream(
     for id in range(page_count):
         doc_en.move_page(page_count + id, id * 2 + 1)
 
-    return doc_zh.write(deflate=1), doc_en.write(deflate=1)
+    doc_zh.subset_fonts(fallback=True)
+    doc_en.subset_fonts(fallback=True)
+    return (
+        doc_zh.write(deflate=True, garbage=3, use_objstms=1),
+        doc_en.write(deflate=True, garbage=3, use_objstms=1),
+    )
 
 
 def convert_to_pdfa(input_path, output_path):
