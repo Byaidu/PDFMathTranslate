@@ -178,6 +178,7 @@ Python環境を事前にインストールする必要はありません
 | `--authorized` | [[ウェブ認証とカスタム認証ページの追加](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.)] | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt` | [カスタムビッグモデルのプロンプトを使用する] | `pdf2zh --prompt [prompt.txt]` |
 | `--onnx` | [カスタムDocLayout-YOLO ONNXモデルの使用] | `pdf2zh --onnx [onnx/model/path]` |
+| `--serverport` | [カスタムWebUIポートを使用する] | `pdf2zh --serverport 7860` |
 
 <h3 id="partial">全文または部分的なドキュメント翻訳</h3>
 

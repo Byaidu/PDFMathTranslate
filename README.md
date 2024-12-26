@@ -189,6 +189,7 @@ In the following table, we list all advanced options for reference:
 | `--authorized` | [Authorization](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#auth)                                                                                                 | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt`     | [Custom Prompt](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                 | `pdf2zh --prompt [prompt.txt]`                 |
 | `--onnx` | [Use Custom DocLayout-YOLO ONNX model] | `pdf2zh --onnx [onnx/model/path]` |
+| `--serverport` | [Use Custom WebUI port] | `pdf2zh --serverport 7860` |
 
 For detailed explanations, please refer to our document about [Advanced Usage](./docs/ADVANCED.md) for a full list of each option.
 

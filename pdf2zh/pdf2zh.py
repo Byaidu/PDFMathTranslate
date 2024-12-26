@@ -143,6 +143,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="custom onnx model path.",
     )
 
+    parse_params.add_argument(
+        "--serverport",
+        type=int,
+        help="custom WebUI port.",
+    )
+
     return parser
 
 
@@ -173,7 +179,12 @@ def main(args: Optional[List[str]] = None) -> int:
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
 
-        setup_gui(parsed_args.share, parsed_args.authorized)
+        if parsed_args.serverport:
+            setup_gui(
+                parsed_args.share, parsed_args.authorized, int(parsed_args.serverport)
+            )
+        else:
+            setup_gui(parsed_args.share, parsed_args.authorized)
         return 0
 
     if parsed_args.flask:

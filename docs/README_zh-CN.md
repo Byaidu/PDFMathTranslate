@@ -177,6 +177,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 | `--authorized` | [[添加网页认证和自定义认证页](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.)] | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt` | [使用自定义的大模型prompt] | `pdf2zh --prompt [prompt.txt]` |
 | `--onnx` | [使用自定义的 DocLayout-YOLO ONNX 模型] | `pdf2zh --onnx [onnx/model/path]` |
+| `--serverport` | [使用自定义的 WebUI 端口] | `pdf2zh --serverport 7860` |
 
 <h3 id="partial">全文或部分文档翻译</h3>
 
