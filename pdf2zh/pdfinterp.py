@@ -269,8 +269,12 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
         self.device.fontmap = self.fontmap
         ops_new = self.device.end_page(page)
         # 上面渲染的时候会根据 cropbox 减掉页面偏移得到真实坐标，这里输出的时候需要用 cm 把页面偏移加回来
+        # 文字调整过后的位置是以经过 cm 变换后的坐标系为准的，所以需要把 cm 的变换加回去
+        # 上面的 ctm 会在 render_contents 里面与 cm 进行计算，所以这里直接使用 self.ctm 的值
+        (a, b, c, d, e, f) = self.ctm
         self.obj_patch[page.page_xref] = (
-            f"q {ops_base}Q 1 0 0 1 {x0} {y0} cm {ops_new}"  # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
+            f"q {ops_base}Q {a} 0 0 {d} {-e if a > 0 else e} {-f if d > 0 else f} cm {ops_new}"
+            # ops_base 里可能有图，需要让 ops_new 里的文字覆盖在上面，使用 q/Q 重置位置矩阵
         )
         for obj in page.contents:
             self.obj_patch[obj.objid] = ""
