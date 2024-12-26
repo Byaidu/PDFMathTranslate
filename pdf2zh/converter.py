@@ -182,6 +182,8 @@ class TranslateConverter(PDFConverterEx):
             font = font.split("+")[-1]      # 字体名截断
             if re.match(r"\(cid:", char):
                 return True
+            # 可能会被判断regex匹配到的字体名, 用于匹配到后排除
+            exclude_list = ["MSGloriolaIIStd", "MSGloriolaIIStd-Bold", "MSGloriolaIIStd-Italic"]
             # 基于字体名规则的判定
             if self.vfont:
                 if re.match(self.vfont, font):
@@ -190,7 +192,7 @@ class TranslateConverter(PDFConverterEx):
                 if re.match(                                            # latex 字体
                     r"(CM[^R]|(MS|XY|MT|BL|RM|EU|LA|RS)[A-Z]|LINE|LCIRCLE|TeX-|rsfs|txsy|wasy|stmary|.*Mono|.*Code|.*Ital|.*Sym|.*Math)",
                     font,
-                ):
+                ) and (font not in exclude_list):
                     return True
             # 基于字符集规则的判定
             if self.vchar:
