@@ -2,7 +2,7 @@
 
 [English](../README.md) | [简体中文](README_zh-CN.md) | 日本語
 
-<img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
+<img src="./images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
 <h2 id="title">PDFMathTranslate</h2>
 
@@ -56,7 +56,7 @@
 <h2 id="preview">プレビュー</h2>
 
 <div align="center">
-<img src="./docs/images/preview.gif" width="80%"/>
+<img src="./images/preview.gif" width="80%"/>
 </div>
 
 <h2 id="demo">公共サービス 🌟</h2>
@@ -122,9 +122,9 @@ Python環境を事前にインストールする必要はありません
     http://localhost:7860/
     ```
 
-    <img src="./docs/images/gui.gif" width="500"/>
+    <img src="./images/gui.gif" width="500"/>
 
-詳細については、[GUIのドキュメント](./docs/README_GUI.md) を参照してください。
+詳細については、[GUIのドキュメント](./README_GUI.md) を参照してください。
 
 <h3 id="docker">方法4. Docker</h3>
 
@@ -158,7 +158,7 @@ Python環境を事前にインストールする必要はありません
 
 コマンドラインで翻訳コマンドを実行し、現在の作業ディレクトリに翻訳されたドキュメント `example-mono.pdf` とバイリンガルドキュメント `example-dual.pdf` を生成します。デフォルトではGoogle翻訳サービスを使用します。
 
-<img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
+<img src="./images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
 以下の表に、参考のためにすべての高度なオプションをリストしました：
 
