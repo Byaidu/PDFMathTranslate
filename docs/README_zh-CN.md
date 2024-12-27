@@ -2,7 +2,7 @@
 
 [English](../README.md) | 简体中文 | [日本語](README_ja-JP.md)
 
-<img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
+<img src="/images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
 <h2 id="title">PDFMathTranslate</h2>
 
@@ -56,7 +56,7 @@
 <h2 id="preview">效果预览</h2>
 
 <div align="center">
-<img src="./docs/images/preview.gif" width="80%"/>
+<img src="/images/preview.gif" width="80%"/>
 </div>
 
 <h2 id="demo">在线演示 🌟</h2>
@@ -121,9 +121,9 @@ set HF_ENDPOINT=https://hf-mirror.com
     http://localhost:7860/
     ```
 
-    <img src="./docs/images/gui.gif" width="500"/>
+    <img src="/images/gui.gif" width="500"/>
 
-查看 [documentation for GUI](./docs/README_GUI.md) 获取细节说明
+查看 [documentation for GUI](/README_GUI.md) 获取细节说明
 
 <h3 id="docker">方法四、容器化部署</h3>
 
@@ -157,7 +157,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 
 在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-mono.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
 
-<img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
+<img src="/images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
 我们在下表中列出了所有高级选项，以供参考：
 
