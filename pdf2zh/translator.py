@@ -2,12 +2,14 @@ import html
 import logging
 import os
 import re
+import time
 import unicodedata
 from copy import copy
 import deepl
 import ollama
 import openai
 import requests
+import asyncio
 from pdf2zh.cache import TranslationCache
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
@@ -21,6 +23,47 @@ import json
 
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
+
+
+class RateLimiter:
+    def __init__(self, max_qps: int):
+        self.max_qps = max_qps
+        self.min_interval = 1.0 / max_qps
+        self.last_requests = []  # Track last N requests
+        self.window_size = max_qps  # Track requests in a sliding window
+        self.lock = asyncio.Lock()
+    
+    async def wait_async(self):
+        async with self.lock:
+            now = time.time()
+            
+            # Clean up old requests outside the 1-second window
+            while self.last_requests and now - self.last_requests[0] > 1.0:
+                self.last_requests.pop(0)
+            
+            # If we have less than max_qps requests in the last second, allow immediately
+            if len(self.last_requests) < self.max_qps:
+                self.last_requests.append(now)
+                return
+            
+            # Otherwise, wait until we can make the next request
+            next_time = self.last_requests[0] + 1.0
+            if next_time > now:
+                await asyncio.sleep(next_time - now)
+            self.last_requests.pop(0)
+            self.last_requests.append(next_time)
+
+    def set_max_qps(self, max_qps):
+        self.max_qps = max_qps
+        self.min_interval = 1.0 / max_qps
+        self.window_size = max_qps
+
+
+_translate_rate_limiter = RateLimiter(5)
+
+
+def set_translate_rate_limiter(max_qps):
+    _translate_rate_limiter.set_max_qps(max_qps)
 
 
 class BaseTranslator:
@@ -66,7 +109,7 @@ class BaseTranslator:
         """
         self.cache.add_params(k, v)
 
-    def translate(self, text, ignore_cache=False):
+    async def translate_async(self, text, ignore_cache=False):
         """
         Translate the text, and the other part should call this method.
         :param text: text to translate
@@ -76,13 +119,24 @@ class BaseTranslator:
             cache = self.cache.get(text)
             if cache is not None:
                 return cache
-
-        translation = self.do_translate(text)
+        await _translate_rate_limiter.wait_async()
+        try:
+            translation = await self.do_translate_async(text)
+        except NotImplementedError:
+            translation = await asyncio.to_thread(self.do_translate, text)
         if not (self.ignore_cache or ignore_cache):
             self.cache.set(text, translation)
         return translation
 
     def do_translate(self, text):
+        """
+        Actual translate text, override this method
+        :param text: text to translate
+        :return: translated text
+        """
+        raise NotImplementedError
+
+    async def do_translate_async(self, text):
         """
         Actual translate text, override this method
         :param text: text to translate
@@ -302,14 +356,14 @@ class OpenAITranslator(BaseTranslator):
             model = self.envs["OPENAI_MODEL"]
         super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
+        self.client = openai.AsyncOpenAI(base_url=base_url, api_key=api_key)
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         if prompt:
             self.add_cache_impact_parameters("prompt", prompt)
 
-    def do_translate(self, text) -> str:
-        response = self.client.chat.completions.create(
+    async def do_translate_async(self, text) -> str:
+        response = await self.client.chat.completions.create(
             model=self.model,
             **self.options,
             messages=self.prompt(text, self.prompttext),
@@ -412,9 +466,9 @@ class ZhipuTranslator(OpenAITranslator):
         if prompt:
             self.add_cache_impact_parameters("prompt", prompt)
 
-    def do_translate(self, text) -> str:
+    async def do_translate_async(self, text) -> str:
         try:
-            response = self.client.chat.completions.create(
+            response = await self.client.chat.completions.create(
                 model=self.model,
                 **self.options,
                 messages=self.prompt(text, self.prompttext),
