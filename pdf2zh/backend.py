@@ -6,9 +6,7 @@ from pdf2zh import translate_stream
 import tqdm
 import json
 import io
-from pdf2zh.doclayout import OnnxModel
-
-model = OnnxModel.load_available()
+from pdf2zh.pdf2zh import model
 
 flask_app = Flask("pdf2zh")
 flask_app.config.from_mapping(
@@ -17,6 +15,7 @@ flask_app.config.from_mapping(
         result_backend=os.environ.get("CELERY_RESULT", "redis://127.0.0.1:6379/0"),
     )
 )
+
 
 def celery_init_app(app: Flask) -> Celery:
     class FlaskTask(Task):

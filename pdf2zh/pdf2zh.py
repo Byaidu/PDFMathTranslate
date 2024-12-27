@@ -199,6 +199,9 @@ def find_all_files_in_directory(directory_path):
     return file_paths
 
 
+model = None
+
+
 def main(args: Optional[List[str]] = None) -> int:
     logging.basicConfig()
 
@@ -206,6 +209,11 @@ def main(args: Optional[List[str]] = None) -> int:
 
     if parsed_args.debug:
         log.setLevel(logging.DEBUG)
+    global model
+    if parsed_args.onnx:
+        model = OnnxModel(parsed_args.onnx)
+    else:
+        model = OnnxModel.load_available()
 
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
@@ -237,12 +245,6 @@ def main(args: Optional[List[str]] = None) -> int:
             parsed_args.prompt = Template(content)
         except Exception:
             raise ValueError("prompt error.")
-
-    model = None
-    if parsed_args.onnx:
-        model = OnnxModel(parsed_args.onnx)
-    else:
-        model = OnnxModel.load_available()
 
     if parsed_args.dir:
         untranlate_file = find_all_files_in_directory(parsed_args.files[0])
