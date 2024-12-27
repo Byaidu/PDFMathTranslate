@@ -224,6 +224,8 @@ pdf2zh example.pdf -li en -lo ja
 |**AnythingLLM**|`anythingllm`|`AnythingLLM_URL`, `AnythingLLM_APIKEY`|`[Your AnythingLLM URL]`, `[Your Key]`|See [anything-llm](https://github.com/Mintplex-Labs/anything-llm)|
 |**Argos Translate**|`argos-translate`| | |See [argos-translate](https://github.com/argosopentech/argos-translate)|
 
+对于未在上述表格中的，并且兼容 OpenAI api 的大语言模型，可使用表格中的 OpenAI 的方式进行环境变量的设置。
+
 使用 `-s service` 或 `-s service:model` 指定翻译服务:
 
 ```bash

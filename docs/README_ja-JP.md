@@ -225,6 +225,9 @@ pdf2zh example.pdf -li en -lo ja
 |**AnythingLLM**|`anythingllm`|`AnythingLLM_URL`, `AnythingLLM_APIKEY`|`[Your AnythingLLM URL]`, `[Your Key]`|See [anything-llm](https://github.com/Mintplex-Labs/anything-llm)|
 |**Argos Translate**|`argos-translate`| | |See [argos-translate](https://github.com/argosopentech/argos-translate)|
 
+(need Japenese translation)
+For large language models that are compatible with the OpenAI API but not listed in the table above, you can set environment variables using the same method outlined for OpenAI in the table.
+
 `-s service` または `-s service:model` を使用してサービスを指定します：
 
 ```bash
