@@ -14,6 +14,7 @@ from typing import List, Optional
 from pdf2zh import __version__, log
 from pdf2zh.high_level import translate
 from pdf2zh.doclayout import OnnxModel
+import os
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -149,6 +150,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="custom WebUI port.",
     )
 
+    parse_params.add_argument(
+        "--dir",
+        action="store_true",
+        help="translate directory.",
+    )
+
     return parser
 
 
@@ -167,6 +174,28 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
 
     return parsed_args
 
+def find_all_files_in_directory(directory_path):
+    """
+    Recursively search all PDF files in the given directory and return their paths as a list.
+
+    :param directory_path: str, the path to the directory to search
+    :return: list of PDF file paths
+    """
+    # Check if the provided path is a directory
+    if not os.path.isdir(directory_path):
+        raise ValueError(f"The provided path '{directory_path}' is not a directory.")
+
+    file_paths = []
+
+    # Walk through the directory recursively
+    for root, _, files in os.walk(directory_path):
+        for file in files:
+            # Check if the file is a PDF
+            if file.lower().endswith('.pdf'):
+                # Append the full file path to the list
+                file_paths.append(os.path.join(root, file))
+
+    return file_paths
 
 def main(args: Optional[List[str]] = None) -> int:
     logging.basicConfig()
@@ -206,11 +235,20 @@ def main(args: Optional[List[str]] = None) -> int:
             parsed_args.prompt = Template(content)
         except Exception:
             raise ValueError("prompt error.")
+    
     model = None
     if parsed_args.onnx:
         model = OnnxModel(parsed_args.onnx)
     else:
         model = OnnxModel.load_available()
+
+    if parsed_args.dir:
+        untranlate_file=find_all_files_in_directory(parsed_args.files[0])
+        parsed_args.files = untranlate_file
+        print(parsed_args)
+        translate(model=model,**vars(parsed_args))
+        return 0
+    # print(parsed_args)
     translate(model=model, **vars(parsed_args))
     return 0
 
