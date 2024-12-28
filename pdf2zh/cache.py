@@ -45,6 +45,7 @@ class TranslationCache:
         return obj
 
     def __init__(self, translate_engine: str, translate_engine_params: dict = None):
+        assert len(translate_engine) < 20, 'current cache require translate engine name less than 20 characters'
         self.translate_engine = translate_engine
         self.replace_params(translate_engine_params)
 
