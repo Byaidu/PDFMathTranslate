@@ -50,17 +50,17 @@ class TestTranslator(unittest.TestCase):
         self.assertNotEqual(first_result, second_result)
 
         # Test cache with ignore_cache=True
-        no_cache_result = translator.translate(text, ignore_cache=True)
-        self.assertNotEqual(first_result, no_cache_result)
+        no_cache_result1 = translator.translate(text, ignore_cache=True)
+        self.assertNotEqual(first_result, no_cache_result1)
 
         translator.ignore_cache = True
-        no_cache_result = translator.translate(text)
-        self.assertNotEqual(first_result, no_cache_result)
+        no_cache_result2 = translator.translate(text)
+        self.assertNotEqual(no_cache_result1, no_cache_result2)
 
         # Test cache with ignore_cache=False
         translator.ignore_cache = False
         cache_result = translator.translate(text)
-        self.assertEqual(second_result, cache_result)
+        self.assertEqual(no_cache_result2, cache_result)
 
         # Test cache with another parameter
         translator.add_cache_impact_parameters("test2", "value2")
