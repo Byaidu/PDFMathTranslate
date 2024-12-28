@@ -64,6 +64,9 @@ We've provided a detailed table on the required [environment variables](https://
 | **Tencent**          | `tencent`      | `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`                   | `[Your ID]`, `[Your Key]`                                | See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)                                                                                                                            |
 | **Dify**             | `dify`         | `DIFY_API_URL`, `DIFY_API_KEY`                                        | `[Your DIFY URL]`, `[Your Key]`                          | See [Dify](https://github.com/langgenius/dify),Three variables, lang_out, lang_in, and text, need to be defined in Dify's workflow input.                                                                 |
 | **AnythingLLM**      | `anythingllm`  | `AnythingLLM_URL`, `AnythingLLM_APIKEY`                               | `[Your AnythingLLM URL]`, `[Your Key]`                   | See [anything-llm](https://github.com/Mintplex-Labs/anything-llm)                                                                                                                                         |
+|**Argos Translate**|`argos`| | |See [argos-translate](https://github.com/argosopentech/argos-translate)|
+
+For large language models that are compatible with the OpenAI API but not listed in the table above, you can set environment variables using the same method outlined for OpenAI in the table.
 
 Use `-s service` or `-s service:model` to specify service:
 
@@ -117,7 +120,7 @@ pdf2zh example.pdf -t 1
 Use `--prompt` to specify which prompt to use in llm:
 
 ```bash
-pdf2zh example.pdf -pr prompt.txt
+pdf2zh example.pdf --prompt prompt.txt
 ```
 
 example prompt.txt
@@ -141,6 +144,44 @@ In custom prompt file, there are three variables can be used.
 |`lang_in`|input language|
 |`lang_out`|output language|
 |`text`|text need to be translated|
+
+[⬆️ Back to top](#toc)
+
+---
+
+<h3 id="auth">Authorization</h3>
+
+Use `--authorized` to specify which user to use Web UI and custom the login page:
+
+```bash
+pdf2zh example.pdf --authorized users.txt auth.html
+```
+
+example users.txt
+Each line contains two elements, username, and password, separated by a comma.
+
+```
+admin,123456
+user1,password1
+user2,abc123
+guest,guest123
+test,test123
+```
+
+example auth.html
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple HTML</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    <p>Welcome to my simple HTML page.</p>
+</body>
+</html>
+```
 
 [⬆️ Back to top](#toc)
 
