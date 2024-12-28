@@ -2,6 +2,7 @@ import html
 import logging
 import os
 import re
+import time
 import unicodedata
 from copy import copy
 import deepl
@@ -15,12 +16,53 @@ from tencentcloud.common import credential
 from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 from tencentcloud.tmt.v20180321.models import TextTranslateRequest
 from tencentcloud.tmt.v20180321.models import TextTranslateResponse
-
+import threading
 import json
 
 
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
+
+
+class RateLimiter:
+    def __init__(self, max_qps: int):
+        self.max_qps = max_qps
+        self.min_interval = 1.0 / max_qps
+        self.last_requests = []  # Track last N requests
+        self.window_size = max_qps  # Track requests in a sliding window
+        self.lock = threading.Lock()
+
+    def wait(self):
+        with self.lock:
+            now = time.time()
+
+            # Clean up old requests outside the 1-second window
+            while self.last_requests and now - self.last_requests[0] > 1.0:
+                self.last_requests.pop(0)
+
+            # If we have less than max_qps requests in the last second, allow immediately
+            if len(self.last_requests) < self.max_qps:
+                self.last_requests.append(now)
+                return
+
+            # Otherwise, wait until we can make the next request
+            next_time = self.last_requests[0] + 1.0
+            if next_time > now:
+                time.sleep(next_time - now)
+            self.last_requests.pop(0)
+            self.last_requests.append(next_time)
+
+    def set_max_qps(self, max_qps):
+        self.max_qps = max_qps
+        self.min_interval = 1.0 / max_qps
+        self.window_size = max_qps
+
+
+_translate_rate_limiter = RateLimiter(5)
+
+
+def set_translate_rate_limiter(max_qps):
+    _translate_rate_limiter.set_max_qps(max_qps)
 
 
 class BaseTranslator:
@@ -44,6 +86,15 @@ class BaseTranslator:
                 "lang_out": lang_out,
                 "model": model,
             },
+        )
+
+        self.translate_call_count = 0
+        self.translate_cache_call_count = 0
+
+    def __del__(self):
+        print(f"{self.name} translate call count: {self.translate_call_count}")
+        print(
+            f"{self.name} translate cache call count: {self.translate_cache_call_count}"
         )
 
     def set_envs(self, envs):
@@ -72,11 +123,13 @@ class BaseTranslator:
         :param text: text to translate
         :return: translated text
         """
+        self.translate_call_count += 1
         if not (self.ignore_cache or ignore_cache):
             cache = self.cache.get(text)
             if cache is not None:
+                self.translate_cache_call_count += 1
                 return cache
-
+        _translate_rate_limiter.wait()
         translation = self.do_translate(text)
         self.cache.set(text, translation)
         return translation
@@ -105,7 +158,8 @@ class BaseTranslator:
                 },
                 {
                     "role": "user",
-                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
+                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",
+                    # noqa: E501
                 },
             ]
 
@@ -122,7 +176,8 @@ class GoogleTranslator(BaseTranslator):
         self.session = requests.Session()
         self.endpoint = "http://translate.google.com/m"
         self.headers = {
-            "User-Agent": "Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)"  # noqa: E501
+            "User-Agent": "Mozilla/4.0 (compatible;MSIE 6.0;Windows NT 5.1;SV1;.NET CLR 1.1.4322;.NET CLR 2.0.50727;.NET CLR 3.0.04506.30)"
+            # noqa: E501
         }
 
     def do_translate(self, text):
@@ -153,7 +208,8 @@ class BingTranslator(BaseTranslator):
         self.session = requests.Session()
         self.endpoint = "https://www.bing.com/translator"
         self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",  # noqa: E501
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0",
+            # noqa: E501
         }
 
     def find_sid(self):
