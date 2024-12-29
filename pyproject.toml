@@ -30,6 +30,7 @@ dependencies = [
     "gradio_pdf>=0.0.21",
     "pikepdf",
     "peewee>=3.17.8",
+    "argostranslate",
 ]
 
 [project.optional-dependencies]

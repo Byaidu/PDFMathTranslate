@@ -13,6 +13,7 @@ from gradio_pdf import PDF
 
 from pdf2zh import __version__
 from pdf2zh.high_level import translate
+from pdf2zh.pdf2zh import model
 from pdf2zh.translator import (
     AnythingLLMTranslator,
     AzureOpenAITranslator,
@@ -22,6 +23,7 @@ from pdf2zh.translator import (
     DeepLTranslator,
     DeepLXTranslator,
     DifyTranslator,
+    ArgosTranslator,
     GeminiTranslator,
     GoogleTranslator,
     ModelScopeTranslator,
@@ -51,6 +53,7 @@ service_map: dict[str, BaseTranslator] = {
     "Tencent": TencentTranslator,
     "Dify": DifyTranslator,
     "AnythingLLM": AnythingLLMTranslator,
+    "Argos Translate": ArgosTranslator,
 }
 
 # The following variables associate strings with specific languages
@@ -265,6 +268,7 @@ def translate_file(
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
         "prompt": prompt,
+        "model": model,
     }
     try:
         translate(**param)
@@ -587,7 +591,9 @@ def parse_user_passwd(file_path: str) -> tuple:
     return tuple_list, content
 
 
-def setup_gui(share: bool = False, auth_file: list = ["", ""]) -> None:
+def setup_gui(
+    share: bool = False, auth_file: list = ["", ""], server_port=7860
+) -> None:
     """
     Setup the GUI with the given parameters.
 
@@ -605,7 +611,11 @@ def setup_gui(share: bool = False, auth_file: list = ["", ""]) -> None:
         if len(user_list) == 0:
             try:
                 demo.launch(
-                    server_name="0.0.0.0", debug=True, inbrowser=True, share=share
+                    server_name="0.0.0.0",
+                    debug=True,
+                    inbrowser=True,
+                    share=share,
+                    server_port=server_port,
                 )
             except Exception:
                 print(
@@ -613,13 +623,19 @@ def setup_gui(share: bool = False, auth_file: list = ["", ""]) -> None:
                 )
                 try:
                     demo.launch(
-                        server_name="127.0.0.1", debug=True, inbrowser=True, share=share
+                        server_name="127.0.0.1",
+                        debug=True,
+                        inbrowser=True,
+                        share=share,
+                        server_port=server_port,
                     )
                 except Exception:
                     print(
                         "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
                     )
-                    demo.launch(debug=True, inbrowser=True, share=True)
+                    demo.launch(
+                        debug=True, inbrowser=True, share=True, server_port=server_port
+                    )
         else:
             try:
                 demo.launch(
@@ -629,6 +645,7 @@ def setup_gui(share: bool = False, auth_file: list = ["", ""]) -> None:
                     share=share,
                     auth=user_list,
                     auth_message=html,
+                    server_port=server_port,
                 )
             except Exception:
                 print(
@@ -642,6 +659,7 @@ def setup_gui(share: bool = False, auth_file: list = ["", ""]) -> None:
                         share=share,
                         auth=user_list,
                         auth_message=html,
+                        server_port=server_port,
                     )
                 except Exception:
                     print(
@@ -653,6 +671,7 @@ def setup_gui(share: bool = False, auth_file: list = ["", ""]) -> None:
                         share=True,
                         auth=user_list,
                         auth_message=html,
+                        server_port=server_port,
                     )
 
 
