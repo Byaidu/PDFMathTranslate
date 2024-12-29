@@ -306,13 +306,22 @@ class XinferenceTranslator(BaseTranslator):
             try:
                 xf_model = self.client.get_model(model)
                 xf_prompt = self.prompt(text, self.prompttext)
-                xf_prompt = [{"role": "user", "content": xf_prompt[0]["content"]+"\n"+xf_prompt[1]["content"]}]
+                xf_prompt = [
+                    {
+                        "role": "user",
+                        "content": xf_prompt[0]["content"]
+                                   + "\n"
+                                   + xf_prompt[1]["content"],
+                    }
+                ]
                 response = xf_model.chat(
                     generate_config=self.options,
                     messages=xf_prompt,
                 )
 
-                response = response["choices"][0]["message"]["content"].replace("<end_of_turn>", "")
+                response = response["choices"][0]["message"]["content"].replace(
+                    "<end_of_turn>", ""
+                )
                 if len(response) > maxlen:
                     raise Exception("Response too long")
                 return response.strip()
@@ -346,7 +355,7 @@ class OpenAITranslator(BaseTranslator):
             model = self.envs["OPENAI_MODEL"]
         super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
+        self.client = openai.OpenAI(base_url=base_url or self.envs["OPENAI_BASE_URL"], api_key=api_key or self.envs["OPENAI_API_KEY"])
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         if prompt:
