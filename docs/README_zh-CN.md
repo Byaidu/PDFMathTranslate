@@ -43,6 +43,7 @@
 
 <h2 id="updates">近期更新</h2>
 
+- [Dec. 24 2024] 翻译功能支持接入 [Xinference](https://github.com/xorbitsai/inference) 运行的本地 LLM _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
 - [Nov. 26 2024] CLI 现在已支持（多个）在线 PDF 文件 *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 24 2024] 为降低依赖大小，提供 [ONNX](https://github.com/onnx/onnx) 支持 *(by [@Wybxc](https://github.com/Wybxc))*  
 - [Nov. 23 2024] 🌟 [免费公共服务](#demo) 上线! *(by [@Byaidu](https://github.com/Byaidu))*  
