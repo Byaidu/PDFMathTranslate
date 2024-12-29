@@ -17,7 +17,6 @@ import concurrent.futures
 import numpy as np
 import unicodedata
 from tenacity import retry, wait_fixed
-from pdf2zh import cache
 from pdf2zh.translator import (
     AzureOpenAITranslator,
     BaseTranslator,
@@ -35,6 +34,7 @@ from pdf2zh.translator import (
     TencentTranslator,
     DifyTranslator,
     AnythingLLMTranslator,
+    ArgosTranslator,
 )
 from pymupdf import Font
 
@@ -150,7 +150,7 @@ class TranslateConverter(PDFConverterEx):
         service_name = param[0]
         service_model = param[1] if len(param) > 1 else None
         for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, AzureOpenAITranslator,
-                           OpenAITranslator, ZhipuTranslator, ModelScopeTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AnythingLLMTranslator]:
+                           OpenAITranslator, ZhipuTranslator, ModelScopeTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AnythingLLMTranslator, ArgosTranslator]:
             if service_name == translator.name:
                 self.translator = translator(lang_in, lang_out, service_model, envs=envs, prompt=prompt)
         if not self.translator:
@@ -328,21 +328,13 @@ class TranslateConverter(PDFConverterEx):
         ############################################################
         # B. 段落翻译
         log.debug("\n==========[SSTACK]==========\n")
-        hash_key = cache.deterministic_hash("PDFMathTranslate")
-        cache.create_cache(hash_key)
 
         @retry(wait=wait_fixed(1))
         def worker(s: str):  # 多线程翻译
             if not s.strip() or re.match(r"^\{v\d+\}$", s):  # 空白和公式不翻译
                 return s
             try:
-                hash_key_paragraph = cache.deterministic_hash(
-                    (s, str(self.translator))
-                )
-                new = cache.load_paragraph(hash_key, hash_key_paragraph)  # 查询缓存
-                if new is None:
-                    new = self.translator.translate(s)
-                    cache.write_paragraph(hash_key, hash_key_paragraph, new)
+                new = self.translator.translate(s)
                 return new
             except BaseException as e:
                 if log.isEnabledFor(logging.DEBUG):

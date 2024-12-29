@@ -6,6 +6,7 @@ from pdf2zh import translate_stream
 import tqdm
 import json
 import io
+from pdf2zh.pdf2zh import model
 
 flask_app = Flask("pdf2zh")
 flask_app.config.from_mapping(
@@ -47,6 +48,7 @@ def translate_task(
     doc_mono, doc_dual = translate_stream(
         stream,
         callback=progress_bar,
+        model=model,
         **args,
     )
     return doc_mono, doc_dual

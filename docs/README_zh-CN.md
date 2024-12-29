@@ -2,7 +2,7 @@
 
 [English](../README.md) | 简体中文 | [日本語](README_ja-JP.md)
 
-<img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
+<img src="./images/banner.png" width="320px"  alt="PDF2ZH"/>  
 
 <h2 id="title">PDFMathTranslate</h2>
 
@@ -58,7 +58,7 @@
 <h2 id="preview">效果预览</h2>
 
 <div align="center">
-<img src="./docs/images/preview.gif" width="80%"/>
+<img src="./images/preview.gif" width="80%"/>
 </div>
 
 <h2 id="demo">在线演示 🌟</h2>
@@ -123,9 +123,9 @@ set HF_ENDPOINT=https://hf-mirror.com
     http://localhost:7860/
     ```
 
-    <img src="./docs/images/gui.gif" width="500"/>
+    <img src="./images/gui.gif" width="500"/>
 
-查看 [documentation for GUI](./docs/README_GUI.md) 获取细节说明
+查看 [documentation for GUI](/README_GUI.md) 获取细节说明
 
 <h3 id="docker">方法四、容器化部署</h3>
 
@@ -159,7 +159,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 
 在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-mono.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
 
-<img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
+<img src="./images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
 我们在下表中列出了所有高级选项，以供参考：
 
@@ -176,8 +176,10 @@ set HF_ENDPOINT=https://hf-mirror.com
 | `-o`  | 输出目录 | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
 | `--share` | [获取 gradio 公开链接] | `pdf2zh -i --share` |
-| `--authorized` | [添加网页认证和自定义认证页] | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--authorized` | [[添加网页认证和自定义认证页](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.)] | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt` | [使用自定义的大模型prompt] | `pdf2zh --prompt [prompt.txt]` |
+| `--onnx` | [使用自定义的 DocLayout-YOLO ONNX 模型] | `pdf2zh --onnx [onnx/model/path]` |
+| `--serverport` | [使用自定义的 WebUI 端口] | `pdf2zh --serverport 7860` |
 
 <h3 id="partial">全文或部分文档翻译</h3>
 
@@ -222,6 +224,9 @@ pdf2zh example.pdf -li en -lo ja
 |**Tencent**|`tencent`|`TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`|`[Your ID]`, `[Your Key]`|See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)|
 |**Dify**|`dify`|`DIFY_API_URL`, `DIFY_API_KEY`|`[Your DIFY URL]`, `[Your Key]`|See [Dify](https://github.com/langgenius/dify),Three variables, lang_out, lang_in, and text, need to be defined in Dify's workflow input.|
 |**AnythingLLM**|`anythingllm`|`AnythingLLM_URL`, `AnythingLLM_APIKEY`|`[Your AnythingLLM URL]`, `[Your Key]`|See [anything-llm](https://github.com/Mintplex-Labs/anything-llm)|
+|**Argos Translate**|`argos`| | |See [argos-translate](https://github.com/argosopentech/argos-translate)|
+
+对于未在上述表格中的，并且兼容 OpenAI api 的大语言模型，可使用表格中的 OpenAI 的方式进行环境变量的设置。
 
 使用 `-s service` 或 `-s service:model` 指定翻译服务:
 
