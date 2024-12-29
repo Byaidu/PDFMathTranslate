@@ -310,8 +310,8 @@ class XinferenceTranslator(BaseTranslator):
                     {
                         "role": "user",
                         "content": xf_prompt[0]["content"]
-                                   + "\n"
-                                   + xf_prompt[1]["content"],
+                        + "\n"
+                        + xf_prompt[1]["content"],
                     }
                 ]
                 response = xf_model.chat(
@@ -355,7 +355,10 @@ class OpenAITranslator(BaseTranslator):
             model = self.envs["OPENAI_MODEL"]
         super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        self.client = openai.OpenAI(base_url=base_url or self.envs["OPENAI_BASE_URL"], api_key=api_key or self.envs["OPENAI_API_KEY"])
+        self.client = openai.OpenAI(
+            base_url=base_url or self.envs["OPENAI_BASE_URL"],
+            api_key=api_key or self.envs["OPENAI_API_KEY"],
+        )
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         if prompt:
