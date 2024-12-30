@@ -17,6 +17,7 @@ dependencies = [
     "tenacity",
     "numpy",
     "ollama",
+    "xinference-client",
     "deepl",
     "openai",
     "azure-ai-translation-text<=1.0.1",
