@@ -744,42 +744,25 @@ class DeepseekTranslator(OpenAITranslator):
             self.add_cache_impact_parameters("prompt", prompt)
 
 
-class OpenAIlikeTranslator(BaseTranslator):
-    # https://github.com/openai/openai-python
-    name = "openai-liked"
+class OpenAIlikedTranslator(OpenAITranslator):
+    name = "openailiked"
     envs = {
-        "OPENAILIKE_BASE_URL": None,
-        "OPENAILIKE_API_KEY": None,
-        "OPENAILIKE_MODEL": None,
+        "OPENAILIKED_BASE_URL": None,
+        "OPENAILIKED_API_KEY": None,
+        "OPENAILIKED_MODEL": None,
     }
     CustomPrompt = True
 
-    def __init__(
-        self,
-        lang_in,
-        lang_out,
-        model,
-        base_url=None,
-        api_key=None,
-        envs=None,
-        prompt=None,
-    ):
+    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
+        base_url = self.envs["OPENAILIKED_BASE_URL"]
         if not model:
-            model = self.envs["OPENAILIKE_MODEL"]
-        super().__init__(lang_in, lang_out, model)
-        self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        if (
-            self.envs["OPENAILIKE_BASE_URL"] == None
-            or self.envs["OPENAILIKE_API_KEY"] == None
-            or self.envs["OPENAILIKE_MODEL"] == None
-        ):
-            raise ValueError("The variables are invalid.")
-        self.client = openai.OpenAI(
-            base_url=base_url or self.envs["OPENAILIKE_BASE_URL"],
-            api_key=api_key or self.envs["OPENAILIKE_API_KEY"],
-        )
+            model = self.envs["OPENAILIKED_MODEL"]
+        if self.envs["OPENAILIKED_API_KEY"] is None:
+            api_key = "openailiked"
+        else:
+            api_key = self.envs["OPENAILIKED_API_KEY"]
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
-        self.add_cache_impact_parameters("temperature", self.options["temperature"])
         if prompt:
             self.add_cache_impact_parameters("prompt", prompt)

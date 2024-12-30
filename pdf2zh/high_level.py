@@ -102,8 +102,8 @@ def translate_patch(
         service,
         resfont,
         noto,
-        kwarg.get("envs", {}),
-        kwarg.get("prompt", []),
+        kwarg["kwarg"].get("envs", {}),
+        kwarg["kwarg"].get("prompt", []),
     )
 
     assert device is not None

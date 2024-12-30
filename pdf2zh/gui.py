@@ -35,7 +35,7 @@ from pdf2zh.translator import (
     ZhipuTranslator,
     GorkTranslator,
     DeepseekTranslator,
-    OpenAIlikeTranslator,
+    OpenAIlikedTranslator,
 )
 
 # The following variables associate strings with translators
@@ -59,7 +59,7 @@ service_map: dict[str, BaseTranslator] = {
     "Argos Translate": ArgosTranslator,
     "Gork": GorkTranslator,
     "DeepSeek": DeepseekTranslator,
-    "OpenAI-liked": OpenAIlikeTranslator,
+    "OpenAI-liked": OpenAIlikedTranslator,
 }
 
 # The following variables associate strings with specific languages
