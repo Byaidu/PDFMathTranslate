@@ -701,3 +701,85 @@ class ArgosTranslator(BaseTranslator):
         translation = from_lang.get_translation(to_lang)
         translatedText = translation.translate(text)
         return translatedText
+
+
+class GorkTranslator(OpenAITranslator):
+    # https://docs.x.ai/docs/overview#getting-started
+    name = "grok"
+    envs = {
+        "GORK_API_KEY": None,
+        "GORK_MODEL": "grok-2-1212",
+    }
+    CustomPrompt = True
+
+    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+        self.set_envs(envs)
+        base_url = "https://api.x.ai/v1"
+        api_key = self.envs["GORK_API_KEY"]
+        if not model:
+            model = self.envs["GORK_MODEL"]
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
+
+
+class DeepseekTranslator(OpenAITranslator):
+    name = "deepseek"
+    envs = {
+        "DEEPSEEK_API_KEY": None,
+        "DEEPSEEK_MODEL": "deepseek-chat",
+    }
+    CustomPrompt = True
+
+    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+        self.set_envs(envs)
+        base_url = "https://api.deepseek.com/v1"
+        api_key = self.envs["DEEPSEEK_API_KEY"]
+        if not model:
+            model = self.envs["DEEPSEEK_MODEL"]
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
+
+
+class OpenAIlikeTranslator(BaseTranslator):
+    # https://github.com/openai/openai-python
+    name = "openai-liked"
+    envs = {
+        "OPENAILIKE_BASE_URL": None,
+        "OPENAILIKE_API_KEY": None,
+        "OPENAILIKE_MODEL": None,
+    }
+    CustomPrompt = True
+
+    def __init__(
+        self,
+        lang_in,
+        lang_out,
+        model,
+        base_url=None,
+        api_key=None,
+        envs=None,
+        prompt=None,
+    ):
+        self.set_envs(envs)
+        if not model:
+            model = self.envs["OPENAILIKE_MODEL"]
+        super().__init__(lang_in, lang_out, model)
+        self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
+        if (
+            self.envs["OPENAILIKE_BASE_URL"] == None
+            or self.envs["OPENAILIKE_API_KEY"] == None
+            or self.envs["OPENAILIKE_MODEL"] == None
+        ):
+            raise ValueError("The variables are invalid.")
+        self.client = openai.OpenAI(
+            base_url=base_url or self.envs["OPENAILIKE_BASE_URL"],
+            api_key=api_key or self.envs["OPENAILIKE_API_KEY"],
+        )
+        self.prompttext = prompt
+        self.add_cache_impact_parameters("temperature", self.options["temperature"])
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt)
