@@ -153,6 +153,10 @@ class TranslateConverter(PDFConverterEx):
         param = service.split(":", 1)
         service_name = param[0]
         service_model = param[1] if len(param) > 1 else None
+        if not envs:
+            envs = {}
+        if not prompt:
+            prompt = []
         for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, XinferenceTranslator, AzureOpenAITranslator,
                            OpenAITranslator, ZhipuTranslator, ModelScopeTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AnythingLLMTranslator, ArgosTranslator, GorkTranslator, DeepseekTranslator, OpenAIlikedTranslator,]:
             if service_name == translator.name:

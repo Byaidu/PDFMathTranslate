@@ -8,7 +8,7 @@ import tempfile
 import urllib.request
 from asyncio import CancelledError
 from pathlib import Path
-from typing import Any, BinaryIO, List, Optional
+from typing import Any, BinaryIO, List, Optional, Dict
 
 import numpy as np
 import requests
@@ -87,6 +87,8 @@ def translate_patch(
     callback: object = None,
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
+    envs: Dict = None,
+    prompt: List = None,
     **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
@@ -102,8 +104,8 @@ def translate_patch(
         service,
         resfont,
         noto,
-        kwarg["kwarg"].get("envs", {}),
-        kwarg["kwarg"].get("prompt", []),
+        envs,
+        prompt,
     )
 
     assert device is not None
@@ -179,6 +181,8 @@ def translate_stream(
     callback: object = None,
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
+    envs: Dict = None,
+    prompt: List = None,
     **kwarg: Any,
 ):
     font_list = [("tiro", None)]
@@ -313,6 +317,8 @@ def translate(
     compatible: bool = False,
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
+    envs: Dict = None,
+    prompt: List = None,
     **kwarg: Any,
 ):
     if not files:
@@ -367,8 +373,6 @@ def translate(
             os.unlink(file)
         s_mono, s_dual = translate_stream(
             s_raw,
-            envs=kwarg.get("envs", {}),
-            prompt=kwarg.get("prompt", []),
             **locals(),
         )
         file_mono = Path(output) / f"{filename}-mono.pdf"
