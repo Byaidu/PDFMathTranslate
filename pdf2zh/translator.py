@@ -255,7 +255,7 @@ class OllamaTranslator(BaseTranslator):
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         if prompt:
-            self.add_cache_impact_parameters("prompt", prompt)
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
     def do_translate(self, text):
         maxlen = max(2000, len(text) * 5)
@@ -298,7 +298,7 @@ class XinferenceTranslator(BaseTranslator):
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         if prompt:
-            self.add_cache_impact_parameters("prompt", prompt)
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
     def do_translate(self, text):
         maxlen = max(2000, len(text) * 5)
@@ -362,7 +362,7 @@ class OpenAITranslator(BaseTranslator):
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         if prompt:
-            self.add_cache_impact_parameters("prompt", prompt)
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
     def do_translate(self, text) -> str:
         response = self.client.chat.completions.create(
@@ -407,7 +407,7 @@ class AzureOpenAITranslator(BaseTranslator):
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         if prompt:
-            self.add_cache_impact_parameters("prompt", prompt)
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
     def do_translate(self, text) -> str:
         response = self.client.chat.completions.create(
@@ -445,7 +445,7 @@ class ModelScopeTranslator(OpenAITranslator):
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
         if prompt:
-            self.add_cache_impact_parameters("prompt", prompt)
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
 
 class ZhipuTranslator(OpenAITranslator):
@@ -466,7 +466,7 @@ class ZhipuTranslator(OpenAITranslator):
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
         if prompt:
-            self.add_cache_impact_parameters("prompt", prompt)
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
     def do_translate(self, text) -> str:
         try:
@@ -503,7 +503,7 @@ class SiliconTranslator(OpenAITranslator):
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
         if prompt:
-            self.add_cache_impact_parameters("prompt", prompt)
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
 
 class GeminiTranslator(OpenAITranslator):
@@ -524,7 +524,7 @@ class GeminiTranslator(OpenAITranslator):
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
         if prompt:
-            self.add_cache_impact_parameters("prompt", prompt)
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
 
 class AzureTranslator(BaseTranslator):
@@ -603,7 +603,7 @@ class AnythingLLMTranslator(BaseTranslator):
         }
         self.prompttext = prompt
         if prompt:
-            self.add_cache_impact_parameters("prompt", prompt)
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
     def do_translate(self, text):
         messages = self.prompt(text, self.prompttext)
@@ -701,3 +701,74 @@ class ArgosTranslator(BaseTranslator):
         translation = from_lang.get_translation(to_lang)
         translatedText = translation.translate(text)
         return translatedText
+
+
+class GorkTranslator(OpenAITranslator):
+    # https://docs.x.ai/docs/overview#getting-started
+    name = "grok"
+    envs = {
+        "GORK_API_KEY": None,
+        "GORK_MODEL": "grok-2-1212",
+    }
+    CustomPrompt = True
+
+    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+        self.set_envs(envs)
+        base_url = "https://api.x.ai/v1"
+        api_key = self.envs["GORK_API_KEY"]
+        if not model:
+            model = self.envs["GORK_MODEL"]
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt.template)
+
+
+class DeepseekTranslator(OpenAITranslator):
+    name = "deepseek"
+    envs = {
+        "DEEPSEEK_API_KEY": None,
+        "DEEPSEEK_MODEL": "deepseek-chat",
+    }
+    CustomPrompt = True
+
+    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+        self.set_envs(envs)
+        base_url = "https://api.deepseek.com/v1"
+        api_key = self.envs["DEEPSEEK_API_KEY"]
+        if not model:
+            model = self.envs["DEEPSEEK_MODEL"]
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt.template)
+
+
+class OpenAIlikedTranslator(OpenAITranslator):
+    name = "openailiked"
+    envs = {
+        "OPENAILIKED_BASE_URL": None,
+        "OPENAILIKED_API_KEY": None,
+        "OPENAILIKED_MODEL": None,
+    }
+    CustomPrompt = True
+
+    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+        self.set_envs(envs)
+        if self.envs["OPENAILIKED_BASE_URL"]:
+            base_url = self.envs["OPENAILIKED_BASE_URL"]
+        else:
+            raise ValueError("The OPENAILIKED_BASE_URL is missing.")
+        if not model:
+            if self.envs["OPENAILIKED_MODEL"]:
+                model = self.envs["OPENAILIKED_MODEL"]
+            else:
+                raise ValueError("The OPENAILIKED_MODEL is missing.")
+        if self.envs["OPENAILIKED_API_KEY"] is None:
+            api_key = "openailiked"
+        else:
+            api_key = self.envs["OPENAILIKED_API_KEY"]
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt.template)
