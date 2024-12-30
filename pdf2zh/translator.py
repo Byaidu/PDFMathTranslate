@@ -755,9 +755,15 @@ class OpenAIlikedTranslator(OpenAITranslator):
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
-        base_url = self.envs["OPENAILIKED_BASE_URL"]
+        if self.envs["OPENAILIKED_BASE_URL"]:
+            base_url = self.envs["OPENAILIKED_BASE_URL"]
+        else:
+            raise ValueError("The OPENAILIKED_BASE_URL is missing.")
         if not model:
-            model = self.envs["OPENAILIKED_MODEL"]
+            if self.envs["OPENAILIKED_MODEL"]:
+                model = self.envs["OPENAILIKED_MODEL"]
+            else:
+                raise ValueError("The OPENAILIKED_MODEL is missing.")
         if self.envs["OPENAILIKED_API_KEY"] is None:
             api_key = "openailiked"
         else:
