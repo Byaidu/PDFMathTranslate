@@ -42,23 +42,6 @@ from pdf2zh.translator import (
 service_map: dict[str, BaseTranslator] = {
     "Google": GoogleTranslator,
     "Bing": BingTranslator,
-    "DeepL": DeepLTranslator,
-    "DeepLX": DeepLXTranslator,
-    "Ollama": OllamaTranslator,
-    "Xinference": XinferenceTranslator,
-    "AzureOpenAI": AzureOpenAITranslator,
-    "OpenAI": OpenAITranslator,
-    "Zhipu": ZhipuTranslator,
-    "ModelScope": ModelScopeTranslator,
-    "Silicon": SiliconTranslator,
-    "Gemini": GeminiTranslator,
-    "Azure": AzureTranslator,
-    "Tencent": TencentTranslator,
-    "Dify": DifyTranslator,
-    "AnythingLLM": AnythingLLMTranslator,
-    "Argos Translate": ArgosTranslator,
-    "Gork": GorkTranslator,
-    "DeepSeek": DeepseekTranslator,
     "OpenAI-liked": OpenAIlikedTranslator,
 }
 
@@ -250,6 +233,7 @@ def translate_file(
 
     _envs = {}
     for i, env in enumerate(translator.envs.items()):
+        print(f"Env: {env[0]}, envs[i]: {envs[i]},")
         _envs[env[0]] = envs[i]
 
     print(f"Files before translation: {os.listdir(output)}")
@@ -445,8 +429,9 @@ with gr.Blocks(
                     _envs.append(gr.update(visible=False, value=""))
                 for i, env in enumerate(translator.envs.items()):
                     _envs[i] = gr.update(
-                        visible=True, label=env[0], value=os.getenv(env[0], env[1])
+                        visible=False, label=env[0], value=os.getenv(env[0], env[1])
                     )
+                    print(f"Env: {env[0]}, value: {os.getenv(env[0], env[1])},")
                 _envs[-1] = gr.update(visible=translator.CustomPrompt)
                 return _envs
 
