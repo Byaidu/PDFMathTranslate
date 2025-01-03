@@ -13,7 +13,7 @@ from gradio_pdf import PDF
 
 from pdf2zh import __version__
 from pdf2zh.high_level import translate
-from pdf2zh.pdf2zh import model
+from pdf2zh.doclayout import ModelInstance
 from pdf2zh.translator import (
     AnythingLLMTranslator,
     AzureOpenAITranslator,
@@ -274,7 +274,7 @@ def translate_file(
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
         "prompt": prompt,
-        "model": model,
+        "model": ModelInstance.value,
     }
     try:
         translate(**param)

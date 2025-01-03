@@ -60,6 +60,7 @@ class YoloBox:
 
 
 class OnnxModel(DocLayoutModel):
+
     def __init__(self, model_path: str):
         self.model_path = model_path
 
@@ -173,3 +174,7 @@ class OnnxModel(DocLayoutModel):
             (new_h, new_w), preds[..., :4], (orig_h, orig_w)
         )
         return [YoloResult(boxes=preds, names=self._names)]
+
+
+class ModelInstance:
+    value: OnnxModel = None

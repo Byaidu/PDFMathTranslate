@@ -13,7 +13,7 @@ from typing import List, Optional
 
 from pdf2zh import __version__, log
 from pdf2zh.high_level import translate
-from pdf2zh.doclayout import OnnxModel
+from pdf2zh.doclayout import OnnxModel, ModelInstance
 import os
 
 
@@ -199,9 +199,6 @@ def find_all_files_in_directory(directory_path):
     return file_paths
 
 
-model = None
-
-
 def main(args: Optional[List[str]] = None) -> int:
     logging.basicConfig()
 
@@ -209,11 +206,11 @@ def main(args: Optional[List[str]] = None) -> int:
 
     if parsed_args.debug:
         log.setLevel(logging.DEBUG)
-    global model
+
     if parsed_args.onnx:
-        model = OnnxModel(parsed_args.onnx)
+        ModelInstance.value = OnnxModel(parsed_args.onnx)
     else:
-        model = OnnxModel.load_available()
+        ModelInstance.value = OnnxModel.load_available()
 
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
@@ -250,10 +247,10 @@ def main(args: Optional[List[str]] = None) -> int:
         untranlate_file = find_all_files_in_directory(parsed_args.files[0])
         parsed_args.files = untranlate_file
         print(parsed_args)
-        translate(model=model, **vars(parsed_args))
+        translate(model=ModelInstance.value, **vars(parsed_args))
         return 0
     # print(parsed_args)
-    translate(model=model, **vars(parsed_args))
+    translate(model=ModelInstance.value, **vars(parsed_args))
     return 0
 
 
