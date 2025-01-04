@@ -409,12 +409,12 @@ with gr.Blocks(
                 lang_from = gr.Dropdown(
                     label="Translate from",
                     choices=lang_map.keys(),
-                    value="English",
+                    value=os.getenv("PDF2ZH_LANG_FROM", "English"),
                 )
                 lang_to = gr.Dropdown(
                     label="Translate to",
                     choices=lang_map.keys(),
-                    value="Simplified Chinese",
+                    value=os.getenv("PDF2ZH_LANG_TO", "Simplified Chinese"),
                 )
             page_range = gr.Radio(
                 choices=page_map.keys(),
