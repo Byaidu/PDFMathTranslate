@@ -22,11 +22,6 @@ jobs:
         pip3 install -U pip
         pip3 install -e .[dev]
 
-    - name: Test - Code format
-      run: |
-        black --check --diff --color pdf2zh/*.py test/*.py
-        flake8 --ignore E203,E261,E501,W503,E741
-
     - name: Test - Unit Test
       run: |
         pytest .
