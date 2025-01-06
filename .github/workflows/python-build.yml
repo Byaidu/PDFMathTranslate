@@ -33,11 +33,11 @@ jobs:
 
     - name: Test - Translate a PDF file with plain text only
       run:
-        pdf2zh ./test/file/translate.cli.plain.text.pdf
+        pdf2zh ./test/file/translate.cli.plain.text.pdf -o ./test/file
 
     - name: Test - Translate a PDF file figure
       run:
-        pdf2zh ./test/file/translate.cli.text.with.figure.pdf
+        pdf2zh ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
 
     # - name: Test - Translate a PDF file with unknown font
     #   run:
