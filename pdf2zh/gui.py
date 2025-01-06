@@ -34,6 +34,7 @@ from pdf2zh.translator import (
     XinferenceTranslator,
     ZhipuTranslator,
     GorkTranslator,
+    GroqTranslator,
     DeepseekTranslator,
     OpenAIlikedTranslator,
 )
@@ -58,6 +59,7 @@ service_map: dict[str, BaseTranslator] = {
     "AnythingLLM": AnythingLLMTranslator,
     "Argos Translate": ArgosTranslator,
     "Gork": GorkTranslator,
+    "Groq": GroqTranslator,
     "DeepSeek": DeepseekTranslator,
     "OpenAI-liked": OpenAIlikedTranslator,
 }
