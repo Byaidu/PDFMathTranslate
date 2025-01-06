@@ -67,6 +67,7 @@ We've provided a detailed table on the required [environment variables](https://
 | **AnythingLLM**      | `anythingllm`  | `AnythingLLM_URL`, `AnythingLLM_APIKEY`                               | `[Your AnythingLLM URL]`, `[Your Key]`                   | See [anything-llm](https://github.com/Mintplex-Labs/anything-llm)                                                                                                                                         |
 |**Argos Translate**|`argos`| | |See [argos-translate](https://github.com/argosopentech/argos-translate)|
 |**Grok**|`grok`| `GORK_API_KEY`, `GORK_MODEL` | `[Your GORK_API_KEY]`, `grok-2-1212` |See [Grok](https://docs.x.ai/docs/overview)|
+|**Groq**|`groq`| `GROQ_API_KEY`, `GROQ_MODEL` | `[Your GROQ_API_KEY]`, `llama-3-3-70b-versatile` |See [Groq](https://console.groq.com/docs/models)|
 |**DeepSeek**|`deepseek`| `DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL` | `[Your DEEPSEEK_API_KEY]`, `deepseek-chat` |See [DeepSeek](https://www.deepseek.com/)|
 |**OpenAI-Liked**|`openai-liked`| `OPENAILIKE_BASE_URL`, `OPENAILIKE_API_KEY`, `OPENAILIKE_MODEL` | `url`, `[Your Key]`, `model name` | None |
 

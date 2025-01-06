@@ -723,6 +723,24 @@ class GorkTranslator(OpenAITranslator):
         if prompt:
             self.add_cache_impact_parameters("prompt", prompt.template)
 
+class GroqTranslator(OpenAITranslator):
+    name = "groq"
+    envs = {
+        "GROQ_API_KEY": None,
+        "GROQ_MODEL": "llama-3-3-70b-versatile",
+    }
+    CustomPrompt = True
+
+    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+        self.set_envs(envs)
+        base_url = "https://api.groq.com/openai/v1"
+        api_key = self.envs["GROQ_API_KEY"]
+        if not model:
+            model = self.envs["GROQ_MODEL"]
+        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        self.prompttext = prompt
+        if prompt:
+            self.add_cache_impact_parameters("prompt", prompt.template)
 
 class DeepseekTranslator(OpenAITranslator):
     name = "deepseek"
