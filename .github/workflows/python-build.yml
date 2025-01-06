@@ -11,9 +11,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: pyproject.toml
 
     - name: Install dependencies
       run: |
@@ -24,25 +26,25 @@ jobs:
       run: |
         black --check --diff --color pdf2zh/*.py test/*.py
         flake8 --ignore E203,E261,E501,W503,E741
-    
+
     - name: Test - Unit Test
       run: |
         pytest .
 
     - name: Test - Translate a PDF file with plain text only
-      run: 
+      run:
         pdf2zh ./test/file/translate.cli.plain.text.pdf
 
     - name: Test - Translate a PDF file figure
-      run: 
+      run:
         pdf2zh ./test/file/translate.cli.text.with.figure.pdf
 
     # - name: Test - Translate a PDF file with unknown font
-    #   run: 
+    #   run:
     #     pdf2zh ./test/file/translate.cli.font.unknown.pdf
 
     - name: Test - Start GUI and exit
-      run: 
+      run:
         timeout 10 pdf2zh -i  || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
     - name: Build as a package
