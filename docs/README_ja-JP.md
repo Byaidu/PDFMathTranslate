@@ -179,6 +179,7 @@ Python環境を事前にインストールする必要はありません
 | `--prompt` | [カスタムビッグモデルのプロンプトを使用する] | `pdf2zh --prompt [prompt.txt]` |
 | `--onnx` | [カスタムDocLayout-YOLO ONNXモデルの使用] | `pdf2zh --onnx [onnx/model/path]` |
 | `--serverport` | [カスタムWebUIポートを使用する] | `pdf2zh --serverport 7860` |
+| `--dir` | [batch translate] | `pdf2zh --dir /path/to/translate/` |
 
 <h3 id="partial">全文または部分的なドキュメント翻訳</h3>
 
