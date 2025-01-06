@@ -44,8 +44,6 @@ from pymupdf import Font
 
 log = logging.getLogger(__name__)
 
-
-shs_name = "shs"
 noto_name = "noto"
 
 
@@ -142,7 +140,6 @@ class TranslateConverter(PDFConverterEx):
         lang_out: str = "",
         service: str = "",
         resfont: str = "",
-        shs: Font = None,
         noto: Font = None,
         envs: Dict = None,
         prompt: List = None,
@@ -153,7 +150,6 @@ class TranslateConverter(PDFConverterEx):
         self.thread = thread
         self.layout = layout
         self.resfont = resfont
-        self.shs = shs
         self.noto = noto
         self.translator: BaseTranslator = None
         param = service.split(":", 1)
@@ -366,8 +362,6 @@ class TranslateConverter(PDFConverterEx):
         def raw_string(fcur: str, cstk: str):  # 编码字符串
             if fcur == noto_name:
                 return "".join(["%04x" % self.noto.has_glyph(ord(c)) for c in cstk])
-            elif fcur == shs_name:
-                return "".join(["%04x" % self.shs.has_glyph(ord(c)) for c in cstk])
             elif isinstance(self.fontmap[fcur], PDFCIDFont):  # 判断编码长度
                 return "".join(["%04x" % ord(c) for c in cstk])
             else:
@@ -413,8 +407,6 @@ class TranslateConverter(PDFConverterEx):
                         fcur_ = self.resfont  # 默认非拉丁字体
                     if fcur_ == noto_name: # FIXME: change to CONST
                         adv = self.noto.char_lengths(ch, size)[0]
-                    elif fcur_ == shs_name: # FIXME: change to CONST
-                        adv = self.shs.char_lengths(ch, size)[0]
                     else:
                         adv = self.fontmap[fcur_].char_width(ord(ch)) * size
                     ptr += 1
