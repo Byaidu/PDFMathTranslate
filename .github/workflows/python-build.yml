@@ -49,3 +49,9 @@ jobs:
 
     - name: Build as a package
       run: python -m build
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: ./test/file/
