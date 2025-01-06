@@ -335,8 +335,9 @@ demo_recaptcha = """
 
 tech_details_string = f"""
                     <summary>Technical details</summary>
-                    - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
-                    - GUI by: <a href="https://github.com/reycn">Rongxin</a><br>
+                    - GitHub: <a href="https://github.com/opensourceways/PDFMathTranslate">opensourceways/PDFMathTranslate</a><br>
+                    - 问题接口: <a>熊开旗(x60075080)</a><br>
+                    - 建议反馈: <a>蒋龙(j00601018)</a><br>
                     - Version: {__version__}
                 """
 cancellation_event_map = {}
@@ -352,7 +353,7 @@ with gr.Blocks(
     head=demo_recaptcha if flag_demo else "",
 ) as demo:
     gr.Markdown(
-        "# [PDFMathTranslate @ GitHub](https://github.com/Byaidu/PDFMathTranslate)"
+        "# [在线pdf论文翻译工具](https://github.com/opensourceways/PDFMathTranslate)"
     )
 
     with gr.Row():
