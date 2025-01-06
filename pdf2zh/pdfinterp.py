@@ -229,7 +229,11 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
                 self.device.fontmap = interpreter.fontmap
                 ops_new = self.device.end_figure(xobjid)
                 ctm_inv = np.linalg.inv(np.array(ctm[:4]).reshape(2, 2))
-                pos_inv = -np.mat(ctm[4:]) * ctm_inv
+                np_version = np.__version__
+                if np_version.split(".")[0] >= "2":
+                    pos_inv = -np.asmatrix(ctm[4:]) * ctm_inv
+                else:
+                    pos_inv = -np.mat(ctm[4:]) * ctm_inv
                 a, b, c, d = ctm_inv.reshape(4).tolist()
                 e, f = pos_inv.tolist()[0]
                 self.obj_patch[self.xobjmap[xobjid].objid] = (

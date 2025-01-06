@@ -1,3 +1,8 @@
+.github
+docs
+.git
+.pre-commit-config.yaml
+uv.lock
 pdf2zh_files
 gui/pdf2zh_files
 gradio_files
@@ -135,7 +140,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-pdf2zh-dev/
 
 # Spyder project settings
 .spyderproject
@@ -169,4 +173,3 @@ cython_debug/
 .idea/
 .vscode
 .DS_Store
-uv.lock

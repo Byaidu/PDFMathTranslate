@@ -1,8 +1,8 @@
 <div align="center">
 
-English | [简体中文](README_zh-CN.md) | [日本語](README_ja-JP.md)
+English | [简体中文](docs/README_zh-CN.md) | [日本語](docs/README_ja-JP.md)
 
-<img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>  
+<img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>
 
 <h2 id="title">PDFMathTranslate</h2>
 
@@ -14,15 +14,19 @@ English | [简体中文](README_zh-CN.md) | [日本語](README_ja-JP.md)
     <img src="https://static.pepy.tech/badge/pdf2zh"></a>
   <a href="https://hub.docker.com/repository/docker/byaidu/pdf2zh">
     <img src="https://img.shields.io/docker/pulls/byaidu/pdf2zh"></a>
-  <!-- License -->
-  <a href="./LICENSE">
-    <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"></a>
+  <a href="https://gitcode.com/Byaidu/PDFMathTranslate/overview">
+    <img src="https://gitcode.com/Byaidu/PDFMathTranslate/star/badge.svg"></a>
   <a href="https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker">
     <img src="https://img.shields.io/badge/%F0%9F%A4%97-Online%20Demo-FF9E0D"></a>
+  <a href="https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate">
+    <img src="https://img.shields.io/badge/ModelScope-Demo-blue"></a>
   <a href="https://github.com/Byaidu/PDFMathTranslate/pulls">
     <img src="https://img.shields.io/badge/contributions-welcome-green"></a>
   <a href="https://t.me/+Z9_SgnxmsmA5NzBl">
     <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white"></a>
+  <!-- License -->
+  <a href="./LICENSE">
+    <img src="https://img.shields.io/github/license/Byaidu/PDFMathTranslate"></a>
 </p>
 
 <a href="https://trendshift.io/repositories/12424" target="_blank"><img src="https://trendshift.io/api/badge/repositories/12424" alt="Byaidu%2FPDFMathTranslate | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
@@ -31,23 +35,20 @@ English | [简体中文](README_zh-CN.md) | [日本語](README_ja-JP.md)
 
 PDF scientific paper translation and bilingual comparison.
 
-- 📊 Preserve formulas, charts, table of contents, and annotations *([preview](#preview))*.
+- 📊 Preserve formulas, charts, table of contents, and annotations _([preview](#preview))_.
 - 🌐 Support [multiple languages](#language), and diverse [translation services](#services).
 - 🤖 Provides [commandline tool](#usage), [interactive user interface](#gui), and [Docker](#docker)
 
 Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues), [Telegram Group](https://t.me/+Z9_SgnxmsmA5NzBl) or [QQ Group](https://qm.qq.com/q/DixZCxQej0).
 
+For details on how to contribute, please consult the [Contribution Guide](https://github.com/Byaidu/PDFMathTranslate/wiki/Contribution-Guide---%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97).
+
 <h2 id="updates">Updates</h2>
 
-- [Nov. 26 2024] CLI now supports online file(s) *(by [@reycn](https://github.com/reycn))*  
-- [Nov. 24 2024] [ONNX](https://github.com/onnx/onnx) support to reduce dependency sizes *(by [@Wybxc](https://github.com/Wybxc))*  
-- [Nov. 23 2024] 🌟 [Public Service](#demo)  online! *(by [@Byaidu](https://github.com/Byaidu))*  
-- [Nov. 23 2024] Firewall for preventing web bots *(by [@Byaidu](https://github.com/Byaidu))*  
-- [Nov. 22 2024] GUI now supports Italian, and has been improved *(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))*  
-- [Nov. 22 2024] You can now share your deployed service to others *(by [@Zxis233](https://github.com/Zxis233))*  
-- [Nov. 22 2024] Now supports Tencent Translation *(by [@hellofinch](https://github.com/hellofinch))*  
-- [Nov. 21 2024] GUI now supports downloading dual-document *(by [@reycn](https://github.com/reycn))*  
-- [Nov. 20 2024] 🌟 [Demo](#demo)  online! *(by [@reycn](https://github.com/reycn))*  
+- [Dec. 24 2024] The translator now supports local models on [Xinference](https://github.com/xorbitsai/inference) _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
+- [Dec. 19 2024] Non-PDF/A documents are now supported using `-cp` _(by [@reycn](https://github.com/reycn))_
+- [Dec. 13 2024] Additional support for backend by _(by [@YadominJinta](https://github.com/YadominJinta))_
+- [Dec. 10 2024] The translator now supports OpenAI models on Azure _(by [@yidasanqian](https://github.com/yidasanqian))_
 
 <h2 id="preview">Preview</h2>
 
@@ -55,81 +56,91 @@ Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMa
 <img src="./docs/images/preview.gif" width="80%"/>
 </div>
 
-<h2 id="demo">Public Service 🌟</h2>
+<h2 id="demo">Online Service 🌟</h2>
 
-### Free Service (<https://pdf2zh.com/>)
+You can try our application out using either of the following demos:
 
-You can try our [public service](https://pdf2zh.com/) online without installation.  
+- [Public free service](https://pdf2zh.com/) online without installation _(recommended)_.
+- [Demo hosted on HuggingFace](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)
+- [Demo hosted on ModelScope](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) without installation.
 
-### Hugging Face Demo
-
-You can try [our demo on HuggingFace](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker) without installation.
 Note that the computing resources of the demo are limited, so please avoid abusing them.
 
 <h2 id="install">Installation and Usage</h2>
 
-We provide four methods for using this project: [Commandline](#cmd), [Portable](#portable), [GUI](#gui), and [Docker](#docker).
+### Methods
 
-<h3 id="cmd">Method I. Commandline</h3>
+For different use cases, we provide four distinct methods to use our program:
 
-  1. Python installed (3.8 <= version <= 3.12)
-  2. Install our package:
-
-      ```bash
-      pip install pdf2zh
-      ```
-
-  3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
-
-      ```bash
-      pdf2zh document.pdf
-      ```
-
-<h3 id="portable">Method II. Portable</h3>
-
-No need to pre-install Python environment
-
-Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/setup.bat) and double-click to run
-
-<h3 id="gui">Method III. GUI</h3>
+<details open>
+  <summary>1. Commandline</summary>
 
 1. Python installed (3.8 <= version <= 3.12)
 2. Install our package:
 
-      ```bash
-      pip install pdf2zh
-      ```
+   ```bash
+   pip install pdf2zh
+   ```
+
+3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
+
+   ```bash
+   pdf2zh document.pdf
+   ```
+
+</details>
+
+<details>
+  <summary>2. Portable (w/o Python installed)</summary>
+
+1. Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat)
+
+2. Double-click to run.
+
+</details>
+
+<details>
+  <summary>3. Graphic user interface</summary>
+1. Python installed (3.8 <= version <= 3.12)
+2. Install our package:
+
+```bash
+pip install pdf2zh
+```
 
 3. Start using in browser:
 
-      ```bash
-      pdf2zh -i
-      ```
+   ```bash
+   pdf2zh -i
+   ```
 
 4. If your browswer has not been started automatically, goto
 
-    ```bash
-    http://localhost:7860/
-    ```
+   ```bash
+   http://localhost:7860/
+   ```
 
-    <img src="./docs/images/gui.gif" width="500"/>
+   <img src="./docs/images/gui.gif" width="500"/>
 
 See [documentation for GUI](./docs/README_GUI.md) for more details.
 
-<h3 id="docker">Method IV. Docker</h3>
+</details>
+
+<details>
+  <summary>4. Docker</summary>
 
 1. Pull and run:
 
-    ```bash
-    docker pull byaidu/pdf2zh
-    docker run -d -p 7860:7860 byaidu/pdf2zh
-    ```
+   ```bash
+   docker pull byaidu/pdf2zh
+   docker run -d -p 7860:7860 byaidu/pdf2zh
+   ```
 
 2. Open in browser:
 
-    ```
-    http://localhost:7860/
-    ```
+   ```
+   http://localhost:7860/
+   ```
 
 For docker deployment on cloud service:
 
@@ -144,143 +155,55 @@ For docker deployment on cloud service:
   <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
 </div>
 
+</details>
+
+### Unable to install?
+
+The present program needs an AI model(`wybxc/DocLayout-YOLO-DocStructBench-onnx`) before working and some users are not able to download due to network issues. If you have a problem with downloading this model, we provide a workaround using the following environment variable:
+
+```shell
+set HF_ENDPOINT=https://hf-mirror.com
+```
+
+If the solution does not work to you / you encountered other issues, please refer to [frequently asked questions](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98).
+
 <h2 id="usage">Advanced Options</h2>
 
 Execute the translation command in the command line to generate the translated document `example-mono.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service.
 
-<img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>  
+<img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>
 
 In the following table, we list all advanced options for reference:
 
-| Option    | Function | Example |
-| -------- | ------- |------- |
-| files | Local files |  `pdf2zh ~/local.pdf` |
-| links | Online files |  `pdf2zh http://arxiv.org/paper.pdf` |
-| `-i`  | [Enter GUI](#gui) |  `pdf2zh -i` |
-| `-p`  | [Partial document translation](#partial) |  `pdf2zh example.pdf -p 1` |
-| `-li` | [Source language](#languages) |  `pdf2zh example.pdf -li en` |
-| `-lo` | [Target language](#languages) |  `pdf2zh example.pdf -lo zh` |
-| `-s`  | [Translation service](#services) |  `pdf2zh example.pdf -s deepl` |
-| `-t`  | [Multi-threads](#threads) | `pdf2zh example.pdf -t 1` |
-| `-o`  | Output dir | `pdf2zh example.pdf -o output` |
-| `-f`, `-c` | [Exceptions](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
-| `--share` | Get gradio public link | `pdf2zh -i --share` |
+| Option         | Function                                                                                                      | Example                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| files          | Local files                                                                                                   | `pdf2zh ~/local.pdf`                           |
+| links          | Online files                                                                                                  | `pdf2zh http://arxiv.org/paper.pdf`            |
+| `-i`           | [Enter GUI](#gui)                                                                                             | `pdf2zh -i`                                    |
+| `-p`           | [Partial document translation](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#partial) | `pdf2zh example.pdf -p 1`                      |
+| `-li`          | [Source language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -li en`                    |
+| `-lo`          | [Target language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -lo zh`                    |
+| `-s`           | [Translation service](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services)         | `pdf2zh example.pdf -s deepl`                  |
+| `-t`           | [Multi-threads](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#threads)                | `pdf2zh example.pdf -t 1`                      |
+| `-o`           | Output dir                                                                                                    | `pdf2zh example.pdf -o output`                 |
+| `-f`, `-c`     | [Exceptions](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                | `pdf2zh example.pdf -f "(MS.*)"`               |
+| `-cp`          | Compatibility Mode                                                                                            | `pdf2zh example.pdf --compatible`              |
+| `--share`      | Public link                                                                                                   | `pdf2zh -i --share`                            |
+| `--authorized` | [Authorization](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#auth)                                                                                                 | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--prompt`     | [Custom Prompt](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                 | `pdf2zh --prompt [prompt.txt]`                 |
+| `--onnx` | [Use Custom DocLayout-YOLO ONNX model] | `pdf2zh --onnx [onnx/model/path]` |
+| `--serverport` | [Use Custom WebUI port] | `pdf2zh --serverport 7860` |
 
-<h3 id="partial">Full / partial document translation</h3>
+For detailed explanations, please refer to our document about [Advanced Usage](./docs/ADVANCED.md) for a full list of each option.
 
-- Entire document
+<h2 id="downstream">Secondary Development (APIs)</h2>
 
-  ```bash
-  pdf2zh example.pdf
-  ```
+For downstream applications, please refer to our document about [API Details](./docs/APIS.md) for futher information about:
 
-- Part of the document
+- [Python API](./docs/APIS.md#api-python), how to use the program in other Python programs
+- [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed
 
-  ```bash
-  pdf2zh example.pdf -p 1-3,5
-  ```
-
-<h3 id="language">Specify source and target languages</h3>
-
-See [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages), [DeepL Languages Codes](https://developers.deepl.com/docs/resources/supported-languages)
-
-```bash
-pdf2zh example.pdf -li en -lo ja
-```
-
-<h3 id="services">Translate with Different Services</h3>
-
-The table below outlines the required [environment variables](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4) for each translation service. Make sure to set them before using the respective service.
-
-|**Translator**|**Service**|**Environment Variables**|**Default Values**|**Notes**|
-|-|-|-|-|-|
-|**Google (Default)**|`google`|None|N/A|None|
-|**Bing**|`bing`|None|N/A|None|
-|**DeepL**|`deepl`|`DEEPL_SERVER_URL`,`DEEPL_AUTH_KEY`|`https://api.deepl.com`, `[Your Key]`|See [DeepL](https://support.deepl.com/hc/en-us/articles/360020695820-API-Key-for-DeepL-s-API)|
-|**DeepLX**|`deeplx`|`DEEPLX_ENDPOINT`,`DEEPLX_ACCESS_TOKEN`|`https://api.deepl.com/translate`, `[Your Acccess Token]`|See [DeepLX](https://github.com/OwO-Network/DeepLX)|
-|**Ollama**|`ollama`|`OLLAMA_HOST`, `OLLAMA_MODEL`|`http://127.0.0.1:11434`, `gemma2`|See [Ollama](https://github.com/ollama/ollama)|
-|**OpenAI**|`openai`|`OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`|`https://api.openai.com/v1`, `[Your Key]`, `gpt-4o-mini`|See [OpenAI](https://platform.openai.com/docs/overview)|
-|**AzureOpenAI**|`azure-openai`|`AZURE_OPENAI_BASE_URL`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_MODEL`|`[Your Endpoint]`, `[Your Key]`, `gpt-4o-mini`|See [Azure OpenAI](https://learn.microsoft.com/zh-cn/azure/ai-services/openai/chatgpt-quickstart?tabs=command-line%2Cjavascript-keyless%2Ctypescript-keyless%2Cpython&pivots=programming-language-python)|
-|**Zhipu**|`zhipu`|`ZHIPU_API_KEY`, `ZHIPU_MODEL`|`[Your Key]`, `glm-4-flash`|See [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)|
-|**Silicon**|`silicon`|`SILICON_API_KEY`, `SILICON_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-7B-Instruct`|See [SiliconCloud](https://docs.siliconflow.cn/quickstart)|
-|**Gemini**|`gemini`|`GEMINI_API_KEY`, `GEMINI_MODEL`|`[Your Key]`, `gemini-1.5-flash`|See [Gemini](https://ai.google.dev/gemini-api/docs/openai)|
-|**Azure**|`azure`|`AZURE_ENDPOINT`, `AZURE_API_KEY`|`https://api.translator.azure.cn`, `[Your Key]`|See [Azure](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)|
-|**Tencent**|`tencent`|`TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`|`[Your ID]`, `[Your Key]`|See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)|
-
-Use `-s service` or `-s service:model` to specify service:
-
-```bash
-pdf2zh example.pdf -s openai:gpt-4o-mini
-```
-
-Or specify model with environment variables:
-
-```bash
-set OPENAI_MODEL=gpt-4o-mini
-pdf2zh example.pdf -s openai
-```
-
-<h3 id="exceptions">Translate wih exceptions</h3>
-
-Use regex to specify formula fonts and characters that need to be preserved:
-
-```bash
-pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
-```
-
-Preserve `Latex`, `Mono`, `Code`, `Italic`, `Symbol` and `Math` fonts by default:
-
-```bash
-pdf2zh example.pdf -f "(CM[^R]|(MS|XY|MT|BL|RM|EU|LA|RS)[A-Z]|LINE|LCIRCLE|TeX-|rsfs|txsy|wasy|stmary|.*Mono|.*Code|.*Ital|.*Sym|.*Math)"
-```
-
-<h3 id="threads">Specify threads</h3>
-
-Use `-t` to specify how many threads to use in translation:
-
-```bash
-pdf2zh example.pdf -t 1
-```
-
-<h2 id="todo">API</h2>
-
-### Python
-
-```python
-from pdf2zh import translate, translate_stream
-
-params = {"lang_in": "en", "lang_out": "zh", "service": "google", "thread": 4}
-file_mono, file_dual = translate(files=["example.pdf"], **params)[0]
-with open("example.pdf", "rb") as f:
-    stream_mono, stream_dual = translate_stream(stream=f.read(), **params)
-```
-
-### HTTP
-
-```bash
-pip install pdf2zh[backend]
-pdf2zh --flask
-pdf2zh --celery worker
-```
-
-```bash
-curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"lang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
-{"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
-{"info":{"n":13,"total":506},"state":"PROGRESS"}
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
-{"state":"SUCCESS"}
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/mono --output example-mono.pdf
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/dual --output example-dual.pdf
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X DELETE
-```
-
-<h2 id="todo">TODO</h2>
+<h2 id="todo">TODOs</h2>
 
 - [ ] Parse layout with DocLayNet based models, [PaddleX](https://github.com/PaddlePaddle/PaddleX/blob/17cc27ac3842e7880ca4aad92358d3ef8555429a/paddlex/repo_apis/PaddleDetection_api/object_det/official_categories.py#L81), [PaperMage](https://github.com/allenai/papermage/blob/9cd4bb48cbedab45d0f7a455711438f1632abebe/README.md?plain=1#L102), [SAM2](https://github.com/facebookresearch/sam2)
 
@@ -303,6 +226,8 @@ curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X
 - Document parsing: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
 
 - Document extraction: [MinerU](https://github.com/opendatalab/MinerU)
+
+- Document Preview: [Gradio PDF](https://github.com/freddyaboulton/gradio-pdf)
 
 - Multi-threaded translation: [MathTranslate](https://github.com/SUSYUSTC/MathTranslate)
 
