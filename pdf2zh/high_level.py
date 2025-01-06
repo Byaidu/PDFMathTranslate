@@ -4,7 +4,6 @@ import asyncio
 import io
 import os
 import sys
-from tabnanny import verbose
 import tempfile
 import urllib.request
 from asyncio import CancelledError
@@ -21,9 +20,11 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from pymupdf import Document, Font
 
-from pdf2zh.converter import TranslateConverter, noto_name
+from pdf2zh.converter import TranslateConverter
 from pdf2zh.doclayout import OnnxModel
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
+
+NOTO_NAME = "noto"
 
 noto_list = [
     "am",  # Amharic
@@ -69,7 +70,7 @@ def translate_patch(
     lang_in: str = "",
     lang_out: str = "",
     service: str = "",
-    resfont: str = "",
+    noto_name: str = "",
     noto: Font = None,
     callback: object = None,
     cancellation_event: asyncio.Event = None,
@@ -89,7 +90,7 @@ def translate_patch(
         lang_in,
         lang_out,
         service,
-        resfont,
+        noto_name,
         noto,
         envs,
         prompt,
@@ -175,9 +176,9 @@ def translate_stream(
     font_list = [("tiro", None)]
 
     font_path = download_remote_fonts(lang_out.lower())
-    resfont = noto_name
+    noto_name = NOTO_NAME
     noto = Font(noto_name, font_path)
-    font_list.append((resfont, font_path))
+    font_list.append((noto_name, font_path))
 
     doc_en = Document(stream=stream)
     stream = io.BytesIO()
