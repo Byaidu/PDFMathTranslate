@@ -32,6 +32,7 @@ dependencies = [
     "pikepdf",
     "peewee>=3.17.8",
     "argostranslate",
+    "fontTools"
 ]
 
 [project.optional-dependencies]
