@@ -16,6 +16,8 @@ from pdf2zh.high_level import translate
 from pdf2zh.doclayout import OnnxModel, ModelInstance
 import os
 
+from pdf2zh.config import ConfigManager
+
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, add_help=True)
@@ -155,6 +157,12 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="translate directory.",
     )
+    
+    parse_params.add_argument(
+        "--config",
+        type=str,
+        help="config file.",
+    )
 
     return parser
 
@@ -198,11 +206,13 @@ def find_all_files_in_directory(directory_path):
 
     return file_paths
 
-
 def main(args: Optional[List[str]] = None) -> int:
     logging.basicConfig()
 
     parsed_args = parse_args(args)
+
+    if parsed_args.config:
+        ConfigManager.custome_config(parsed_args.config)
 
     if parsed_args.debug:
         log.setLevel(logging.DEBUG)
@@ -243,13 +253,13 @@ def main(args: Optional[List[str]] = None) -> int:
         except Exception:
             raise ValueError("prompt error.")
 
+    print(parsed_args)
     if parsed_args.dir:
         untranlate_file = find_all_files_in_directory(parsed_args.files[0])
         parsed_args.files = untranlate_file
-        print(parsed_args)
         translate(model=ModelInstance.value, **vars(parsed_args))
         return 0
-    # print(parsed_args)
+    
     translate(model=ModelInstance.value, **vars(parsed_args))
     return 0
 
