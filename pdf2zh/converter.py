@@ -1,4 +1,5 @@
 from typing import Dict, List
+from enum import Enum
 
 from pdfminer.pdfinterp import PDFGraphicState, PDFResourceManager
 from pdfminer.pdffont import PDFCIDFont
@@ -373,11 +374,11 @@ class TranslateConverter(PDFConverterEx):
                 return "".join(["%02x" % ord(c) for c in cstk])
 
         # 根据目标语言获取默认行距
-        lang_space = {
+        LANG_LINEHEIGHT_MAP = {
             "zh-cn": 1.4, "zh-tw": 1.4, "zh-hans": 1.4, "zh-hant": 1.4, "zh": 1.4,
             "ja": 1.1, "ko": 1.2, "en": 1.2, "ar": 1.0, "ru": 0.8, "uk": 0.8, "ta": 0.8
         }
-        default_line_spacing = lang_space.get(self.translator.lang_out.lower(), 1.1)
+        default_line_height = LANG_LINEHEIGHT_MAP.get(self.translator.lang_out.lower(), 1.1) # 小语种默认1.1
 
         _x, _y = 0, 0
 
@@ -394,7 +395,7 @@ class TranslateConverter(PDFConverterEx):
             brk: bool = pstk[id].brk                    # 段落换行标记
             cstk: str = ""                              # 当前文字栈
             fcur: str = None                            # 当前字体 ID
-            line = 0                                    # 记录换行次数
+            lidx = 0                                    # 记录换行次数
             tx = x
             fcur_ = fcur
             ptr = 0
@@ -438,18 +439,18 @@ class TranslateConverter(PDFConverterEx):
                 ):
                     if cstk:
                         ops_vals.append({
-                            "type": "text",
+                            "type": OpType.TEXT,
                             "font": fcur,
                             "size": size,
                             "x": tx,
                             "dy": 0,
                             "rtxt": raw_string(fcur, cstk),
-                            "line": line
+                            "lidx": lidx
                         })
                         cstk = ""
                 if brk and x + adv > x1 + 0.1 * size:  # 到达右边界且原文段落存在换行
                     x = x0
-                    line += 1
+                    lidx += 1
                 if vy_regex:  # 插入公式
                     fix = 0
                     if fcur is not None:  # 段落内公式修正纵向偏移
@@ -457,13 +458,13 @@ class TranslateConverter(PDFConverterEx):
                     for vch in var[vid]:  # 排版公式字符
                         vc = chr(vch.cid)
                         ops_vals.append({
-                            "type": "text",
+                            "type": OpType.TEXT,
                             "font": self.fontid[vch.font],
                             "size": vch.size,
                             "x": x + vch.x0 - var[vid][0].x0,
                             "dy": fix + vch.y0 - var[vid][0].y0,
                             "rtxt": raw_string(self.fontid[vch.font], vc),
-                            "line": line
+                            "lidx": lidx
                         })
                         if log.isEnabledFor(logging.DEBUG):
                             lstk.append(LTLine(0.1, (_x, _y), (x + vch.x0 - var[vid][0].x0, fix + y + vch.y0 - var[vid][0].y0)))
@@ -471,13 +472,13 @@ class TranslateConverter(PDFConverterEx):
                     for l in varl[vid]:  # 排版公式线条
                         if l.linewidth < 5:  # hack 有的文档会用粗线条当图片背景
                             ops_vals.append({
-                                "type": "formula",
+                                "type": OpType.LINE,
                                 "x": l.pts[0][0] + x - var[vid][0].x0,
                                 "dy": l.pts[0][1] + fix - var[vid][0].y0,
                                 "linewidth": l.linewidth,
                                 "xlen": l.pts[1][0] - l.pts[0][0],
                                 "ylen": l.pts[1][1] - l.pts[0][1],
-                                "line": line
+                                "lidx": lidx
                             })
                 else:  # 插入文字缓冲区
                     if not cstk:  # 单行开头
@@ -497,26 +498,25 @@ class TranslateConverter(PDFConverterEx):
             # 处理结尾
             if cstk:
                 ops_vals.append({
-                    "type": "text",
+                    "type": OpType.TEXT,
                     "font": fcur,
                     "size": size,
                     "x": tx,
                     "dy": 0,
                     "rtxt": raw_string(fcur, cstk),
-                    "line": line
+                    "lidx": lidx
                 })
 
-            line_spacing = default_line_spacing
+            line_height = default_line_height
 
-            while (line + 1) * size * line_spacing > height and line_spacing >= 1:
-                line_spacing -= 0.05
+            while (lidx + 1) * size * line_height > height and line_height >= 1:
+                line_height -= 0.05
 
             for vals in ops_vals:
-                match vals["type"]:
-                    case "text":
-                        ops_list.append(gen_op_txt(vals["font"], vals["size"], vals["x"], vals["dy"] + y - vals["line"] * size * line_spacing, vals["rtxt"]))
-                    case "formula":
-                        ops_list.append(gen_op_line(vals["x"], vals["dy"] + y - vals["line"] * size * line_spacing, vals["xlen"], vals["ylen"], vals["linewidth"]))
+                if vals["type"] == OpType.TEXT:
+                    ops_list.append(gen_op_txt(vals["font"], vals["size"], vals["x"], vals["dy"] + y - vals["lidx"] * size * line_height, vals["rtxt"]))
+                elif vals["type"] == OpType.LINE:
+                    ops_list.append(gen_op_line(vals["x"], vals["dy"] + y - vals["lidx"] * size * line_height, vals["xlen"], vals["ylen"], vals["linewidth"]))
 
         for l in lstk:  # 排版全局线条
             if l.linewidth < 5:  # hack 有的文档会用粗线条当图片背景
@@ -524,3 +524,7 @@ class TranslateConverter(PDFConverterEx):
 
         ops = f"BT {''.join(ops_list)}ET "
         return ops
+
+class OpType(Enum):
+    TEXT = "text"
+    LINE = "line"
