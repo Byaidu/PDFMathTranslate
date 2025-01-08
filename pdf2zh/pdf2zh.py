@@ -157,7 +157,7 @@ def create_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="translate directory.",
     )
-    
+
     parse_params.add_argument(
         "--config",
         type=str,
@@ -205,6 +205,7 @@ def find_all_files_in_directory(directory_path):
                 file_paths.append(os.path.join(root, file))
 
     return file_paths
+
 
 def main(args: Optional[List[str]] = None) -> int:
     logging.basicConfig()
@@ -259,7 +260,7 @@ def main(args: Optional[List[str]] = None) -> int:
         parsed_args.files = untranlate_file
         translate(model=ModelInstance.value, **vars(parsed_args))
         return 0
-    
+
     translate(model=ModelInstance.value, **vars(parsed_args))
     return 0
 

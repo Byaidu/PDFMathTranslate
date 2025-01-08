@@ -22,6 +22,7 @@ import argostranslate.translate
 import json
 from pdf2zh.config import ConfigManager
 
+
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
@@ -56,17 +57,17 @@ class BaseTranslator:
         self.envs = copy(self.envs)
         if ConfigManager.get_translator_by_name(self.name):
             self.envs = ConfigManager.get_translator_by_name(self.name)
-        needUpdate=False
+        needUpdate = False
         for key in self.envs:
             if key in os.environ:
                 self.envs[key] = os.environ[key]
                 needUpdate = True
         if needUpdate:
-            ConfigManager.set_translator_by_name(self.name,self.envs)
+            ConfigManager.set_translator_by_name(self.name, self.envs)
         if envs is not None:
             for key in envs:
                 self.envs[key] = envs[key]
-            ConfigManager.set_translator_by_name(self.name,self.envs)
+            ConfigManager.set_translator_by_name(self.name, self.envs)
 
     def add_cache_impact_parameters(self, k: str, v):
         """
@@ -734,6 +735,7 @@ class GorkTranslator(OpenAITranslator):
         if prompt:
             self.add_cache_impact_parameters("prompt", prompt.template)
 
+
 class GroqTranslator(OpenAITranslator):
     name = "groq"
     envs = {
@@ -752,6 +754,7 @@ class GroqTranslator(OpenAITranslator):
         self.prompttext = prompt
         if prompt:
             self.add_cache_impact_parameters("prompt", prompt.template)
+
 
 class DeepseekTranslator(OpenAITranslator):
     name = "deepseek"

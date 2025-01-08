@@ -180,6 +180,7 @@ Python環境を事前にインストールする必要はありません
 | `--onnx` | [カスタムDocLayout-YOLO ONNXモデルの使用] | `pdf2zh --onnx [onnx/model/path]` |
 | `--serverport` | [カスタムWebUIポートを使用する] | `pdf2zh --serverport 7860` |
 | `--dir` | [batch translate] | `pdf2zh --dir /path/to/translate/` |
+| `--config` | [configuration file](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig) | `pdf2zh --config /path/to/config/config.json` |
 
 <h3 id="partial">全文または部分的なドキュメント翻訳</h3>
 

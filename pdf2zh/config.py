@@ -4,6 +4,7 @@ from threading import RLock  # 改成 RLock
 import os
 import copy
 
+
 class ConfigManager:
     _instance = None
     _lock = RLock()  # 用 RLock 替换 Lock，允许在同一个线程中重复获取锁
@@ -144,7 +145,9 @@ class ConfigManager:
                     translator["envs"] = copy.deepcopy(new_translator_envs)
                     instance._save_config()
                     return
-            translators.append({"name": name, "envs": copy.deepcopy(new_translator_envs)})
+            translators.append(
+                {"name": name, "envs": copy.deepcopy(new_translator_envs)}
+            )
             instance._config_data["translators"] = translators
             instance._save_config()
 
@@ -162,7 +165,7 @@ class ConfigManager:
                         translator["envs"][name] = default
                         instance._save_config()
                         return default
-                    
+
         with instance._lock:
             translators = instance._config_data.get("translators", [])
             for translator in translators:
@@ -170,7 +173,12 @@ class ConfigManager:
                     translator["envs"][name] = default
                     instance._save_config()
                     return default
-            translators.append({"name": translater_name.name, "envs": copy.deepcopy(translater_name.envs)})
+            translators.append(
+                {
+                    "name": translater_name.name,
+                    "envs": copy.deepcopy(translater_name.envs),
+                }
+            )
             instance._config_data["translators"] = translators
             instance._save_config()
             return default
