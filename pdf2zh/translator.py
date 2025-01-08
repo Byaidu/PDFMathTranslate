@@ -230,7 +230,7 @@ class DeepLXTranslator(BaseTranslator):
         super().__init__(lang_in, lang_out, model)
         self.endpoint = self.envs["DEEPLX_ENDPOINT"]
         self.session = requests.Session()
-        auth_key = os.getenv("DEEPLX_ACCESS_TOKEN", self.envs["DEEPLX_ACCESS_TOKEN"])
+        auth_key = self.envs["DEEPLX_ACCESS_TOKEN"]
         if auth_key:
             self.endpoint = f"{self.endpoint}?token={auth_key}"
 
@@ -551,7 +551,7 @@ class AzureTranslator(BaseTranslator):
         self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
         endpoint = self.envs["AZURE_ENDPOINT"]
-        api_key = os.getenv("AZURE_API_KEY")
+        api_key = self.envs["AZURE_API_KEY"]
         credential = AzureKeyCredential(api_key)
         self.client = TextTranslationClient(
             endpoint=endpoint, credential=credential, region="chinaeast2"

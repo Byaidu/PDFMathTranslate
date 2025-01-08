@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from threading import Lock
+import os
 
 class ConfigManager:
     _instance = None
@@ -62,7 +63,22 @@ class ConfigManager:
     def get(cls, key, default=None):
         """获取配置值"""
         instance = cls.get_instance()
-        return instance._config_data.get(key, default)
+        ret = instance._config_data.get(key)
+        if not ret:
+            env_get = os.environ.get(key)
+            if not env_get:
+                if not default:
+                    raise ValueError(f"{key} is not found in environment or config file.")
+                else:
+                    instance._config_data[key] = default
+                    instance._save_config()
+                    return default
+            else:
+                instance._config_data[key] = env_get
+                instance._save_config()
+                return env_get
+        else:
+            return ret
 
     @classmethod
     def set(cls, key, value):
