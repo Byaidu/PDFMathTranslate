@@ -54,7 +54,7 @@ class BaseTranslator:
         # Cannot use self.envs = copy(self.__class__.envs)
         # because if set_envs called twice, the second call will override the first call
         self.envs = copy(self.envs)
-        if not ConfigManager.get_translator_by_name(self.name):
+        if ConfigManager.get_translator_by_name(self.name):
             self.envs = ConfigManager.get_translator_by_name(self.name)
         needUpdate=False
         for key in self.envs:

@@ -448,7 +448,7 @@ with gr.Blocks(
                     _envs.append(gr.update(visible=False, value=""))
                 for i, env in enumerate(translator.envs.items()):
                     _envs[i] = gr.update(
-                        visible=True, label=env[0], value=os.getenv(env[0], env[1])
+                        visible=True, label=env[0], value=ConfigManager.get_env_by_translatername(translator,env[0],env[1])
                     )
                 _envs[-1] = gr.update(visible=translator.CustomPrompt)
                 return _envs

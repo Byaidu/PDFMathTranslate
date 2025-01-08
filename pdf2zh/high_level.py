@@ -24,6 +24,8 @@ from pdf2zh.converter import TranslateConverter
 from pdf2zh.doclayout import OnnxModel
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
 
+from pdf2zh.config import ConfigManager
+
 NOTO_NAME = "noto"
 
 noto_list = [
