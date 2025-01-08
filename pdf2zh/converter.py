@@ -188,7 +188,10 @@ class TranslateConverter(PDFConverterEx):
 
         def vflag(font: str, char: str):    # 匹配公式（和角标）字体
             if isinstance(font, bytes):     # 不一定能 decode，直接转 str
-                font = str(font)
+                try:
+                    font = font.decode('utf-8')  # 尝试使用 UTF-8 解码
+                except UnicodeDecodeError:
+                    font = ""
             font = font.split("+")[-1]      # 字体名截断
             if re.match(r"\(cid:", char):
                 return True
