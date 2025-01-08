@@ -73,6 +73,7 @@ def translate_patch(
     noto_name: str = "",
     noto: Font = None,
     callback: object = None,
+    progress_callback: object = None,
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
     envs: Dict = None,
@@ -104,17 +105,34 @@ def translate_patch(
     else:
         total_pages = doc_zh.page_count
 
+    current_page = 0
+
     parser = PDFParser(inf)
     doc = PDFDocument(parser)
+
     with tqdm.tqdm(total=total_pages) as progress:
         for pageno, page in enumerate(PDFPage.create_pages(doc)):
             if cancellation_event and cancellation_event.is_set():
                 raise CancelledError("task cancelled")
             if pages and (pageno not in pages):
                 continue
+
+            current_page += 1
             progress.update()
+
             if callback:
                 callback(progress)
+
+            if progress_callback:
+                progress_callback(
+                    {
+                        "current": current_page,
+                        "total": total_pages,
+                        "percentage": current_page / total_pages * 100,
+                        "page": pageno,
+                    }
+                )
+
             page.pageno = pageno
             pix = doc_zh[page.pageno].get_pixmap()
             image = np.fromstring(pix.samples, np.uint8).reshape(
@@ -167,6 +185,7 @@ def translate_stream(
     vfont: str = "",
     vchar: str = "",
     callback: object = None,
+    progress_callback: object = None,
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
     envs: Dict = None,
@@ -291,6 +310,7 @@ def translate(
     vfont: str = "",
     vchar: str = "",
     callback: object = None,
+    progress_callback: object = None,
     compatible: bool = False,
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
