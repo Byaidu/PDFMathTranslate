@@ -138,7 +138,7 @@ class TranslateConverter(PDFConverterEx):
         lang_in: str = "",
         lang_out: str = "",
         service: str = "",
-        resfont: str = "",
+        noto_name: str = "",
         noto: Font = None,
         envs: Dict = None,
         prompt: List = None,
@@ -148,7 +148,7 @@ class TranslateConverter(PDFConverterEx):
         self.vchar = vchar
         self.thread = thread
         self.layout = layout
-        self.resfont = resfont
+        self.noto_name = noto_name
         self.noto = noto
         self.translator: BaseTranslator = None
         param = service.split(":", 1)
@@ -359,7 +359,7 @@ class TranslateConverter(PDFConverterEx):
         ############################################################
         # C. 新文档排版
         def raw_string(fcur: str, cstk: str):  # 编码字符串
-            if fcur == 'noto':
+            if fcur == self.noto_name:
                 return "".join(["%04x" % self.noto.has_glyph(ord(c)) for c in cstk])
             elif isinstance(self.fontmap[fcur], PDFCIDFont):  # 判断编码长度
                 return "".join(["%04x" % ord(c) for c in cstk])
@@ -403,8 +403,8 @@ class TranslateConverter(PDFConverterEx):
                     except Exception:
                         pass
                     if fcur_ is None:
-                        fcur_ = self.resfont  # 默认非拉丁字体
-                    if fcur_ == 'noto':
+                        fcur_ = self.noto_name  # 默认非拉丁字体
+                    if fcur_ == self.noto_name: # FIXME: change to CONST
                         adv = self.noto.char_lengths(ch, size)[0]
                     else:
                         adv = self.fontmap[fcur_].char_width(ord(ch)) * size
