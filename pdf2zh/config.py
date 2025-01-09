@@ -197,7 +197,7 @@ class ConfigManager:
         """删除配置值并保存"""
         instance = cls.get_instance()
         with instance._lock:
-            instance._config_data={}
+            instance._config_data = {}
             instance._save_config()
 
     @classmethod
@@ -206,7 +206,7 @@ class ConfigManager:
         instance = cls.get_instance()
         # 这里只做读取操作，一般可不加锁。不过为了保险也可以加锁。
         return instance._config_data
-    
+
     @classmethod
     def remove(cls):
         instance = cls.get_instance()
