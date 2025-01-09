@@ -82,7 +82,6 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
             "OPENAILIKED_API_KEY": "test_api_key",
             "OPENAILIKED_MODEL": "test_model",
         }
-        ConfigManager.custome_config("config.json")
 
     def test_missing_base_url_raises_error(self):
         """测试缺失 OPENAILIKED_BASE_URL 时抛出异常"""
