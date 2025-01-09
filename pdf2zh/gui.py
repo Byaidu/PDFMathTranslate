@@ -336,7 +336,7 @@ demo_recaptcha = """
 tech_details_string = f"""
                     <summary>Technical details</summary>
                     - GitHub: <a href="https://github.com/opensourceways/PDFMathTranslate">opensourceways/PDFMathTranslate</a><br>
-                    - 问题接口: <a>熊开旗(x60075080)</a><br>
+                    - 问题接口: <a>陶祎玮(t30073536)</a><br>
                     - 建议反馈: <a>蒋龙(j00601018)</a><br>
                     - Version: {__version__}
                 """
