@@ -156,7 +156,8 @@ Python環境を事前にインストールする必要はありません
 
 <h2 id="usage">高度なオプション</h2>
 
-コマンドラインで翻訳コマンドを実行し、現在の作業ディレクトリに翻訳されたドキュメント `example-mono.pdf` とバイリンガルドキュメント `example-dual.pdf` を生成します。デフォルトではGoogle翻訳サービスを使用します。
+コマンドラインで翻訳コマンドを実行し、現在の作業ディレクトリに翻訳されたドキュメント `example-mono.pdf` とバイリンガルドキュメント `example-dual.pdf` を生成します。デフォルトではGoogle翻訳サービスを使用します。More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
+
 
 <img src="./images/cmd.explained.png" width="580px"  alt="cmd"/>  
 

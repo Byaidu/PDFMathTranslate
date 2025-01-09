@@ -158,7 +158,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 
 <h2 id="usage">高级选项</h2>
 
-在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-mono.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
+在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-mono.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务，更多支持的服务在[这里](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services))。
 
 <img src="./images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
