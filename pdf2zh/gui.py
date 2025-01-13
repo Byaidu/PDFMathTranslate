@@ -10,6 +10,7 @@ import gradio as gr
 import requests
 import tqdm
 from gradio_pdf import PDF
+from string import Template
 
 from pdf2zh import __version__
 from pdf2zh.high_level import translate
@@ -276,7 +277,7 @@ def translate_file(
         "callback": progress_bar,
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
-        "prompt": prompt,
+        "prompt": Template(prompt),
         "model": ModelInstance.value,
     }
     try:
