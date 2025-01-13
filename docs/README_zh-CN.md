@@ -82,6 +82,11 @@ pdf2zh的运行依赖于额外模型(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)
 set HF_ENDPOINT=https://hf-mirror.com
 ```
 
+如使用 PowerShell，请使用如下方法设置环境变量：
+```shell
+$env:HF_ENDPOINT = https://hf-mirror.com
+```
+
 <h3 id="cmd">方法一、命令行工具</h3>
 
   1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
@@ -245,6 +250,12 @@ pdf2zh example.pdf -s openai:gpt-4o-mini
 
 ```bash
 set OPENAI_MODEL=gpt-4o-mini
+pdf2zh example.pdf -s openai
+```
+
+对于 PowerShell 用户，请使用如下方式设置环境变量指定模型：
+```shell
+$env:OPENAI_MODEL = gpt-4o-mini
 pdf2zh example.pdf -s openai
 ```
 

@@ -165,6 +165,11 @@ The present program needs an AI model(`wybxc/DocLayout-YOLO-DocStructBench-onnx`
 set HF_ENDPOINT=https://hf-mirror.com
 ```
 
+For PowerShell user:
+```shell
+$env:HF_ENDPOINT = https://hf-mirror.com
+```
+
 If the solution does not work to you / you encountered other issues, please refer to [frequently asked questions](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98).
 
 <h2 id="usage">Advanced Options</h2>

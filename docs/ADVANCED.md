@@ -86,6 +86,12 @@ set OPENAI_MODEL=gpt-4o-mini
 pdf2zh example.pdf -s openai
 ```
 
+For PowerShell user:
+```shell
+$env:OPENAI_MODEL = gpt-4o-mini
+pdf2zh example.pdf -s openai
+```
+
 [⬆️ Back to top](#toc)
 
 ---

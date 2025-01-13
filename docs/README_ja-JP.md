@@ -80,6 +80,11 @@ pdf2zhの実行には追加モデル（`wybxc/DocLayout-YOLO-DocStructBench-onnx
 set HF_ENDPOINT=https://hf-mirror.com
 ```
 
+For PowerShell user:
+```shell
+$env:HF_ENDPOINT = https://hf-mirror.com
+```
+
 <h3 id="cmd">方法1. コマンドライン</h3>
 
   1. Pythonがインストールされていること (バージョン3.8 <= バージョン <= 3.12)
@@ -244,6 +249,12 @@ pdf2zh example.pdf -s openai:gpt-4o-mini
 
 ```bash
 set OPENAI_MODEL=gpt-4o-mini
+pdf2zh example.pdf -s openai
+```
+
+For PowerShell user:
+```shell
+$env:OPENAI_MODEL = gpt-4o-mini
 pdf2zh example.pdf -s openai
 ```
 
