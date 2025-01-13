@@ -200,6 +200,7 @@ In the following table, we list all advanced options for reference:
 | `--serverport` | [Use Custom WebUI port] | `pdf2zh --serverport 7860` |
 | `--dir` | [batch translate] | `pdf2zh --dir /path/to/translate/` |
 | `--config` | [configuration file](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig) | `pdf2zh --config /path/to/config/config.json` |
+| `--serverport` | [custom gradio server port] | `pdf2zh --serverport 7860` |
 
 For detailed explanations, please refer to our document about [Advanced Usage](./docs/ADVANCED.md) for a full list of each option.
 
