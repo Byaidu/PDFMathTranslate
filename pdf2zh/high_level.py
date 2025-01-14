@@ -312,7 +312,7 @@ def translate(
     result_files = []
 
     for file in files:
-        if file is str and (file.startswith("http://") or file.startswith("https://")):
+        if type(file) is str and (file.startswith("http://") or file.startswith("https://")):
             print("Online files detected, downloading...")
             try:
                 r = requests.get(file, allow_redirects=True)
