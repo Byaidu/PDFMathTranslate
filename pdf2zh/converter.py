@@ -189,8 +189,6 @@ class TranslateConverter(PDFConverterEx):
         vmax: float = ltpage.width / 4  # 行内公式最大宽度
         ops: str = ""                   # 渲染结果
 
-
-
         def vflag(font: str, char: str):    # 匹配公式（和角标）字体
             if isinstance(font, bytes):     # 不一定能 decode，直接转 str
                 try:
@@ -382,12 +380,15 @@ class TranslateConverter(PDFConverterEx):
             "ja": 1.1, "ko": 1.2, "en": 1.2, "ar": 1.0, "ru": 0.8, "uk": 0.8, "ta": 0.8
         }
         default_line_height = LANG_LINEHEIGHT_MAP.get(self.translator.lang_out.lower(), 1.1) # 小语种默认1.1
-
         _x, _y = 0, 0
-
         ops_list = []
-        gen_op_txt = lambda font, size, x, y, rtxt: f"/{font} {size:f} Tf 1 0 0 1 {x:f} {y:f} Tm [<{rtxt}>] TJ "
-        gen_op_line = lambda x, y, xlen, ylen, linewidth: f"ET q 1 0 0 1 {x:f} {y:f} cm [] 0 d 0 J {linewidth:f} w 0 0 m {xlen:f} {ylen:f} l S Q BT "
+
+        def gen_op_txt(font, size, x, y, rtxt):
+            return f"/{font} {size:f} Tf 1 0 0 1 {x:f} {y:f} Tm [<{rtxt}>] TJ "
+
+        def gen_op_line(x, y, xlen, ylen, linewidth):
+            return f"ET q 1 0 0 1 {x:f} {y:f} cm [] 0 d 0 J {linewidth:f} w 0 0 m {xlen:f} {ylen:f} l S Q BT "
+
         for id, new in enumerate(news):
             x: float = pstk[id].x                       # 段落初始横坐标
             y: float = pstk[id].y                       # 段落初始纵坐标
@@ -527,6 +528,7 @@ class TranslateConverter(PDFConverterEx):
 
         ops = f"BT {''.join(ops_list)}ET "
         return ops
+
 
 class OpType(Enum):
     TEXT = "text"
