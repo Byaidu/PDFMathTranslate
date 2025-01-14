@@ -82,6 +82,11 @@ pdf2zh的运行依赖于额外模型(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)
 set HF_ENDPOINT=https://hf-mirror.com
 ```
 
+如使用 PowerShell，请使用如下方法设置环境变量：
+```shell
+$env:HF_ENDPOINT = https://hf-mirror.com
+```
+
 <h3 id="cmd">方法一、命令行工具</h3>
 
   1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
@@ -158,7 +163,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 
 <h2 id="usage">高级选项</h2>
 
-在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-mono.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务
+在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-mono.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务，更多支持的服务在[这里](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services))。
 
 <img src="./images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
@@ -182,6 +187,9 @@ set HF_ENDPOINT=https://hf-mirror.com
 | `--onnx` | [使用自定义的 DocLayout-YOLO ONNX 模型] | `pdf2zh --onnx [onnx/model/path]` |
 | `--serverport` | [使用自定义的 WebUI 端口] | `pdf2zh --serverport 7860` |
 | `--dir` | [文件夹翻译] | `pdf2zh --dir /path/to/translate/` |
+| `--serverport` | [自定义端口号] | `pdf2zh --serverport 7860` |
+| `--config` | [持久化定义配置文件](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig) | `pdf2zh --config /path/to/config/config.json` |
+
 
 <h3 id="partial">全文或部分文档翻译</h3>
 
@@ -243,6 +251,12 @@ pdf2zh example.pdf -s openai:gpt-4o-mini
 
 ```bash
 set OPENAI_MODEL=gpt-4o-mini
+pdf2zh example.pdf -s openai
+```
+
+对于 PowerShell 用户，请使用如下方式设置环境变量指定模型：
+```shell
+$env:OPENAI_MODEL = gpt-4o-mini
 pdf2zh example.pdf -s openai
 ```
 

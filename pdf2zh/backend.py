@@ -1,4 +1,3 @@
-import os
 from flask import Flask, request, send_file
 from celery import Celery, Task
 from celery.result import AsyncResult
@@ -7,12 +6,13 @@ import tqdm
 import json
 import io
 from pdf2zh.doclayout import ModelInstance
+from pdf2zh.config import ConfigManager
 
 flask_app = Flask("pdf2zh")
 flask_app.config.from_mapping(
     CELERY=dict(
-        broker_url=os.environ.get("CELERY_BROKER", "redis://127.0.0.1:6379/0"),
-        result_backend=os.environ.get("CELERY_RESULT", "redis://127.0.0.1:6379/0"),
+        broker_url=ConfigManager.get("CELERY_BROKER", "redis://127.0.0.1:6379/0"),
+        result_backend=ConfigManager.get("CELERY_RESULT", "redis://127.0.0.1:6379/0"),
     )
 )
 

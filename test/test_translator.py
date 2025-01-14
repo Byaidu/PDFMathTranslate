@@ -2,6 +2,7 @@ import unittest
 from pdf2zh.translator import BaseTranslator
 from pdf2zh.translator import OpenAIlikedTranslator
 from pdf2zh import cache
+from pdf2zh.config import ConfigManager
 
 
 class AutoIncreaseTranslator(BaseTranslator):
@@ -84,6 +85,7 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
 
     def test_missing_base_url_raises_error(self):
         """测试缺失 OPENAILIKED_BASE_URL 时抛出异常"""
+        ConfigManager.clear()
         with self.assertRaises(ValueError) as context:
             OpenAIlikedTranslator(
                 lang_in="en", lang_out="zh", model="test_model", envs={}
@@ -96,6 +98,7 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
             "OPENAILIKED_BASE_URL": "https://api.openailiked.com",
             "OPENAILIKED_API_KEY": "test_api_key",
         }
+        ConfigManager.clear()
         with self.assertRaises(ValueError) as context:
             OpenAIlikedTranslator(
                 lang_in="en", lang_out="zh", model=None, envs=envs_without_model
@@ -104,6 +107,7 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
 
     def test_initialization_with_valid_envs(self):
         """测试使用有效的环境变量初始化"""
+        ConfigManager.clear()
         translator = OpenAIlikedTranslator(
             lang_in="en",
             lang_out="zh",
@@ -126,6 +130,7 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
             "OPENAILIKED_BASE_URL": "https://api.openailiked.com",
             "OPENAILIKED_MODEL": "test_model",
         }
+        ConfigManager.clear()
         translator = OpenAIlikedTranslator(
             lang_in="en",
             lang_out="zh",

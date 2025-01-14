@@ -86,6 +86,12 @@ set OPENAI_MODEL=gpt-4o-mini
 pdf2zh example.pdf -s openai
 ```
 
+For PowerShell user:
+```shell
+$env:OPENAI_MODEL = gpt-4o-mini
+pdf2zh example.pdf -s openai
+```
+
 [⬆️ Back to top](#toc)
 
 ---
@@ -187,6 +193,49 @@ example auth.html
 </body>
 </html>
 ```
+
+[⬆️ Back to top](#toc)
+
+---
+
+<h3 id="cofig">Custom configuration file</h3>
+
+Use `--config` to specify which file to configure the PDFMathTranslate:
+
+```bash
+pdf2zh example.pdf --config config.json
+```
+
+```bash
+pdf2zh -i --config config.json
+```
+
+example config.json
+```json
+{
+    "USE_MODELSCOPE": "0",
+    "PDF2ZH_LANG_FROM": "English",
+    "PDF2ZH_LANG_TO": "Simplified Chinese",
+    "NOTO_FONT_PATH": "/app/SourceHanSerifCN-Regular.ttf",
+    "translators": [
+        {
+            "name": "deeplx",
+            "envs": {
+                "DEEPLX_ENDPOINT": "http://localhost:1188/translate/",
+                "DEEPLX_ACCESS_TOKEN": null
+            }
+        },
+        {
+            "name": "ollama",
+            "envs": {
+                "OLLAMA_HOST": "http://127.0.0.1:11434",
+                "OLLAMA_MODEL": "gemma2"
+            }
+        }
+    ]
+}
+```
+By default, the config file is saved in the `~/.config/PDFMathTranslate/config.json`. The program will start by reading the contents of config.json, and after that it will read the contents of the environment variables. When an environment variable is available, the contents of the environment variable are used first and the file is updated.
 
 [⬆️ Back to top](#toc)
 

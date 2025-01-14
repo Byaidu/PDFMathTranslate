@@ -135,6 +135,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+pdf2zh-dev/
 
 # Spyder project settings
 .spyderproject

@@ -10,10 +10,12 @@ import gradio as gr
 import requests
 import tqdm
 from gradio_pdf import PDF
+from string import Template
 
 from pdf2zh import __version__
 from pdf2zh.high_level import translate
 from pdf2zh.doclayout import ModelInstance
+from pdf2zh.config import ConfigManager
 from pdf2zh.translator import (
     AnythingLLMTranslator,
     AzureOpenAITranslator,
@@ -90,7 +92,7 @@ page_map = {
 flag_demo = False
 
 # Limit resources
-if os.getenv("PDF2ZH_DEMO"):
+if ConfigManager.get("PDF2ZH_DEMO"):
     flag_demo = True
     service_map = {
         "Google": GoogleTranslator,
@@ -99,8 +101,8 @@ if os.getenv("PDF2ZH_DEMO"):
         "First": [0],
         "First 20 pages": list(range(0, 20)),
     }
-    client_key = os.getenv("PDF2ZH_CLIENT_KEY")
-    server_key = os.getenv("PDF2ZH_SERVER_KEY")
+    client_key = ConfigManager.get("PDF2ZH_CLIENT_KEY")
+    server_key = ConfigManager.get("PDF2ZH_SERVER_KEY")
 
 
 # Public demo control
@@ -275,7 +277,7 @@ def translate_file(
         "callback": progress_bar,
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
-        "prompt": prompt,
+        "prompt": Template(prompt),
         "model": ModelInstance.value,
     }
     try:
@@ -411,12 +413,12 @@ with gr.Blocks(
                 lang_from = gr.Dropdown(
                     label="Translate from",
                     choices=lang_map.keys(),
-                    value=os.getenv("PDF2ZH_LANG_FROM", "English"),
+                    value=ConfigManager.get("PDF2ZH_LANG_FROM", "English"),
                 )
                 lang_to = gr.Dropdown(
                     label="Translate to",
                     choices=lang_map.keys(),
-                    value=os.getenv("PDF2ZH_LANG_TO", "Simplified Chinese"),
+                    value=ConfigManager.get("PDF2ZH_LANG_TO", "Simplified Chinese"),
                 )
             page_range = gr.Radio(
                 choices=page_map.keys(),
@@ -447,7 +449,11 @@ with gr.Blocks(
                     _envs.append(gr.update(visible=False, value=""))
                 for i, env in enumerate(translator.envs.items()):
                     _envs[i] = gr.update(
-                        visible=True, label=env[0], value=os.getenv(env[0], env[1])
+                        visible=True,
+                        label=env[0],
+                        value=ConfigManager.get_env_by_translatername(
+                            translator, env[0], env[1]
+                        ),
                     )
                 _envs[-1] = gr.update(visible=translator.CustomPrompt)
                 return _envs

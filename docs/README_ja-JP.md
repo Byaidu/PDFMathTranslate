@@ -80,6 +80,11 @@ pdf2zhの実行には追加モデル（`wybxc/DocLayout-YOLO-DocStructBench-onnx
 set HF_ENDPOINT=https://hf-mirror.com
 ```
 
+For PowerShell user:
+```shell
+$env:HF_ENDPOINT = https://hf-mirror.com
+```
+
 <h3 id="cmd">方法1. コマンドライン</h3>
 
   1. Pythonがインストールされていること (バージョン3.8 <= バージョン <= 3.12)
@@ -156,7 +161,8 @@ Python環境を事前にインストールする必要はありません
 
 <h2 id="usage">高度なオプション</h2>
 
-コマンドラインで翻訳コマンドを実行し、現在の作業ディレクトリに翻訳されたドキュメント `example-mono.pdf` とバイリンガルドキュメント `example-dual.pdf` を生成します。デフォルトではGoogle翻訳サービスを使用します。
+コマンドラインで翻訳コマンドを実行し、現在の作業ディレクトリに翻訳されたドキュメント `example-mono.pdf` とバイリンガルドキュメント `example-dual.pdf` を生成します。デフォルトではGoogle翻訳サービスを使用します。More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
+
 
 <img src="./images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
@@ -180,6 +186,8 @@ Python環境を事前にインストールする必要はありません
 | `--onnx` | [カスタムDocLayout-YOLO ONNXモデルの使用] | `pdf2zh --onnx [onnx/model/path]` |
 | `--serverport` | [カスタムWebUIポートを使用する] | `pdf2zh --serverport 7860` |
 | `--dir` | [batch translate] | `pdf2zh --dir /path/to/translate/` |
+| `--config` | [configuration file](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig) | `pdf2zh --config /path/to/config/config.json` |
+| `--serverport` | [custom gradio server port] | `pdf2zh --serverport 7860` |
 
 <h3 id="partial">全文または部分的なドキュメント翻訳</h3>
 
@@ -242,6 +250,12 @@ pdf2zh example.pdf -s openai:gpt-4o-mini
 
 ```bash
 set OPENAI_MODEL=gpt-4o-mini
+pdf2zh example.pdf -s openai
+```
+
+For PowerShell user:
+```shell
+$env:OPENAI_MODEL = gpt-4o-mini
 pdf2zh example.pdf -s openai
 ```
 
