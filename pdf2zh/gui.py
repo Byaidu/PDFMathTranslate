@@ -648,7 +648,7 @@ def setup_gui(
                         "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
                     )
                     demo.launch(
-                        debug=True, inbrowser=True, share=True, server_port=server_port
+                        debug=True, inbrowser=True, share=share, server_port=server_port
                     )
         else:
             try:
@@ -682,7 +682,7 @@ def setup_gui(
                     demo.launch(
                         debug=True,
                         inbrowser=True,
-                        share=True,
+                        share=share,
                         auth=user_list,
                         auth_message=html,
                         server_port=server_port,
