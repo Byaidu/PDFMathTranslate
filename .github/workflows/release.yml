@@ -1,0 +1,94 @@
+name: Release win client
+
+on:
+  # 自动触发
+  push:
+    branches:
+      - new-feat  # 替换为你的分支名称
+    tags:
+      - 'v*'
+
+  # 手动触发
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      # Step 1: 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: 获取最新的 Tag
+      - name: Fetch Latest Tag
+        run: |
+          git fetch --tags
+          $LATEST_TAG = git describe --tags (git rev-list --tags --max-count=1)
+          echo "LATEST_TAG=$LATEST_TAG" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      # Step 3: 打印最新的 Tag（调试用）
+      - name: Show Latest Tag
+        run: |
+          echo "Latest Tag: ${{ env.LATEST_TAG}}"
+
+      # Step 4: 设置 Node.js 环境为 v22.12.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.12.0
+
+      # Step 5: 安装 Yarn
+      - name: Install Yarn
+        run: |
+          corepack enable
+          corepack prepare yarn@4.x --activate
+
+      # Step 6: 添加 .yarnrc.yml 文件
+      - name: Add .yarnrc.yml
+        run: |
+          echo "nodeLinker: node-modules" > webapp/.yarnrc.yml
+
+      # Step 7: 安装依赖并编译 Electron 应用
+      - name: Install Dependencies and Build
+        working-directory: webapp
+        run: |
+          yarn install
+          yarn build
+
+      # Step 8: 准备发布文件（仅复制 exe 文件）
+      - name: Prepare Release Files
+        run: |
+          mkdir -p release
+          cp script\\setup.bat release\\
+          cp webapp\\dist\\win-unpacked\\PDFMathTranslate.exe release\\
+
+      # Step 9: 打包为 ZIP 文件
+      - name: Create ZIP File
+        run: |
+          powershell Compress-Archive -Path release\\* -DestinationPath release.zip
+        shell: bash
+
+      # Step 10: 创建 Release 并上传 ZIP 文件
+      - name: Create a Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.LATEST_TAG }}
+          release_name: Release ${{ env.LATEST_TAG }}
+          body: |
+            release
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 添加 GITHUB_TOKEN
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release.zip
+          asset_name: release.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

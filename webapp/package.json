@@ -1,0 +1,46 @@
+{
+  "name": "PDFMathTranslate",
+  "version": "0.0.1",
+  "description": "PDFMathTranslate client",
+  "packageManager": "yarn@4.6.0",
+  "main": "main.js",
+  "author": "hellofinch",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.3.1",
+    "electron-builder": "^23.6.0"
+  },
+  "scripts": {
+    "start": "electron .",
+    "start:dev": "NODE_ENV=development electron .",
+    "build": "electron-builder --win",
+    "build:all": "electron-builder --mwl",
+    "clean": "rmdir /s /q dist node_modules"
+  },
+  "build": {
+    "appId": "pdfmathtranslate",
+    "productName": "PDFMathTranslate",
+    "files": [
+      "main.js",
+      "package.json",
+      "webapp/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "electronVersion": "33.3.1",
+    "win": {
+      "target": "portable",
+      "icon": "pdf2zh.ico"
+    }
+  },
+  "dependencies": {
+    "electron-progressbar": "^2.2.1",
+    "tree-kill": "^1.2.2"
+  },
+  "dependenciesMeta": {
+    "app-builder-lib@23.6.0": {
+      "unplugged": true
+    }
+  }
+}

@@ -164,6 +164,16 @@ def create_parser() -> argparse.ArgumentParser:
         help="config file.",
     )
 
+    parse_params.add_argument(
+        "--electron",
+        action="store_true",
+    )
+
+    parse_params.add_argument(
+        "--dry_run",
+        action="store_true",
+    )
+
     return parser
 
 
@@ -207,10 +217,44 @@ def find_all_files_in_directory(directory_path):
     return file_paths
 
 
+def dry_run():
+    # 定义文件路径
+    base_dir = os.getcwd()  # 获取当前路径
+    config_dir = os.path.join(base_dir, "userdata")
+    config_file = os.path.join(config_dir, "config.json")
+
+    # 确保目录存在
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)  # 创建目录
+
+    # 检查配置文件是否存在
+    if not os.path.exists(config_file):
+        import json
+
+        with open(config_file, "w", encoding="utf-8") as f:
+            json.dump({}, f, indent=4, ensure_ascii=False)  # 写入空的 JSON 对象
+    ConfigManager.custome_config(config_file)
+    ConfigManager.get("gradio_port", 12366)
+    pdf2zh_path = os.path.join(base_dir, "pdf2zh_dist", "Scripts", "pdf2zh.exe")
+    if os.path.exists(pdf2zh_path):
+        ConfigManager.get("pdf2zh_path", pdf2zh_path)
+    else:
+        import shutil
+
+        pdf2zh_path = shutil.which("pdf2zh")
+        if pdf2zh_path:
+            ConfigManager.get("pdf2zh_path", pdf2zh_path)
+        else:
+            raise ValueError("pdf2zh not found.")
+
+
 def main(args: Optional[List[str]] = None) -> int:
     logging.basicConfig()
 
     parsed_args = parse_args(args)
+
+    if parsed_args.dry_run:
+        dry_run()
 
     if parsed_args.config:
         ConfigManager.custome_config(parsed_args.config)
