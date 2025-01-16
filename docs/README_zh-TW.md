@@ -182,6 +182,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 | `--onnx` | [使用自訂的 DocLayout-YOLO ONNX 模型] | `pdf2zh --onnx [onnx/model/path]` |
 | `--serverport` | [自訂 WebUI 埠號] | `pdf2zh --serverport 7860` |
 | `--dir` | [資料夾翻譯] | `pdf2zh --dir /path/to/translate/` |
+| `--config` | [自訂設定檔](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig) | `pdf2zh --config /path/to/config/config.json` |
 
 <h3 id="partial">全文或部分文件翻譯</h3>
 
