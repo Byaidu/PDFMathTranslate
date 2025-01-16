@@ -1,3 +1,11 @@
+try:
+    import gradio as gr
+    from gradio_pdf import PDF
+except ImportError:
+    raise ImportError(
+        "Could not import gradio python package. "
+        "Please install it with `pip install gradio gradio-pdf`."
+    )
 import asyncio
 import cgi
 import os
@@ -6,10 +14,8 @@ import uuid
 from asyncio import CancelledError
 from pathlib import Path
 
-import gradio as gr
 import requests
 import tqdm
-from gradio_pdf import PDF
 from string import Template
 
 from pdf2zh import __version__
