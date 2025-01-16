@@ -4,20 +4,9 @@ import os
 import re
 import unicodedata
 from copy import copy
-import deepl
-import ollama
 import openai
-import xinference_client
 import requests
 from pdf2zh.cache import TranslationCache
-from azure.ai.translation.text import TextTranslationClient
-from azure.core.credentials import AzureKeyCredential
-from tencentcloud.common import credential
-from tencentcloud.tmt.v20180321.tmt_client import TmtClient
-from tencentcloud.tmt.v20180321.models import TextTranslateRequest
-from tencentcloud.tmt.v20180321.models import TextTranslateResponse
-import argostranslate.package
-import argostranslate.translate
 
 import json
 from pdf2zh.config import ConfigManager
@@ -205,6 +194,13 @@ class DeepLTranslator(BaseTranslator):
     lang_map = {"zh": "zh-Hans"}
 
     def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
+        try:
+            import deepl
+        except ImportError:
+            raise ImportError(
+                "Could not import deepl python package. "
+                "Please install it with `pip install deepl`."
+            )
         self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
         auth_key = self.envs["DEEPL_AUTH_KEY"]
@@ -258,6 +254,13 @@ class OllamaTranslator(BaseTranslator):
     CustomPrompt = True
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+        try:
+            import ollama
+        except ImportError:
+            raise ImportError(
+                "Could not import ollama python package. "
+                "Please install it with `pip install ollama`."
+            )
         self.set_envs(envs)
         if not model:
             model = self.envs["OLLAMA_MODEL"]
@@ -301,6 +304,13 @@ class XinferenceTranslator(BaseTranslator):
     CustomPrompt = True
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+        try:
+            import xinference_client
+        except ImportError:
+            raise ImportError(
+                "Could not import xinference-client python package. "
+                "Please install it with `pip install xinference-client`."
+            )
         self.set_envs(envs)
         if not model:
             model = self.envs["XINFERENCE_MODEL"]
@@ -553,6 +563,14 @@ class AzureTranslator(BaseTranslator):
         super().__init__(lang_in, lang_out, model)
         endpoint = self.envs["AZURE_ENDPOINT"]
         api_key = self.envs["AZURE_API_KEY"]
+        try:
+            from azure.ai.translation.text import TextTranslationClient
+            from azure.core.credentials import AzureKeyCredential
+        except ImportError:
+            raise ImportError(
+                "Could not import azure python package. "
+                "Please install it with `pip install azure-ai-translation-text<=1.0.1`."
+            )
         credential = AzureKeyCredential(api_key)
         self.client = TextTranslationClient(
             endpoint=endpoint, credential=credential, region="chinaeast2"
@@ -582,6 +600,15 @@ class TencentTranslator(BaseTranslator):
     def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
         self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
+        try:
+            from tencentcloud.common import credential
+            from tencentcloud.tmt.v20180321.tmt_client import TmtClient
+            from tencentcloud.tmt.v20180321.models import TextTranslateRequest
+        except ImportError:
+            raise ImportError(
+                "Could not import tencent cloud python package. "
+                "Please install it with `pip install tencentcloud-sdk-python`."
+            )
         cred = credential.DefaultCredentialProvider().get_credential()
         self.client = TmtClient(cred, "ap-beijing")
         self.req = TextTranslateRequest()
@@ -591,6 +618,14 @@ class TencentTranslator(BaseTranslator):
 
     def do_translate(self, text):
         self.req.SourceText = text
+        try:
+            from tencentcloud.tmt.v20180321.models import TextTranslateResponse
+        except ImportError:
+            raise ImportError(
+                "Could not import tencent cloud python package. "
+                "Please install it with `pip install tencentcloud-sdk-python`."
+            )
+
         resp: TextTranslateResponse = self.client.TextTranslate(self.req)
         return resp.TargetText
 
@@ -679,6 +714,14 @@ class ArgosTranslator(BaseTranslator):
     name = "argos"
 
     def __init__(self, lang_in, lang_out, model, **kwargs):
+        try:
+            import argostranslate.package
+            import argostranslate.translate
+        except ImportError:
+            raise ImportError(
+                "Could not import argostranslate python package. "
+                "Please install it with `pip install argostranslate`."
+            )
         super().__init__(lang_in, lang_out, model)
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
         lang_out = self.lang_map.get(lang_out.lower(), lang_out)
@@ -703,6 +746,13 @@ class ArgosTranslator(BaseTranslator):
 
     def translate(self, text):
         # Translate
+        try:
+            import argostranslate.translate
+        except ImportError:
+            raise ImportError(
+                "Could not import argostranslate python package. "
+                "Please install it with `pip install argostranslate`."
+            )
         installed_languages = argostranslate.translate.get_installed_languages()
         from_lang = list(filter(lambda x: x.code == self.lang_in, installed_languages))[
             0
