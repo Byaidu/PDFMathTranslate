@@ -20,6 +20,7 @@ from pdf2zh.config import ConfigManager
 from yadt.translation_config import TranslationConfig as YadtConfig
 from yadt.high_level import translate as yadt_translate
 
+
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, add_help=True)
     parser.add_argument(
@@ -291,7 +292,7 @@ def yadt_main(parsed_args) -> int:
     param = parsed_args.service.split(":", 1)
     service_name = param[0]
     service_model = param[1] if len(param) > 1 else None
-    
+
     envs = {}
     prompt = []
 
@@ -327,10 +328,33 @@ def yadt_main(parsed_args) -> int:
         OpenAIlikedTranslator,
     )
 
-    for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, XinferenceTranslator, AzureOpenAITranslator,
-                       OpenAITranslator, ZhipuTranslator, ModelScopeTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AnythingLLMTranslator, ArgosTranslator, GorkTranslator, GroqTranslator, DeepseekTranslator, OpenAIlikedTranslator,]:
+    for translator in [
+        GoogleTranslator,
+        BingTranslator,
+        DeepLTranslator,
+        DeepLXTranslator,
+        OllamaTranslator,
+        XinferenceTranslator,
+        AzureOpenAITranslator,
+        OpenAITranslator,
+        ZhipuTranslator,
+        ModelScopeTranslator,
+        SiliconTranslator,
+        GeminiTranslator,
+        AzureTranslator,
+        TencentTranslator,
+        DifyTranslator,
+        AnythingLLMTranslator,
+        ArgosTranslator,
+        GorkTranslator,
+        GroqTranslator,
+        DeepseekTranslator,
+        OpenAIlikedTranslator,
+    ]:
         if service_name == translator.name:
-            translator = translator(lang_in, lang_out, service_model, envs=envs, prompt=prompt)
+            translator = translator(
+                lang_in, lang_out, service_model, envs=envs, prompt=prompt
+            )
             break
     else:
         raise ValueError("Unsupported translation service")
@@ -340,7 +364,7 @@ def yadt_main(parsed_args) -> int:
         yadt_config = YadtConfig(
             input_file=file,
             font=font_path,
-            pages=','.join((str(x) for x in parsed_args.raw_pages)),
+            pages=",".join((str(x) for x in parsed_args.raw_pages)),
             output_dir=outputdir,
             translator=translator,
             debug=parsed_args.debug,

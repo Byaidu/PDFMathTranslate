@@ -134,6 +134,7 @@ class BaseTranslator:
             id
         ) + self.get_rich_text_right_placeholder(id)
 
+
 class GoogleTranslator(BaseTranslator):
     name = "google"
     lang_map = {"zh": "zh-CN"}
