@@ -83,13 +83,13 @@ For different use cases, we provide four distinct methods to use our program:
    pip install pdf2zh
    ```
    
-   > [!Note]
-   > You can choose to install optional dependencies based on the services you need to use. 
-   > Currently, optional dependencies include `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, 
-   > `ollama`, `xinference`.
-   > If you need to install one of the options, such as `ollama`, use `pip install "pdf2zh[ollama]"` to install it.
-   > If you need to install all optional dependencies, use `pip install "pdf2zh[all]"`.
-   > If you need to install all optional dependencies that can deploy models offline, use `pip install "pdf2zh[offline]"`.
+> [!Note]
+> You can choose to install optional dependencies based on the services you need to use. 
+> Currently, optional dependencies include `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, 
+> `ollama`, `xinference`.
+> If you need to install one of the options, such as `ollama`, use `pip install "pdf2zh[ollama]"` to install it.
+> If you need to install all optional dependencies, use `pip install "pdf2zh[all]"`.
+> If you need to install all optional dependencies that can deploy models offline, use `pip install "pdf2zh[offline]"`.
 
 
 3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
