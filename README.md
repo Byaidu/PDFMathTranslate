@@ -84,6 +84,7 @@ For different use cases, we provide four distinct methods to use our program:
    ```
    
 > [!Note]
+> 
 > You can choose to install optional dependencies based on the services you need to use. 
 > Currently, optional dependencies include `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, 
 > `ollama`, `xinference`.
