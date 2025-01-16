@@ -121,12 +121,22 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 
 <h3 id="gui">方法三、图形交互界面</h3>
 
-1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
+1. 确保安装了版本大于 3.9 且小于 3.12 的 Python
 2. 安装此程序：
 
       ```bash
-      pip install pdf2zh
+      pip install "pdf2zh[webui]"
       ```
+
+> [!Note]
+> 可根据所需使用的服务选择安装可选依赖，当前可选依赖包括 `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, 
+> `ollama`, `xinference`。
+> 
+> 如需安装其中一种可选依赖，如`ollama`，请使用 `pip install "pdf2zh[ollama]"` 进行安装。
+> 
+> 如需安装所有可选依赖，请使用 `pip install "pdf2zh[all]"`。
+> 
+> 如需安装所有可离线部署模型的可选依赖，请使用 `pip install "pdf2zh[offline]"`。
 
 3. 开始在浏览器中使用：
 

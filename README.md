@@ -82,8 +82,8 @@ For different use cases, we provide four distinct methods to use our program:
    ```bash
    pip install pdf2zh
    ```
-   
-> [!Note]
+
+> Note:
 > 
 > You can choose to install optional dependencies based on the services you need to use.
 > Currently, optional dependencies include `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, `ollama`, `xinference`.
@@ -114,12 +114,24 @@ For different use cases, we provide four distinct methods to use our program:
 
 <details>
   <summary>3. Graphic user interface</summary>
-1. Python installed (3.8 <= version <= 3.12)
+1. Python installed (3.9 <= version <= 3.12)
 2. Install our package:
 
 ```bash
-pip install pdf2zh
+pip install "pdf2zh[webui]"
 ```
+
+> Note:
+> 
+> You can choose to install optional dependencies based on the services you need to use.
+> Currently, optional dependencies include `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, `ollama`, `xinference`.
+> 
+> If you need to install one of the options, such as `ollama`, use `pip install "pdf2zh[ollama]"` to install it.
+> 
+> If you need to install all optional dependencies, use `pip install "pdf2zh[all]"`.
+> 
+> If you need to install all optional dependencies that can deploy models offline, use `pip install "pdf2zh[offline]"`.
+
 
 3. Start using in browser:
 
