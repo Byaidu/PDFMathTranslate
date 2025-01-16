@@ -45,6 +45,7 @@
 
 <h2 id="updates">近期更新</h2>
 
+- [Jan. 16 2025] 拆分依赖库，增加依赖安装提示与多种可选依赖模式 _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
 - [Dec. 24 2024] 翻译功能支持接入 [Xinference](https://github.com/xorbitsai/inference) 运行的本地 LLM _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
 - [Nov. 26 2024] CLI 现在已支持（多个）在线 PDF 文件 *(by [@reycn](https://github.com/reycn))*  
 - [Nov. 24 2024] 为降低依赖大小，提供 [ONNX](https://github.com/onnx/onnx) 支持 *(by [@Wybxc](https://github.com/Wybxc))*  
@@ -89,12 +90,19 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 
 <h3 id="cmd">方法一、命令行工具</h3>
 
-  1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
+  1. 确保安装了版本大于 3.9 且小于 3.12 的 Python
   2. 安装此程序：
 
       ```bash
       pip install pdf2zh
       ```
+     
+    > [!Note]
+    > 可根据所需使用的服务选择安装可选依赖，当前可选依赖包括 `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, 
+    > `ollama`, `xinference`。
+    > 如需安装其中一种可选依赖，如`ollama`，请使用 `pip install "pdf2zh[ollama]"` 进行安装。
+    > 如需安装所有可选依赖，请使用 `pip install "pdf2zh[all]"`。
+    > 如需安装所有可离线部署模型的可选依赖，请使用 `pip install "pdf2zh[offline]"`。
 
   3. 执行翻译，生成文件位于 [当前工作目录](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444)：
 

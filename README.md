@@ -45,6 +45,7 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 
 <h2 id="updates">Updates</h2>
 
+- [Jan. 16 2025] Simplified dependency libraries, add import error messages and multiple optional dependency modes _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
 - [Dec. 24 2024] The translator now supports local models on [Xinference](https://github.com/xorbitsai/inference) _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
 - [Dec. 19 2024] Non-PDF/A documents are now supported using `-cp` _(by [@reycn](https://github.com/reycn))_
 - [Dec. 13 2024] Additional support for backend by _(by [@YadominJinta](https://github.com/YadominJinta))_
@@ -75,12 +76,21 @@ For different use cases, we provide four distinct methods to use our program:
 <details open>
   <summary>1. Commandline</summary>
 
-1. Python installed (3.8 <= version <= 3.12)
+1. Python installed (3.9 <= version <= 3.12)
 2. Install our package:
 
    ```bash
    pip install pdf2zh
    ```
+   
+   > [!Note]
+   > You can choose to install optional dependencies based on the services you need to use. 
+   > Currently, optional dependencies include `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, 
+   > `ollama`, `xinference`.
+   > If you need to install one of the options, such as `ollama`, use `pip install "pdf2zh[ollama]"` to install it.
+   > If you need to install all optional dependencies, use `pip install "pdf2zh[all]"`.
+   > If you need to install all optional dependencies that can deploy models offline, use `pip install "pdf2zh[offline]"`.
+
 
 3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
 
