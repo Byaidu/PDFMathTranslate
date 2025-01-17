@@ -75,7 +75,7 @@ offline = [
     "ollama",
     "xinference",
 ]
-dev_all = [
+dev-all = [
     "all",
     "dev"
 ]
