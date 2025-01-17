@@ -20,7 +20,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip3 install -U pip
-        pip3 install -e .[dev]
+        pip3 install -e .[dev_all]
 
     - name: Test - Unit Test
       run: |
