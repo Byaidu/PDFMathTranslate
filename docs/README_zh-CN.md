@@ -98,14 +98,12 @@ $env:HF_ENDPOINT = https://hf-mirror.com
       ```
      
 > [!Note]
-> 可根据所需使用的服务选择安装可选依赖，当前可选依赖包括 `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, 
-> `ollama`, `xinference`。
+> 可根据所需使用的服务选择安装可选依赖，当前可选依赖包括 `argos`, `azure`, `tencent` 分别用于
+> `ArgosTranslator`, `AzureTranslator`, `TencentTranslator` 的实现。
 > 
-> 如需安装其中一种可选依赖，如`ollama`，请使用 `pip install "pdf2zh[ollama]"` 进行安装。
+> 如需安装其中一种可选依赖，如 `argos`，请使用 `pip install "pdf2zh[argos]"` 进行安装。
 > 
 > 如需安装所有可选依赖，请使用 `pip install "pdf2zh[all]"`。
-> 
-> 如需安装所有可离线部署模型的可选依赖，请使用 `pip install "pdf2zh[offline]"`。
 
   3. 执行翻译，生成文件位于 [当前工作目录](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444)：
 
@@ -125,18 +123,16 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 2. 安装此程序：
 
       ```bash
-      pip install "pdf2zh[webui]"
+      pip install "pdf2zh"
       ```
 
 > [!Note]
-> 可根据所需使用的服务选择安装可选依赖，当前可选依赖包括 `webui`, `azure`, `argostranslate`, `deepl`, `tecentcloud`, 
-> `ollama`, `xinference`。
+> 可根据所需使用的服务选择安装可选依赖，当前可选依赖包括 `argos`, `azure`, `tencent` 分别用于
+> `ArgosTranslator`, `AzureTranslator`, `TencentTranslator` 的实现。
 > 
-> 如需安装其中一种可选依赖，如`ollama`，请使用 `pip install "pdf2zh[ollama]"` 进行安装。
+> 如需安装其中一种可选依赖，如 `argos`，请使用 `pip install "pdf2zh[argos]"` 进行安装。
 > 
 > 如需安装所有可选依赖，请使用 `pip install "pdf2zh[all]"`。
-> 
-> 如需安装所有可离线部署模型的可选依赖，请使用 `pip install "pdf2zh[offline]"`。
 
 3. 开始在浏览器中使用：
 
