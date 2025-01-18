@@ -55,13 +55,13 @@ tecent = [
     "tencentcloud-sdk-python",
 ]
 all = [
-    "argos",
-    "azure",
-    "tecent",
+    "pdf2zh[argos]",
+    "pdf2zh[azure]",
+    "pdf2zh[tecent]",
 ]
 dev-all = [
-    "all",
-    "dev"
+    "pdf2zh[all]",
+    "pdf2zh[dev]"
 ]
 
 [project.urls]
