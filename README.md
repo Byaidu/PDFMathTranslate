@@ -39,7 +39,7 @@ PDF scientific paper translation and bilingual comparison.
 - 🌐 Support [multiple languages](#language), and diverse [translation services](#services).
 - 🤖 Provides [commandline tool](#usage), [interactive user interface](#gui), and [Docker](#docker)
 
-Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues), [Telegram Group](https://t.me/+Z9_SgnxmsmA5NzBl) or [QQ Group](https://qm.qq.com/q/DixZCxQej0).
+Feel free to provide feedback in [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) or [Telegram Group](https://t.me/+Z9_SgnxmsmA5NzBl).
 
 For details on how to contribute, please consult the [Contribution Guide](https://github.com/Byaidu/PDFMathTranslate/wiki/Contribution-Guide---%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97).
 
@@ -70,7 +70,7 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 ### Methods
 
-For different use cases, we provide four distinct methods to use our program:
+For different use cases, we provide distinct methods to use our program:
 
 <details open>
   <summary>1. Commandline</summary>
@@ -154,6 +154,13 @@ For docker deployment on cloud service:
 <a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
   <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
 </div>
+
+</details>
+
+<details>
+  <summary>5. Zotero Plugin</summary>
+
+See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
 
 </details>
 
