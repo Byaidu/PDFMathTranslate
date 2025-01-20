@@ -39,7 +39,7 @@
 - 🌐 支援 [多種語言](#language) 和 [諸多翻譯服務](#services)
 - 🤖 提供 [命令列工具](#usage)、[圖形使用者介面](#gui)，以及 [容器化部署](#docker)
 
-歡迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues)、[Telegram 使用者群](https://t.me/+Z9_SgnxmsmA5NzBl) 或 [QQ 使用者群](https://qm.qq.com/q/DixZCxQej0) 中提出回饋
+歡迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [Telegram 使用者群](https://t.me/+Z9_SgnxmsmA5NzBl)(https://qm.qq.com/q/DixZCxQej0) 中提出回饋
 
 如需瞭解如何貢獻的詳細資訊，請查閱 [貢獻指南](https://github.com/Byaidu/PDFMathTranslate/wiki/Contribution-Guide---%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97)
 
@@ -182,6 +182,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 | `--onnx` | [使用自訂的 DocLayout-YOLO ONNX 模型] | `pdf2zh --onnx [onnx/model/path]` |
 | `--serverport` | [自訂 WebUI 埠號] | `pdf2zh --serverport 7860` |
 | `--dir` | [資料夾翻譯] | `pdf2zh --dir /path/to/translate/` |
+| `--config` | [自訂設定檔](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig) | `pdf2zh --config /path/to/config/config.json` |
 
 <h3 id="partial">全文或部分文件翻譯</h3>
 

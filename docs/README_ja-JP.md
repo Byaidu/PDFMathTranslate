@@ -39,7 +39,7 @@
 - 🌐 [複数の言語](#language) と [多様な翻訳サービス](#services) をサポート
 - 🤖 [コマンドラインツール](#usage)、[インタラクティブユーザーインターフェース](#gui)、および [Docker](#docker) を提供
 
-フィードバックは [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues)、[Telegram グループ](https://t.me/+Z9_SgnxmsmA5NzBl) または [QQ グループ](https://qm.qq.com/q/DixZCxQej0) でお気軽にどうぞ
+フィードバックは [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues)、[Telegram グループ](https://t.me/+Z9_SgnxmsmA5NzBl)
 
 <h2 id="updates">最近の更新</h2>
 
