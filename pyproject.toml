@@ -5,7 +5,7 @@ description = "Latex PDF Translator"
 authors = [{ name = "Byaidu", email = "byaidux@gmail.com" }]
 license = "AGPL-3.0"
 readme = "README.md"
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.10,<3.13"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -32,7 +32,8 @@ dependencies = [
     "pikepdf",
     "peewee>=3.17.8",
     "argostranslate",
-    "fontTools"
+    "fontTools",
+    "yadt>=0.0.1a20, <0.0.2",
 ]
 
 [project.optional-dependencies]

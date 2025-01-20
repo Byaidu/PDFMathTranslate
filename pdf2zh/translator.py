@@ -123,6 +123,17 @@ class BaseTranslator:
     def __str__(self):
         return f"{self.name} {self.lang_in} {self.lang_out} {self.model}"
 
+    def get_rich_text_left_placeholder(self, id: int):
+        return f"<b{id}>"
+
+    def get_rich_text_right_placeholder(self, id: int):
+        return f"</b{id}>"
+
+    def get_formular_placeholder(self, id: int):
+        return self.get_rich_text_left_placeholder(
+            id
+        ) + self.get_rich_text_right_placeholder(id)
+
 
 class GoogleTranslator(BaseTranslator):
     name = "google"
@@ -383,6 +394,15 @@ class OpenAITranslator(BaseTranslator):
             messages=self.prompt(text, self.prompttext),
         )
         return response.choices[0].message.content.strip()
+
+    def get_formular_placeholder(self, id: int):
+        return "{{v" + str(id) + "}}"
+
+    def get_rich_text_left_placeholder(self, id: int):
+        return self.get_formular_placeholder(id)
+
+    def get_rich_text_right_placeholder(self, id: int):
+        return self.get_formular_placeholder(id + 1)
 
 
 class AzureOpenAITranslator(BaseTranslator):
