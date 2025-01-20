@@ -277,7 +277,7 @@ def translate_file(
         "callback": progress_bar,
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
-        "prompt": Template(prompt),
+        "prompt": Template(prompt) if prompt else None,
         "model": ModelInstance.value,
     }
     try:
