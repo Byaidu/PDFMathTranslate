@@ -219,7 +219,7 @@ pdf2zh example.pdf -li en -lo ja
 |**OpenAI**|`openai`|`OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`|`https://api.openai.com/v1`, `[Your Key]`, `gpt-4o-mini`|參閱 [OpenAI](https://platform.openai.com/docs/overview)|
 |**AzureOpenAI**|`azure-openai`|`AZURE_OPENAI_BASE_URL`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_MODEL`|`[Your Endpoint]`, `[Your Key]`, `gpt-4o-mini`|參閱 [Azure OpenAI](https://learn.microsoft.com/zh-cn/azure/ai-services/openai/chatgpt-quickstart?tabs=command-line%2Cjavascript-keyless%2Ctypescript-keyless%2Cpython&pivots=programming-language-python)|
 |**Zhipu**|`zhipu`|`ZHIPU_API_KEY`, `ZHIPU_MODEL`|`[Your Key]`, `glm-4-flash`|參閱 [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)|
-| **ModelScope**       | `ModelScope`   |`MODELSCOPE_API_KEY`, `MODELSCOPE_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-Coder-32B-Instruct`| 參閱 [ModelScope](https://www.modelscope.cn/docs/model-service/API-Inference/intro)|
+| **ModelScope**       | `modelscope`   |`MODELSCOPE_API_KEY`, `MODELSCOPE_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-Coder-32B-Instruct`| 參閱 [ModelScope](https://www.modelscope.cn/docs/model-service/API-Inference/intro)|
 |**Silicon**|`silicon`|`SILICON_API_KEY`, `SILICON_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-7B-Instruct`|參閱 [SiliconCloud](https://docs.siliconflow.cn/quickstart)|
 |**Gemini**|`gemini`|`GEMINI_API_KEY`, `GEMINI_MODEL`|`[Your Key]`, `gemini-1.5-flash`|參閱 [Gemini](https://ai.google.dev/gemini-api/docs/openai)|
 |**Azure**|`azure`|`AZURE_ENDPOINT`, `AZURE_API_KEY`|`https://api.translator.azure.cn`, `[Your Key]`|參閱 [Azure](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)|
