@@ -281,7 +281,7 @@ def main(args: Optional[List[str]] = None) -> int:
     if parsed_args.flask:
         from pdf2zh.backend import flask_app
 
-        flask_app.run(port=11008)
+        flask_app.run(host="0.0.0.0", port=11008)
         return 0
 
     if parsed_args.celery:
