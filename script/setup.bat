@@ -20,6 +20,7 @@ if not exist Scripts/pip.exe (
 )
 path Scripts
 
+pip install --no-warn-script-location --upgrade setuptools -i !PIP_MIRROR!
 pip install --no-warn-script-location --upgrade pdf2zh -i !PIP_MIRROR!
 pdf2zh -i
 

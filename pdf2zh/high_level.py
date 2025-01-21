@@ -8,6 +8,7 @@ import tempfile
 import urllib.request
 from asyncio import CancelledError
 from pathlib import Path
+from string import Template
 from typing import Any, BinaryIO, List, Optional, Dict
 
 import numpy as np
@@ -78,7 +79,7 @@ def translate_patch(
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
     envs: Dict = None,
-    prompt: List = None,
+    prompt: Template = None,
     **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
@@ -172,7 +173,7 @@ def translate_stream(
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
     envs: Dict = None,
-    prompt: List = None,
+    prompt: Template = None,
     **kwarg: Any,
 ):
     font_list = [("tiro", None)]
@@ -297,7 +298,7 @@ def translate(
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
     envs: Dict = None,
-    prompt: List = None,
+    prompt: Template = None,
     **kwarg: Any,
 ):
     if not files:

@@ -39,7 +39,7 @@
 - 🌐 支援 [多種語言](#language) 和 [諸多翻譯服務](#services)
 - 🤖 提供 [命令列工具](#usage)、[圖形使用者介面](#gui)，以及 [容器化部署](#docker)
 
-歡迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues)、[Telegram 使用者群](https://t.me/+Z9_SgnxmsmA5NzBl) 或 [QQ 使用者群](https://qm.qq.com/q/DixZCxQej0) 中提出回饋
+歡迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [Telegram 使用者群](https://t.me/+Z9_SgnxmsmA5NzBl)(https://qm.qq.com/q/DixZCxQej0) 中提出回饋
 
 如需瞭解如何貢獻的詳細資訊，請查閱 [貢獻指南](https://github.com/Byaidu/PDFMathTranslate/wiki/Contribution-Guide---%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97)
 
@@ -219,7 +219,7 @@ pdf2zh example.pdf -li en -lo ja
 |**OpenAI**|`openai`|`OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`|`https://api.openai.com/v1`, `[Your Key]`, `gpt-4o-mini`|參閱 [OpenAI](https://platform.openai.com/docs/overview)|
 |**AzureOpenAI**|`azure-openai`|`AZURE_OPENAI_BASE_URL`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_MODEL`|`[Your Endpoint]`, `[Your Key]`, `gpt-4o-mini`|參閱 [Azure OpenAI](https://learn.microsoft.com/zh-cn/azure/ai-services/openai/chatgpt-quickstart?tabs=command-line%2Cjavascript-keyless%2Ctypescript-keyless%2Cpython&pivots=programming-language-python)|
 |**Zhipu**|`zhipu`|`ZHIPU_API_KEY`, `ZHIPU_MODEL`|`[Your Key]`, `glm-4-flash`|參閱 [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)|
-| **ModelScope**       | `ModelScope`   |`MODELSCOPE_API_KEY`, `MODELSCOPE_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-Coder-32B-Instruct`| 參閱 [ModelScope](https://www.modelscope.cn/docs/model-service/API-Inference/intro)|
+| **ModelScope**       | `modelscope`   |`MODELSCOPE_API_KEY`, `MODELSCOPE_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-Coder-32B-Instruct`| 參閱 [ModelScope](https://www.modelscope.cn/docs/model-service/API-Inference/intro)|
 |**Silicon**|`silicon`|`SILICON_API_KEY`, `SILICON_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-7B-Instruct`|參閱 [SiliconCloud](https://docs.siliconflow.cn/quickstart)|
 |**Gemini**|`gemini`|`GEMINI_API_KEY`, `GEMINI_MODEL`|`[Your Key]`, `gemini-1.5-flash`|參閱 [Gemini](https://ai.google.dev/gemini-api/docs/openai)|
 |**Azure**|`azure`|`AZURE_ENDPOINT`, `AZURE_API_KEY`|`https://api.translator.azure.cn`, `[Your Key]`|參閱 [Azure](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)|
