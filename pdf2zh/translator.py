@@ -290,7 +290,7 @@ class OllamaTranslator(BaseTranslator):
                     stream=True,
                 )
                 in_think_block = False
-                is_deepseek_r1 = model == "deepseek-r1"
+                is_deepseek_r1 = "deepseek-r1" in model
                 for chunk in stream:
                     chunk = chunk["message"]["content"]
                     # 只在 deepseek-r1 模型下检查 <think> 块
