@@ -280,7 +280,6 @@ class OllamaTranslator(BaseTranslator):
 
     def do_translate(self, text):
         maxlen = max(2000, len(text) * 5)
-        print("Prompt:", self.prompt(text, self.prompttext), "Maxlen:" , maxlen)
         for model in self.model.split(";"):
             try:
                 response = ""
@@ -307,7 +306,6 @@ class OllamaTranslator(BaseTranslator):
                     else:
                         response += chunk
                     if len(response) > maxlen:
-                        print(response)
                         raise Exception("Response too long")
                 return response.strip()
             except Exception as e:
