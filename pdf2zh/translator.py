@@ -112,7 +112,7 @@ class BaseTranslator:
             return [
                 {
                     "role": "system",
-                    "content": "You are a professional,authentic machine translation engine.",
+                    "content": "You are a professional,authentic machine translation engine. Only Output the translated text, do not include any other text.",
                 },
                 {
                     "role": "user",
@@ -289,9 +289,22 @@ class OllamaTranslator(BaseTranslator):
                     messages=self.prompt(text, self.prompttext),
                     stream=True,
                 )
+                in_think_block = False
+                is_deepseek_r1 = "deepseek-r1" in model
                 for chunk in stream:
                     chunk = chunk["message"]["content"]
-                    response += chunk
+                    # 只在 deepseek-r1 模型下检查 <think> 块
+                    if is_deepseek_r1:
+                        if "<think>" in chunk:
+                            in_think_block = True
+                            chunk = chunk.split("<think>")[0]
+                        if "</think>" in chunk:
+                            in_think_block = False
+                            chunk = chunk.split("</think>")[1]
+                        if not in_think_block:
+                            response += chunk
+                    else:
+                        response += chunk
                     if len(response) > maxlen:
                         raise Exception("Response too long")
                 return response.strip()
