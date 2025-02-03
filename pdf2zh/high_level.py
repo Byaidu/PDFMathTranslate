@@ -65,23 +65,23 @@ def check_files(files: List[str]) -> List[str]:
 
 
 def translate_patch(
-        inf: BinaryIO,
-        pages: Optional[list[int]] = None,
-        vfont: str = "",
-        vchar: str = "",
-        thread: int = 0,
-        doc_zh: Document = None,
-        lang_in: str = "",
-        lang_out: str = "",
-        service: str = "",
-        noto_name: str = "",
-        noto: Font = None,
-        callback: object = None,
-        cancellation_event: asyncio.Event = None,
-        model: OnnxModel = None,
-        envs: Dict = None,
-        prompt: Template = None,
-        **kwarg: Any,
+    inf: BinaryIO,
+    pages: Optional[list[int]] = None,
+    vfont: str = "",
+    vchar: str = "",
+    thread: int = 0,
+    doc_zh: Document = None,
+    lang_in: str = "",
+    lang_out: str = "",
+    service: str = "",
+    noto_name: str = "",
+    noto: Font = None,
+    callback: object = None,
+    cancellation_event: asyncio.Event = None,
+    model: OnnxModel = None,
+    envs: Dict = None,
+    prompt: Template = None,
+    **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
     layout = {}
@@ -162,20 +162,20 @@ def translate_patch(
 
 
 def translate_stream(
-        stream: bytes,
-        pages: Optional[list[int]] = None,
-        lang_in: str = "",
-        lang_out: str = "",
-        service: str = "",
-        thread: int = 0,
-        vfont: str = "",
-        vchar: str = "",
-        callback: object = None,
-        cancellation_event: asyncio.Event = None,
-        model: OnnxModel = None,
-        envs: Dict = None,
-        prompt: Template = None,
-        **kwarg: Any,
+    stream: bytes,
+    pages: Optional[list[int]] = None,
+    lang_in: str = "",
+    lang_out: str = "",
+    service: str = "",
+    thread: int = 0,
+    vfont: str = "",
+    vchar: str = "",
+    callback: object = None,
+    cancellation_event: asyncio.Event = None,
+    model: OnnxModel = None,
+    envs: Dict = None,
+    prompt: Template = None,
+    **kwarg: Any,
 ):
     font_list = [("tiro", None)]
 
@@ -293,22 +293,22 @@ def convert_to_pdfa(input_path, output_path):
 
 
 def translate(
-        files: list[str],
-        output: str = "",
-        pages: Optional[list[int]] = None,
-        lang_in: str = "",
-        lang_out: str = "",
-        service: str = "",
-        thread: int = 0,
-        vfont: str = "",
-        vchar: str = "",
-        callback: object = None,
-        compatible: bool = False,
-        cancellation_event: asyncio.Event = None,
-        model: OnnxModel = None,
-        envs: Dict = None,
-        prompt: Template = None,
-        **kwarg: Any,
+    files: list[str],
+    output: str = "",
+    pages: Optional[list[int]] = None,
+    lang_in: str = "",
+    lang_out: str = "",
+    service: str = "",
+    thread: int = 0,
+    vfont: str = "",
+    vchar: str = "",
+    callback: object = None,
+    compatible: bool = False,
+    cancellation_event: asyncio.Event = None,
+    model: OnnxModel = None,
+    envs: Dict = None,
+    prompt: Template = None,
+    **kwarg: Any,
 ):
     if not files:
         raise PDFValueError("No files to process.")
@@ -325,14 +325,14 @@ def translate(
 
     for file in files:
         if type(file) is str and (
-                file.startswith("http://") or file.startswith("https://")
+            file.startswith("http://") or file.startswith("https://")
         ):
             print("Online files detected, downloading...")
             try:
                 r = requests.get(file, allow_redirects=True)
                 if r.status_code == 200:
                     with tempfile.NamedTemporaryFile(
-                            suffix=".pdf", delete=False
+                        suffix=".pdf", delete=False
                     ) as tmp_file:
                         print(f"Writing the file: {file}...")
                         tmp_file.write(r.content)
@@ -349,7 +349,7 @@ def translate(
         # --compatible / -cp
         if compatible:
             with tempfile.NamedTemporaryFile(
-                    suffix="-pdfa.pdf", delete=False
+                suffix="-pdfa.pdf", delete=False
             ) as tmp_pdfa:
                 print(f"Converting {file} to PDF/A format...")
                 convert_to_pdfa(file, tmp_pdfa.name)
