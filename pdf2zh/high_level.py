@@ -65,23 +65,23 @@ def check_files(files: List[str]) -> List[str]:
 
 
 def translate_patch(
-    inf: BinaryIO,
-    pages: Optional[list[int]] = None,
-    vfont: str = "",
-    vchar: str = "",
-    thread: int = 0,
-    doc_zh: Document = None,
-    lang_in: str = "",
-    lang_out: str = "",
-    service: str = "",
-    noto_name: str = "",
-    noto: Font = None,
-    callback: object = None,
-    cancellation_event: asyncio.Event = None,
-    model: OnnxModel = None,
-    envs: Dict = None,
-    prompt: Template = None,
-    **kwarg: Any,
+        inf: BinaryIO,
+        pages: Optional[list[int]] = None,
+        vfont: str = "",
+        vchar: str = "",
+        thread: int = 0,
+        doc_zh: Document = None,
+        lang_in: str = "",
+        lang_out: str = "",
+        service: str = "",
+        noto_name: str = "",
+        noto: Font = None,
+        callback: object = None,
+        cancellation_event: asyncio.Event = None,
+        model: OnnxModel = None,
+        envs: Dict = None,
+        prompt: Template = None,
+        **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
     layout = {}
@@ -162,20 +162,20 @@ def translate_patch(
 
 
 def translate_stream(
-    stream: bytes,
-    pages: Optional[list[int]] = None,
-    lang_in: str = "",
-    lang_out: str = "",
-    service: str = "",
-    thread: int = 0,
-    vfont: str = "",
-    vchar: str = "",
-    callback: object = None,
-    cancellation_event: asyncio.Event = None,
-    model: OnnxModel = None,
-    envs: Dict = None,
-    prompt: Template = None,
-    **kwarg: Any,
+        stream: bytes,
+        pages: Optional[list[int]] = None,
+        lang_in: str = "",
+        lang_out: str = "",
+        service: str = "",
+        thread: int = 0,
+        vfont: str = "",
+        vchar: str = "",
+        callback: object = None,
+        cancellation_event: asyncio.Event = None,
+        model: OnnxModel = None,
+        envs: Dict = None,
+        prompt: Template = None,
+        **kwarg: Any,
 ):
     font_list = [("tiro", None)]
 
@@ -199,25 +199,21 @@ def translate_stream(
         for label in ["Resources/", ""]:  # 可能是基于 xobj 的 res
             try:  # xref 读写可能出错
                 font_res = doc_zh.xref_get_key(xref, f"{label}Font")
+                target_key_prefix = f"{label}Font/"
                 if font_res[0] == "xref":
                     resource_xref_id = re.search("(\\d+) 0 R", font_res[1]).group(1)
                     xref = int(resource_xref_id)
-                    font_res = doc_zh.xref_object(xref)
-                    for font in font_list:
-                        font_exist = doc_zh.xref_get_key(xref, f"{font[0]}")
-                        if font_exist[0] == "null":
-                            doc_zh.xref_set_key(
-                                xref,
-                                f"{font[0]}",
-                                f"{font_id[font[0]]} 0 R",
-                            )
+                    font_res = ("dict", doc_zh.xref_object(xref))
+                    target_key_prefix = ""
+
                 if font_res[0] == "dict":
                     for font in font_list:
-                        font_exist = doc_zh.xref_get_key(xref, f"{label}Font/{font[0]}")
+                        target_key = f"{target_key_prefix}{font[0]}"
+                        font_exist = doc_zh.xref_get_key(xref, target_key)
                         if font_exist[0] == "null":
                             doc_zh.xref_set_key(
                                 xref,
-                                f"{label}Font/{font[0]}",
+                                target_key,
                                 f"{font_id[font[0]]} 0 R",
                             )
             except Exception:
@@ -297,22 +293,22 @@ def convert_to_pdfa(input_path, output_path):
 
 
 def translate(
-    files: list[str],
-    output: str = "",
-    pages: Optional[list[int]] = None,
-    lang_in: str = "",
-    lang_out: str = "",
-    service: str = "",
-    thread: int = 0,
-    vfont: str = "",
-    vchar: str = "",
-    callback: object = None,
-    compatible: bool = False,
-    cancellation_event: asyncio.Event = None,
-    model: OnnxModel = None,
-    envs: Dict = None,
-    prompt: Template = None,
-    **kwarg: Any,
+        files: list[str],
+        output: str = "",
+        pages: Optional[list[int]] = None,
+        lang_in: str = "",
+        lang_out: str = "",
+        service: str = "",
+        thread: int = 0,
+        vfont: str = "",
+        vchar: str = "",
+        callback: object = None,
+        compatible: bool = False,
+        cancellation_event: asyncio.Event = None,
+        model: OnnxModel = None,
+        envs: Dict = None,
+        prompt: Template = None,
+        **kwarg: Any,
 ):
     if not files:
         raise PDFValueError("No files to process.")
@@ -329,14 +325,14 @@ def translate(
 
     for file in files:
         if type(file) is str and (
-            file.startswith("http://") or file.startswith("https://")
+                file.startswith("http://") or file.startswith("https://")
         ):
             print("Online files detected, downloading...")
             try:
                 r = requests.get(file, allow_redirects=True)
                 if r.status_code == 200:
                     with tempfile.NamedTemporaryFile(
-                        suffix=".pdf", delete=False
+                            suffix=".pdf", delete=False
                     ) as tmp_file:
                         print(f"Writing the file: {file}...")
                         tmp_file.write(r.content)
@@ -353,7 +349,7 @@ def translate(
         # --compatible / -cp
         if compatible:
             with tempfile.NamedTemporaryFile(
-                suffix="-pdfa.pdf", delete=False
+                    suffix="-pdfa.pdf", delete=False
             ) as tmp_pdfa:
                 print(f"Converting {file} to PDF/A format...")
                 convert_to_pdfa(file, tmp_pdfa.name)
