@@ -19,7 +19,7 @@ import os
 from pdf2zh.config import ConfigManager
 from yadt.translation_config import TranslationConfig as YadtConfig
 from yadt.high_level import translate as yadt_translate
-
+from yadt.high_level import init as yadt_init
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, add_help=True)
@@ -287,6 +287,9 @@ def yadt_main(parsed_args) -> int:
     outputdir = None
     if parsed_args.output:
         outputdir = parsed_args.output
+
+    # yadt require init before translate
+    yadt_init()
     font_path = download_remote_fonts(lang_out.lower())
 
     param = parsed_args.service.split(":", 1)
