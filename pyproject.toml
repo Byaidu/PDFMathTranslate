@@ -33,7 +33,7 @@ dependencies = [
     "peewee>=3.17.8",
     "argostranslate",
     "fontTools",
-    "yadt>=0.0.1a20, <0.2.0",
+    "babeldoc>=0.0.1a20, <0.2.0",
 ]
 
 [project.optional-dependencies]
