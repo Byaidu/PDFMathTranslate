@@ -17,8 +17,9 @@ from pdf2zh.doclayout import OnnxModel, ModelInstance
 import os
 
 from pdf2zh.config import ConfigManager
-from yadt.translation_config import TranslationConfig as YadtConfig
-from yadt.high_level import translate as yadt_translate
+from babeldoc.translation_config import TranslationConfig as YadtConfig
+from babeldoc.high_level import translate as yadt_translate
+from babeldoc.high_level import init as yadt_init
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -167,10 +168,10 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     parse_params.add_argument(
-        "--yadt",
+        "--babeldoc",
         default=False,
         action="store_true",
-        help="Use experimental backend yadt.",
+        help="Use experimental backend babeldoc.",
     )
 
     return parser
@@ -265,7 +266,7 @@ def main(args: Optional[List[str]] = None) -> int:
             raise ValueError("prompt error.")
 
     print(parsed_args)
-    if parsed_args.yadt:
+    if parsed_args.babeldoc:
         return yadt_main(parsed_args)
     if parsed_args.dir:
         untranlate_file = find_all_files_in_directory(parsed_args.files[0])
@@ -287,6 +288,9 @@ def yadt_main(parsed_args) -> int:
     outputdir = None
     if parsed_args.output:
         outputdir = parsed_args.output
+
+    # yadt require init before translate
+    yadt_init()
     font_path = download_remote_fonts(lang_out.lower())
 
     param = parsed_args.service.split(":", 1)
@@ -364,7 +368,7 @@ def yadt_main(parsed_args) -> int:
         yadt_config = YadtConfig(
             input_file=file,
             font=font_path,
-            pages=",".join((str(x) for x in parsed_args.raw_pages)),
+            pages=",".join((str(x) for x in getattr(parsed_args, "raw_pages", []))),
             output_dir=outputdir,
             translator=translator,
             debug=parsed_args.debug,
