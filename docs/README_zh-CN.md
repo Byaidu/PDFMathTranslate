@@ -106,9 +106,10 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 
 无需预先安装 Python 环境
 
-下载 [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat) 并双击运行
+下载 [setup.bat](https://：raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat) 并双击运行
 
 <h3 id="gui">方法三、图形交互界面</h3>
+视频安装步骤： https://www.bilibili.com/video/BV1H5NBe1ECU/?share_source=copy_web&vd_source=6766e91a10dda22652a74bdc18115d9d
 
 1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
 2. 安装此程序：
