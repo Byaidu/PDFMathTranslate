@@ -42,6 +42,7 @@ from pdf2zh.translator import (
     GroqTranslator,
     DeepseekTranslator,
     OpenAIlikedTranslator,
+    QwenMtTranslator,
 )
 from pymupdf import Font
 
@@ -161,7 +162,7 @@ class TranslateConverter(PDFConverterEx):
         if not envs:
             envs = {}
         for translator in [GoogleTranslator, BingTranslator, DeepLTranslator, DeepLXTranslator, OllamaTranslator, XinferenceTranslator, AzureOpenAITranslator,
-                           OpenAITranslator, ZhipuTranslator, ModelScopeTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AnythingLLMTranslator, ArgosTranslator, GorkTranslator, GroqTranslator, DeepseekTranslator, OpenAIlikedTranslator,]:
+                           OpenAITranslator, ZhipuTranslator, ModelScopeTranslator, SiliconTranslator, GeminiTranslator, AzureTranslator, TencentTranslator, DifyTranslator, AnythingLLMTranslator, ArgosTranslator, GorkTranslator, GroqTranslator, DeepseekTranslator, OpenAIlikedTranslator, QwenMtTranslator,]:
             if service_name == translator.name:
                 self.translator = translator(lang_in, lang_out, service_model, envs=envs, prompt=prompt)
         if not self.translator:

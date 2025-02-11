@@ -70,6 +70,7 @@ We've provided a detailed table on the required [environment variables](https://
 |**Groq**|`groq`| `GROQ_API_KEY`, `GROQ_MODEL` | `[Your GROQ_API_KEY]`, `llama-3-3-70b-versatile` |See [Groq](https://console.groq.com/docs/models)|
 |**DeepSeek**|`deepseek`| `DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL` | `[Your DEEPSEEK_API_KEY]`, `deepseek-chat` |See [DeepSeek](https://www.deepseek.com/)|
 |**OpenAI-Liked**|`openai-liked`| `OPENAILIKED_BASE_URL`, `OPENAILIKED_API_KEY`, `OPENAILIKED_MODEL` | `url`, `[Your Key]`, `model name` | None |
+|**Ali Qwen Translation**|`qwen-mt`| `ALI_MODEL`, `ALI_API_KEY`, `ALI_DOMAINS` | `qwen-mt-turbo`, `[Your Key]`, `scientific paper` | Tranditional Chinese are not yet supported, it will be translated into Simplified Chinese. More see [Qwen MT](https://bailian.console.aliyun.com/?spm=5176.28197581.0.0.72e329a4HRxe99#/model-market/detail/qwen-mt-turbo) |
 
 For large language models that are compatible with the OpenAI API but not listed in the table above, you can set environment variables using the same method outlined for OpenAI in the table.
 
