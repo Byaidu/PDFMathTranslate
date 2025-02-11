@@ -92,7 +92,7 @@ For different use cases, we provide distinct methods to use our program:
 
 <details>
   <summary>2. Portable (w/o Python installed)</summary>
-Video installation steps: https://www.bilibili.com/video/BV1H5NBe1ECU/?share_source=copy_web&vd_source=6766e91a10dda22652a74bdc18115d9d
+
 1. Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat)
 
 2. Double-click to run.
@@ -101,6 +101,8 @@ Video installation steps: https://www.bilibili.com/video/BV1H5NBe1ECU/?share_sou
 
 <details>
   <summary>3. Graphic user interface</summary>
+Video installation steps: https://www.bilibili.com/video/BV1H5NBe1ECU/?share_source=copy_web&vd_source=6766e91a10dda22652a74bdc18115d9d
+  
 1. Python installed (3.8 <= version <= 3.12)
 2. Install our package:
 
