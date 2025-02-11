@@ -105,6 +105,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 
 <h3 id="gui">方法三、圖形使用者介面</h3>
 視頻安裝步驟：https://www.bilibili.com/video/BV1H5NBe1ECU
+
 1. 確保已安裝 Python 版本大於 3.8 且小於 3.12  
 2. 安裝此程式：
 
