@@ -101,6 +101,9 @@ For different use cases, we provide distinct methods to use our program:
 
 <details>
   <summary>3. Graphic user interface</summary>
+  
+Video installation steps: https://www.bilibili.com/video/BV1H5NBe1ECU
+  
 1. Python installed (3.8 <= version <= 3.12)
 2. Install our package:
 

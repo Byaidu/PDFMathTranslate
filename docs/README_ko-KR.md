@@ -112,6 +112,8 @@ Python 환경을 미리 설치할 필요가 없습니다.
 
 <h3 id="gui">방법 3. GUI</h3>
 
+비디오 설치 단계：https://www.bilibili.com/video/BV1H5NBe1ECU
+
 1. Python이 설치되어 있어야 합니다 (버전 3.8 <= 버전 <= 3.12)
 2. 패키지를 설치합니다:
 
