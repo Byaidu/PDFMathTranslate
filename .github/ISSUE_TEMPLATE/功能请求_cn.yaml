@@ -1,0 +1,25 @@
+name: 功能请求
+description: 使用中文进行功能请求
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: describe
+    attributes:
+      label: 在什么场景下，需要你请求的功能？
+      description: 简要描述相关的使用场景
+    validations:
+      required: false
+  - type: textarea
+    id: solution
+    attributes:
+      label: 解决方案
+      description: 描述你想要的解决方案
+    validations:
+      required: false
+  - type: textarea
+    id: additional
+    attributes:
+      label: 其他内容
+      description: 关于该功能请求的任何其他项目。
+    validations:
+      required: false

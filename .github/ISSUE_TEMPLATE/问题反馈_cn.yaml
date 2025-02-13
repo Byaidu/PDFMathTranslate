@@ -1,0 +1,87 @@
+name: 上报 Bug
+description: 使用中文进行 Bug 报告
+labels: ['bug']
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 在提问之前...
+      options:
+      - label: 我已经搜索了现有的 issues
+        required: true
+      - label: 我在提问题之前至少花费了 5 分钟来思考和准备
+        required: true
+      - label: 我已经认真且完整的阅读了 wiki
+        required: true
+      - label: 我已经认真检查了问题和网络环境无关
+        required: true
+  - type: markdown
+    attributes:
+      value: |
+        感谢您使用本项目并反馈！
+  - type: textarea
+    id: environment
+    attributes:
+      label: 使用的环境
+      description: |
+        examples:
+          - **OS**: Ubuntu 24.10  
+          - **Python**: 3.12.0  
+          - **pdf2zh**: 1.9.0
+      value: |
+          - OS:
+          - Python:
+          - pdf2zh:
+      render: markdown
+    validations:
+      required: false
+  - type: textarea
+    id: describe
+    attributes:
+      label: 描述你的问题
+      description: 简要描述你的问题
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 如何复现
+      description: 重现该行为的步骤
+      value: |
+        1. 执行 '...'
+        2. 选择 '....'
+        3. 出现问题
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为
+      description: 简要描述你期望得到的反馈
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相关 Logs
+      description: 请复制并粘贴任何相关的日志输出。
+      render: Text
+    validations:
+      required: false
+  - type: textarea
+    id: PDFfile
+    attributes:
+      label: 原始PDF文件
+      description: |
+        如果涉及到排版错误的问题，请一定提供原始的PDF文件，方便复现错误。
+    validations:
+      required: false
+  - type: textarea
+    id: others
+    attributes:
+      label: 还有别的吗？
+      description: |
+        相关的配置？链接？参考资料？
+        任何能让我们对你所遇到的问题有更多了解的东西。
+    validations:
+      required: false
