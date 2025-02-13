@@ -5,8 +5,8 @@ body:
   - type: textarea
     id: describe
     attributes:
-      label: 你的功能请求是否与问题有关？
-      description: 简要描述相关的问题
+      label: 在什么场景下，需要你请求的功能？
+      description: 简要描述相关的使用场景
     validations:
       required: false
   - type: textarea
