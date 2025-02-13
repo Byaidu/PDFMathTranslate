@@ -220,6 +220,10 @@ class TranslateConverter(PDFConverterEx):
                         unicodedata.category(char[0])
                         in ["Lm", "Mn", "Sk", "Sm", "Zl", "Zp", "Zs"]   # 文字修饰符、数学符号、分隔符号
                         or ord(char[0]) in range(0x370, 0x400)          # 希腊字母
+                        or ord(char[0]) in range(0x1D44E, 0x1D468)  # Mathematical Italic
+                        or ord(char[0]) in range(0x1D482, 0x1D49C)  # Mathematical Bold Italic
+                        or ord(char[0]) in range(0x1D622, 0x1D63C)  # Mathematical Sans-Serif Italic
+                        or ord(char[0]) in range(0x1D656, 0x1D670)  # Mathematical Sans-Serif Bold Italic
                     )
                 ):
                     return True
