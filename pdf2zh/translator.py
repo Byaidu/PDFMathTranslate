@@ -286,6 +286,7 @@ class OllamaTranslator(BaseTranslator):
                     options=self.options,
                     messages=self.prompt(text, self.prompttext),
                 )
+                response = response["message"]["content"].strip()
                 if (
                     "deepseek-r1" in model
                     and "<think>" in response["message"]["content"].strip()
