@@ -24,7 +24,7 @@ jobs:
           New-Item -Path "./dep_build" -ItemType Directory -Force
 
           Write-Host "==== 复制代码到 dep_build ===="
-          Copy-Item -Path "./*" -Destination "./dep_build" -Recurse -Force
+          Get-ChildItem -Path "./" -Exclude "dep_build", "build" | Copy-Item -Destination "./dep_build" -Recurse -Force
 
           Write-Host "==== 下载并解压 Python 3.12.9 ===="
           $pythonUrl = "https://www.python.org/ftp/python/3.12.9/python-3.12.9-embed-amd64.zip"
