@@ -55,7 +55,7 @@ jobs:
           }
 
           Write-Host "==== 创建 Python venv 在 dep_build ===="
-          python3.12.exe -m venv .\dep_build\venv
+          python -m venv .\dep_build\venv
 
           Write-Host "==== 在 venv 环境中安装项目依赖 ===="
           .\dep_build\venv\Scripts\python.exe -m pip install --upgrade pip
