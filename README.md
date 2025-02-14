@@ -237,6 +237,8 @@ For downstream applications, please refer to our document about [API Details](./
 
 <h2 id="acknowledgement">Acknowledgements</h2>
 
+- [Immersive Translation](https://immersivetranslate.com) sponsors monthly Pro membership redemption codes for active contributors to this project, see details at: [CONTRIBUTOR_REWARD.md](https://github.com/funstory-ai/BabelDOC/blob/main/docs/CONTRIBUTOR_REWARD.md)
+
 - Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
 - Document parsing: [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
