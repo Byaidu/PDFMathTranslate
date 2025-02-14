@@ -1,6 +1,8 @@
-name: Manual Release Workflow
+name: windows exe Release Workflow
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       release_version:
@@ -18,7 +20,7 @@ jobs:
       - name: 设置 Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.12.9'
 
 
       - name: 执行所有任务（创建目录、下载、解压、复制文件、安装依赖）
