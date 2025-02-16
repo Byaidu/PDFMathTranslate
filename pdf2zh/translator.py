@@ -315,11 +315,7 @@ class OllamaTranslator(BaseTranslator):
         :param content: Non-streaming text content
         :return: Text without a thought chain
         """
-        matched_thought_ending_tag = re.search(r"</think>(.*)", content, re.DOTALL)
-        if matched_thought_ending_tag:
-            return matched_thought_ending_tag.group(1)
-
-        return content
+        return re.sub(r"^<think>.+?</think>", "", content, count=1, flags=re.DOTALL)
 
 
 class XinferenceTranslator(BaseTranslator):
