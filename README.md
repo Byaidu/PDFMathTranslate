@@ -75,7 +75,7 @@ For different use cases, we provide distinct methods to use our program:
 <details open>
   <summary>1. Commandline</summary>
 
-1. Python installed (3.8 <= version <= 3.12)
+1. Python installed (3.10 <= version <= 3.12)
 2. Install our package:
 
    ```bash
@@ -101,7 +101,7 @@ For different use cases, we provide distinct methods to use our program:
 
 <details>
   <summary>3. Graphic user interface</summary>
-1. Python installed (3.8 <= version <= 3.12)
+1. Python installed (3.10 <= version <= 3.12)
 2. Install our package:
 
 ```bash
