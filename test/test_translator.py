@@ -1,8 +1,13 @@
 import unittest
-from pdf2zh.translator import BaseTranslator
-from pdf2zh.translator import OpenAIlikedTranslator
+from unittest import mock
+
 from pdf2zh import cache
 from pdf2zh.config import ConfigManager
+from pdf2zh.translator import BaseTranslator, OllamaTranslator, OpenAIlikedTranslator
+
+# Since it is necessary to test whether the functionality meets the expected requirements,
+# private functions and private methods are allowed to be called.
+# pyright: reportPrivateUsage=false
 
 
 class AutoIncreaseTranslator(BaseTranslator):
@@ -142,6 +147,30 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
             self.default_envs["OPENAILIKED_BASE_URL"],
         )
         self.assertEqual(translator.envs["OPENAILIKED_API_KEY"], None)
+
+
+class TestOllamaTranslator(unittest.TestCase):
+    def setUp(self) -> None:
+        self.mock_translator = mock.MagicMock()
+
+    def test_do_translate(self):
+        self.mock_translator.do_translate(text="The sky appears blue because of...")
+        self.mock_translator.do_translate.return_value = "天空呈现蓝色是因为..."
+        self.mock_translator.do_translate.assert_called_once()
+
+    def test_remove_cot_content(self):
+        fake_cot_resp_text = """<think>
+
+        </think>
+
+        The sky appears blue because...
+        """
+        removed_cot_content = OllamaTranslator._remove_cot_content(fake_cot_resp_text)
+        excepted_content = "The sky appears blue because..."
+        self.assertEqual(excepted_content, removed_cot_content.strip())
+
+        non_cot_content = OllamaTranslator._remove_cot_content(excepted_content)
+        self.assertEqual(excepted_content, non_cot_content)
 
 
 if __name__ == "__main__":
