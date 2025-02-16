@@ -1,0 +1,7 @@
+import sys
+import pdf2zh.pdf2zh
+
+if len(sys.argv) == 1:
+    sys.argv.append("-i")  # 无参数时自动添加 -i 参数
+
+sys.exit(pdf2zh.pdf2zh.main())

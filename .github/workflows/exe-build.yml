@@ -1,0 +1,89 @@
+name: windows exe Release Workflow
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release Version (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.9'
+
+
+      - name: 执行所有任务（创建目录、下载、解压、复制文件、安装依赖）
+        shell: pwsh
+        run: |
+          Write-Host "==== 创建必要的目录 ===="
+          New-Item -Path "./build" -ItemType Directory -Force
+          New-Item -Path "./build/runtime" -ItemType Directory -Force
+          New-Item -Path "./dep_build" -ItemType Directory -Force
+
+          Write-Host "==== 复制代码到 dep_build ===="
+          Get-ChildItem -Path "./" -Exclude "dep_build", "build" | Copy-Item -Destination "./dep_build" -Recurse -Force
+
+          Write-Host "==== 下载并解压 Python 3.12.9 ===="
+          $pythonUrl = "https://www.python.org/ftp/python/3.12.9/python-3.12.9-embed-amd64.zip"
+          $pythonZip = "./dep_build/python.zip"
+          Invoke-WebRequest -Uri $pythonUrl -OutFile $pythonZip
+          Expand-Archive -Path $pythonZip -DestinationPath "./build/runtime" -Force
+
+          Write-Host "==== 下载并解压 PyStand ===="
+          $pystandUrl = "https://github.com/skywind3000/PyStand/releases/download/1.1.4/PyStand-v1.1.4-exe.zip"
+          $pystandZip = "./dep_build/PyStand.zip"
+          Invoke-WebRequest -Uri $pystandUrl -OutFile $pystandZip
+          Expand-Archive -Path $pystandZip -DestinationPath "./dep_build/PyStand" -Force
+
+          Write-Host "==== 复制 PyStand.exe 到 build 并重命名 ===="
+          $pystandExe = "./dep_build/PyStand/PyStand-x64-CLI/PyStand.exe"
+          $destExe = "./build/pdf2zh.exe"
+          if (Test-Path $pystandExe) {
+              Copy-Item -Path $pystandExe -Destination $destExe -Force
+          } else {
+              Write-Host "错误: PyStand.exe 未找到！"
+              exit 1
+          }
+
+          Write-Host "==== 创建 Python venv 在 dep_build ===="
+          python -m venv .\dep_build\venv
+
+          Write-Host "==== 在 venv 环境中安装项目依赖 ===="
+          .\dep_build\venv\Scripts\python.exe -m pip install --upgrade pip
+          .\dep_build\venv\Scripts\python.exe -m pip install .
+
+          Write-Host "==== 复制 venv/Lib/site-packages 到 build/ ===="
+          Copy-Item -Path "./dep_build/venv/Lib/site-packages" -Destination "./build/site-packages" -Recurse -Force
+
+          Write-Host "==== 复制 script/_pystand_static.int 到 build/ ===="
+          $staticFile = "./script/_pystand_static.int"
+          $destStatic = "./build/_pystand_static.int"
+          if (Test-Path $staticFile) {
+              Copy-Item -Path $staticFile -Destination $destStatic -Force
+          } else {
+              Write-Host "错误: script/_pystand_static.int 未找到！"
+              exit 1
+          }
+
+          Write-Host "==== 压缩 build 目录 ===="
+          $zipFile = "build-${{ github.event.inputs.release_version }}.zip"
+          Compress-Archive -Path "./build/*" -DestinationPath $zipFile -Force
+
+      - name: 创建 GitHub Release 并上传构建产物
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_version }}
+          files: build-${{ github.event.inputs.release_version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
