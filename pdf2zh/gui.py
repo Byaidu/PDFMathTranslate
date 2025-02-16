@@ -168,6 +168,7 @@ def stop_translate_file(state: dict) -> None:
 
 
 def translate_file(
+    engine_type,
     file_type,
     file_input,
     link_input,
@@ -269,6 +270,7 @@ def translate_file(
         threads = 1
 
     param = {
+        "default_engine": engine_type == 'Official',
         "files": [str(file_raw)],
         "pages": selected_page,
         "lang_in": lang_from,
@@ -379,6 +381,12 @@ with gr.Blocks(
 
     with gr.Row():
         with gr.Column(scale=1):
+            gr.Markdown("## Choose which engine to use")
+            engine_type = gr.Radio(
+                choices = ["Official", "MyTest"],
+                label = "Engine",
+                value="Official"
+            )
             gr.Markdown("## File | < 5 MB" if flag_demo else "## File")
             file_type = gr.Radio(
                 choices=["File", "Link"],
@@ -547,6 +555,7 @@ with gr.Blocks(
     translate_btn.click(
         translate_file,
         inputs=[
+            engine_type,
             file_type,
             file_input,
             link_input,

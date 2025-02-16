@@ -109,6 +109,23 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
                 for xobjid, xobjstrm in dict_value(v).items():
                     self.xobjmap[xobjid] = xobjstrm
 
+    @staticmethod
+    def is_box(ctm, curpath):
+        if len(curpath) < 4 or curpath[0][0] != 'm':
+            return False
+        if curpath[-1][0] == 'h':
+            return len(curpath) == 5
+        else:
+            return len(curpath) == 5 and curpath[0][1] == curpath[-1][1]
+
+    @staticmethod
+    def is_horizontal_line(ctm, curpath):
+        return (len(curpath) == 2
+            and curpath[0][0] == "m"
+            and curpath[1][0] == "l"
+            and apply_matrix_pt(ctm, curpath[0][-2:])[1]
+            == apply_matrix_pt(ctm, curpath[1][-2:])[1])
+
     def do_S(self) -> None:
         # 重载过滤非公式线条
         """Stroke path"""
@@ -119,12 +136,8 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
             else:
                 return color == 0
 
-        if (
-            len(self.curpath) == 2
-            and self.curpath[0][0] == "m"
-            and self.curpath[1][0] == "l"
-            and apply_matrix_pt(self.ctm, self.curpath[0][-2:])[1]
-            == apply_matrix_pt(self.ctm, self.curpath[1][-2:])[1]
+        if ((PDFPageInterpreterEx.is_horizontal_line(self.ctm, self.curpath) 
+             or PDFPageInterpreterEx.is_box(self.ctm, self.curpath))
             and is_black(self.graphicstate.scolor)
         ):  # 独立直线，水平，黑色
             # print(apply_matrix_pt(self.ctm,self.curpath[0][-2:]),apply_matrix_pt(self.ctm,self.curpath[1][-2:]),self.graphicstate.scolor)
@@ -139,10 +152,16 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
     def do_f(self) -> None:
         """Fill path using nonzero winding number rule"""
         # self.device.paint_path(self.graphicstate, False, True, False, self.curpath)
-        self.curpath = []
+        if ((PDFPageInterpreterEx.is_box(self.ctm, self.curpath))):
+            self.device.paint_path(self.graphicstate, True, False, False, self.curpath)
+            self.curpath = []
+            return "n"
+        else:
+            self.curpath = []
 
     def do_F(self) -> None:
         """Fill path using nonzero winding number rule (obsolete)"""
+        pass
 
     def do_f_a(self) -> None:
         """Fill path using even-odd rule"""
