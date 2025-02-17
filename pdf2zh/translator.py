@@ -407,9 +407,7 @@ class OpenAITranslator(BaseTranslator):
         )
         if not response.choices:
             if hasattr(response, "error"):
-                raise ValueError("Empty response from OpenAI API", response.error)
-            else:
-                raise ValueError("Empty response from OpenAI API")
+                raise ValueError("Error response from Service", response.error)
         return response.choices[0].message.content.strip()
 
     def get_formular_placeholder(self, id: int):
