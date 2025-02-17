@@ -105,28 +105,47 @@ class BaseTranslator:
         """
         raise NotImplementedError
 
-    def prompt(self, text: str, prompt: Template | None = None) -> list[dict[str, Any]]:
-        if prompt:
-            template_fill_values = {
-                "lang_in": self.lang_in,
-                "lang_out": self.lang_out,
-                "text": text,
-            }
-            prompt_string = prompt.substitute(template_fill_values)
-            prompt_as_json = json.loads(prompt_string)
-            logging.info("Use the prompt provided by the user.")
-            return prompt_as_json
-
-        return [
+    def prompt(
+        self, text: str, prompt_template: Template | None = None
+    ) -> list[dict[str, Any]]:
+        default_prompt = [
             {
                 "role": "system",
                 "content": "You are a professional,authentic machine translation engine. Only Output the translated text, do not include any other text.",
             },
             {
                 "role": "user",
-                "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
+                "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",
             },
         ]
+
+        if prompt_template:
+            template_fill_values = {
+                "lang_in": self.lang_in,
+                "lang_out": self.lang_out,
+                "text": text,
+            }
+            prompt_as_json: list[dict[str, Any]] = json.loads(
+                prompt_template.safe_substitute({})
+            )
+
+            for msg_turn in prompt_as_json:
+                # current is user message turn
+                if msg_turn["role"] == "user":
+                    # substitute values into template variables
+                    msg_turn["content"] = Template(msg_turn["content"]).substitute(
+                        template_fill_values
+                    )
+                    logging.info("Use the prompt provided by the user.")
+                    return prompt_as_json
+
+            logging.warning("There is no *User message turn* provided in the prompt.")
+            logging.warning(
+                "The default prompt will be used instead of the user-provided prompt."
+            )
+
+        logging.info("Use the default prompt.")
+        return default_prompt
 
     def __str__(self):
         return f"{self.name} {self.lang_in} {self.lang_out} {self.model}"
@@ -303,7 +322,6 @@ class OllamaTranslator(BaseTranslator):
             model=self.model,
             messages=self.prompt(text, self.prompt_template),
             options=self.options,
-            stream=False,
         )
         content = self._remove_cot_content(response.message.content or "")
         return content.strip()
