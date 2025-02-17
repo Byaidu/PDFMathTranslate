@@ -13,12 +13,13 @@ body:
         required: true
       - label: 我已经认真且完整的阅读了 wiki
         required: true
-      - label: 我已经认真检查了问题和网络环境无关
+      - label: 我已经认真检查了问题和网络环境无关（包括但不限于Google不可用，模型下载失败）
         required: true
   - type: markdown
     attributes:
       value: |
         感谢您使用本项目并反馈！
+        请再次确认上述复选框所述的内容已经认真执行！
   - type: textarea
     id: environment
     attributes:

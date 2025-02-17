@@ -279,35 +279,25 @@ class OllamaTranslator(BaseTranslator):
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
 
     def do_translate(self, text):
-        maxlen = max(2000, len(text) * 5)
         for model in self.model.split(";"):
             try:
-                response = ""
-                stream = self.client.chat(
-                    model=model,
+                response = self.client.chat(
+                    model=self.model,
                     options=self.options,
                     messages=self.prompt(text, self.prompttext),
-                    stream=True,
                 )
-                in_think_block = False
-                is_deepseek_r1 = "deepseek-r1" in model
-                for chunk in stream:
-                    chunk = chunk["message"]["content"]
-                    # 只在 deepseek-r1 模型下检查 <think> 块
-                    if is_deepseek_r1:
-                        if "<think>" in chunk:
-                            in_think_block = True
-                            chunk = chunk.split("<think>")[0]
-                        if "</think>" in chunk:
-                            in_think_block = False
-                            chunk = chunk.split("</think>")[1]
-                        if not in_think_block:
-                            response += chunk
-                    else:
-                        response += chunk
-                    if len(response) > maxlen:
-                        raise Exception("Response too long")
-                return response.strip()
+                response = response["message"]["content"].strip()
+                if (
+                    "deepseek-r1" in model
+                    and "<think>" in response["message"]["content"].strip()
+                    and "</think>" in response["message"]["content"].strip()
+                ):
+                    response = re.sub(
+                        r"^<think>.+?</think>",
+                        "",
+                        response["message"]["content"].strip(),
+                    )
+                return response
             except Exception as e:
                 print(e)
         raise Exception("All models failed")
@@ -402,9 +392,7 @@ class OpenAITranslator(BaseTranslator):
         )
         if not response.choices:
             if hasattr(response, "error"):
-                raise ValueError("Empty response from OpenAI API", response.error)
-            else:
-                raise ValueError("Empty response from OpenAI API")
+                raise ValueError("Error response from Service", response.error)
         return response.choices[0].message.content.strip()
 
     def get_formular_placeholder(self, id: int):
