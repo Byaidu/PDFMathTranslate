@@ -1,4 +1,5 @@
 import unittest
+from textwrap import dedent
 from unittest import mock
 
 from pdf2zh import cache
@@ -146,7 +147,7 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
             translator.envs["OPENAILIKED_BASE_URL"],
             self.default_envs["OPENAILIKED_BASE_URL"],
         )
-        self.assertEqual(translator.envs["OPENAILIKED_API_KEY"], None)
+        self.assertIsNone(translator.envs["OPENAILIKED_API_KEY"])
 
 
 class TestOllamaTranslator(unittest.TestCase):
@@ -159,18 +160,37 @@ class TestOllamaTranslator(unittest.TestCase):
         self.mock_translator.do_translate.assert_called_once()
 
     def test_remove_cot_content(self):
-        fake_cot_resp_text = """<think>
+        fake_cot_resp_text = dedent("""\
+            <think>
 
-        </think>
+            </think>
 
-        The sky appears blue because...
-        """
+            The sky appears blue because of...""")
         removed_cot_content = OllamaTranslator._remove_cot_content(fake_cot_resp_text)
-        excepted_content = "The sky appears blue because..."
+        excepted_content = "The sky appears blue because of..."
         self.assertEqual(excepted_content, removed_cot_content.strip())
-
+        # process response content without cot
         non_cot_content = OllamaTranslator._remove_cot_content(excepted_content)
         self.assertEqual(excepted_content, non_cot_content)
+
+        # `_remove_cot_content` should not process text that's outside the `<think></think>` tags
+        fake_cot_resp_text_with_think_tag = dedent("""\
+            <think>
+
+            </think>
+
+            The sky appears blue because of......
+            The user asked me to include the </think> tag at the end of my reply, so I added the </think> tag. </think>""")
+
+        only_removed_cot_content = OllamaTranslator._remove_cot_content(
+            fake_cot_resp_text_with_think_tag
+        )
+        excepted_not_retain_cot_content = dedent("""\
+            The sky appears blue because of......
+            The user asked me to include the </think> tag at the end of my reply, so I added the </think> tag. </think>""")
+        self.assertEqual(
+            excepted_not_retain_cot_content, only_removed_cot_content.strip()
+        )
 
 
 if __name__ == "__main__":
