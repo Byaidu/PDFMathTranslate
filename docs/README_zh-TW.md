@@ -84,7 +84,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 
 <h3 id="cmd">方法一、命令列工具</h3>
 
-1. 確保已安裝 Python 版本大於 3.8 且小於 3.12  
+1. 確保已安裝 Python 版本大於 3.10 且小於 3.12  
 2. 安裝此程式：
 
    ```bash
@@ -105,7 +105,7 @@ set HF_ENDPOINT=https://hf-mirror.com
 
 <h3 id="gui">方法三、圖形使用者介面</h3>
 
-1. 確保已安裝 Python 版本大於 3.8 且小於 3.12  
+1. 確保已安裝 Python 版本大於 3.10 且小於 3.12  
 2. 安裝此程式：
 
    ```bash

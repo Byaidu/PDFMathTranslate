@@ -75,7 +75,7 @@ For different use cases, we provide distinct methods to use our program:
 <details open>
   <summary>1. Commandline</summary>
 
-1. Python installed (3.8 <= version <= 3.12)
+1. Python installed (3.10 <= version <= 3.12)
 2. Install our package:
 
    ```bash
@@ -101,7 +101,7 @@ For different use cases, we provide distinct methods to use our program:
 
 <details>
   <summary>3. Graphic user interface</summary>
-1. Python installed (3.8 <= version <= 3.12)
+1. Python installed (3.10 <= version <= 3.12)
 2. Install our package:
 
 ```bash
@@ -236,6 +236,8 @@ For downstream applications, please refer to our document about [API Details](./
 - [ ] Plugins of [Zotero](https://github.com/zotero/zotero) and [Obsidian](https://github.com/obsidianmd/obsidian-releases)
 
 <h2 id="acknowledgement">Acknowledgements</h2>
+
+- [Immersive Translation](https://immersivetranslate.com) sponsors monthly Pro membership redemption codes for active contributors to this project, see details at: [CONTRIBUTOR_REWARD.md](https://github.com/funstory-ai/BabelDOC/blob/main/docs/CONTRIBUTOR_REWARD.md)
 
 - Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 

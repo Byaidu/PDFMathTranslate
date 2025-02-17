@@ -4,8 +4,18 @@ import os.path
 import cv2
 import numpy as np
 import ast
-import onnx
-import onnxruntime
+
+try:
+    import onnx
+    import onnxruntime
+except ImportError as e:
+    if "DLL load failed" in str(e):
+        raise OSError(
+            "Microsoft Visual C++ Redistributable is not installed. "
+            "Download it at https://aka.ms/vs/17/release/vc_redist.x64.exe"
+        ) from e
+    raise
+
 from huggingface_hub import hf_hub_download
 
 from pdf2zh.config import ConfigManager

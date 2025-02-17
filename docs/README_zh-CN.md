@@ -89,7 +89,7 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 
 <h3 id="cmd">方法一、命令行工具</h3>
 
-  1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
+  1. 确保安装了版本大于 3.10 且小于 3.12 的 Python
   2. 安装此程序：
 
       ```bash
@@ -110,7 +110,7 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 
 <h3 id="gui">方法三、图形交互界面</h3>
 
-1. 确保安装了版本大于 3.8 且小于 3.12 的 Python
+1. 确保安装了版本大于 3.10 且小于 3.12 的 Python
 2. 安装此程序：
 
       ```bash
