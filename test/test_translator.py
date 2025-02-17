@@ -160,12 +160,14 @@ class TestOllamaTranslator(unittest.TestCase):
         self.mock_translator.do_translate.assert_called_once()
 
     def test_remove_cot_content(self):
-        fake_cot_resp_text = dedent("""\
+        fake_cot_resp_text = dedent(
+            """\
             <think>
 
             </think>
 
-            The sky appears blue because of...""")
+            The sky appears blue because of..."""
+        )
         removed_cot_content = OllamaTranslator._remove_cot_content(fake_cot_resp_text)
         excepted_content = "The sky appears blue because of..."
         self.assertEqual(excepted_content, removed_cot_content.strip())
@@ -174,20 +176,24 @@ class TestOllamaTranslator(unittest.TestCase):
         self.assertEqual(excepted_content, non_cot_content)
 
         # `_remove_cot_content` should not process text that's outside the `<think></think>` tags
-        fake_cot_resp_text_with_think_tag = dedent("""\
+        fake_cot_resp_text_with_think_tag = dedent(
+            """\
             <think>
 
             </think>
 
             The sky appears blue because of......
-            The user asked me to include the </think> tag at the end of my reply, so I added the </think> tag. </think>""")
+            The user asked me to include the </think> tag at the end of my reply, so I added the </think> tag. </think>"""
+        )
 
         only_removed_cot_content = OllamaTranslator._remove_cot_content(
             fake_cot_resp_text_with_think_tag
         )
-        excepted_not_retain_cot_content = dedent("""\
+        excepted_not_retain_cot_content = dedent(
+            """\
             The sky appears blue because of......
-            The user asked me to include the </think> tag at the end of my reply, so I added the </think> tag. </think>""")
+            The user asked me to include the </think> tag at the end of my reply, so I added the </think> tag. </think>"""
+        )
         self.assertEqual(
             excepted_not_retain_cot_content, only_removed_cot_content.strip()
         )
