@@ -155,9 +155,29 @@ class TestOllamaTranslator(unittest.TestCase):
         self.mock_translator = mock.MagicMock()
 
     def test_do_translate(self):
-        self.mock_translator.do_translate(text="The sky appears blue because of...")
-        self.mock_translator.do_translate.return_value = "天空呈现蓝色是因为..."
-        self.mock_translator.do_translate.assert_called_once()
+        # Create mock client
+        mock_client = mock.MagicMock()
+        mock_response = mock.MagicMock()
+        mock_response.message.content = "<think>123</think>天空呈现蓝色是因为..."
+        mock_client.chat.return_value = mock_response
+
+        # Create translator with mock client
+        translator = OllamaTranslator("en", "zh", "test")
+        translator.client = mock_client
+
+        # Test translation
+        text = "The sky appears blue because of..."
+        result = translator.do_translate(text)
+
+        # Verify mock was called correctly
+        mock_client.chat.assert_called_once_with(
+            model="test",
+            messages=translator.prompt(text, None),
+            options={"temperature": 0, "num_predict": max(2000, len(text) * 5)}
+        )
+
+        # Verify result
+        self.assertEqual("天空呈现蓝色是因为...", result)
 
     def test_remove_cot_content(self):
         fake_cot_resp_text = dedent(
