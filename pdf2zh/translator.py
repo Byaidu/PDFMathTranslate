@@ -27,6 +27,9 @@ from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
 import ast
+import logging
+
+logger = logging.getLogger(__name__)
 
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
@@ -118,34 +121,21 @@ class BaseTranslator:
                 "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",
             },
         ]
+        try:
+            if prompt_template:
+                template_fill_values = {
+                    "lang_in": self.lang_in,
+                    "lang_out": self.lang_out,
+                    "text": text,
+                }
+                prompt: list[dict[str, Any]] = ast.literal_eval(
+                    prompt_template.safe_substitute(template_fill_values)
+                )
 
-        if prompt_template:
-            template_fill_values = {
-                "lang_in": self.lang_in,
-                "lang_out": self.lang_out,
-                "text": text,
-            }
-            prompt_as_json: list[dict[str, Any]] = ast.literal_eval(
-                prompt_template.safe_substitute({})
-            )
-
-            for msg_turn in prompt_as_json:
-                # current is user message turn
-                if msg_turn["role"] == "user":
-                    # substitute values into template variables
-                    msg_turn["content"] = Template(msg_turn["content"]).substitute(
-                        template_fill_values
-                    )
-                    logging.info("Use the prompt provided by the user.")
-                    return prompt_as_json
-
-            logging.warning("There is no *User message turn* provided in the prompt.")
-            logging.warning(
-                "The default prompt will be used instead of the user-provided prompt."
-            )
-
-        logging.info("Use the default prompt.")
-        return default_prompt
+                return prompt
+        except Exception:
+            logging.exception("Error parsing prompt, use the default prompt.")
+            return default_prompt
 
     def __str__(self):
         return f"{self.name} {self.lang_in} {self.lang_out} {self.model}"
