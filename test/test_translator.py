@@ -173,7 +173,7 @@ class TestOllamaTranslator(unittest.TestCase):
         mock_client.chat.assert_called_once_with(
             model="test",
             messages=translator.prompt(text, None),
-            options={"temperature": 0, "num_predict": max(2000, len(text) * 5)}
+            options={"temperature": 0, "num_predict": max(2000, len(text) * 5)},
         )
 
         # Verify result

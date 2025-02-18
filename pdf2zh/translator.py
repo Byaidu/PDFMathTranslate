@@ -31,6 +31,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
@@ -406,7 +407,7 @@ class OpenAITranslator(BaseTranslator):
         )
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
-        self.add_cache_impact_parameters("prompt", self.prompt('', self.prompttext))
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
     def do_translate(self, text) -> str:
         response = self.client.chat.completions.create(
@@ -462,7 +463,8 @@ class AzureOpenAITranslator(BaseTranslator):
         )
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
-        self.add_cache_impact_parameters("prompt", self.prompt('', self.prompttext))
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
+
     def do_translate(self, text) -> str:
         response = self.client.chat.completions.create(
             model=self.model,
@@ -498,7 +500,8 @@ class ModelScopeTranslator(OpenAITranslator):
             model = self.envs["MODELSCOPE_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
-        self.add_cache_impact_parameters("prompt", self.prompt('', self.prompttext))
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
+
 
 class ZhipuTranslator(OpenAITranslator):
     # https://bigmodel.cn/dev/api/thirdparty-frame/openai-sdk
@@ -517,7 +520,7 @@ class ZhipuTranslator(OpenAITranslator):
             model = self.envs["ZHIPU_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
-        self.add_cache_impact_parameters("prompt", self.prompt('', self.prompttext))
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
     def do_translate(self, text) -> str:
         try:
@@ -553,7 +556,8 @@ class SiliconTranslator(OpenAITranslator):
             model = self.envs["SILICON_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
-        self.add_cache_impact_parameters("prompt", self.prompt('', self.prompttext))
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
+
 
 class GeminiTranslator(OpenAITranslator):
     # https://ai.google.dev/gemini-api/docs/openai
@@ -572,7 +576,8 @@ class GeminiTranslator(OpenAITranslator):
             model = self.envs["GEMINI_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
-        self.add_cache_impact_parameters("prompt", self.prompt('', self.prompttext))
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
+
 
 class AzureTranslator(BaseTranslator):
     # https://github.com/Azure/azure-sdk-for-python
