@@ -112,11 +112,11 @@ class BaseTranslator:
             return [
                 {
                     "role": "system",
-                    "content": "You are a professional,authentic machine translation engine. Only Output the translated text, do not include any other text.",
+                    "content": "You are a professional,authentic machine translation engine, and expert in math and computer science. Only Output the translated text, do not include any other text.",
                 },
                 {
                     "role": "user",
-                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
+                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text. For terminology words, if they are commonly used in {self.lang_in}, you can keep them untranslated.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
                 },
             ]
 

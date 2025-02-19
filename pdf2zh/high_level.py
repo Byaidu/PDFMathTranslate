@@ -23,6 +23,7 @@ from pdfminer.pdfparser import PDFParser
 from pymupdf import Document, Font
 
 from pdf2zh.converter import TranslateConverter
+from pdf2zh.converter2 import TranslateConverter2
 from pdf2zh.doclayout import OnnxModel
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
 
@@ -76,29 +77,52 @@ def translate_patch(
     service: str = "",
     noto_name: str = "",
     noto: Font = None,
+    noto_bold_name: str = "",
+    noto_bold: Font = None,
     callback: object = None,
     cancellation_event: asyncio.Event = None,
     model: OnnxModel = None,
     envs: Dict = None,
     prompt: Template = None,
+    default_engine: bool = True,
     **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
     layout = {}
-    device = TranslateConverter(
-        rsrcmgr,
-        vfont,
-        vchar,
-        thread,
-        layout,
-        lang_in,
-        lang_out,
-        service,
-        noto_name,
-        noto,
-        envs,
-        prompt,
-    )
+    if default_engine:
+        device = TranslateConverter(
+            rsrcmgr,
+            vfont,
+            vchar,
+            thread,
+            layout,
+            lang_in,
+            lang_out,
+            service,
+            noto_name,
+            noto,
+            # noto_bold_name,
+            # noto_bold,
+            envs,
+            prompt,
+        )
+    else:
+        device = TranslateConverter2(
+            rsrcmgr,
+            vfont,
+            vchar,
+            thread,
+            layout,
+            lang_in,
+            lang_out,
+            service,
+            noto_name,
+            noto,
+            noto_bold_name,
+            noto_bold,
+            envs,
+            prompt,
+        )
 
     assert device is not None
     obj_patch = {}
@@ -150,6 +174,11 @@ def translate_patch(
                     )
                     box[y0:y1, x0:x1] = 0
             layout[page.pageno] = box
+            # # 将layout存成图片文件，便于debug。颜色调整成可区分的
+            # import cv2
+            # cv2.imwrite(f"layout_{page.pageno}.png", box[::-1,:].astype(np.uint8) * 20)
+            
+
             # 新建一个 xref 存放新指令流
             page.page_xref = doc_zh.get_new_xref()  # hack 插入页面的新 xref
             doc_zh.update_object(page.page_xref, "<<>>")
@@ -175,14 +204,19 @@ def translate_stream(
     model: OnnxModel = None,
     envs: Dict = None,
     prompt: Template = None,
+    default_engine: bool = True,
     **kwarg: Any,
 ):
     font_list = [("tiro", None)]
 
     font_path = download_remote_fonts(lang_out.lower())
+    font_path_bold = download_remote_fonts_bold(lang_out.lower())
     noto_name = NOTO_NAME
     noto = Font(noto_name, font_path)
+    noto_bold_name = NOTO_NAME + "_bold"
+    noto_bold = Font(noto_name, font_path_bold)
     font_list.append((noto_name, font_path))
+    font_list.append((noto_bold_name, font_path_bold))
 
     doc_en = Document(stream=stream)
     stream = io.BytesIO()
@@ -308,6 +342,7 @@ def translate(
     model: OnnxModel = None,
     envs: Dict = None,
     prompt: Template = None,
+    default_engine: bool = True,
     **kwarg: Any,
 ):
     if not files:
@@ -385,6 +420,33 @@ def download_remote_fonts(lang: str):
         **{la: "GoNotoKurrent-Regular.ttf" for la in noto_list},
         **{
             la: f"SourceHanSerif{region}-Regular.ttf"
+            for region, langs in {
+                "CN": ["zh-cn", "zh-hans", "zh"],
+                "TW": ["zh-tw", "zh-hant"],
+                "JP": ["ja"],
+                "KR": ["ko"],
+            }.items()
+            for la in langs
+        },
+    }
+    font_name = LANG_NAME_MAP.get(lang, "GoNotoKurrent-Regular.ttf")
+
+    # docker
+    font_path = ConfigManager.get("NOTO_FONT_PATH", Path("/app", font_name).as_posix())
+    if not Path(font_path).exists():
+        font_path = Path(tempfile.gettempdir(), font_name).as_posix()
+    if not Path(font_path).exists():
+        print(f"Downloading {font_name}...")
+        urllib.request.urlretrieve(f"{URL_PREFIX}{font_name}", font_path)
+
+    return font_path
+
+def download_remote_fonts_bold(lang: str):
+    URL_PREFIX = "https://github.com/timelic/source-han-serif/releases/download/main/"
+    LANG_NAME_MAP = {
+        **{la: "GoNotoKurrent-Regular.ttf" for la in noto_list},
+        **{
+            la: f"SourceHanSerif{region}-Bold.ttf"
             for region, langs in {
                 "CN": ["zh-cn", "zh-hans", "zh"],
                 "TW": ["zh-tw", "zh-hant"],
