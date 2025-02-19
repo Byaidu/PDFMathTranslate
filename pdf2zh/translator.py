@@ -139,7 +139,9 @@ class BaseTranslator:
                 prompt: list[dict[str, Any]] = [
                     {
                         "role": "user",
-                        "content": prompt_template.safe_substitute(template_fill_values),
+                        "content": prompt_template.safe_substitute(
+                            template_fill_values
+                        ),
                     }
                 ]
 
