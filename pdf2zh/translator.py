@@ -6,7 +6,7 @@ import re
 import unicodedata
 from copy import copy
 from string import Template
-from typing import Any
+from typing import cast
 
 import argostranslate.package
 import argostranslate.translate
@@ -26,8 +26,6 @@ from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 
 from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
-import ast
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +84,7 @@ class BaseTranslator:
         """
         self.cache.add_params(k, v)
 
-    def translate(self, text: str, ignore_cache=False) -> str:
+    def translate(self, text: str, ignore_cache: bool = False) -> str:
         """
         Translate the text, and the other part should call this method.
         :param text: text to translate
@@ -111,44 +109,42 @@ class BaseTranslator:
 
     def prompt(
         self, text: str, prompt_template: Template | None = None
-    ) -> list[dict[str, Any]]:
-        default_prompt = [
+    ) -> list[dict[str, str]]:
+        try:
+            return [
+                {
+                    "role": "user",
+                    "content": cast(Template, prompt_template).safe_substitute(
+                        {
+                            "lang_in": self.lang_in,
+                            "lang_out": self.lang_out,
+                            "text": text,
+                        }
+                    ),
+                }
+            ]
+        except AttributeError:  # `prompt_template` is None
+            pass
+        except Exception:
+            logging.exception("Error parsing prompt, use the default prompt.")
+
+        return [
             {
                 "role": "user",
                 "content": (
-                    f"You are a professional,authentic machine translation engine."
-                    f"Only Output the translated text, do not include any other text."
-                    f"\n\n"
+                    "You are a professional,authentic machine translation engine."
+                    "Only Output the translated text, do not include any other text."
+                    "\n\n"
                     f"Translate the following markdown source text to {self.lang_out}."
-                    f"Keep the formula notation {{v*}} unchanged. "
-                    f"Output translation directly without any additional text."
-                    f"\n\n"
+                    "Keep the formula notation {v*} unchanged. "
+                    "Output translation directly without any additional text."
+                    "\n\n"
                     f"Source Text: {text}"
-                    f"\n\n"
-                    f"Translated Text:",
+                    "\n\n"
+                    "Translated Text:"
                 ),
             },
         ]
-        try:
-            if prompt_template:
-                template_fill_values = {
-                    "lang_in": self.lang_in,
-                    "lang_out": self.lang_out,
-                    "text": text,
-                }
-                prompt: list[dict[str, Any]] = [
-                    {
-                        "role": "user",
-                        "content": prompt_template.safe_substitute(
-                            template_fill_values
-                        ),
-                    }
-                ]
-
-                return prompt
-        except Exception:
-            logging.exception("Error parsing prompt, use the default prompt.")
-            return default_prompt
 
     def __str__(self):
         return f"{self.name} {self.lang_in} {self.lang_out} {self.model}"
@@ -751,7 +747,7 @@ class ArgosTranslator(BaseTranslator):
         download_path = available_package.download()
         argostranslate.package.install_from_path(download_path)
 
-    def translate(self, text):
+    def translate(self, text: str, ignore_cache: bool = False):
         # Translate
         installed_languages = argostranslate.translate.get_installed_languages()
         from_lang = list(filter(lambda x: x.code == self.lang_in, installed_languages))[
