@@ -114,12 +114,19 @@ class BaseTranslator:
     ) -> list[dict[str, Any]]:
         default_prompt = [
             {
-                "role": "system",
-                "content": "You are a professional,authentic machine translation engine. Only Output the translated text, do not include any other text.",
-            },
-            {
                 "role": "user",
-                "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",
+                "content": (
+                    f"You are a professional,authentic machine translation engine."
+                    f"Only Output the translated text, do not include any other text."
+                    f"\n\n"
+                    f"Translate the following markdown source text to {self.lang_out}."
+                    f"Keep the formula notation {{v*}} unchanged. "
+                    f"Output translation directly without any additional text."
+                    f"\n\n"
+                    f"Source Text: {text}"
+                    f"\n\n"
+                    f"Translated Text:",
+                ),
             },
         ]
         try:
@@ -129,9 +136,12 @@ class BaseTranslator:
                     "lang_out": self.lang_out,
                     "text": text,
                 }
-                prompt: list[dict[str, Any]] = ast.literal_eval(
-                    prompt_template.safe_substitute(template_fill_values)
-                )
+                prompt: list[dict[str, Any]] = [
+                    {
+                        "role": "user",
+                        "content": prompt_template.safe_substitute(template_fill_values),
+                    }
+                ]
 
                 return prompt
         except Exception:
