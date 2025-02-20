@@ -15,7 +15,7 @@ ADD "https://github.com/timelic/source-han-serif/releases/download/main/SourceHa
 ADD "https://github.com/timelic/source-han-serif/releases/download/main/SourceHanSerifKR-Regular.ttf" /app/
 
 RUN apt-get update && \
-     apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxext6 libsm6 libxrender1 && \
+     apt-get install --no-install-recommends -y libgl1 libglib2.0-dev libxext6 libsm6 libxrender1 && \
      rm -rf /var/lib/apt/lists/* && uv pip install --system --no-cache huggingface-hub && \
      python3 -c "from huggingface_hub import hf_hub_download; hf_hub_download('wybxc/DocLayout-YOLO-DocStructBench-onnx','doclayout_yolo_docstructbench_imgsz1024.onnx');"
 
