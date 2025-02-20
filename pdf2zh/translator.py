@@ -377,23 +377,94 @@ class OpenAITranslator(BaseTranslator):
             model = self.envs["OPENAI_MODEL"]
         super().__init__(lang_in, lang_out, model)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        self.client = openai.OpenAI(
-            base_url=base_url or self.envs["OPENAI_BASE_URL"],
-            api_key=api_key or self.envs["OPENAI_API_KEY"],
-        )
+
+        # 处理多个API key
+        base_url = base_url or self.envs["OPENAI_BASE_URL"]
+        api_keys = []
+
+        # 优先使用传入的api_key
+        if api_key:
+            api_keys = [k.strip() for k in api_key.split(",") if k.strip()]
+        # 如果没有传入api_key，则使用环境变量中的api_key
+        elif self.envs["OPENAI_API_KEY"]:
+            api_keys = [
+                k.strip() for k in self.envs["OPENAI_API_KEY"].split(",") if k.strip()
+            ]
+
+        if not api_keys:
+            raise ValueError("No API key provided")
+
+        # 为每个API key创建一个client
+        self.clients = []
+        for key in api_keys:
+            self.clients.append(
+                openai.OpenAI(
+                    base_url=base_url,
+                    api_key=key,
+                )
+            )
+        self.current_client_index = 0
+
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
 
     def do_translate(self, text) -> str:
-        response = self.client.chat.completions.create(
-            model=self.model,
-            **self.options,
-            messages=self.prompt(text, self.prompttext),
-        )
-        if not response.choices:
-            if hasattr(response, "error"):
-                raise ValueError("Error response from Service", response.error)
-        return response.choices[0].message.content.strip()
+        # 获取当前client
+        client = self.clients[self.current_client_index]
+
+        # 更新index为下一个client
+        self.current_client_index = (self.current_client_index + 1) % len(self.clients)
+
+        try:
+            response = client.chat.completions.create(
+                model=self.model,
+                **self.options,
+                messages=self.prompt(text, self.prompttext),
+            )
+
+            content = response.choices[0].message.content.strip()
+
+            # 过滤掉<think>标签内的内容
+            if "<think>" in content and "</think>" in content:
+                content = re.sub(r"^<think>.+?</think>", "", content, flags=re.DOTALL)
+
+            return content.strip()
+
+        except Exception as e:
+            # 如果当前client失败，尝试使用其他client
+            original_index = self.current_client_index
+            for _ in range(len(self.clients) - 1):
+                try:
+                    client = self.clients[self.current_client_index]
+                    response = client.chat.completions.create(
+                        model=self.model,
+                        **self.options,
+                        messages=self.prompt(text, self.prompttext),
+                    )
+                    if not response.choices:
+                        if hasattr(response, "error"):
+                            raise ValueError(
+                                "Error response from Service", response.error
+                            )
+
+                    content = response.choices[0].message.content.strip()
+
+                    # 过滤掉<think>标签内的内容
+                    if "<think>" in content and "</think>" in content:
+                        content = re.sub(
+                            r"^<think>.+?</think>", "", content, flags=re.DOTALL
+                        )
+
+                    return content.strip()
+                except:
+                    self.current_client_index = (self.current_client_index + 1) % len(
+                        self.clients
+                    )
+                    continue
+
+            # 如果所有client都失败，恢复原始index并抛出异常
+            self.current_client_index = original_index
+            raise e
 
     def get_formular_placeholder(self, id: int):
         return "{{v" + str(id) + "}}"
