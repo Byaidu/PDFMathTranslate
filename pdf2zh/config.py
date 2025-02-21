@@ -97,7 +97,8 @@ class ConfigManager:
         # 读取时，加锁或不加锁都行。但为了统一，我们在修改配置前后都要加锁。
         # get 只要最终需要保存，则会加锁 -> _save_config()
         if key in instance._config_data:
-            return instance._config_data[key]
+            if instance._config_data[key] != "NULL":
+                return instance._config_data[key]
 
         # 若环境变量中存在该 key，则使用环境变量并写回 config
         if key in os.environ:
@@ -121,7 +122,10 @@ class ConfigManager:
         """设置配置值并保存"""
         instance = cls.get_instance()
         with instance._lock:
-            instance._config_data[key] = value
+            if value:
+                instance._config_data[key] = value
+            else:
+                instance._config_data[key] = "NULL"
             instance._save_config()
 
     @classmethod
