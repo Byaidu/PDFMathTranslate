@@ -55,7 +55,14 @@ In a more flexible way, you can communicate with the program using HTTP protocol
    - Submit translate task
 
      ```bash
-     curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"lang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
+     curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F 'data={"lang_in":"en","lang_out":"zh","service":"google","thread":4}'
+     {"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
+     ```
+
+   - Submit translate task with custom prompt
+
+     ```bash
+     curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F 'data={"lang_in":"zh","lang_out":"zh","service":"google","thread":4,"prompt":"You are a professional, authentic machine translation engine. 如果目标语言为中文，你需要翻译成文言文。 Translate the following markdown source text to ${lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: ${text}\nTranslated Text:"}'
      {"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
      ```
 
@@ -91,5 +98,6 @@ In a more flexible way, you can communicate with the program using HTTP protocol
      ```
 
 [⬆️ Back to top](#toc)
+
 
 ---
