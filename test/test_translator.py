@@ -2,6 +2,8 @@ import unittest
 from textwrap import dedent
 from unittest import mock
 
+from ollama import ResponseError as OllamaResponseError
+
 from pdf2zh import cache
 from pdf2zh.config import ConfigManager
 from pdf2zh.translator import BaseTranslator, OllamaTranslator, OpenAIlikedTranslator
@@ -151,33 +153,38 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
 
 
 class TestOllamaTranslator(unittest.TestCase):
-    def setUp(self) -> None:
-        self.mock_translator = mock.MagicMock()
-
     def test_do_translate(self):
-        # Create mock client
-        mock_client = mock.MagicMock()
-        mock_response = mock.MagicMock()
-        mock_response.message.content = "<think>123</think>天空呈现蓝色是因为..."
-        mock_client.chat.return_value = mock_response
+        translator = OllamaTranslator(lang_in="en", lang_out="zh", model="test:3b")
+        with (
+            mock.patch.object(translator, "client") as mock_client,
+        ):
+            chat_response = mock_client.chat.return_value
+            chat_response.message.content = dedent(
+                """\
+                <think>
+                Thinking...
+                </think>
+                    
+                天空呈现蓝色是因为...
+                """
+            )
 
-        # Create translator with mock client
-        translator = OllamaTranslator("en", "zh", "test")
-        translator.client = mock_client
+            text = "The sky appears blue because of..."
+            translated_result = translator.do_translate(text)
+            mock_client.chat.assert_called_once_with(
+                model="test:3b",
+                messages=translator.prompt(text, prompt_template=None),
+                options={
+                    "temperature": translator.options["temperature"],
+                    "num_predict": translator.options["num_predict"],
+                },
+            )
+            self.assertEqual("天空呈现蓝色是因为...", translated_result)
 
-        # Test translation
-        text = "The sky appears blue because of..."
-        result = translator.do_translate(text)
-
-        # Verify mock was called correctly
-        mock_client.chat.assert_called_once_with(
-            model="test",
-            messages=translator.prompt(text, None),
-            options={"temperature": 0, "num_predict": max(2000, len(text) * 5)},
-        )
-
-        # Verify result
-        self.assertEqual("天空呈现蓝色是因为...", result)
+            # response error
+            mock_client.chat.side_effect = OllamaResponseError("an error status")
+            with self.assertRaises(OllamaResponseError):
+                mock_client.chat()
 
     def test_remove_cot_content(self):
         fake_cot_resp_text = dedent(

@@ -132,10 +132,10 @@ class BaseTranslator:
             {
                 "role": "user",
                 "content": (
-                    "You are a professional,authentic machine translation engine."
+                    "You are a professional, authentic machine translation engine. "
                     "Only Output the translated text, do not include any other text."
                     "\n\n"
-                    f"Translate the following markdown source text to {self.lang_out}."
+                    f"Translate the following markdown source text to {self.lang_out}. "
                     "Keep the formula notation {v*} unchanged. "
                     "Output translation directly without any additional text."
                     "\n\n"
@@ -308,14 +308,15 @@ class OllamaTranslator(BaseTranslator):
         super().__init__(lang_in, lang_out, model)
         self.options = {
             "temperature": 0,  # 随机采样可能会打断公式标记
+            "num_predict": 2000,
         }
         self.client = ollama.Client(host=self.envs["OLLAMA_HOST"])
         self.prompt_template = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
 
     def do_translate(self, text: str) -> str:
-        max_token = {"num_predict": max(2000, len(text) * 5)}
-        self.options.update(max_token)
+        if (max_token := len(text) * 5) > self.options["num_predict"]:
+            self.options["num_predict"] = max_token
 
         response = self.client.chat(
             model=self.model,
