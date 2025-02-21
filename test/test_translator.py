@@ -155,9 +155,7 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
 class TestOllamaTranslator(unittest.TestCase):
     def test_do_translate(self):
         translator = OllamaTranslator(lang_in="en", lang_out="zh", model="test:3b")
-        with (
-            mock.patch.object(translator, "client") as mock_client,
-        ):
+        with mock.patch.object(translator, "client") as mock_client:
             chat_response = mock_client.chat.return_value
             chat_response.message.content = dedent(
                 """\
