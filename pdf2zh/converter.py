@@ -1,50 +1,45 @@
-from typing import Dict
-from enum import Enum
-
-from pdfminer.pdfinterp import PDFGraphicState, PDFResourceManager
-from pdfminer.pdffont import PDFCIDFont
-from pdfminer.converter import PDFConverter
-from pdfminer.pdffont import PDFUnicodeNotDefined
-from pdfminer.utils import apply_matrix_pt, mult_matrix
-from pdfminer.layout import (
-    LTChar,
-    LTFigure,
-    LTLine,
-    LTPage,
-)
+import concurrent.futures
 import logging
 import re
-import concurrent.futures
-import numpy as np
 import unicodedata
+from enum import Enum
 from string import Template
+from typing import Dict
+
+import numpy as np
+from pdfminer.converter import PDFConverter
+from pdfminer.layout import LTChar, LTFigure, LTLine, LTPage
+from pdfminer.pdffont import PDFCIDFont, PDFUnicodeNotDefined
+from pdfminer.pdfinterp import PDFGraphicState, PDFResourceManager
+from pdfminer.utils import apply_matrix_pt, mult_matrix
+from pymupdf import Font
 from tenacity import retry, wait_fixed
+
 from pdf2zh.translator import (
+    AnythingLLMTranslator,
+    ArgosTranslator,
     AzureOpenAITranslator,
+    AzureTranslator,
     BaseTranslator,
-    GoogleTranslator,
     BingTranslator,
     DeepLTranslator,
     DeepLXTranslator,
-    OllamaTranslator,
-    OpenAITranslator,
-    ZhipuTranslator,
-    ModelScopeTranslator,
-    SiliconTranslator,
-    GeminiTranslator,
-    AzureTranslator,
-    TencentTranslator,
+    DeepseekTranslator,
     DifyTranslator,
-    AnythingLLMTranslator,
-    XinferenceTranslator,
-    ArgosTranslator,
+    GeminiTranslator,
+    GoogleTranslator,
     GorkTranslator,
     GroqTranslator,
-    DeepseekTranslator,
+    ModelScopeTranslator,
+    OllamaTranslator,
     OpenAIlikedTranslator,
+    OpenAITranslator,
     QwenMtTranslator,
+    SiliconTranslator,
+    TencentTranslator,
+    XinferenceTranslator,
+    ZhipuTranslator,
 )
-from pymupdf import Font
 
 log = logging.getLogger(__name__)
 
@@ -156,6 +151,7 @@ class TranslateConverter(PDFConverterEx):
         self.noto_name = noto_name
         self.noto = noto
         self.translator: BaseTranslator = None
+        # e.g. "ollama:gemma2:9b" -> ["ollama", "gemma2:9b"]
         param = service.split(":", 1)
         service_name = param[0]
         service_model = param[1] if len(param) > 1 else None

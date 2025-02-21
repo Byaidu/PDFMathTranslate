@@ -88,6 +88,7 @@ pdf2zh example.pdf -s openai
 ```
 
 For PowerShell user:
+
 ```shell
 $env:OPENAI_MODEL = gpt-4o-mini
 pdf2zh example.pdf -s openai
@@ -129,28 +130,28 @@ pdf2zh example.pdf -t 1
 
 <h3 id="prompt">Custom prompt</h3>
 
+Note: System prompt is currently not supported. See [this change](https://github.com/Byaidu/PDFMathTranslate/pull/637).
+
 Use `--prompt` to specify which prompt to use in llm:
 
 ```bash
 pdf2zh example.pdf --prompt prompt.txt
 ```
 
-example prompt.txt
+For example:
 
-```
-[
-    {
-        "role": "system",
-        "content": "You are a professional,authentic machine translation engine.",
-    },
-    {
-        "role": "user",
-        "content": "Translate the following markdown source text to ${lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: ${text}\nTranslated Text:",
-    },
-]
+```txt
+You are a professional, authentic machine translation engine. Only Output the translated text, do not include any other text.
+
+Translate the following markdown source text to ${lang_out}. Keep the formula notation {v*} unchanged. Output translation directly without any additional text.
+
+Source Text: ${text}
+
+Translated Text:
 ```
 
 In custom prompt file, there are three variables can be used.
+
 |**variables**|**comment**|
 |-|-|
 |`lang_in`|input language|
@@ -212,6 +213,7 @@ pdf2zh -i --config config.json
 ```
 
 example config.json
+
 ```json
 {
     "USE_MODELSCOPE": "0",
@@ -236,6 +238,7 @@ example config.json
     ]
 }
 ```
+
 By default, the config file is saved in the `~/.config/PDFMathTranslate/config.json`. The program will start by reading the contents of config.json, and after that it will read the contents of the environment variables. When an environment variable is available, the contents of the environment variable are used first and the file is updated.
 
 [⬆️ Back to top](#toc)

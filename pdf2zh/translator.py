@@ -1,26 +1,33 @@
 import html
+import json
 import logging
 import os
 import re
 import unicodedata
 from copy import copy
+from string import Template
+from typing import cast
+
+import argostranslate.package
+import argostranslate.translate
 import deepl
 import ollama
 import openai
-import xinference_client
 import requests
-from pdf2zh.cache import TranslationCache
+import xinference_client
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
 from tencentcloud.common import credential
+from tencentcloud.tmt.v20180321.models import (
+    TextTranslateRequest,
+    TextTranslateResponse,
+)
 from tencentcloud.tmt.v20180321.tmt_client import TmtClient
-from tencentcloud.tmt.v20180321.models import TextTranslateRequest
-from tencentcloud.tmt.v20180321.models import TextTranslateResponse
-import argostranslate.package
-import argostranslate.translate
 
-import json
+from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
+
+logger = logging.getLogger(__name__)
 
 
 def remove_control_characters(s):
@@ -30,11 +37,11 @@ def remove_control_characters(s):
 class BaseTranslator:
     name = "base"
     envs = {}
-    lang_map = {}
+    lang_map: dict[str, str] = {}
     CustomPrompt = False
     ignore_cache = False
 
-    def __init__(self, lang_in, lang_out, model):
+    def __init__(self, lang_in: str, lang_out: str, model: str):
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
         lang_out = self.lang_map.get(lang_out.lower(), lang_out)
         self.lang_in = lang_in
@@ -77,7 +84,7 @@ class BaseTranslator:
         """
         self.cache.add_params(k, v)
 
-    def translate(self, text, ignore_cache=False):
+    def translate(self, text: str, ignore_cache: bool = False) -> str:
         """
         Translate the text, and the other part should call this method.
         :param text: text to translate
@@ -92,7 +99,7 @@ class BaseTranslator:
         self.cache.set(text, translation)
         return translation
 
-    def do_translate(self, text):
+    def do_translate(self, text: str) -> str:
         """
         Actual translate text, override this method
         :param text: text to translate
@@ -100,25 +107,44 @@ class BaseTranslator:
         """
         raise NotImplementedError
 
-    def prompt(self, text, prompt):
-        if prompt:
-            context = {
-                "lang_in": self.lang_in,
-                "lang_out": self.lang_out,
-                "text": text,
-            }
-            return eval(prompt.safe_substitute(context))
-        else:
+    def prompt(
+        self, text: str, prompt_template: Template | None = None
+    ) -> list[dict[str, str]]:
+        try:
             return [
                 {
-                    "role": "system",
-                    "content": "You are a professional,authentic machine translation engine. Only Output the translated text, do not include any other text.",
-                },
-                {
                     "role": "user",
-                    "content": f"Translate the following markdown source text to {self.lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: {text}\nTranslated Text:",  # noqa: E501
-                },
+                    "content": cast(Template, prompt_template).safe_substitute(
+                        {
+                            "lang_in": self.lang_in,
+                            "lang_out": self.lang_out,
+                            "text": text,
+                        }
+                    ),
+                }
             ]
+        except AttributeError:  # `prompt_template` is None
+            pass
+        except Exception:
+            logging.exception("Error parsing prompt, use the default prompt.")
+
+        return [
+            {
+                "role": "user",
+                "content": (
+                    "You are a professional, authentic machine translation engine. "
+                    "Only Output the translated text, do not include any other text."
+                    "\n\n"
+                    f"Translate the following markdown source text to {self.lang_out}. "
+                    "Keep the formula notation {v*} unchanged. "
+                    "Output translation directly without any additional text."
+                    "\n\n"
+                    f"Source Text: {text}"
+                    "\n\n"
+                    "Translated Text:"
+                ),
+            },
+        ]
 
     def __str__(self):
         return f"{self.name} {self.lang_in} {self.lang_out} {self.model}"
@@ -268,39 +294,46 @@ class OllamaTranslator(BaseTranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self,
+        lang_in: str,
+        lang_out: str,
+        model: str,
+        envs=None,
+        prompt: Template | None = None,
+    ):
         self.set_envs(envs)
         if not model:
             model = self.envs["OLLAMA_MODEL"]
         super().__init__(lang_in, lang_out, model)
-        self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
+        self.options = {
+            "temperature": 0,  # 随机采样可能会打断公式标记
+            "num_predict": 2000,
+        }
         self.client = ollama.Client(host=self.envs["OLLAMA_HOST"])
-        self.prompttext = prompt
+        self.prompt_template = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
 
-    def do_translate(self, text):
-        for model in self.model.split(";"):
-            try:
-                response = self.client.chat(
-                    model=self.model,
-                    options=self.options,
-                    messages=self.prompt(text, self.prompttext),
-                )
-                response = response["message"]["content"].strip()
-                if (
-                    "deepseek-r1" in model
-                    and "<think>" in response["message"]["content"].strip()
-                    and "</think>" in response["message"]["content"].strip()
-                ):
-                    response = re.sub(
-                        r"^<think>.+?</think>",
-                        "",
-                        response["message"]["content"].strip(),
-                    )
-                return response
-            except Exception as e:
-                print(e)
-        raise Exception("All models failed")
+    def do_translate(self, text: str) -> str:
+        if (max_token := len(text) * 5) > self.options["num_predict"]:
+            self.options["num_predict"] = max_token
+
+        response = self.client.chat(
+            model=self.model,
+            messages=self.prompt(text, self.prompt_template),
+            options=self.options,
+        )
+        content = self._remove_cot_content(response.message.content or "")
+        return content.strip()
+
+    @staticmethod
+    def _remove_cot_content(content: str) -> str:
+        """Remove text content with the thought chain from the chat response
+
+        :param content: Non-streaming text content
+        :return: Text without a thought chain
+        """
+        return re.sub(r"^<think>.+?</think>", "", content, count=1, flags=re.DOTALL)
 
 
 class XinferenceTranslator(BaseTranslator):
@@ -383,6 +416,7 @@ class OpenAITranslator(BaseTranslator):
         )
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
     def do_translate(self, text) -> str:
         response = self.client.chat.completions.create(
@@ -438,6 +472,7 @@ class AzureOpenAITranslator(BaseTranslator):
         )
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
     def do_translate(self, text) -> str:
         response = self.client.chat.completions.create(
@@ -474,6 +509,7 @@ class ModelScopeTranslator(OpenAITranslator):
             model = self.envs["MODELSCOPE_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
 
 class ZhipuTranslator(OpenAITranslator):
@@ -493,6 +529,7 @@ class ZhipuTranslator(OpenAITranslator):
             model = self.envs["ZHIPU_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
     def do_translate(self, text) -> str:
         try:
@@ -528,6 +565,7 @@ class SiliconTranslator(OpenAITranslator):
             model = self.envs["SILICON_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
 
 class GeminiTranslator(OpenAITranslator):
@@ -547,6 +585,7 @@ class GeminiTranslator(OpenAITranslator):
             model = self.envs["GEMINI_MODEL"]
         super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
         self.prompttext = prompt
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
 
 class AzureTranslator(BaseTranslator):
@@ -709,7 +748,7 @@ class ArgosTranslator(BaseTranslator):
         download_path = available_package.download()
         argostranslate.package.install_from_path(download_path)
 
-    def translate(self, text):
+    def translate(self, text: str, ignore_cache: bool = False):
         # Translate
         installed_languages = argostranslate.translate.get_installed_languages()
         from_lang = list(filter(lambda x: x.code == self.lang_in, installed_languages))[

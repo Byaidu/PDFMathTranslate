@@ -1,8 +1,16 @@
 import unittest
-from pdf2zh.translator import BaseTranslator
-from pdf2zh.translator import OpenAIlikedTranslator
+from textwrap import dedent
+from unittest import mock
+
+from ollama import ResponseError as OllamaResponseError
+
 from pdf2zh import cache
 from pdf2zh.config import ConfigManager
+from pdf2zh.translator import BaseTranslator, OllamaTranslator, OpenAIlikedTranslator
+
+# Since it is necessary to test whether the functionality meets the expected requirements,
+# private functions and private methods are allowed to be called.
+# pyright: reportPrivateUsage=false
 
 
 class AutoIncreaseTranslator(BaseTranslator):
@@ -141,7 +149,79 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
             translator.envs["OPENAILIKED_BASE_URL"],
             self.default_envs["OPENAILIKED_BASE_URL"],
         )
-        self.assertEqual(translator.envs["OPENAILIKED_API_KEY"], None)
+        self.assertIsNone(translator.envs["OPENAILIKED_API_KEY"])
+
+
+class TestOllamaTranslator(unittest.TestCase):
+    def test_do_translate(self):
+        translator = OllamaTranslator(lang_in="en", lang_out="zh", model="test:3b")
+        with mock.patch.object(translator, "client") as mock_client:
+            chat_response = mock_client.chat.return_value
+            chat_response.message.content = dedent(
+                """\
+                <think>
+                Thinking...
+                </think>
+                    
+                天空呈现蓝色是因为...
+                """
+            )
+
+            text = "The sky appears blue because of..."
+            translated_result = translator.do_translate(text)
+            mock_client.chat.assert_called_once_with(
+                model="test:3b",
+                messages=translator.prompt(text, prompt_template=None),
+                options={
+                    "temperature": translator.options["temperature"],
+                    "num_predict": translator.options["num_predict"],
+                },
+            )
+            self.assertEqual("天空呈现蓝色是因为...", translated_result)
+
+            # response error
+            mock_client.chat.side_effect = OllamaResponseError("an error status")
+            with self.assertRaises(OllamaResponseError):
+                mock_client.chat()
+
+    def test_remove_cot_content(self):
+        fake_cot_resp_text = dedent(
+            """\
+            <think>
+
+            </think>
+
+            The sky appears blue because of..."""
+        )
+        removed_cot_content = OllamaTranslator._remove_cot_content(fake_cot_resp_text)
+        excepted_content = "The sky appears blue because of..."
+        self.assertEqual(excepted_content, removed_cot_content.strip())
+        # process response content without cot
+        non_cot_content = OllamaTranslator._remove_cot_content(excepted_content)
+        self.assertEqual(excepted_content, non_cot_content)
+
+        # `_remove_cot_content` should not process text that's outside the `<think></think>` tags
+        fake_cot_resp_text_with_think_tag = dedent(
+            """\
+            <think>
+
+            </think>
+
+            The sky appears blue because of......
+            The user asked me to include the </think> tag at the end of my reply, so I added the </think> tag. </think>"""
+        )
+
+        only_removed_cot_content = OllamaTranslator._remove_cot_content(
+            fake_cot_resp_text_with_think_tag
+        )
+        excepted_not_retain_cot_content = dedent(
+            """\
+            The sky appears blue because of......
+            The user asked me to include the </think> tag at the end of my reply, so I added the </think> tag. </think>"""
+        )
+        self.assertEqual(
+            excepted_not_retain_cot_content, only_removed_cot_content.strip()
+        )
 
 
 if __name__ == "__main__":
