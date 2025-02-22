@@ -49,7 +49,8 @@ dev = [
     "flake8",
     "pre-commit",
     "pytest",
-    "build"
+    "build",
+    "bumpver>=2024.1130",
 ]
 
 [project.urls]
@@ -65,3 +66,18 @@ pdf2zh = "pdf2zh.pdf2zh:main"
 [tool.flake8]
 ignore = ["E203", "E261", "E501", "W503", "E741"]
 max-line-length = 88
+
+
+
+[bumpver]
+current_version = "1.9.0"
+version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
+
+[bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+    'version = "{version}"'
+]
+"pdf2zh/__init__.py" = [
+    '__version__ = "{version}"'
+]
