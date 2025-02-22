@@ -21,9 +21,10 @@ jobs:
       id-token: write
       
     steps:
+      - name: Docker Setup Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Checkout repository
         uses: actions/checkout@v4
-        
       - name: Set lowercase image name
         id: set_image_name
         run: echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -51,6 +52,8 @@ jobs:
             ${{ steps.meta.outputs.tags }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
