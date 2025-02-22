@@ -183,7 +183,7 @@ jobs:
       - name: Set version from build job
         if: needs.build.outputs.is_release == ''
         run: |
-          uv tools install bumpver
+          uv tool install bumpver
           echo "Using version: ${{ needs.build.outputs.version }}"
           bumpver update --set-version ${{ needs.build.outputs.version }}
 
