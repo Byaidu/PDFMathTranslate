@@ -34,7 +34,7 @@ jobs:
 
   build:
     name: Build distribution 📦
-    needs: test
+    needs: [test, check-repository, test-win64-exe]
     if: needs.check-repository.outputs.is_main_repo == 'true'
     runs-on: ubuntu-latest
     outputs:
@@ -314,7 +314,6 @@ jobs:
   build-win64-exe:
     runs-on: windows-latest
     needs:
-      - test
       - check-repository
     if: needs.check-repository.outputs.is_main_repo == 'true'
     steps:
@@ -340,8 +339,8 @@ jobs:
           Get-ChildItem -Path "./" -Exclude "dep_build", "build" | Copy-Item -Destination "./dep_build" -Recurse -Force
 
           Write-Host "==== 下载并解压 Python ${{ env.WIN_EXE_PYTHON_VERSION }} ===="
-          Write-Host "pythonUrl: https://www.python.org/ftp/python/{{ env.WIN_EXE_PYTHON_VERSION }}/python-{{ env.WIN_EXE_PYTHON_VERSION }}-embed-amd64.zip"
-          $pythonUrl = "https://www.python.org/ftp/python/{{ env.WIN_EXE_PYTHON_VERSION }}/python-{{ env.WIN_EXE_PYTHON_VERSION }}-embed-amd64.zip"
+          Write-Host "pythonUrl: https://www.python.org/ftp/python/${{ env.WIN_EXE_PYTHON_VERSION }}/python-${{ env.WIN_EXE_PYTHON_VERSION }}-embed-amd64.zip"
+          $pythonUrl = "https://www.python.org/ftp/python/${{ env.WIN_EXE_PYTHON_VERSION }}/python-${{ env.WIN_EXE_PYTHON_VERSION }}-embed-amd64.zip"
           $pythonZip = "./dep_build/python.zip"
           Invoke-WebRequest -Uri $pythonUrl -OutFile $pythonZip
           Expand-Archive -Path $pythonZip -DestinationPath "./build/runtime" -Force
