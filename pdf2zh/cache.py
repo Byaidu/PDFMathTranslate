@@ -9,6 +9,7 @@ from typing import Optional
 db = SqliteDatabase(None)
 logger = logging.getLogger(__name__)
 
+
 class _TranslationCache(Model):
     id = AutoField()
     translate_engine = CharField(max_length=20)

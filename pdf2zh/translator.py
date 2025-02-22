@@ -14,8 +14,10 @@ try:
     import argostranslate.package
     import argostranslate.translate
 except ImportError:
-    logger.warning("argos-translate is not installed, argostranslate will not work. if you want to use argostranslate, please install it.")
-    
+    logger.warning(
+        "argos-translate is not installed, argostranslate will not work. if you want to use argostranslate, please install it."
+    )
+
 import deepl
 import ollama
 import openai
