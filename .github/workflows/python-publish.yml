@@ -64,6 +64,7 @@ jobs:
         with:
           version-command: |
             cat pyproject.toml | grep "version = " | head -n 1 | awk -F'"' '{print $2}'
+          tag-template: 'awv{VERSION}'
 
       - name: Install Dependencies
         run: |
@@ -158,6 +159,9 @@ jobs:
       - build
       - check-repository
     if: needs.check-repository.outputs.is_main_repo == 'true'
+    environment:
+      name: ${{ needs.build.outputs.is_release != '' && 'pypi' || 'testpypi' }}
+      url: ${{ needs.build.outputs.is_release != '' && 'https://hub.docker.com/r/byaidu/pdf2zh/tags?name=latest' || 'https://hub.docker.com/r/byaidu/pdf2zh/tags?name=dev' }}
     permissions:
       contents: read
       packages: write
