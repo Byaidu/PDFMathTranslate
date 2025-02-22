@@ -227,7 +227,7 @@ jobs:
         with:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }},${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,"name=${{ env.DOCKERHUB_REPO }},${{ env.GHCR_REPO_LOWER }}",push-by-digest=true,name-canonical=true,push=true
           cache-from: ${{ matrix.platform == 'linux/amd64' && 'type=gha' || '' }}
           cache-to: ${{ matrix.platform == 'linux/amd64' && 'type=gha,mode=max' || '' }}
 
