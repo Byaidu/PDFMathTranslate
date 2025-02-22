@@ -50,6 +50,15 @@ backend = [
     "redis"
 ]
 
+[dependency-groups]
+dev = [
+    "black",
+    "flake8",
+    "pre-commit",
+    "pytest",
+    "build"
+]
+
 [project.urls]
 Homepage = "https://github.com/Byaidu/PDFMathTranslate"
 
