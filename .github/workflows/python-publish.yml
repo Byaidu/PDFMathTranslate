@@ -280,6 +280,7 @@ jobs:
       - build
       - publish-to-pypi
       - publish-to-testpypi
+      - merge-docker-image
     if: |
       always() && needs.check-repository.outputs.is_main_repo == 'true' && 
       (needs.publish-to-pypi.result == 'success' || needs.publish-to-testpypi.result == 'success')
