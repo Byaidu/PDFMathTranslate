@@ -1,4 +1,4 @@
-name: Release
+name: Test and Release
 
 on:
   push:
@@ -17,6 +17,7 @@ jobs:
 
   check-repository:
     name: Check if running in main repository
+    needs: test
     runs-on: ubuntu-latest
     outputs:
       is_main_repo: ${{ github.repository == 'awwaawwa/PDFMathTranslate' }}
