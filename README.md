@@ -99,7 +99,8 @@ For different use cases, we provide distinct methods to use our program:
 2. Unzip and double-click `pdf2zh.exe` to run.
 
 > [!TIP]
-> If you cannot open it after downloading, please install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) and try again.
+> 
+> If you cannot open it after downloading, please install https://aka.ms/vs/17/release/vc_redist.x64.exe and try again.
 
 
 </details>
