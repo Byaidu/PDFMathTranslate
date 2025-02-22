@@ -16,6 +16,8 @@ env:
   REPO_LOWER: ${{ github.repository_owner }}/${{ github.event.repository.name }}
   GHCR_REPO: ghcr.io/${{ github.repository }}
   DOCKERHUB_REPO: byaidu/pdf2zh
+  WIN_EXE_PYTHON_VERSION: 3.12.9
+
 jobs:
   check-repository:
     name: Check if running in main repository
@@ -292,8 +294,8 @@ jobs:
             ${{ env.GHCR_REPO_LOWER }}
           tags: |
             type=raw,value=dev
-            type=raw,value=${{ needs.build.outputs.version }},enable=${{ needs.build.outputs.is_release != '' }}
-            type=raw,value=latest,enable=${{ needs.build.outputs.is_release != '' }}
+            type=raw,value=${{ needs.build.outputs.version }},enable=${{ needs.build.outputs.is_release != '' && 'true' || 'false' }}
+            type=raw,value=latest,enable=${{ needs.build.outputs.is_release != '' && 'true' || 'false' }}
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
@@ -308,22 +310,142 @@ jobs:
           docker buildx imagetools inspect ${{ env.DOCKERHUB_REPO }}:${{ steps.meta.outputs.version }}
           docker buildx imagetools inspect ${{ env.GHCR_REPO_LOWER }}:${{ steps.meta.outputs.version }}
 
-  post-release:
-    name: Post Release Tasks
+
+  build-win64-exe:
+    runs-on: windows-latest
+    needs:
+      - test
+      - check-repository
+    if: needs.check-repository.outputs.is_main_repo == 'true'
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: Setup uv with Python ${{ env.WIN_EXE_PYTHON_VERSION }}
+        uses: astral-sh/setup-uv@1edb52594c857e2b5b13128931090f0640537287 # v5.3.0
+        with:
+          python-version: ${{ env.WIN_EXE_PYTHON_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+
+      - name: 执行所有任务（创建目录、下载、解压、复制文件、安装依赖）
+        shell: pwsh
+        run: |
+          Write-Host "==== 创建必要的目录 ===="
+          New-Item -Path "./build" -ItemType Directory -Force
+          New-Item -Path "./build/runtime" -ItemType Directory -Force
+          New-Item -Path "./dep_build" -ItemType Directory -Force
+
+          Write-Host "==== 复制代码到 dep_build ===="
+          Get-ChildItem -Path "./" -Exclude "dep_build", "build" | Copy-Item -Destination "./dep_build" -Recurse -Force
+
+          Write-Host "==== 下载并解压 Python ${{ env.WIN_EXE_PYTHON_VERSION }} ===="
+          $pythonUrl = "https://www.python.org/ftp/python/{{ env.WIN_EXE_PYTHON_VERSION }}/python-{{ env.WIN_EXE_PYTHON_VERSION }}-embed-amd64.zip"
+          $pythonZip = "./dep_build/python.zip"
+          Invoke-WebRequest -Uri $pythonUrl -OutFile $pythonZip
+          Expand-Archive -Path $pythonZip -DestinationPath "./build/runtime" -Force
+
+          Write-Host "==== 下载并解压 PyStand ===="
+          $pystandUrl = "https://github.com/skywind3000/PyStand/releases/download/1.1.4/PyStand-v1.1.4-exe.zip"
+          $pystandZip = "./dep_build/PyStand.zip"
+          Invoke-WebRequest -Uri $pystandUrl -OutFile $pystandZip
+          Expand-Archive -Path $pystandZip -DestinationPath "./dep_build/PyStand" -Force
+
+          Write-Host "==== 复制 PyStand.exe 到 build 并重命名 ===="
+          $pystandExe = "./dep_build/PyStand/PyStand-x64-CLI/PyStand.exe"
+          $destExe = "./build/pdf2zh.exe"
+          if (Test-Path $pystandExe) {
+              Copy-Item -Path $pystandExe -Destination $destExe -Force
+          } else {
+              Write-Host "错误: PyStand.exe 未找到！"
+              exit 1
+          }
+          Write-Host "==== 创建 Python venv 在 dep_build ===="
+          uv venv ./dep_build/venv
+
+          ./dep_build/venv/Scripts/activate
+
+          Write-Host "==== 在 venv 环境中安装项目依赖 ===="
+          uv pip install .
+
+          Write-Host "==== 复制 venv/Lib/site-packages 到 build/ ===="
+          Copy-Item -Path "./dep_build/venv/Lib/site-packages" -Destination "./build/site-packages" -Recurse -Force
+
+          Write-Host "==== 复制 script/_pystand_static.int 到 build/ ===="
+          $staticFile = "./script/_pystand_static.int"
+          $destStatic = "./build/_pystand_static.int"
+          if (Test-Path $staticFile) {
+              Copy-Item -Path $staticFile -Destination $destStatic -Force
+          } else {
+              Write-Host "错误: script/_pystand_static.int 未找到！"
+              exit 1
+          }
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win64-exe
+          path: ./build
+          if-no-files-found: error
+          compression-level: 1
+          include-hidden-files: true
+
+  test-win64-exe:
+    needs: 
+      - build-win64-exe
+      - check-repository
+    if: needs.check-repository.outputs.is_main_repo == 'true'
+    runs-on: windows-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: win64-exe
+          path: ./build
+
+      - name: Test show version
+        run: |
+          ./build/pdf2zh.exe --version
+      
+      - name: Test - Translate a PDF file with plain text only
+        run: |
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
+
+      - name: Test - Translate a PDF file figure
+        run: |
+          ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./test/file/
+
+
+
+  release-draft:
+    name: Release Draft Tasks
     needs:
       - check-repository
       - build
       - publish-to-pypi
       - publish-to-testpypi
       - merge-docker-image
+      - test-win64-exe
     if: |
       always() && needs.check-repository.outputs.is_main_repo == 'true' && 
       (needs.publish-to-pypi.result == 'success' || needs.publish-to-testpypi.result == 'success') &&
-      needs.merge-docker-image.result == 'success'
+      needs.merge-docker-image.result == 'success' &&
+      needs.test-win64-exe.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
+    outputs:
+      tag_name: ${{ steps.release-drafter.outputs.tag_name }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -332,9 +454,40 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish the release notes
+        id: release-drafter
         uses: release-drafter/release-drafter@b1476f6e6eb133afa41ed8589daba6dc69b4d3f5 # v6.1.0
         with:
           publish: ${{ needs.build.outputs.is_release != '' }}
           tag: ${{ needs.build.outputs.is_release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+  upload-release:
+    needs: [build-win64-exe, test-win64-exe, release-draft, check-repository]
+    runs-on: ubuntu-latest
+    if: needs.check-repository.outputs.is_main_repo == 'true'
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: win64-exe
+          path: ./build
+
+      - name: Create release zip
+        run: |
+          zip -9qr "pdf2zh-${{ needs.release-draft.outputs.tag_name }}-win64.zip" ./build/*
+
+      - name: Upload to latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the latest release (including drafts and pre-releases)
+          LATEST_RELEASE=needs.release-draft.outputs.tag_name
+          echo "Latest release tag: $LATEST_RELEASE"
+          
+          # Upload the zip file to the release
+          gh release upload "$LATEST_RELEASE" "pdf2zh-${{ needs.release-draft.outputs.tag_name }}-win64.zip" --clobber
