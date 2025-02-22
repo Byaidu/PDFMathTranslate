@@ -235,6 +235,8 @@ jobs:
 
   merge-docker-image:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     needs:
       - build-docker-image
     steps:
