@@ -31,7 +31,6 @@ dependencies = [
     "gradio_pdf>=0.0.21",
     "pikepdf",
     "peewee>=3.17.8",
-    "argostranslate",
     "fontTools",
     "babeldoc>=0.0.1a20, <0.2.0",
 ]
@@ -41,6 +40,9 @@ backend = [
     "flask",
     "celery",
     "redis"
+]
+argostranslate = [
+    "argos-translate"
 ]
 
 [dependency-groups]
