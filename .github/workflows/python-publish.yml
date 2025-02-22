@@ -123,50 +123,6 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
 
-  publish-to-ghcr:
-    name: Publish Docker image to GHCR
-    if: needs.build.outputs.is_release == ''
-    needs:
-      - check-repository
-      - build
-    runs-on: ubuntu-latest
-    
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Set lowercase image name
-        run: echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-      
-      - name: Log in to GHCR
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-        with:
-          images: ghcr.io/${{ env.IMAGE_NAME }}
-          
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ steps.meta.outputs.tags }}
-            ghcr.io/${{ env.IMAGE_NAME }}:dev
-          labels: ${{ steps.meta.outputs.labels }}
-
   post-release:
     name: Post Release Tasks
     needs:
