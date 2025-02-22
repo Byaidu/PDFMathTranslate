@@ -99,7 +99,6 @@ For different use cases, we provide distinct methods to use our program:
 2. Unzip and double-click `pdf2zh.exe` to run.
 
 > [!TIP]
->
 > If you cannot open it after downloading, please install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) and try again.
 
 
@@ -149,7 +148,6 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
    ```
 
 > [!TIP]
->
 > If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
 > ```bash
 > docker pull ghcr.io/byaidu/pdfmathtranslate
