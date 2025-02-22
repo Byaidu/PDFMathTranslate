@@ -17,21 +17,24 @@ env:
   GHCR_REPO: ghcr.io/${{ github.repository }}
 
 jobs:
-  test:
-    uses: ./.github/workflows/python-test.yml
-
   check-repository:
     name: Check if running in main repository
-    needs: test
     runs-on: ubuntu-latest
     outputs:
       is_main_repo: ${{ github.repository == 'Byaidu/PDFMathTranslate' }}
     steps:
       - run: echo "Running repository check"
 
+  test:
+    needs: check-repository
+    uses: ./.github/workflows/python-test.yml
+    if: needs.check-repository.outputs.is_main_repo == 'true'
+
+
+
   build:
     name: Build distribution 📦
-    needs: check-repository
+    needs: test
     if: needs.check-repository.outputs.is_main_repo == 'true'
     runs-on: ubuntu-latest
     outputs:
@@ -154,7 +157,8 @@ jobs:
     needs: 
       - test
       - build
-    
+      - check-repository
+    if: needs.check-repository.outputs.is_main_repo == 'true'
     permissions:
       contents: read
       packages: write
@@ -238,6 +242,8 @@ jobs:
       packages: write
     needs:
       - build-docker-image
+      - check-repository
+    if: needs.check-repository.outputs.is_main_repo == 'true'
     steps:
       - name: Convert to lowercase
         run: |
