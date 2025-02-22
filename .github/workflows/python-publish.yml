@@ -34,7 +34,7 @@ jobs:
 
   build:
     name: Build distribution 📦
-    needs: [test, check-repository, test-win64-exe]
+    needs: [test, check-repository]
     if: needs.check-repository.outputs.is_main_repo == 'true'
     runs-on: ubuntu-latest
     outputs:
@@ -73,7 +73,7 @@ jobs:
           uv sync
 
       - name: Bump version for developmental release
-        if: "! steps.check-version.outputs.tag"
+        if: "!steps.check-version.outputs.tag"
         id: get-dev-version
         run: |
           version=$(bumpver update --patch --tag=final --dry 2>&1 | grep "New Version" | awk '{print $NF}')
@@ -102,6 +102,7 @@ jobs:
     needs:
       - check-repository
       - build
+      - test-win64-exe
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -126,6 +127,7 @@ jobs:
     needs:
       - check-repository
       - build
+      - test-win64-exe
     runs-on: ubuntu-latest
     environment:
       name: testpypi
@@ -157,7 +159,6 @@ jobs:
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     needs:
-      - test
       - build
       - check-repository
     if: needs.check-repository.outputs.is_main_repo == 'true'
@@ -255,6 +256,7 @@ jobs:
     needs:
       - build-docker-image
       - check-repository
+      - test-win64-exe
     if: needs.check-repository.outputs.is_main_repo == 'true'
     steps:
       - name: Convert to lowercase
@@ -464,7 +466,7 @@ jobs:
 
 
   upload-release:
-    needs: [build-win64-exe, test-win64-exe, release-draft, check-repository]
+    needs: [release-draft, check-repository]
     runs-on: ubuntu-latest
     if: needs.check-repository.outputs.is_main_repo == 'true'
     steps:
