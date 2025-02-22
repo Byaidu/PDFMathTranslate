@@ -121,6 +121,7 @@ jobs:
 
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
+    if: needs.build.outputs.is_release == ''
     needs:
       - check-repository
       - build
