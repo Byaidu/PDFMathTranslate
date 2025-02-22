@@ -47,10 +47,11 @@ jobs:
         run: timeout 10 uv run pdf2zh -i  || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
       - name: Build as a package
-        run: uv run python -m build
+        run: uv build
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
+        if: ${{ matrix.python-version == '3.12' }}
         with:
           name: test-results
           path: ./test/file/

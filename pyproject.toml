@@ -37,13 +37,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "black",
-    "flake8",
-    "pre-commit",
-    "pytest",
-    "build"
-]
 backend = [
     "flask",
     "celery",
