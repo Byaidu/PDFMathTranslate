@@ -1,37 +1,321 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Upload Python Package
+name: Test and Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
+      - master
 
 permissions:
-  contents: read
   id-token: write
+  contents: write
+  pull-requests: write
+
+env:
+  REGISTRY: ghcr.io
+  REPO_LOWER: ${{ github.repository_owner }}/${{ github.event.repository.name }}
+  GHCR_REPO: ghcr.io/${{ github.repository }}
 
 jobs:
-  deploy:
-
+  check-repository:
+    name: Check if running in main repository
     runs-on: ubuntu-latest
+    outputs:
+      is_main_repo: ${{ github.repository == 'Byaidu/PDFMathTranslate' }}
+    steps:
+      - run: echo "Running repository check"
+
+  test:
+    needs: check-repository
+    uses: ./.github/workflows/python-test.yml
+    if: needs.check-repository.outputs.is_main_repo == 'true'
+
+
+
+  build:
+    name: Build distribution 📦
+    needs: test
+    if: needs.check-repository.outputs.is_main_repo == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      is_release: ${{ steps.check-version.outputs.tag }}
+      version: ${{ steps.check-version.outputs.tag && steps.get-release-version.outputs.version || steps.get-dev-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@4db96194c378173c656ce18a155ffc14a9fc4355 # v5.2.2
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+
+      - name: Check if there is a parent commit
+        id: check-parent-commit
+        run: |
+          echo "sha=$(git rev-parse --verify --quiet HEAD^)" >> $GITHUB_OUTPUT
+
+      - name: Detect and tag new version
+        id: check-version
+        if: steps.check-parent-commit.outputs.sha
+        uses: salsify/action-detect-and-tag-new-version@b1778166f13188a9d478e2d1198f993011ba9864 # v2.0.3
+        with:
+          version-command: |
+            cat pyproject.toml | grep "version = " | head -n 1 | awk -F'"' '{print $2}'
+
+      - name: Install Dependencies
+        run: |
+          uv sync
+
+      - name: Bump version for developmental release
+        if: "! steps.check-version.outputs.tag"
+        id: get-dev-version
+        run: |
+          version=$(bumpver update --patch --tag=final --dry 2>&1 | grep "New Version" | awk '{print $NF}')
+          echo "version=$version.dev$(date +%s)" >> $GITHUB_OUTPUT
+          bumpver update --set-version $version.dev$(date +%s)
+
+      - name: Get release version
+        if: steps.check-version.outputs.tag
+        id: get-release-version
+        run: |
+          version=$(cat pyproject.toml | grep "version = " | head -n 1 | awk -F'"' '{print $2}')
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Build package
+        run: "uv build"
+
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4.6.0
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish-to-pypi:
+    name: Publish Python 🐍 distribution 📦 to PyPI
+    if: needs.build.outputs.is_release != ''
+    needs:
+      - check-repository
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pdf2zh
+
+    permissions:
+      id-token: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.12'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build
-    - name: Build package
-      run: python -m build
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Download all the dists
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
+
+  publish-to-testpypi:
+    name: Publish Python 🐍 distribution 📦 to TestPyPI
+    if: needs.build.outputs.is_release == ''
+    needs:
+      - check-repository
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/pdf2zh
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution 📦 to TestPyPI
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  build-docker-image:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    needs: 
+      - test
+      - build
+      - check-repository
+    if: needs.check-repository.outputs.is_main_repo == 'true'
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+      - name: Convert to lowercase
+        run: |
+          echo "GHCR_REPO_LOWER=$(echo ${{ env.GHCR_REPO }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@4db96194c378173c656ce18a155ffc14a9fc4355 # v5.2.2
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+
+      - name: Set version from build job
+        if: needs.build.outputs.is_release == ''
+        run: |
+          uv tool install bumpver
+          echo "Using version: ${{ needs.build.outputs.version }}"
+          bumpver update --set-version ${{ needs.build.outputs.version }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.GHCR_REPO_LOWER }}
+          tags: |
+            type=raw,value=dev
+            type=raw,value=${{ needs.build.outputs.version }}
+            type=raw,value=latest,enable=${{ needs.build.outputs.is_release != '' }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=${{ env.GHCR_REPO_LOWER }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: ${{ matrix.platform == 'linux/amd64' && 'type=gha' || '' }}
+          cache-to: ${{ matrix.platform == 'linux/amd64' && 'type=gha,mode=max' || '' }}
+
+      - name: Export digest
+        run: |
+          mkdir -p ${{ runner.temp }}/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge-docker-image:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    needs:
+      - build-docker-image
+      - check-repository
+    if: needs.check-repository.outputs.is_main_repo == 'true'
+    steps:
+      - name: Convert to lowercase
+        run: |
+          echo "GHCR_REPO_LOWER=$(echo ${{ env.GHCR_REPO }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.GHCR_REPO_LOWER }}
+          tags: |
+            type=raw,value=dev
+            type=raw,value=${{ needs.build.outputs.version }},enable=${{ needs.build.outputs.is_release != '' }}
+            type=raw,value=latest,enable=${{ needs.build.outputs.is_release != '' }}
+
+      - name: Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.GHCR_REPO_LOWER }}@sha256:%s ' *)
+
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.GHCR_REPO_LOWER }}:${{ steps.meta.outputs.version }}
+
+
+  post-release:
+    name: Post Release Tasks
+    needs:
+      - check-repository
+      - build
+      - publish-to-pypi
+      - publish-to-testpypi
+      - merge-docker-image
+    if: |
+      always() && needs.check-repository.outputs.is_main_repo == 'true' && 
+      (needs.publish-to-pypi.result == 'success' || needs.publish-to-testpypi.result == 'success') &&
+      needs.merge-docker-image.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish the release notes
+        uses: release-drafter/release-drafter@b1476f6e6eb133afa41ed8589daba6dc69b4d3f5 # v6.1.0
+        with:
+          publish: ${{ needs.build.outputs.is_release != '' }}
+          tag: ${{ needs.build.outputs.is_release }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

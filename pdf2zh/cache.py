@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 from peewee import Model, SqliteDatabase, AutoField, CharField, TextField, SQL
@@ -6,6 +7,7 @@ from typing import Optional
 
 # we don't init the database here
 db = SqliteDatabase(None)
+logger = logging.getLogger(__name__)
 
 
 class _TranslationCache(Model):
@@ -82,12 +84,15 @@ class TranslationCache:
         return result.translation if result else None
 
     def set(self, original_text: str, translation: str):
-        _TranslationCache.create(
-            translate_engine=self.translate_engine,
-            translate_engine_params=self.translate_engine_params,
-            original_text=original_text,
-            translation=translation,
-        )
+        try:
+            _TranslationCache.create(
+                translate_engine=self.translate_engine,
+                translate_engine_params=self.translate_engine_params,
+                original_text=original_text,
+                translation=translation,
+            )
+        except Exception as e:
+            logger.debug(f"Error setting cache: {e}")
 
 
 def init_db(remove_exists=False):

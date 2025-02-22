@@ -8,8 +8,16 @@ from copy import copy
 from string import Template
 from typing import cast
 
-import argostranslate.package
-import argostranslate.translate
+logger = logging.getLogger(__name__)
+
+try:
+    import argostranslate.package
+    import argostranslate.translate
+except ImportError:
+    logger.warning(
+        "argos-translate is not installed, argostranslate will not work. if you want to use argostranslate, please install it."
+    )
+
 import deepl
 import ollama
 import openai
@@ -26,8 +34,6 @@ from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 
 from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
-
-logger = logging.getLogger(__name__)
 
 
 def remove_control_characters(s):
