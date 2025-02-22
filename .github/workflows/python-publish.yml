@@ -257,6 +257,7 @@ jobs:
       - build-docker-image
       - check-repository
       - test-win64-exe
+      - build
     if: needs.check-repository.outputs.is_main_repo == 'true'
     steps:
       - name: Convert to lowercase
