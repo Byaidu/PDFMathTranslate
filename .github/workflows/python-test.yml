@@ -2,6 +2,10 @@ name: Test and Build Python Package
 
 on:
   push:
+    branches:
+      - '**'
+      - '!main'
+      - '!master'
   pull_request:
 
 jobs:

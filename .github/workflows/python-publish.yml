@@ -12,6 +12,9 @@ permissions:
   pull-requests: write
 
 jobs:
+  test:
+    uses: ./.github/workflows/python-test.yml
+
   check-repository:
     name: Check if running in main repository
     runs-on: ubuntu-latest
