@@ -98,11 +98,6 @@ For different use cases, we provide distinct methods to use our program:
 
 2. Unzip and double-click `pdf2zh.exe` to run.
 
-> [!TIP]
-> 
-> If you cannot open it after downloading, please install https://aka.ms/vs/17/release/vc_redist.x64.exe and try again.
-
-
 </details>
 
 <details>
@@ -148,13 +143,6 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
    http://localhost:7860/
    ```
 
-> [!TIP]
-> If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
-> ```bash
-> docker pull ghcr.io/byaidu/pdfmathtranslate
-> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
-> ```
-
 For docker deployment on cloud service:
 
 <div>
@@ -176,6 +164,16 @@ For docker deployment on cloud service:
 See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
 
 </details>
+
+> [!TIP]
+>
+> - If you cannot open it after downloading, please install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) and try again.
+>
+> - If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
+> ```bash
+> docker pull ghcr.io/byaidu/pdfmathtranslate
+> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
+> ```
 
 ### Unable to install?
 
