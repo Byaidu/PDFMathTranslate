@@ -42,7 +42,7 @@ backend = [
     "redis"
 ]
 argostranslate = [
-    "argos-translate"
+    "argostranslate"
 ]
 
 [dependency-groups]
