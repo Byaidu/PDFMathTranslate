@@ -12,7 +12,8 @@ classifiers = [
 ]
 dependencies = [
     "requests",
-    "pymupdf",
+    # for arm64 linux whells
+    "pymupdf<1.25.3",
     "tqdm",
     "tenacity",
     "numpy",
