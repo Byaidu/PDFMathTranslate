@@ -173,9 +173,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup uv with Python 3.12
+        uses: astral-sh/setup-uv@4db96194c378173c656ce18a155ffc14a9fc4355 # v5.2.2
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+
       - name: Set version from build job
         if: needs.build.outputs.is_release == ''
         run: |
+          uv tools install bumpver
           echo "Using version: ${{ needs.build.outputs.version }}"
           bumpver update --set-version ${{ needs.build.outputs.version }}
 
