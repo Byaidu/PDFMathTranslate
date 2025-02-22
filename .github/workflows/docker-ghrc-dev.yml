@@ -6,8 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  TARGET_PLATFORMS: linux/amd64,linux/arm64
+  REPO_LOWER: ${{ github.repository_owner }}/${{ github.event.repository.name }}
   GHCR_REPO: ghcr.io/${{ github.repository }}
 
 jobs:
@@ -27,6 +26,10 @@ jobs:
       packages: write
       
     steps:
+      - name: Convert to lowercase
+        run: |
+          echo "GHCR_REPO_LOWER=$(echo ${{ env.GHCR_REPO }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Prepare
         run: |
           platform=${{ matrix.platform }}
@@ -40,7 +43,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.GHCR_REPO }}
+            ${{ env.GHCR_REPO_LOWER }}
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -59,7 +62,7 @@ jobs:
         with:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ env.GHCR_REPO }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=${{ env.GHCR_REPO_LOWER }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
@@ -80,6 +83,10 @@ jobs:
     needs:
       - build
     steps:
+      - name: Convert to lowercase
+        run: |
+          echo "GHCR_REPO_LOWER=$(echo ${{ env.GHCR_REPO }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
@@ -102,7 +109,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.GHCR_REPO }}
+            ${{ env.GHCR_REPO_LOWER }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -113,8 +120,8 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
+            $(printf '${{ env.GHCR_REPO_LOWER }}@sha256:%s ' *)
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.GHCR_REPO }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ env.GHCR_REPO_LOWER }}:${{ steps.meta.outputs.version }}
