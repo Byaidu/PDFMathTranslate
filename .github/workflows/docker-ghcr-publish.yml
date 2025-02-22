@@ -79,8 +79,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.GHCR_REPO_LOWER }},push-by-digest=true,name-canonical=true,push=true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: ${{ matrix.platform == 'linux/amd64' && 'type=gha' || '' }}
+          cache-to: ${{ matrix.platform == 'linux/amd64' && 'type=gha,mode=max' || '' }}
 
       - name: Export digest
         run: |

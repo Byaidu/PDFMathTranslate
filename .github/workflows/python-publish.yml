@@ -25,7 +25,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     outputs:
-      is_main_repo: ${{ github.repository == 'awwaawwa/PDFMathTranslate' }}
+      is_main_repo: ${{ github.repository == 'Byaidu/PDFMathTranslate' }}
     steps:
       - run: echo "Running repository check"
 
@@ -118,7 +118,6 @@ jobs:
 
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
-    if: needs.build.outputs.is_release == ''
     needs:
       - check-repository
       - build
@@ -216,8 +215,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.GHCR_REPO_LOWER }},push-by-digest=true,name-canonical=true,push=true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: ${{ matrix.platform == 'linux/amd64' && 'type=gha' || '' }}
+          cache-to: ${{ matrix.platform == 'linux/amd64' && 'type=gha,mode=max' || '' }}
 
       - name: Export digest
         run: |
