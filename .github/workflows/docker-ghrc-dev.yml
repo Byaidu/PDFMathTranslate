@@ -113,8 +113,7 @@ jobs:
           images: |
             ${{ env.GHCR_REPO_LOWER }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
+            type=raw,value=dev
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
