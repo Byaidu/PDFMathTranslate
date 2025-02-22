@@ -468,7 +468,8 @@ jobs:
   upload-release:
     needs: [release-draft, check-repository]
     runs-on: ubuntu-latest
-    if: needs.check-repository.outputs.is_main_repo == 'true'
+    if: always() && needs.check-repository.outputs.is_main_repo == 'true' &&
+      needs.release-draft.result == 'success'
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
