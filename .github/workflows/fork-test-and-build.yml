@@ -1,4 +1,4 @@
-name: fork-docker-ghcr-and-win64-exe
+name: fork-test-and-build
 
 on:
   push:
