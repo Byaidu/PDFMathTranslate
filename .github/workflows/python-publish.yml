@@ -489,7 +489,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Get the latest release (including drafts and pre-releases)
-          LATEST_RELEASE=needs.release-draft.outputs.tag_name
+          LATEST_RELEASE=${{ needs.release-draft.outputs.tag_name }}
           echo "Latest release tag: $LATEST_RELEASE"
           
           # Upload the zip file to the release
