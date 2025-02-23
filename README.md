@@ -81,19 +81,13 @@ For different use cases, we provide distinct methods to use our program:
 
    ```bash
    pip install uv
-   uv tool install pdf2zh
+   uv tool install --python 3.12 pdf2zh
    ```
 
-3. Start using in browser:
+3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
 
    ```bash
-   pdf2zh -i
-   ```
-
-4. If your browswer has not been started automatically, goto
-
-   ```bash
-   http://localhost:7860/
+   pdf2zh document.pdf
    ```
 
 </details>
