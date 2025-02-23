@@ -162,19 +162,6 @@ For docker deployment on cloud service:
 <details>
   <summary>5. Zotero Plugin</summary>
 
-See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
-
-</details>
-
-> [!TIP]
->
-> - If you're using Windows and cannot open the file after downloading, please install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) and try again.
->
-> - If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
-> ```bash
-> docker pull ghcr.io/byaidu/pdfmathtranslate
-> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
-> ```
   <summary>6. Commandline</summary>
 
 1. Python installed (3.10 <= version <= 3.12)
@@ -193,6 +180,20 @@ See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more det
 </details>
 
 <details>
+
+See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
+
+</details>
+
+> [!TIP]
+>
+> - If you're using Windows and cannot open the file after downloading, please install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) and try again.
+>
+> - If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
+> ```bash
+> docker pull ghcr.io/byaidu/pdfmathtranslate
+> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
+> ```
   
 ### Unable to install?
 
