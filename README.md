@@ -181,7 +181,7 @@ See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more det
 > docker pull ghcr.io/byaidu/pdfmathtranslate
 > docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
 > ```
-  <summary>1. Commandline</summary>
+  <summary>6. Commandline</summary>
 
 1. Python installed (3.10 <= version <= 3.12)
 2. Install our package:
