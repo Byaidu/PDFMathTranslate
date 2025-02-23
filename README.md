@@ -183,8 +183,6 @@ See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more det
 
 </details>
 
-<details>
-
 > [!TIP]
 >
 > - If you're using Windows and cannot open the file after downloading, please install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) and try again.
@@ -194,7 +192,7 @@ See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more det
 > docker pull ghcr.io/byaidu/pdfmathtranslate
 > docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
 > ```
-  
+
 ### Unable to install?
 
 The present program needs an AI model(`wybxc/DocLayout-YOLO-DocStructBench-onnx`) before working and some users are not able to download due to network issues. If you have a problem with downloading this model, we provide a workaround using the following environment variable:
