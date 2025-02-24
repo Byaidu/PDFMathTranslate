@@ -396,10 +396,12 @@ def download_remote_fonts(lang: str):
     }
     font_name = LANG_NAME_MAP.get(lang, "GoNotoKurrent-Regular.ttf")
 
+    cache_folder = os.path.join(os.path.expanduser("~"), ".cache", "pdf2zh")
+    os.makedirs(cache_folder, exist_ok=True)
     # docker
     font_path = ConfigManager.get("NOTO_FONT_PATH", Path("/app", font_name).as_posix())
     if not Path(font_path).exists():
-        font_path = Path(tempfile.gettempdir(), font_name).as_posix()
+        font_path = Path(cache_folder, font_name).as_posix()
     if not Path(font_path).exists():
         print(f"Downloading {font_name}...")
         urllib.request.urlretrieve(f"{URL_PREFIX}{font_name}", font_path)

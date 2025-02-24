@@ -45,6 +45,7 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 
 <h2 id="updates">Updates</h2>
 
+- [Feb. 22 2025] Better release CI and well-packaged windows-amd64 exe (by [@awwaawwa](https://github.com/awwaawwa))
 - [Dec. 24 2024] The translator now supports local models on [Xinference](https://github.com/xorbitsai/inference) _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
 - [Dec. 19 2024] Non-PDF/A documents are now supported using `-cp` _(by [@reycn](https://github.com/reycn))_
 - [Dec. 13 2024] Additional support for backend by _(by [@YadominJinta](https://github.com/YadominJinta))_
@@ -91,11 +92,11 @@ For different use cases, we provide distinct methods to use our program:
 </details>
 
 <details>
-  <summary>2. Portable (w/o Python installed)</summary>
+  <summary>2. Windows exe</summary>
 
-1. Download [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat)
+1. Download pdf2zh-version-win64.zip from [release page](https://github.com/Byaidu/PDFMathTranslate/releases)
 
-2. Double-click to run.
+2. Unzip and double-click `pdf2zh.exe` to run.
 
 </details>
 
@@ -163,6 +164,16 @@ For docker deployment on cloud service:
 See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
 
 </details>
+
+> [!TIP]
+>
+> - If you're using Windows and cannot open the file after downloading, please install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) and try again.
+>
+> - If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
+> ```bash
+> docker pull ghcr.io/byaidu/pdfmathtranslate
+> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
+> ```
 
 ### Unable to install?
 

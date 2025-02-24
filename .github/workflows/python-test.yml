@@ -1,0 +1,64 @@
+name: Test and Build Python Package
+
+on:
+  push:
+    branches:
+      - '**'
+      - '!main'
+      - '!master'
+  pull_request:
+  workflow_call:
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+        runner:
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cached models
+        id: cache-mods
+        uses: actions/cache@v4.2.1
+        with:
+          path: ~/.cache/huggingface/hub/models--wybxc--DocLayout-YOLO-DocStructBench-onnx
+          key: ${{runner.os}}-huggingmodel-wybxc--DocLayout-YOLO-DocStructBench-onnx
+      - name: Setup uv with Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@1edb52594c857e2b5b13128931090f0640537287 # v5.3.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+      - name: Install dependencies
+        run: |
+          uv sync
+
+      - name: Test - Unit Test
+        run: |
+          uv run pytest .
+
+      - name: Test - Translate a PDF file with plain text only
+        run: uv run pdf2zh ./test/file/translate.cli.plain.text.pdf -o ./test/file
+
+      - name: Test - Translate a PDF file figure
+        run: uv run pdf2zh ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
+
+      # - name: Test - Translate a PDF file with unknown font
+      #   run:
+      #     pdf2zh ./test/file/translate.cli.font.unknown.pdf
+
+      - name: Test - Start GUI and exit
+        run: timeout 10 uv run pdf2zh -i  || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
+
+      - name: Build as a package
+        run: uv build
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.python-version }}-${{ matrix.runner }}
+          path: ./test/file/
