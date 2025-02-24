@@ -174,6 +174,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="Use experimental backend babeldoc.",
     )
 
+    parse_params.add_argument(
+        "--skip-subset-fonts",
+        action="store_true",
+        help="Skip font subsetting.",
+    )
+
     return parser
 
 
