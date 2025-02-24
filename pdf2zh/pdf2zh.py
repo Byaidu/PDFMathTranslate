@@ -174,6 +174,13 @@ def create_parser() -> argparse.ArgumentParser:
         help="Use experimental backend babeldoc.",
     )
 
+    parse_params.add_argument(
+        "--CN",
+        default=False,
+        action="store_true",
+        help="download in mainland China.",
+    )
+
     return parser
 
 
@@ -228,6 +235,18 @@ def main(args: Optional[List[str]] = None) -> int:
 
     if parsed_args.debug:
         log.setLevel(logging.DEBUG)
+
+    if parsed_args.CN:
+        ConfigManager.set(
+            "FONT_URL_PREFIX",
+            "https://gitee.com/xzk1234/source-han-serif/releases/download/0.1/",
+        )
+        os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+    else:
+        ConfigManager.set(
+            "FONT_URL_PREFIX",
+            "https://github.com/timelic/source-han-serif/releases/download/main/",
+        )
 
     if parsed_args.onnx:
         ModelInstance.value = OnnxModel(parsed_args.onnx)

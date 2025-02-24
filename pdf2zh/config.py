@@ -81,7 +81,10 @@ class ConfigManager:
         """使用自定义路径加载配置文件"""
         custom_path = Path(file_path)
         if not custom_path.exists():
-            raise ValueError(f"Config file {custom_path} not found!")
+            if "DOCKER_CONFIG" not in os.environ:
+                raise ValueError(f"Config file {custom_path} not found!")
+            with open("config.json", "w") as file:
+                json.dump({}, file, indent=4, ensure_ascii=False)
         # 加锁
         with cls._lock:
             instance = cls()

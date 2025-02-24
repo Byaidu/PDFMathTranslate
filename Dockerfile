@@ -6,6 +6,8 @@ WORKDIR /app
 EXPOSE 7860
 
 ENV PYTHONUNBUFFERED=1
+ENV NOTO_FONT_PATH=/app
+ENV DOCKER_CONFIG=1
 
 # Download all required fonts
 ADD "https://github.com/satbyy/go-noto-universal/releases/download/v7.0/GoNotoKurrent-Regular.ttf" /app/
@@ -26,4 +28,4 @@ COPY . .
 
 RUN uv pip install --system --no-cache .
 
-CMD ["pdf2zh", "-i"]
+CMD ["pdf2zh", "--config", "/app/config.json", "-i"]

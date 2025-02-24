@@ -380,7 +380,7 @@ def translate(
 
 
 def download_remote_fonts(lang: str):
-    URL_PREFIX = "https://github.com/timelic/source-han-serif/releases/download/main/"
+    URL_PREFIX = ConfigManager.get("FONT_URL_PREFIX")
     LANG_NAME_MAP = {
         **{la: "GoNotoKurrent-Regular.ttf" for la in noto_list},
         **{
@@ -396,14 +396,32 @@ def download_remote_fonts(lang: str):
     }
     font_name = LANG_NAME_MAP.get(lang, "GoNotoKurrent-Regular.ttf")
 
-    cache_folder = os.path.join(os.path.expanduser("~"), ".cache", "pdf2zh")
-    os.makedirs(cache_folder, exist_ok=True)
     # docker
-    font_path = ConfigManager.get("NOTO_FONT_PATH", Path("/app", font_name).as_posix())
-    if not Path(font_path).exists():
-        font_path = Path(cache_folder, font_name).as_posix()
-    if not Path(font_path).exists():
+    font_path = ConfigManager.get(
+        "NOTO_FONT_PATH", os.path.join(os.path.expanduser("~"), ".cache", "pdf2zh")
+    )
+    if not Path(font_path, font_name).exists():
+        font_path = Path(font_path, font_name).as_posix()
         print(f"Downloading {font_name}...")
-        urllib.request.urlretrieve(f"{URL_PREFIX}{font_name}", font_path)
+        with tqdm.tqdm(
+            unit="B", unit_scale=True, leave=False, unit_divisor=1024, desc=font_path
+        ) as t:
+            last_downloaded = [0]  # 使用列表保存上一次的下载量
 
-    return font_path
+            def reporthook(block_num, block_size, total_size):
+                if total_size > 0:
+                    t.total = total_size
+                downloaded = block_num * block_size
+                # 计算本次的增量
+                delta = downloaded - last_downloaded[0]
+                t.update(delta)
+                last_downloaded[0] = downloaded
+
+            urllib.request.urlretrieve(
+                f"{URL_PREFIX}{font_name}", font_path, reporthook=reporthook
+            )
+
+        print(f"Downloaded {font_path}...")
+        return font_path
+    print(font_path)
+    return Path(font_path, font_name).as_posix()
