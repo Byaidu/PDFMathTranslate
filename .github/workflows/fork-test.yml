@@ -1,0 +1,24 @@
+name: fork-test
+
+on:
+  push:
+    branches: [ "main", "master" ]
+
+env:
+  REGISTRY: ghcr.io
+  REPO_LOWER: ${{ github.repository_owner }}/${{ github.event.repository.name }}
+  GHCR_REPO: ghcr.io/${{ github.repository }}
+  WIN_EXE_PYTHON_VERSION: 3.12.9
+jobs:
+  check-repository:
+    name: Check if running in main repository
+    runs-on: ubuntu-latest
+    outputs:
+      is_main_repo: ${{ github.repository == 'Byaidu/PDFMathTranslate' }}
+    steps:
+      - run: echo "Running repository check"
+
+  test:
+    uses: ./.github/workflows/python-test.yml
+    needs: check-repository
+    if: needs.check-repository.outputs.is_main_repo != 'true'

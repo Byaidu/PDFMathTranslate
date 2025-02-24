@@ -1,8 +1,7 @@
-name: fork-test-and-build
+name: fork-build
 
 on:
-  push:
-    branches: [ "main", "master" ]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
