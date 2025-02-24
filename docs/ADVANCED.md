@@ -241,6 +241,8 @@ example config.json
 
 By default, the config file is saved in the `~/.config/PDFMathTranslate/config.json`. The program will start by reading the contents of config.json, and after that it will read the contents of the environment variables. When an environment variable is available, the contents of the environment variable are used first and the file is updated.
 
+For Docker users, custom config file is also available. You can mount you config file with `/app/config.json` in the container. If you don't mount, everything works fine. PDFMathTranslate will create by itself. The config file will saved in `/app/PDFMathTranslate/config.json` in the container.
+
 [⬆️ Back to top](#toc)
 
 ---

@@ -156,6 +156,8 @@ For docker deployment on cloud service:
   <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
 </div>
 
+Docker supports custom config. More info can find [here](./docs/ADVANCED.md)
+
 </details>
 
 <details>
