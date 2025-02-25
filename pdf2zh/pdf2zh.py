@@ -181,6 +181,14 @@ def create_parser() -> argparse.ArgumentParser:
         help="download in mainland China.",
     )
 
+    parse_params.add_argument(
+        "--skip-subset-fonts",
+        action="store_true",
+        help="Skip font subsetting. "
+        "This option can improve compatibility "
+        "but will increase the size of the output file.",
+    )
+
     return parser
 
 

@@ -43,123 +43,172 @@
 
 有关如何贡献的详细信息，请查阅 [贡献指南](https://github.com/Byaidu/PDFMathTranslate/wiki/Contribution-Guide---%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97)
 
-<h2 id="updates">近期更新</h2>
+<h2 id="updates">更新</h2>
 
-- [Dec. 24 2024] 翻译功能支持接入 [Xinference](https://github.com/xorbitsai/inference) 运行的本地 LLM _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
-- [Nov. 26 2024] CLI 现在已支持（多个）在线 PDF 文件 *(by [@reycn](https://github.com/reycn))*  
-- [Nov. 24 2024] 为降低依赖大小，提供 [ONNX](https://github.com/onnx/onnx) 支持 *(by [@Wybxc](https://github.com/Wybxc))*  
-- [Nov. 23 2024] 🌟 [免费公共服务](#demo) 上线! *(by [@Byaidu](https://github.com/Byaidu))*  
-- [Nov. 23 2024] 防止网页爬虫的防火墙 *(by [@Byaidu](https://github.com/Byaidu))*  
-- [Nov. 22 2024] 图形用户界面现已支持意大利语，并获得了一些更新 *(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))*  
-- [Nov. 22 2024] 现在你可以将自己部署的服务分享给朋友了 *(by [@Zxis233](https://github.com/Zxis233))*  
-- [Nov. 22 2024] 支持腾讯翻译 *(by [@hellofinch](https://github.com/hellofinch))*  
-- [Nov. 21 2024] 图形用户界面现在支持下载双语文档 *(by [@reycn](https://github.com/reycn))*  
-- [Nov. 20 2024] 🌟 提供了 [在线演示](#demo)！ *(by [@reycn](https://github.com/reycn))*  
+- [2025年2月22日] 更好的发布 CI 和精心打包的 windows-amd64 exe (由 [@awwaawwa](https://github.com/awwaawwa) 提供)
+- [2024年12月24日] 翻译器现在支持在 [Xinference](https://github.com/xorbitsai/inference) 上使用本地模型 _(由 [@imClumsyPanda](https://github.com/imClumsyPanda) 提供)_
+- [2024年12月19日] 现在支持非 PDF/A 文档，使用 `-cp` _(由 [@reycn](https://github.com/reycn) 提供)_
+- [2024年12月13日] 额外支持后端 _(由 [@YadominJinta](https://github.com/YadominJinta) 提供)_
+- [2024年12月10日] 翻译器现在支持 Azure 上的 OpenAI 模型 _(由 [@yidasanqian](https://github.com/yidasanqian) 提供)_
 
-<h2 id="preview">效果预览</h2>
-
+<h2 id="preview">预览</h2>
 <div align="center">
 <img src="./images/preview.gif" width="80%"/>
 </div>
 
 <h2 id="demo">在线演示 🌟</h2>
 
-### 免费服务 (<https://pdf2zh.com/>)
+<h2 id="demo">在线服务 🌟</h2>
 
-你可以立即尝试 [免费公共服务](https://pdf2zh.com/) 而无需安装
+您可以通过以下演示尝试我们的应用程序：
 
-### 在线演示
+- [公共免费服务](https://pdf2zh.com/) 在线使用，无需安装 _(推荐)_。
+- [在 HuggingFace 上托管的演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)
+- [在 ModelScope 上托管的演示](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) 无需安装。
 
-你可以立即尝试 [在 HuggingFace 上的在线演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)和[魔搭的在线演示](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate)而无需安装
-请注意，演示的计算资源有限，因此请避免滥用
-
+请注意演示的计算资源有限，请避免滥用它们。
 <h2 id="install">安装和使用</h2>
 
-我们提供了四种使用该项目的方法：[命令行工具](#cmd)、[便携式安装](#portable)、[图形交互界面](#gui) 和 [容器化部署](#docker).
+### 方法
 
-pdf2zh的运行依赖于额外模型(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)，该模型在魔搭上也可以找到。如果你在启动时下载该模型遇到问题，请使用如下环境变量：
+针对不同的使用案例，我们提供不同的方法来使用我们的程序：
+
+<details open>
+  <summary>1. UV 安装</summary>
+
+1. 安装 Python (3.10 <= 版本 <= 3.12)
+2. 安装我们的包：
+
+   ```bash
+   pip install uv
+   uv tool install --python 3.12 pdf2zh
+   ```
+
+3. 执行翻译，文件生成在 [当前工作目录](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444)：
+
+   ```bash
+   pdf2zh document.pdf
+   ```
+
+</details>
+
+<details>
+  <summary>2. Windows exe</summary>
+
+1. 从 [发布页面](https://github.com/Byaidu/PDFMathTranslate/releases) 下载 pdf2zh-version-win64.zip
+
+2. 解压缩并双击 `pdf2zh.exe` 运行。
+
+</details>
+
+<details>
+  <summary>3. 图形用户界面</summary>
+1. 安装 Python (3.10 <= 版本 <= 3.12)
+2. 安装我们的包：
+
+```bash
+pip install pdf2zh
+```
+
+3. 在浏览器中开始使用：
+
+   ```bash
+   pdf2zh -i
+   ```
+
+4. 如果您的浏览器没有自动启动，请访问
+
+   ```bash
+   http://localhost:7860/
+   ```
+
+   <img src="./docs/images/gui.gif" width="500"/>
+
+有关更多详细信息，请参阅 [GUI 文档](./docs/README_GUI.md)。
+
+</details>
+
+<details>
+  <summary>4. Docker</summary>
+
+1. 拉取并运行：
+
+   ```bash
+   docker pull byaidu/pdf2zh
+   docker run -d -p 7860:7860 byaidu/pdf2zh
+   ```
+
+2. 在浏览器中打开:
+
+   ```
+   http://localhost:7860/
+   ```
+
+对于云服务上的docker部署:
+
+<div>
+<a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="部署" height="26"></a>
+<a href="https://render.com/deploy">
+  <img src="https://render.com/images/deploy-to-render-button.svg" alt="部署到Koyeb" height="26"></a>
+<a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
+  <img src="https://zeabur.com/button.svg" alt="在Zeabur上部署" height="26"></a>
+<a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
+  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="部署到Koyeb" height="26"></a>
+</div>
+
+</details>
+
+<details>
+  <summary>5. Zotero 插件</summary>
+有关更多细节，请参见 [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh)。
+
+</details>
+
+<details>
+  <summary>6. 命令行</summary>
+
+1. 已安装Python（3.10 <= 版本 <= 3.12）
+2. 安装我们的包:
+
+   ```bash
+   pip install pdf2zh
+   ```
+
+3. 执行翻译，文件生成在 [当前工作目录](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
+
+   ```bash
+   pdf2zh document.pdf
+   ```
+
+</details>
+
+> [!TIP]
+>
+> - 如果你使用Windows并在下载后无法打开文件，请安装 [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) 并重试。
+>
+> - 如果你无法访问Docker Hub，请尝试在 [GitHub容器注册中心](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate) 上使用该镜像。
+> ```bash
+> docker pull ghcr.io/byaidu/pdfmathtranslate
+> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
+> ```
+
+### 无法安装？
+
+当前程序在工作前需要一个AI模型(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)，一些用户由于网络问题无法下载。如果你在下载此模型时遇到问题，我们提供以下环境变量的解决方法:
+
 ```shell
 set HF_ENDPOINT=https://hf-mirror.com
 ```
 
-如使用 PowerShell，请使用如下方法设置环境变量：
+对于 PowerShell 用户：
+
 ```shell
 $env:HF_ENDPOINT = https://hf-mirror.com
 ```
 
-<h3 id="cmd">方法一、命令行工具</h3>
+如果此解决方案对您无效或您遇到其他问题，请参阅 [常见问题解答](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)。
 
-  1. 确保安装了版本大于 3.10 且小于 3.12 的 Python
-  2. 安装此程序：
-
-      ```bash
-      pip install pdf2zh
-      ```
-
-  3. 执行翻译，生成文件位于 [当前工作目录](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444)：
-
-      ```bash
-      pdf2zh document.pdf
-      ```
-
-<h3 id="portable">方法二、便携式安装</h3>
-
-无需预先安装 Python 环境
-
-下载 [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat) 并双击运行
-
-<h3 id="gui">方法三、图形交互界面</h3>
-
-1. 确保安装了版本大于 3.10 且小于 3.12 的 Python
-2. 安装此程序：
-
-      ```bash
-      pip install pdf2zh
-      ```
-
-3. 开始在浏览器中使用：
-
-      ```bash
-      pdf2zh -i
-      ```
-
-4. 如果您的浏览器没有自动启动并跳转，请用浏览器打开：
-
-    ```bash
-    http://localhost:7860/
-    ```
-
-    <img src="./images/gui.gif" width="500"/>
-
-查看 [documentation for GUI](/README_GUI.md) 获取细节说明
-
-<h3 id="docker">方法四、容器化部署</h3>
-
-1. 拉取 Docker 镜像并运行：
-
-    ```bash
-    docker pull byaidu/pdf2zh
-    docker run -d -p 7860:7860 byaidu/pdf2zh
-    ```
-
-2. 通过浏览器打开：
-
-    ```
-    http://localhost:7860/
-    ```
-
-用于在云服务上部署容器镜像：
-
-<div>
-<a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
-  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" height="26"></a>
-<a href="https://render.com/deploy">
-  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Koyeb" height="26"></a>
-<a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
-  <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="26"></a>
-<a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
-  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
-</div>
 
 <h2 id="usage">高级选项</h2>
 
@@ -167,191 +216,57 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 
 <img src="./images/cmd.explained.png" width="580px"  alt="cmd"/>  
 
-我们在下表中列出了所有高级选项，以供参考：
+在下表中，我们列出了所有高级选项供参考：
 
-| Option    | Function | Example |
-| -------- | ------- |------- |
-| files | 本地文件 |  `pdf2zh ~/local.pdf` |
-| links | 在线文件 |  `pdf2zh http://arxiv.org/paper.pdf` |
-| `-i`  | [进入图形界面](#gui) |  `pdf2zh -i` |
-| `-p`  | [仅翻译部分文档](#partial) |  `pdf2zh example.pdf -p 1` |
-| `-li` | [源语言](#languages) |  `pdf2zh example.pdf -li en` |
-| `-lo` | [目标语言](#languages) |  `pdf2zh example.pdf -lo zh` |
-| `-s`  | [指定翻译服务](#services) |  `pdf2zh example.pdf -s deepl` |
-| `-t`  | [多线程](#threads) | `pdf2zh example.pdf -t 1` |
-| `-o`  | 输出目录 | `pdf2zh example.pdf -o output` |
-| `-f`, `-c` | [例外规则](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
-| `--share` | [获取 gradio 公开链接] | `pdf2zh -i --share` |
-| `--authorized` | [[添加网页认证和自定义认证页](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.)] | `pdf2zh -i --authorized users.txt [auth.html]` |
-| `--prompt` | [使用自定义的大模型prompt] | `pdf2zh --prompt [prompt.txt]` |
-| `--onnx` | [使用自定义的 DocLayout-YOLO ONNX 模型] | `pdf2zh --onnx [onnx/model/path]` |
-| `--serverport` | [使用自定义的 WebUI 端口] | `pdf2zh --serverport 7860` |
-| `--dir` | [文件夹翻译] | `pdf2zh --dir /path/to/translate/` |
-| `--serverport` | [自定义端口号] | `pdf2zh --serverport 7860` |
-| `--config` | [持久化定义配置文件](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig) | `pdf2zh --config /path/to/config/config.json` |
+| 选项         | 功能                                                                                                          | 示例                                           |
+| ------------ | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| files        | 本地文件                                                                                                     | `pdf2zh ~/local.pdf`                           |
+| links        | 在线文件                                                                                                     | `pdf2zh http://arxiv.org/paper.pdf`            |
+| `-i`         | [进入 GUI](#gui)                                                                                            | `pdf2zh -i`                                    |
+| `-p`         | [部分文档翻译](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#partial)                | `pdf2zh example.pdf -p 1`                      |
+| `-li`        | [源语言](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)                    | `pdf2zh example.pdf -li en`                    |
+| `-lo`        | [目标语言](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)                  | `pdf2zh example.pdf -lo zh`                    |
+| `-s`         | [翻译服务](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services)                   | `pdf2zh example.pdf -s deepl`                  |
+| `-t`         | [多线程](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#threads)                      | `pdf2zh example.pdf -t 1`                      |
+| `-o`         | 输出目录                                                                                                     | `pdf2zh example.pdf -o output`                 |
+| `-f`, `-c`   | [异常](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                     | `pdf2zh example.pdf -f "(MS.*)"`               |
+| `-cp`        | 兼容模式                                                                                                     | `pdf2zh example.pdf --compatible`              |
+| `--share`    | 公开链接                                                                                                     | `pdf2zh -i --share`                            |
+| `--authorized` | [授权](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#auth)                         | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--prompt`   | [自定义提示](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                   | `pdf2zh --prompt [prompt.txt]`                 |
+| `--onnx`     | [使用自定义 DocLayout-YOLO ONNX 模型]                                                                        | `pdf2zh --onnx [onnx/model/path]`              |
+| `--serverport` | [使用自定义 WebUI 端口]                                                                                    | `pdf2zh --serverport 7860`                     |
+| `--dir`      | [批量翻译]                                                                                                   | `pdf2zh --dir /path/to/translate/`             |
+| `--config`   | [配置文件](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig)                       | `pdf2zh --config /path/to/config/config.json`  |
+| `--serverport` | [自定义 gradio 服务器端口]                                                                                 | `pdf2zh --serverport 7860`                     |
 
+有关详细说明，请参阅我们的文档 [高级用法](./docs/ADVANCED.md)，以获取每个选项的完整列表。
 
-<h3 id="partial">全文或部分文档翻译</h3>
+<h2 id="downstream">二次开发 (API)</h2>
 
-- **全文翻译**
+对于下游应用程序，请参阅我们的文档 [API 详细信息](./docs/APIS.md)，以获取更多信息：
+- [Python API](./docs/APIS.md#api-python)，如何在其他 Python 程序中使用该程序
+- [HTTP API](./docs/APIS.md#api-http)，如何与已安装该程序的服务器进行通信
 
-```bash
-pdf2zh example.pdf
-```
+<h2 id="todo">待办事项</h2>
 
-- **部分翻译**
+- [ ] 使用基于 DocLayNet 的模型解析布局，[PaddleX](https://github.com/PaddlePaddle/PaddleX/blob/17cc27ac3842e7880ca4aad92358d3ef8555429a/paddlex/repo_apis/PaddleDetection_api/object_det/official_categories.py#L81)，[PaperMage](https://github.com/allenai/papermage/blob/9cd4bb48cbedab45d0f7a455711438f1632abebe/README.md?plain=1#L102)，[SAM2](https://github.com/facebookresearch/sam2)
 
-```bash
-pdf2zh example.pdf -p 1-3,5
-```
+- [ ] 修复页面旋转、目录、列表格式
 
-<h3 id="language">指定源语言和目标语言</h3>
+- [ ] 修复旧论文中的像素公式
 
-参考 [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages), [DeepL Languages Codes](https://developers.deepl.com/docs/resources/supported-languages)
+- [ ] 异步重试，除了 KeyboardInterrupt
 
-```bash
-pdf2zh example.pdf -li en -lo ja
-```
+- [ ] 针对西方语言的 Knuth–Plass 算法
 
-<h3 id="services">使用不同的翻译服务</h3>
+- [ ] 支持非 PDF/A 文件
 
-下表列出了每个翻译服务所需的 [环境变量](https://chatgpt.com/share/6734a83d-9d48-800e-8a46-f57ca6e8bcb4)，在使用相应服务之前，请确保已设置这些变量
-
-|**Translator**|**Service**|**Environment Variables**|**Default Values**|**Notes**|
-|-|-|-|-|-|
-|**Google (Default)**|`google`|None|N/A|None|
-|**Bing**|`bing`|None|N/A|None|
-|**DeepL**|`deepl`|`DEEPL_AUTH_KEY`|`[Your Key]`|See [DeepL](https://support.deepl.com/hc/en-us/articles/360020695820-API-Key-for-DeepL-s-API)|
-|**DeepLX**|`deeplx`|`DEEPLX_ENDPOINT`|`https://api.deepl.com/translate`|See [DeepLX](https://github.com/OwO-Network/DeepLX)|
-|**Ollama**|`ollama`|`OLLAMA_HOST`, `OLLAMA_MODEL`|`http://127.0.0.1:11434`, `gemma2`|See [Ollama](https://github.com/ollama/ollama)|
-|**OpenAI**|`openai`|`OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`|`https://api.openai.com/v1`, `[Your Key]`, `gpt-4o-mini`|See [OpenAI](https://platform.openai.com/docs/overview)|
-|**AzureOpenAI**|`azure-openai`|`AZURE_OPENAI_BASE_URL`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_MODEL`|`[Your Endpoint]`, `[Your Key]`, `gpt-4o-mini`|See [Azure OpenAI](https://learn.microsoft.com/zh-cn/azure/ai-services/openai/chatgpt-quickstart?tabs=command-line%2Cjavascript-keyless%2Ctypescript-keyless%2Cpython&pivots=programming-language-python)|
-|**Zhipu**|`zhipu`|`ZHIPU_API_KEY`, `ZHIPU_MODEL`|`[Your Key]`, `glm-4-flash`|See [Zhipu](https://open.bigmodel.cn/dev/api/thirdparty-frame/openai-sdk)|
-| **ModelScope**       | `modelscope`   |`MODELSCOPE_API_KEY`, `MODELSCOPE_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-Coder-32B-Instruct`| See [ModelScope](https://www.modelscope.cn/docs/model-service/API-Inference/intro)|
-|**Silicon**|`silicon`|`SILICON_API_KEY`, `SILICON_MODEL`|`[Your Key]`, `Qwen/Qwen2.5-7B-Instruct`|See [SiliconCloud](https://docs.siliconflow.cn/quickstart)|
-|**Gemini**|`gemini`|`GEMINI_API_KEY`, `GEMINI_MODEL`|`[Your Key]`, `gemini-1.5-flash`|See [Gemini](https://ai.google.dev/gemini-api/docs/openai)|
-|**Azure**|`azure`|`AZURE_ENDPOINT`, `AZURE_API_KEY`|`https://api.translator.azure.cn`, `[Your Key]`|See [Azure](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview)|
-|**Tencent**|`tencent`|`TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`|`[Your ID]`, `[Your Key]`|See [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104)|
-|**Dify**|`dify`|`DIFY_API_URL`, `DIFY_API_KEY`|`[Your DIFY URL]`, `[Your Key]`|See [Dify](https://github.com/langgenius/dify),Three variables, lang_out, lang_in, and text, need to be defined in Dify's workflow input.|
-|**AnythingLLM**|`anythingllm`|`AnythingLLM_URL`, `AnythingLLM_APIKEY`|`[Your AnythingLLM URL]`, `[Your Key]`|See [anything-llm](https://github.com/Mintplex-Labs/anything-llm)|
-|**Argos Translate**|`argos`| | |See [argos-translate](https://github.com/argosopentech/argos-translate)|
-|**Grok**|`grok`| `GORK_API_KEY`, `GORK_MODEL` | `[Your GORK_API_KEY]`, `grok-2-1212` |See [Grok](https://docs.x.ai/docs/overview)|
-|**DeepSeek**|`deepseek`| `DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL` | `[Your DEEPSEEK_API_KEY]`, `deepseek-chat` |See [DeepSeek](https://www.deepseek.com/)|
-|**OpenAI-Liked**|`openailiked`| `OPENAILIKED_BASE_URL`, `OPENAILIKED_API_KEY`, `OPENAILIKED_MODEL` | `url`, `[Your Key]`, `model name` | None |
-
-对于未在上述表格中的，并且兼容 OpenAI api 的大语言模型，可使用表格中的 OpenAI 的方式进行环境变量的设置。
-
-使用 `-s service` 或 `-s service:model` 指定翻译服务:
-
-```bash
-pdf2zh example.pdf -s openai:gpt-4o-mini
-```
-
-或者使用环境变量指定模型：
-
-```bash
-set OPENAI_MODEL=gpt-4o-mini
-pdf2zh example.pdf -s openai
-```
-
-对于 PowerShell 用户，请使用如下方式设置环境变量指定模型：
-```shell
-$env:OPENAI_MODEL = gpt-4o-mini
-pdf2zh example.pdf -s openai
-```
-
-<h3 id="exceptions">指定例外规则</h3>
-
-使用正则表达式指定需保留的公式字体与字符：
-
-```bash
-pdf2zh example.pdf -f "(CM[^RT].*|MS.*|.*Ital)" -c "(\(|\||\)|\+|=|\d|[\u0080-\ufaff])"
-```
-
-默认保留 `Latex`, `Mono`, `Code`, `Italic`, `Symbol` 以及 `Math` 字体：
-
-```bash
-pdf2zh example.pdf -f "(CM[^R]|MS.M|XY|MT|BL|RM|EU|LA|RS|LINE|LCIRCLE|TeX-|rsfs|txsy|wasy|stmary|.*Mono|.*Code|.*Ital|.*Sym|.*Math)"
-```
-
-<h3 id="threads">指定线程数量</h3>
-
-使用 `-t` 指定翻译时使用的线程数量：
-
-```bash
-pdf2zh example.pdf -t 1
-```
-<h3 id="prompt">自定义大模型prompt</h3>
-
-使用 `--prompt` 指定使用大模型翻译时使用的 Prompt 文件。
-
-```bash
-pdf2zh example.pdf -pr prompt.txt
-```
-
-
-示例 `prompt.txt` 文件
-
-```
-[
-    {
-        "role": "system",
-        "content": "You are a professional,authentic machine translation engine.",
-    },
-    {
-        "role": "user",
-        "content": "Translate the following markdown source text to ${lang_out}. Keep the formula notation {{v*}} unchanged. Output translation directly without any additional text.\nSource Text: ${text}\nTranslated Text:",
-    },
-]
-```
-
-
-自定义 Prompt 文件中，可以使用三个内置变量用来传递参数。
-|**变量名**|**说明**|
-|-|-|
-|`lang_in`|输入的语言|
-|`lang_out`|输出的语言|
-|`text`|需要翻译的文本|
-
-<h2 id="todo">API</h2>
-
-### Python
-
-```python
-from pdf2zh import translate, translate_stream
-
-params = {"lang_in": "en", "lang_out": "zh", "service": "google", "thread": 4}
-file_mono, file_dual = translate(files=["example.pdf"], **params)[0]
-with open("example.pdf", "rb") as f:
-    stream_mono, stream_dual = translate_stream(stream=f.read(), **params)
-```
-
-### HTTP
-
-```bash
-pip install pdf2zh[backend]
-pdf2zh --flask
-pdf2zh --celery worker
-```
-
-```bash
-curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"lang_out\":\"zh\",\"service\":\"google\",\"thread\":4}"
-{"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
-{"info":{"n":13,"total":506},"state":"PROGRESS"}
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
-{"state":"SUCCESS"}
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/mono --output example-mono.pdf
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/dual --output example-dual.pdf
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X DELETE
-```
+- [ ] [Zotero](https://github.com/zotero/zotero) 和 [Obsidian](https://github.com/obsidianmd/obsidian-releases) 的插件
 
 <h2 id="acknowledgement">致谢</h2>
+
+- [Immersive Translation](https://immersivetranslate.com) 为此项目的活跃贡献者提供每月的专业会员兑换码，详细信息请查看：[CONTRIBUTOR_REWARD.md](https://github.com/funstory-ai/BabelDOC/blob/main/docs/CONTRIBUTOR_REWARD.md)
 
 - 文档合并：[PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
@@ -365,7 +280,7 @@ curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X
 
 - 布局解析：[DocLayout-YOLO](https://github.com/opendatalab/DocLayout-YOLO)
 
-- 文档标准：[PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
+- 文档标准：[PDF Explained](https://zxyle.github.io/PDF-Explained/)，[PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
 
 - 多语言字体：[Go Noto Universal](https://github.com/satbyy/go-noto-universal)
 
@@ -383,6 +298,6 @@ curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date"/>
+   <img alt="星标历史图表" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date"/>
  </picture>
 </a>
