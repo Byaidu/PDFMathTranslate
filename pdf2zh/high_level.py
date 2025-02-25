@@ -175,6 +175,7 @@ def translate_stream(
     model: OnnxModel = None,
     envs: Dict = None,
     prompt: Template = None,
+    skip_subset_fonts: bool = False,
     **kwarg: Any,
 ):
     font_list = [("tiro", None)]
@@ -234,9 +235,9 @@ def translate_stream(
     doc_en.insert_file(doc_zh)
     for id in range(page_count):
         doc_en.move_page(page_count + id, id * 2 + 1)
-
-    doc_zh.subset_fonts(fallback=True)
-    doc_en.subset_fonts(fallback=True)
+    if not skip_subset_fonts:
+        doc_zh.subset_fonts(fallback=True)
+        doc_en.subset_fonts(fallback=True)
     return (
         doc_zh.write(deflate=True, garbage=3, use_objstms=1),
         doc_en.write(deflate=True, garbage=3, use_objstms=1),
@@ -308,6 +309,7 @@ def translate(
     model: OnnxModel = None,
     envs: Dict = None,
     prompt: Template = None,
+    skip_subset_fonts: bool = False,
     **kwarg: Any,
 ):
     if not files:
