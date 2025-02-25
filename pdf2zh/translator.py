@@ -433,7 +433,9 @@ class OpenAITranslator(BaseTranslator):
         if not response.choices:
             if hasattr(response, "error"):
                 raise ValueError("Error response from Service", response.error)
-        return response.choices[0].message.content.strip()
+        content = response.choices[0].message.content.strip()
+        content = re.sub(r"^<think>.+?</think>", "", content, flags=re.DOTALL).strip()
+        return content
 
     def get_formular_placeholder(self, id: int):
         return "{{v" + str(id) + "}}"
