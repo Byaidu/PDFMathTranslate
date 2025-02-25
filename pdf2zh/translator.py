@@ -424,7 +424,7 @@ class OpenAITranslator(BaseTranslator):
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
         think_filter_regex = r"^<think>.+?\n*(</think>|\n)*(</think>)\n*"
-        self.add_cache_impact_parameters('think_filter_regex', think_filter_regex)
+        self.add_cache_impact_parameters("think_filter_regex", think_filter_regex)
         self.think_filter_regex = re.compile(think_filter_regex, flags=re.DOTALL)
 
     def do_translate(self, text) -> str:
