@@ -7,17 +7,6 @@ import unicodedata
 from copy import copy
 from string import Template
 from typing import cast
-
-logger = logging.getLogger(__name__)
-
-try:
-    import argostranslate.package
-    import argostranslate.translate
-except ImportError:
-    logger.warning(
-        "argos-translate is not installed, argostranslate will not work. if you want to use argostranslate, please install it."
-    )
-
 import deepl
 import ollama
 import openai
@@ -34,6 +23,15 @@ from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 
 from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
+
+logger = logging.getLogger(__name__)
+try:
+    import argostranslate.package
+    import argostranslate.translate
+except ImportError:
+    logger.warning(
+        "argos-translate is not installed, argostranslate will not work. if you want to use argostranslate, please install it."
+    )
 
 
 def remove_control_characters(s):
@@ -637,7 +635,14 @@ class TencentTranslator(BaseTranslator):
     def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
         self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
-        cred = credential.DefaultCredentialProvider().get_credential()
+
+        try:
+            cred = credential.DefaultCredentialProvider().get_credential()
+        except EnvironmentError:
+            cred = credential.Credential(
+                self.envs["TENCENTCLOUD_SECRET_ID"],
+                self.envs["TENCENTCLOUD_SECRET_KEY"],
+            )
         self.client = TmtClient(cred, "ap-beijing")
         self.req = TextTranslateRequest()
         self.req.Source = self.lang_in
