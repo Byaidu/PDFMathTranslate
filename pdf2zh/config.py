@@ -52,7 +52,7 @@ class ConfigManager:
         if not self._config_path.exists():
             if isInit:
                 self._config_path.parent.mkdir(parents=True, exist_ok=True)
-                self._save_config()
+                self._save_config(self._config_path)
             else:
                 raise ValueError(f"config file {self._config_path} not found!")
         else:
