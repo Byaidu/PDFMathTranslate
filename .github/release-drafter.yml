@@ -40,3 +40,7 @@ template: |
   ## Contributors
   
   $CONTRIBUTORS
+
+  ## Windows Specific
+
+  If you cannot open it after downloading, please install https://aka.ms/vs/17/release/vc_redist.x64.exe and try again.
