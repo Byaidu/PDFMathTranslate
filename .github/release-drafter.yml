@@ -1,5 +1,5 @@
 name-template: 'v$RESOLVED_VERSION'
-tag-template: 'awv$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
 categories:
   - title: '🚀 Features'
     labels:
