@@ -62,6 +62,7 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 You can try our application out using either of the following demos:
 
 - [Public free service](https://pdf2zh.com/) online without installation _(recommended)_.
+- [Immersive Translate - BabelDOC](https://app.immersivetranslate.com/babel-doc/) 1000 free pages per month. _(recommended)_
 - [Demo hosted on HuggingFace](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)
 - [Demo hosted on ModelScope](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) without installation.
 
