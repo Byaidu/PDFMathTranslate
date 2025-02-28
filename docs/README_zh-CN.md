@@ -161,6 +161,7 @@ pip install pdf2zh
 
 <details>
   <summary>5. Zotero 插件</summary>
+
 有关更多细节，请参见 [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh)。
 
 </details>
