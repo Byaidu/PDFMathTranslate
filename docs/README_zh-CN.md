@@ -63,6 +63,7 @@
 您可以通过以下演示尝试我们的应用程序：
 
 - [公共免费服务](https://pdf2zh.com/) 在线使用，无需安装 _(推荐)_。
+- [沉浸式翻译 - BabelDOC](https://app.immersivetranslate.com/babel-doc/) 每月免费 1000 页 _(推荐)_
 - [在 HuggingFace 上托管的演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)
 - [在 ModelScope 上托管的演示](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) 无需安装。
 
