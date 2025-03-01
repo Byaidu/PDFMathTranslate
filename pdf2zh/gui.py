@@ -461,6 +461,7 @@ with gr.Blocks(
                         value=ConfigManager.get_env_by_translatername(
                             translator, env[0], env[1]
                         ),
+                        type="password" if i in translator.iskey else "text",
                     )
                 _envs[-1] = gr.update(visible=translator.CustomPrompt)
                 return _envs

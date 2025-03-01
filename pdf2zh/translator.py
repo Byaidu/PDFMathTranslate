@@ -7,17 +7,6 @@ import unicodedata
 from copy import copy
 from string import Template
 from typing import cast
-
-logger = logging.getLogger(__name__)
-
-try:
-    import argostranslate.package
-    import argostranslate.translate
-except ImportError:
-    logger.warning(
-        "argos-translate is not installed, argostranslate will not work. if you want to use argostranslate, please install it."
-    )
-
 import deepl
 import ollama
 import openai
@@ -35,6 +24,15 @@ from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
 
+logger = logging.getLogger(__name__)
+try:
+    import argostranslate.package
+    import argostranslate.translate
+except ImportError:
+    logger.warning(
+        "argos-translate is not installed, argostranslate will not work. if you want to use argostranslate, please install it."
+    )
+
 
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
@@ -43,6 +41,7 @@ def remove_control_characters(s):
 class BaseTranslator:
     name = "base"
     envs = {}
+    iskey = []
     lang_map: dict[str, str] = {}
     CustomPrompt = False
     ignore_cache = False
@@ -246,6 +245,8 @@ class DeepLTranslator(BaseTranslator):
         "DEEPL_AUTH_KEY": None,
     }
     lang_map = {"zh": "zh-Hans"}
+    # not work
+    iskey = [0]
 
     def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
         self.set_envs(envs)
@@ -268,6 +269,8 @@ class DeepLXTranslator(BaseTranslator):
         "DEEPLX_ACCESS_TOKEN": None,
     }
     lang_map = {"zh": "zh-Hans"}
+    # not work
+    iskey = [1]
 
     def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
         self.set_envs(envs)
@@ -400,6 +403,8 @@ class OpenAITranslator(BaseTranslator):
         "OPENAI_MODEL": "gpt-4o-mini",
     }
     CustomPrompt = True
+    # not work
+    iskey = [1]
 
     def __init__(
         self,
@@ -458,6 +463,8 @@ class AzureOpenAITranslator(BaseTranslator):
         "AZURE_OPENAI_MODEL": "gpt-4o-mini",
     }
     CustomPrompt = True
+    # not work
+    iskey = [1]
 
     def __init__(
         self,
@@ -502,6 +509,8 @@ class ModelScopeTranslator(OpenAITranslator):
         "MODELSCOPE_MODEL": "Qwen/Qwen2.5-32B-Instruct",
     }
     CustomPrompt = True
+    # not work
+    iskey = [1]
 
     def __init__(
         self,
@@ -531,6 +540,8 @@ class ZhipuTranslator(OpenAITranslator):
         "ZHIPU_MODEL": "glm-4-flash",
     }
     CustomPrompt = True
+    # not work
+    iskey = [0]
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -567,6 +578,8 @@ class SiliconTranslator(OpenAITranslator):
         "SILICON_MODEL": "Qwen/Qwen2.5-7B-Instruct",
     }
     CustomPrompt = True
+    # not work
+    iskey = [0]
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -587,6 +600,8 @@ class GeminiTranslator(OpenAITranslator):
         "GEMINI_MODEL": "gemini-1.5-flash",
     }
     CustomPrompt = True
+    # not work
+    iskey = [0]
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -607,6 +622,8 @@ class AzureTranslator(BaseTranslator):
         "AZURE_API_KEY": None,
     }
     lang_map = {"zh": "zh-Hans"}
+    # not work
+    iskey = [1]
 
     def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
         self.set_envs(envs)
@@ -638,11 +655,20 @@ class TencentTranslator(BaseTranslator):
         "TENCENTCLOUD_SECRET_ID": None,
         "TENCENTCLOUD_SECRET_KEY": None,
     }
+    # not work
+    iskey = [0, 1]
 
     def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
         self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
-        cred = credential.DefaultCredentialProvider().get_credential()
+
+        try:
+            cred = credential.DefaultCredentialProvider().get_credential()
+        except EnvironmentError:
+            cred = credential.Credential(
+                self.envs["TENCENTCLOUD_SECRET_ID"],
+                self.envs["TENCENTCLOUD_SECRET_KEY"],
+            )
         self.client = TmtClient(cred, "ap-beijing")
         self.req = TextTranslateRequest()
         self.req.Source = self.lang_in
@@ -662,6 +688,8 @@ class AnythingLLMTranslator(BaseTranslator):
         "AnythingLLM_APIKEY": None,
     }
     CustomPrompt = True
+    # not work
+    iskey = [1]
 
     def __init__(self, lang_out, lang_in, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -699,6 +727,8 @@ class DifyTranslator(BaseTranslator):
         "DIFY_API_URL": None,  # 填写实际 Dify API 地址
         "DIFY_API_KEY": None,  # 替换为实际 API 密钥
     }
+    # not work
+    iskey = [1]
 
     def __init__(self, lang_out, lang_in, model, envs=None, **kwargs):
         self.set_envs(envs)
@@ -781,6 +811,8 @@ class GorkTranslator(OpenAITranslator):
         "GORK_MODEL": "grok-2-1212",
     }
     CustomPrompt = True
+    # not work
+    iskey = [0]
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -799,6 +831,8 @@ class GroqTranslator(OpenAITranslator):
         "GROQ_MODEL": "llama-3-3-70b-versatile",
     }
     CustomPrompt = True
+    # not work
+    iskey = [0]
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -817,6 +851,8 @@ class DeepseekTranslator(OpenAITranslator):
         "DEEPSEEK_MODEL": "deepseek-chat",
     }
     CustomPrompt = True
+    # not work
+    iskey = [0]
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -836,6 +872,8 @@ class OpenAIlikedTranslator(OpenAITranslator):
         "OPENAILIKED_MODEL": None,
     }
     CustomPrompt = True
+    # not work
+    iskey = [1]
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
@@ -870,6 +908,8 @@ class QwenMtTranslator(OpenAITranslator):
         "ALI_DOMAINS": "This sentence is extracted from a scientific paper. When translating, please pay close attention to the use of specialized troubleshooting terminologies and adhere to scientific sentence structures to maintain the technical rigor and precision of the original text.",
     }
     CustomPrompt = True
+    # not work
+    iskey = [1]
 
     def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
         self.set_envs(envs)
