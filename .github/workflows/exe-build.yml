@@ -136,6 +136,32 @@ jobs:
         run: |
           ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
 
+      - name: Delete offline assets and cache
+        shell: pwsh
+        run: |
+          Write-Host "==== 查找并删除离线资源包 ===="
+          $offlineAssetsPath = Get-ChildItem -Path "./build" -Filter "offline_assets_*.zip" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          if ($offlineAssetsPath) {
+            Write-Host "找到离线资源包: $offlineAssetsPath"
+            Remove-Item -Path $offlineAssetsPath -Force
+            Write-Host "已删除离线资源包"
+          } else {
+            Write-Host "未找到离线资源包"
+          }
+          
+          Write-Host "==== 删除缓存目录 ===="
+          $cachePath = "$env:USERPROFILE/.cache/babeldoc"
+          if (Test-Path $cachePath) {
+            Remove-Item -Path $cachePath -Recurse -Force
+            Write-Host "已删除缓存目录: $cachePath"
+          } else {
+            Write-Host "缓存目录不存在: $cachePath"
+          }
+
+      - name: Test - Translate without offline assets
+        run: |
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
+          
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
