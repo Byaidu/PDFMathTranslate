@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: funstory-ai/BabelDOC
-          path: babeldoc
+          path: babeldoctemp1234567
           token: ${{ secrets.GITHUB_TOKEN }}
           sparse-checkout: babeldoc/assets/embedding_assets_metadata.py
       - name: Cached Assets
@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v4.2.0
         with:
           path: ~/.cache/babeldoc
-          key: test-1-babeldoc-assets-${{ hashFiles('babeldoc/babeldoc/assets/embedding_assets_metadata.py') }}
+          key: test-1-babeldoc-assets-${{ hashFiles('babeldoctemp1234567/babeldoc/assets/embedding_assets_metadata.py') }}
       - name: 检出代码
         uses: actions/checkout@v4
 
@@ -41,6 +41,13 @@ jobs:
       - name: 执行所有任务（创建目录、下载、解压、复制文件、安装依赖）
         shell: pwsh
         run: |
+          Write-Host "==== 删除 babeldoctemp1234567 文件夹 ===="
+          if (Test-Path "./babeldoctemp1234567") {
+              Remove-Item -Path "./babeldoctemp1234567" -Recurse -Force
+              Write-Host "babeldoctemp1234567 文件夹已成功删除"
+          } else {
+              Write-Host "babeldoctemp1234567 文件夹不存在，无需删除"
+          }
           Write-Host "==== 创建必要的目录 ===="
           New-Item -Path "./build" -ItemType Directory -Force
           New-Item -Path "./build/runtime" -ItemType Directory -Force
