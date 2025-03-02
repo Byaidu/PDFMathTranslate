@@ -385,6 +385,7 @@ def translate(
 
 
 def download_remote_fonts(lang: str):
+    lang = lang.lower()
     LANG_NAME_MAP = {
         **{la: "GoNotoKurrent-Regular.ttf" for la in noto_list},
         **{
