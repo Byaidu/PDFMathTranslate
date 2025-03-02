@@ -198,6 +198,12 @@ jobs:
           Invoke-WebRequest -Uri $pythonUrl -OutFile $pythonZip
           Expand-Archive -Path $pythonZip -DestinationPath "./build/runtime" -Force
 
+          Write-Host "==== 下载 Visual C++ Redistributable 安装程序 ===="
+          $vcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+          $vcRedistPath = "./build/无法运行请安装vc_redist.x64.exe"
+          Invoke-WebRequest -Uri $vcRedistUrl -OutFile $vcRedistPath
+          Write-Host "已下载 Visual C++ Redistributable 安装程序到: $vcRedistPath"
+
           Write-Host "==== 下载并解压 PyStand ===="
           $pystandUrl = "https://github.com/skywind3000/PyStand/releases/download/1.1.4/PyStand-v1.1.4-exe.zip"
           $pystandZip = "./dep_build/PyStand.zip"
