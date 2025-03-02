@@ -1,13 +1,13 @@
 name: windows exe Release Workflow
 
 on:
-  # workflow_dispatch:
-  #   inputs:
-  #     release_version:
-  #       description: 'Release Version (e.g., v1.0.0)'
-  #       required: true
-  #       type: string
-  push:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release Version (e.g., v1.0.0)'
+        required: true
+        type: string
+  # push:
     # debug purpose
 env:
   WIN_EXE_PYTHON_VERSION: 3.12.9
