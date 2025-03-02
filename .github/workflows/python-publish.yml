@@ -404,14 +404,14 @@ jobs:
               exit 1
           }
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: win64-exe
-          path: ./build
-          if-no-files-found: error
-          compression-level: 1
-          include-hidden-files: true
+      # - name: Upload build artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: win64-exe
+      #     path: ./build
+      #     if-no-files-found: error
+      #     compression-level: 1
+      #     include-hidden-files: true
       
       - name: Generate offline assets
         shell: pwsh
