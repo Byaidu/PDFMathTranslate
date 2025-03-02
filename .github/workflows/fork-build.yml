@@ -316,6 +316,7 @@ jobs:
       - name: Test - Translate with offline assets (offline mode)
         run: |
           Write-Host "==== 测试离线资源包 ===="
+          New-Item -Path "./test/file/offline_result" -ItemType Directory -Force
           ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file/offline_result
 
       - name: Upload offline test results
