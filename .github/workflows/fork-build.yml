@@ -231,15 +231,26 @@ jobs:
           $sourcePath = Resolve-Path "./dep_build/venv/Lib/site-packages"
           $targetPath = "./build/site-packages"
           
-          # 在 Windows 上创建目录符号链接 (需要管理员权限)
-          # 在 GitHub Actions 上使用 mklink /J (junction) 不需要管理员权限
-          cmd /c mklink /J "$targetPath" "$sourcePath"
-          
-          if (-not (Test-Path $targetPath)) {
-              Write-Host "警告: 创建软链接失败，回退到复制方式"
+          try {
+              # 确保目标路径的父目录存在，但目标路径本身不存在
+              if (Test-Path $targetPath) {
+                  Remove-Item -Path $targetPath -Recurse -Force
+              }
+              
+              # 使用完整路径并用双引号包围路径
+              $command = "cmd.exe /c mklink /J `"$targetPath`" `"$sourcePath`""
+              Write-Host "执行命令: $command"
+              Invoke-Expression $command
+              
+              if (Test-Path $targetPath) {
+                  Write-Host "成功创建软链接: $targetPath -> $sourcePath"
+              } else {
+                  throw "软链接创建后无法访问"
+              }
+          } catch {
+              Write-Host "警告: 创建软链接失败，错误信息: $_"
+              Write-Host "回退到复制方式"
               Copy-Item -Path "$sourcePath" -Destination "$targetPath" -Recurse -Force
-          } else {
-              Write-Host "成功创建软链接: $targetPath -> $sourcePath"
           }
 
           Write-Host "==== 复制 script/_pystand_static.int 到 build/ ===="
