@@ -240,9 +240,6 @@ jobs:
               exit 1
           }
 
-          Write-Host "==== 生成离线资源包 ===="
-          uv run --active babeldoc --generate-offline-assets ./build
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -268,11 +265,11 @@ jobs:
           name: win64-exe
           path: ./build
 
-      - name: Test show version
+      - name: Test show version (online mode)
         run: |
           ./build/pdf2zh.exe --version
       
-      - name: Test - Translate a PDF file with plain text only
+      - name: Test - Translate a PDF file with plain text only (online mode)
         run: |
           ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
 
@@ -280,19 +277,26 @@ jobs:
         run: |
           ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
 
-      - name: Delete offline assets and cache
+      - name: Test - Translate without offline assets (online mode)
+        run: |
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./test/file/
+          if-no-files-found: error
+
+      - name: Generate offline assets
         shell: pwsh
         run: |
-          Write-Host "==== 查找并删除离线资源包 ===="
-          $offlineAssetsPath = Get-ChildItem -Path "./build" -Filter "offline_assets_*.zip" -Recurse | Select-Object -First 1 -ExpandProperty FullName
-          if ($offlineAssetsPath) {
-            Write-Host "找到离线资源包: $offlineAssetsPath"
-            Remove-Item -Path $offlineAssetsPath -Force
-            Write-Host "已删除离线资源包"
-          } else {
-            Write-Host "未找到离线资源包"
-          }
-          
+          Write-Host "==== 生成离线资源包 ===="
+          uv run --active babeldoc --generate-offline-assets ./build
+
+      - name: Delete cache
+        shell: pwsh
+        run: |
           Write-Host "==== 删除缓存目录 ===="
           $cachePath = "$env:USERPROFILE/.cache/babeldoc"
           if (Test-Path $cachePath) {
@@ -302,20 +306,22 @@ jobs:
             Write-Host "缓存目录不存在: $cachePath"
           }
 
-      - name: Test - Translate without offline assets
+      - name: Test - Translate with offline assets (offline mode)
         run: |
-          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
-          
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: ./test/file/
+          Write-Host "==== 测试离线资源包 ===="
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file/offline_result
 
-      - name: Upload build without offline assets artifact
+      - name: Upload offline test results
         uses: actions/upload-artifact@v4
         with:
-          name: win64-exe-no-assets
+          name: offline-test-results
+          path: ./test/file/offline_result/
+          if-no-files-found: error
+
+      - name: Upload build with offline assets artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win64-exe-with-assets
           path: ./build
           if-no-files-found: error
           compression-level: 9
