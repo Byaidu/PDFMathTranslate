@@ -2,9 +2,9 @@ name: Test and Release
 
 on:
   push:
-    # branches:
-    #   - main
-    #   - master
+    branches:
+      - main
+      - master
 
 permissions:
   id-token: write
@@ -543,12 +543,16 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: win64-exe
+          name: win64-exe-with-assets
           path: ./build
 
       - name: Create release zip
         run: |
-          zip -9qr "pdf2zh-${{ needs.release-draft.outputs.tag_name }}-win64.zip" ./build/*
+          mv ./build ./pdf2zh
+          zip -9qr "pdf2zh-${{ needs.release-draft.outputs.tag_name }}-with-assets-win64.zip" ./pdf2zh/*
+
+          rm -rf ./pdf2zh/offline_assets_*.zip
+          zip -9qr "pdf2zh-${{ needs.release-draft.outputs.tag_name }}-win64.zip" ./pdf2zh/*
 
       - name: Upload to latest release
         env:
@@ -560,3 +564,4 @@ jobs:
           
           # Upload the zip file to the release
           gh release upload "$LATEST_RELEASE" "pdf2zh-${{ needs.release-draft.outputs.tag_name }}-win64.zip" --clobber
+          gh release upload "$LATEST_RELEASE" "pdf2zh-${{ needs.release-draft.outputs.tag_name }}-with-assets-win64.zip" --clobber
