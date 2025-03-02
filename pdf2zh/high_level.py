@@ -403,5 +403,6 @@ def download_remote_fonts(lang: str):
     font_path = ConfigManager.get("NOTO_FONT_PATH", Path("/app", font_name).as_posix())
     if not Path(font_path).exists():
         font_path, _ = get_font_and_metadata(font_name)
+        font_path = font_path.as_posix()
 
     return font_path
