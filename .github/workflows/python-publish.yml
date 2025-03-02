@@ -551,7 +551,12 @@ jobs:
           mv ./build ./pdf2zh
           zip -9qr "pdf2zh-${{ needs.release-draft.outputs.tag_name }}-with-assets-win64.zip" ./pdf2zh/*
 
-          rm -rf ./pdf2zh/offline_assets_*
+          # 查找并删除离线资源文件
+          find ./pdf2zh -name "offline_assets_*.zip" -type f -print -delete
+          # 确保删除操作成功
+          echo "Remaining offline assets files (should be empty):"
+          find ./pdf2zh -name "offline_assets_*.zip" -type f
+          
           zip -9qr "pdf2zh-${{ needs.release-draft.outputs.tag_name }}-win64.zip" ./pdf2zh/*
 
       - name: Upload to latest release
