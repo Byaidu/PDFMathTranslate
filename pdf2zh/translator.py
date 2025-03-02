@@ -423,6 +423,9 @@ class OpenAITranslator(BaseTranslator):
         self.prompttext = prompt
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
+        think_filter_regex = r"^<think>.+?\n*(</think>|\n)*(</think>)\n*"
+        self.add_cache_impact_parameters("think_filter_regex", think_filter_regex)
+        self.think_filter_regex = re.compile(think_filter_regex, flags=re.DOTALL)
 
     def do_translate(self, text) -> str:
         response = self.client.chat.completions.create(
@@ -433,7 +436,9 @@ class OpenAITranslator(BaseTranslator):
         if not response.choices:
             if hasattr(response, "error"):
                 raise ValueError("Error response from Service", response.error)
-        return response.choices[0].message.content.strip()
+        content = response.choices[0].message.content.strip()
+        content = self.think_filter_regex.sub("", content).strip()
+        return content
 
     def get_formular_placeholder(self, id: int):
         return "{{v" + str(id) + "}}"

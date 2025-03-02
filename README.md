@@ -62,6 +62,7 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 You can try our application out using either of the following demos:
 
 - [Public free service](https://pdf2zh.com/) online without installation _(recommended)_.
+- [Immersive Translate - BabelDOC](https://app.immersivetranslate.com/babel-doc/) 1000 free pages per month. _(recommended)_
 - [Demo hosted on HuggingFace](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)
 - [Demo hosted on ModelScope](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) without installation.
 
@@ -74,13 +75,14 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 For different use cases, we provide distinct methods to use our program:
 
 <details open>
-  <summary>1. Commandline</summary>
+  <summary>1. UV install</summary>
 
 1. Python installed (3.10 <= version <= 3.12)
 2. Install our package:
 
    ```bash
-   pip install pdf2zh
+   pip install uv
+   uv tool install --python 3.12 pdf2zh
    ```
 
 3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
@@ -160,8 +162,25 @@ For docker deployment on cloud service:
 
 <details>
   <summary>5. Zotero Plugin</summary>
-
 See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
+
+</details>
+
+<details>
+  <summary>6. Commandline</summary>
+
+1. Python installed (3.10 <= version <= 3.12)
+2. Install our package:
+
+   ```bash
+   pip install pdf2zh
+   ```
+
+3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
+
+   ```bash
+   pdf2zh document.pdf
+   ```
 
 </details>
 
@@ -212,6 +231,7 @@ In the following table, we list all advanced options for reference:
 | `-o`           | Output dir                                                                                                    | `pdf2zh example.pdf -o output`                 |
 | `-f`, `-c`     | [Exceptions](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                | `pdf2zh example.pdf -f "(MS.*)"`               |
 | `-cp`          | Compatibility Mode                                                                                            | `pdf2zh example.pdf --compatible`              |
+| `--skip-subset-fonts` | [Skip font subset](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#font-subset)  | `pdf2zh example.pdf --skip-subset-fonts`       |
 | `--share`      | Public link                                                                                                   | `pdf2zh -i --share`                            |
 | `--authorized` | [Authorization](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#auth)                   | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt`     | [Custom Prompt](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                 | `pdf2zh --prompt [prompt.txt]`                 |

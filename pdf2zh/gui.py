@@ -178,6 +178,7 @@ def translate_file(
     page_input,
     prompt,
     threads,
+    skip_subset_fonts,
     recaptcha_response,
     state,
     progress=gr.Progress(),
@@ -280,6 +281,7 @@ def translate_file(
         "cancellation_event": cancellation_event_map[session_id],
         "envs": _envs,
         "prompt": Template(prompt) if prompt else None,
+        "skip_subset_fonts": skip_subset_fonts,
         "model": ModelInstance.value,
     }
     try:
@@ -439,6 +441,9 @@ with gr.Blocks(
                 threads = gr.Textbox(
                     label="number of threads", interactive=True, value="4"
                 )
+                skip_subset_fonts = gr.Checkbox(
+                    label="Skip font subsetting", interactive=True, value=False
+                )
                 prompt = gr.Textbox(
                     label="Custom Prompt for llm", interactive=True, visible=False
                 )
@@ -557,6 +562,7 @@ with gr.Blocks(
             page_input,
             prompt,
             threads,
+            skip_subset_fonts,
             recaptcha_response,
             state,
             *envs,
