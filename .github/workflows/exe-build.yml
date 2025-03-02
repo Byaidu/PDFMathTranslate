@@ -79,7 +79,7 @@ jobs:
               exit 1
           }
 
-          uv run babeldoc --generate-offline-assets ./build
+          uv run babeldoc --generate-offline-assets ./build --active
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
