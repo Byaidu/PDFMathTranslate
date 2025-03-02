@@ -306,4 +306,11 @@ jobs:
           name: test-results
           path: ./test/file/
 
-  
+      - name: Upload build without offline assets artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win64-exe-no-assets
+          path: ./build
+          if-no-files-found: error
+          compression-level: 9
+          include-hidden-files: true
