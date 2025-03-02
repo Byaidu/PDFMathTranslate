@@ -23,6 +23,7 @@ from babeldoc.high_level import init as yadt_init
 
 logger = logging.getLogger(__name__)
 
+
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, add_help=True)
     parser.add_argument(
@@ -229,8 +230,9 @@ def find_all_files_in_directory(directory_path):
 
 def main(args: Optional[List[str]] = None) -> int:
     from rich.logging import RichHandler
+
     logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
-    
+
     # disable httpx, openai, httpcore, http11 logs
     logging.getLogger("httpx").setLevel("CRITICAL")
     logging.getLogger("httpx").propagate = False
