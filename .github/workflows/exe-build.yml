@@ -15,6 +15,19 @@ jobs:
   build-win64-exe:
     runs-on: windows-latest
     steps:
+      - name: checkout babeldoc metadata
+        uses: actions/checkout@v4
+        with:
+          repository: funstory-ai/BabelDOC
+          path: babeldoc
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sparse-checkout: babeldoc/babeldoc/assets/embedding_assets_metadata.py
+      - name: Cached Assets
+        id: cache-assets
+        uses: actions/cache@v4.2.0
+        with:
+          path: ~/.cache/babeldoc
+          key: test-1-babeldoc-assets-${{ hashFiles('babeldoc/babeldoc/assets/embedding_assets_metadata.py') }}
       - name: 检出代码
         uses: actions/checkout@v4
 
@@ -79,7 +92,7 @@ jobs:
               exit 1
           }
 
-          uv run babeldoc --generate-offline-assets ./build --active
+          uv run --active babeldoc --generate-offline-assets ./build
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
