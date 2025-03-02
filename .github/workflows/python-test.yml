@@ -20,13 +20,20 @@ jobs:
           - ubuntu-latest
           - ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
-      - name: Cached models
-        id: cache-mods
-        uses: actions/cache@v4.2.1
+      - name: checkout babeldoc metadata
+        uses: actions/checkout@v4
         with:
-          path: ~/.cache/huggingface/hub/models--wybxc--DocLayout-YOLO-DocStructBench-onnx
-          key: ${{runner.os}}-huggingmodel-wybxc--DocLayout-YOLO-DocStructBench-onnx
+          repository: funstory-ai/BabelDOC
+          path: babeldoctemp1234567
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sparse-checkout: babeldoc/assets/embedding_assets_metadata.py
+      - name: Cached Assets
+        id: cache-assets
+        uses: actions/cache@v4.2.0
+        with:
+          path: ~/.cache/babeldoc
+          key: test-1-babeldoc-assets-${{ hashFiles('babeldoctemp1234567/babeldoc/assets/embedding_assets_metadata.py') }}
+      - uses: actions/checkout@v4
       - name: Setup uv with Python ${{ matrix.python-version }}
         uses: astral-sh/setup-uv@1edb52594c857e2b5b13128931090f0640537287 # v5.3.0
         with:

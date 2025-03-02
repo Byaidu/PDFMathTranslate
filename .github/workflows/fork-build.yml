@@ -2,6 +2,8 @@ name: fork-build
 
 on:
   workflow_dispatch:
+  # debug purpose
+  # push:
 
 env:
   REGISTRY: ghcr.io
@@ -183,6 +185,12 @@ jobs:
           Invoke-WebRequest -Uri $pythonUrl -OutFile $pythonZip
           Expand-Archive -Path $pythonZip -DestinationPath "./build/runtime" -Force
 
+          Write-Host "==== 下载 Visual C++ Redistributable 安装程序 ===="
+          $vcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+          $vcRedistPath = "./build/无法运行请安装vc_redist.x64.exe"
+          Invoke-WebRequest -Uri $vcRedistUrl -OutFile $vcRedistPath
+          Write-Host "已下载 Visual C++ Redistributable 安装程序到: $vcRedistPath"
+
           Write-Host "==== 下载并解压 PyStand ===="
           $pystandUrl = "https://github.com/skywind3000/PyStand/releases/download/1.1.4/PyStand-v1.1.4-exe.zip"
           $pystandZip = "./dep_build/PyStand.zip"
@@ -225,7 +233,7 @@ jobs:
           name: win64-exe
           path: ./build
           if-no-files-found: error
-          compression-level: 9
+          compression-level: 1
           include-hidden-files: true
 
   test-win64-exe:
@@ -244,11 +252,11 @@ jobs:
           name: win64-exe
           path: ./build
 
-      - name: Test show version
+      - name: Test show version (online mode)
         run: |
           ./build/pdf2zh.exe --version
       
-      - name: Test - Translate a PDF file with plain text only
+      - name: Test - Translate a PDF file with plain text only (online mode)
         run: |
           ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
 
@@ -256,10 +264,60 @@ jobs:
         run: |
           ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
 
+      - name: Test - Translate without offline assets (online mode)
+        run: |
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
+          
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: ./test/file/
+          if-no-files-found: error
 
-  
+      - name: Setup uv with Python ${{ env.WIN_EXE_PYTHON_VERSION }}
+        uses: astral-sh/setup-uv@1edb52594c857e2b5b13128931090f0640537287 # v5.3.0
+        with:
+          python-version: ${{ env.WIN_EXE_PYTHON_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+
+      - name: Generate offline assets
+        shell: pwsh
+        run: |
+          Write-Host "==== 生成离线资源包 ===="
+          uv run --active babeldoc --generate-offline-assets ./build
+
+      - name: Delete cache
+        shell: pwsh
+        run: |
+          Write-Host "==== 删除缓存目录 ===="
+          $cachePath = "$env:USERPROFILE/.cache/babeldoc"
+          if (Test-Path $cachePath) {
+            Remove-Item -Path $cachePath -Recurse -Force
+            Write-Host "已删除缓存目录: $cachePath"
+          } else {
+            Write-Host "缓存目录不存在: $cachePath"
+          }
+
+      - name: Test - Translate with offline assets (offline mode)
+        run: |
+          Write-Host "==== 测试离线资源包 ===="
+          New-Item -Path "./test/file/offline_result" -ItemType Directory -Force
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file/offline_result
+
+      - name: Upload offline test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-test-results
+          path: ./test/file/offline_result/
+          if-no-files-found: error
+
+      - name: Upload build with offline assets artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win64-exe-with-assets
+          path: ./build
+          if-no-files-found: error
+          compression-level: 1
+          include-hidden-files: true

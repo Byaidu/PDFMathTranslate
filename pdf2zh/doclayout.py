@@ -4,6 +4,7 @@ import os.path
 import cv2
 import numpy as np
 import ast
+from babeldoc.assets.assets import get_doclayout_onnx_model_path
 
 try:
     import onnx
@@ -24,10 +25,7 @@ from pdf2zh.config import ConfigManager
 class DocLayoutModel(abc.ABC):
     @staticmethod
     def load_onnx():
-        model = OnnxModel.from_pretrained(
-            repo_id="wybxc/DocLayout-YOLO-DocStructBench-onnx",
-            filename="doclayout_yolo_docstructbench_imgsz1024.onnx",
-        )
+        model = OnnxModel.from_pretrained()
         return model
 
     @staticmethod
@@ -83,18 +81,8 @@ class OnnxModel(DocLayoutModel):
         self.model = onnxruntime.InferenceSession(model.SerializeToString())
 
     @staticmethod
-    def from_pretrained(repo_id: str, filename: str):
-        if ConfigManager.get("USE_MODELSCOPE", "0") == "1":
-            repo_mapping = {
-                # Edit here to add more models
-                "wybxc/DocLayout-YOLO-DocStructBench-onnx": "AI-ModelScope/DocLayout-YOLO-DocStructBench-onnx"
-            }
-            from modelscope import snapshot_download
-
-            model_dir = snapshot_download(repo_mapping[repo_id])
-            pth = os.path.join(model_dir, filename)
-        else:
-            pth = hf_hub_download(repo_id=repo_id, filename=filename, etag_timeout=1)
+    def from_pretrained():
+        pth = get_doclayout_onnx_model_path()
         return OnnxModel(pth)
 
     @property

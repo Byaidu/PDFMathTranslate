@@ -2,9 +2,9 @@ name: Test and Release
 
 on:
   push:
-    branches:
-      - main
-      - master
+    # branches:
+    #   - main
+    #   - master
 
 permissions:
   id-token: write
@@ -23,6 +23,7 @@ jobs:
     name: Check if running in main repository
     runs-on: ubuntu-latest
     outputs:
+      # debug purpose
       is_main_repo: ${{ github.repository == 'Byaidu/PDFMathTranslate' }}
     steps:
       - run: echo "Running repository check"
@@ -320,6 +321,19 @@ jobs:
       - check-repository
     if: needs.check-repository.outputs.is_main_repo == 'true'
     steps:
+      - name: checkout babeldoc metadata
+        uses: actions/checkout@v4
+        with:
+          repository: funstory-ai/BabelDOC
+          path: babeldoctemp1234567
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sparse-checkout: babeldoc/assets/embedding_assets_metadata.py
+      - name: Cached Assets
+        id: cache-assets
+        uses: actions/cache@v4.2.0
+        with:
+          path: ~/.cache/babeldoc
+          key: test-1-babeldoc-assets-${{ hashFiles('babeldoctemp1234567/babeldoc/assets/embedding_assets_metadata.py') }}
       - name: 检出代码
         uses: actions/checkout@v4
 
@@ -347,6 +361,12 @@ jobs:
           $pythonZip = "./dep_build/python.zip"
           Invoke-WebRequest -Uri $pythonUrl -OutFile $pythonZip
           Expand-Archive -Path $pythonZip -DestinationPath "./build/runtime" -Force
+
+          Write-Host "==== 下载 Visual C++ Redistributable 安装程序 ===="
+          $vcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+          $vcRedistPath = "./build/无法运行请安装vc_redist.x64.exe"
+          Invoke-WebRequest -Uri $vcRedistUrl -OutFile $vcRedistPath
+          Write-Host "已下载 Visual C++ Redistributable 安装程序到: $vcRedistPath"
 
           Write-Host "==== 下载并解压 PyStand ===="
           $pystandUrl = "https://github.com/skywind3000/PyStand/releases/download/1.1.4/PyStand-v1.1.4-exe.zip"
@@ -392,6 +412,22 @@ jobs:
           if-no-files-found: error
           compression-level: 1
           include-hidden-files: true
+      
+      - name: Generate offline assets
+        shell: pwsh
+        run: |
+          Write-Host "==== 生成离线资源包 ===="
+          uv run --active babeldoc --generate-offline-assets ./build
+      
+      - name: Upload build with offline assets artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win64-exe-with-assets
+          path: ./build
+          if-no-files-found: error
+          compression-level: 1
+          include-hidden-files: true
+      
 
   test-win64-exe:
     needs: 
@@ -406,7 +442,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: win64-exe
+          name: win64-exe-with-assets
           path: ./build
 
       - name: Test show version
@@ -420,6 +456,35 @@ jobs:
       - name: Test - Translate a PDF file figure
         run: |
           ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
+
+      - name: Delete offline assets and cache
+        shell: pwsh
+        run: |
+          Write-Host "==== 查找并删除离线资源包 ===="
+          $offlineAssetsPath = Get-ChildItem -Path "./build" -Filter "offline_assets_*.zip" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          if ($offlineAssetsPath) {
+            Write-Host "找到离线资源包: $offlineAssetsPath"
+            Remove-Item -Path $offlineAssetsPath -Force
+            Write-Host "已删除离线资源包"
+          } else {
+            Write-Host "未找到离线资源包"
+          }
+          
+          Write-Host "==== 删除缓存目录 ===="
+          $cachePath = "$env:USERPROFILE/.cache/babeldoc"
+          if (Test-Path $cachePath) {
+            Remove-Item -Path $cachePath -Recurse -Force
+            Write-Host "已删除缓存目录: $cachePath"
+          } else {
+            Write-Host "缓存目录不存在: $cachePath"
+          }
+
+      - name: Test - Translate without offline assets
+        run: |
+          Write-Host "==== 测试离线资源包 ===="
+          New-Item -Path "./test/file/offline_result" -ItemType Directory -Force
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file/offline_result
+
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

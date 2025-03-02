@@ -15,7 +15,7 @@ try:
     import argostranslate.translate
 except ImportError:
     logger.warning(
-        "argos-translate is not installed, argostranslate will not work. if you want to use argostranslate, please install it."
+        "argos-translate is not installed, if you want to use argostranslate, please install it. If you don't use argostranslate translator, you can safely ignore this warning."
     )
 
 import deepl

@@ -1,7 +1,29 @@
 import sys
 import pdf2zh.pdf2zh
+import os
+import babeldoc.assets.assets
+import pathlib
 
+WAIT_FOR_INPUT = False
 if len(sys.argv) == 1:
     sys.argv.append("-i")  # 无参数时自动添加 -i 参数
+    WAIT_FOR_INPUT = True
 
-sys.exit(pdf2zh.pdf2zh.main())
+files = os.listdir(os.path.dirname(__file__))
+for file in files:
+    if file.endswith(".zip") and file.startswith("offline_assets_"):
+        print('find offline_assets_zip file: ', file, ' try restore...')
+        babeldoc.assets.assets.restore_offline_assets_package(pathlib.Path(os.path.dirname(__file__)))
+
+try:
+    code = pdf2zh.pdf2zh.main()
+    print(f"pdf2zh.pdf2zh.main() return code: {code}")
+    if WAIT_FOR_INPUT:
+        input("Press Enter to continue...")
+    sys.exit(code)
+except Exception:
+    import traceback
+    traceback.print_exc()
+    if WAIT_FOR_INPUT:
+        input("Press Enter to continue...")
+    sys.exit(1)
