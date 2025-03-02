@@ -405,6 +405,7 @@ def yadt_main(parsed_args) -> int:
             no_mono=False,
             qps=parsed_args.thread,
         )
+
         async def yadt_translate_coro(yadt_config):
             progress_context, progress_handler = create_progress_handler(yadt_config)
             # 开始翻译
@@ -421,6 +422,7 @@ def yadt_main(parsed_args) -> int:
                         logger.info(f"  Mono PDF: {result.mono_pdf_path or 'None'}")
                         logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
                         break
+
         asyncio.run(yadt_translate_coro(yadt_config))
     return 0
 

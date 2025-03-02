@@ -46,6 +46,7 @@ from pdf2zh.translator import (
 
 logger = logging.getLogger(__name__)
 from babeldoc.docvision.doclayout import OnnxModel
+
 BABELDOC_MODEL = OnnxModel.load_available()
 # The following variables associate strings with translators
 service_map: dict[str, BaseTranslator] = {
@@ -270,7 +271,7 @@ def translate_file(
 
     def progress_bar(t: tqdm.tqdm):
         desc = getattr(t, "desc", "Translating...")
-        if desc == '':
+        if desc == "":
             desc = "Translating..."
         progress(t.n / t.total, desc=desc)
 
@@ -321,10 +322,10 @@ def translate_file(
 
 def babeldoc_translate_file(**kwargs):
     from babeldoc.high_level import init as babeldoc_init
+
     babeldoc_init()
     from babeldoc.high_level import async_translate as babeldoc_translate
     from babeldoc.translation_config import TranslationConfig as YadtConfig
-
 
     if kwargs["prompt"]:
         prompt = kwargs["prompt"]
@@ -387,7 +388,11 @@ def babeldoc_translate_file(**kwargs):
     ]:
         if kwargs["service"] == translator.name:
             translator = translator(
-                kwargs["lang_in"], kwargs["lang_out"], "", envs=kwargs["envs"], prompt=kwargs["prompt"]
+                kwargs["lang_in"],
+                kwargs["lang_out"],
+                "",
+                envs=kwargs["envs"],
+                prompt=kwargs["prompt"],
             )
             break
     else:
@@ -425,8 +430,8 @@ def babeldoc_translate_file(**kwargs):
                     progress_handler(event)
                     if yadt_config.debug:
                         logger.debug(event)
-                    kwargs['callback'](progress_context)
-                    if kwargs['cancellation_event'].is_set():
+                    kwargs["callback"](progress_context)
+                    if kwargs["cancellation_event"].is_set():
                         yadt_config.cancel_translation()
                         raise CancelledError
                     if event["type"] == "finish":
@@ -440,6 +445,7 @@ def babeldoc_translate_file(**kwargs):
                         file_dual = result.dual_pdf_path
                         break
             import gc
+
             gc.collect()
             return (
                 str(file_mono),
@@ -449,7 +455,9 @@ def babeldoc_translate_file(**kwargs):
                 gr.update(visible=True),
                 gr.update(visible=True),
             )
+
         return asyncio.run(yadt_translate_coro(yadt_config))
+
 
 # Global setup
 custom_blue = gr.themes.Color(
