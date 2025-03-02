@@ -230,6 +230,16 @@ def find_all_files_in_directory(directory_path):
 def main(args: Optional[List[str]] = None) -> int:
     from rich.logging import RichHandler
     logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
+    
+    # disable httpx, openai, httpcore, http11 logs
+    logging.getLogger("httpx").setLevel("CRITICAL")
+    logging.getLogger("httpx").propagate = False
+    logging.getLogger("openai").setLevel("CRITICAL")
+    logging.getLogger("openai").propagate = False
+    logging.getLogger("httpcore").setLevel("CRITICAL")
+    logging.getLogger("httpcore").propagate = False
+    logging.getLogger("http11").setLevel("CRITICAL")
+    logging.getLogger("http11").propagate = False
 
     parsed_args = parse_args(args)
 
