@@ -6,7 +6,7 @@ import os
 import re
 import sys
 import tempfile
-import urllib.request
+import logging
 from asyncio import CancelledError
 from pathlib import Path
 from string import Template
@@ -30,6 +30,8 @@ from pdf2zh.config import ConfigManager
 from babeldoc.assets.assets import get_font_and_metadata
 
 NOTO_NAME = "noto"
+
+logger = logging.getLogger(__name__)
 
 noto_list = [
     "am",  # Amharic
@@ -383,7 +385,6 @@ def translate(
 
 
 def download_remote_fonts(lang: str):
-    URL_PREFIX = "https://github.com/timelic/source-han-serif/releases/download/main/"
     LANG_NAME_MAP = {
         **{la: "GoNotoKurrent-Regular.ttf" for la in noto_list},
         **{
@@ -404,5 +405,7 @@ def download_remote_fonts(lang: str):
     if not Path(font_path).exists():
         font_path, _ = get_font_and_metadata(font_name)
         font_path = font_path.as_posix()
+
+    logger.info(f"use font: {font_path}")
 
     return font_path

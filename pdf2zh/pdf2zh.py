@@ -21,6 +21,7 @@ from babeldoc.translation_config import TranslationConfig as YadtConfig
 from babeldoc.high_level import translate as yadt_translate
 from babeldoc.high_level import init as yadt_init
 
+logger = logging.getLogger(__name__)
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__, add_help=True)
@@ -227,7 +228,8 @@ def find_all_files_in_directory(directory_path):
 
 
 def main(args: Optional[List[str]] = None) -> int:
-    logging.basicConfig()
+    from rich.logging import RichHandler
+    logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
 
     parsed_args = parse_args(args)
 
