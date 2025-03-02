@@ -2,6 +2,7 @@ import asyncio
 import cgi
 import os
 import shutil
+from tracemalloc import Snapshot
 import uuid
 from asyncio import CancelledError
 from pathlib import Path
@@ -11,6 +12,7 @@ import requests
 import tqdm
 from gradio_pdf import PDF
 from string import Template
+import logging
 
 from pdf2zh import __version__
 from pdf2zh.high_level import translate
@@ -42,6 +44,9 @@ from pdf2zh.translator import (
     QwenMtTranslator,
 )
 
+logger = logging.getLogger(__name__)
+from babeldoc.docvision.doclayout import OnnxModel
+BABELDOC_MODEL = OnnxModel.load_available()
 # The following variables associate strings with translators
 service_map: dict[str, BaseTranslator] = {
     "Google": GoogleTranslator,
@@ -164,6 +169,7 @@ def stop_translate_file(state: dict) -> None:
     if session_id is None:
         return
     if session_id in cancellation_event_map:
+        logger.info(f"Stopping translation for session {session_id}")
         cancellation_event_map[session_id].set()
 
 
@@ -179,6 +185,7 @@ def translate_file(
     prompt,
     threads,
     skip_subset_fonts,
+    use_babeldoc,
     recaptcha_response,
     state,
     progress=gr.Progress(),
@@ -262,7 +269,10 @@ def translate_file(
     print(f"Files before translation: {os.listdir(output)}")
 
     def progress_bar(t: tqdm.tqdm):
-        progress(t.n / t.total, desc="Translating...")
+        desc = getattr(t, "desc", "Translating...")
+        if desc == '':
+            desc = "Translating..."
+        progress(t.n / t.total, desc=desc)
 
     try:
         threads = int(threads)
@@ -284,7 +294,10 @@ def translate_file(
         "skip_subset_fonts": skip_subset_fonts,
         "model": ModelInstance.value,
     }
+
     try:
+        if use_babeldoc:
+            return babeldoc_translate_file(**param)
         translate(**param)
     except CancelledError:
         del cancellation_event_map[session_id]
@@ -305,6 +318,138 @@ def translate_file(
         gr.update(visible=True),
     )
 
+
+def babeldoc_translate_file(**kwargs):
+    from babeldoc.high_level import init as babeldoc_init
+    babeldoc_init()
+    from babeldoc.high_level import async_translate as babeldoc_translate
+    from babeldoc.translation_config import TranslationConfig as YadtConfig
+
+
+    if kwargs["prompt"]:
+        prompt = kwargs["prompt"]
+    else:
+        prompt = None
+
+    from pdf2zh.translator import (
+        AzureOpenAITranslator,
+        OpenAITranslator,
+        ZhipuTranslator,
+        ModelScopeTranslator,
+        SiliconTranslator,
+        GeminiTranslator,
+        AzureTranslator,
+        TencentTranslator,
+        DifyTranslator,
+        DeepLXTranslator,
+        OllamaTranslator,
+        OpenAITranslator,
+        ZhipuTranslator,
+        ModelScopeTranslator,
+        SiliconTranslator,
+        GeminiTranslator,
+        AzureTranslator,
+        TencentTranslator,
+        DifyTranslator,
+        AnythingLLMTranslator,
+        XinferenceTranslator,
+        ArgosTranslator,
+        GorkTranslator,
+        GroqTranslator,
+        DeepseekTranslator,
+        OpenAIlikedTranslator,
+        QwenMtTranslator,
+    )
+
+    for translator in [
+        GoogleTranslator,
+        BingTranslator,
+        DeepLTranslator,
+        DeepLXTranslator,
+        OllamaTranslator,
+        XinferenceTranslator,
+        AzureOpenAITranslator,
+        OpenAITranslator,
+        ZhipuTranslator,
+        ModelScopeTranslator,
+        SiliconTranslator,
+        GeminiTranslator,
+        AzureTranslator,
+        TencentTranslator,
+        DifyTranslator,
+        AnythingLLMTranslator,
+        ArgosTranslator,
+        GorkTranslator,
+        GroqTranslator,
+        DeepseekTranslator,
+        OpenAIlikedTranslator,
+        QwenMtTranslator,
+    ]:
+        if kwargs["service"] == translator.name:
+            translator = translator(
+                kwargs["lang_in"], kwargs["lang_out"], "", envs=kwargs["envs"], prompt=kwargs["prompt"]
+            )
+            break
+    else:
+        raise ValueError("Unsupported translation service")
+    import asyncio
+    from babeldoc.main import create_progress_handler
+
+    for file in kwargs["files"]:
+        file = file.strip("\"'")
+        yadt_config = YadtConfig(
+            input_file=file,
+            font=None,
+            pages=",".join((str(x) for x in getattr(kwargs, "raw_pages", []))),
+            output_dir=kwargs["output"],
+            doc_layout_model=BABELDOC_MODEL,
+            translator=translator,
+            debug=False,
+            lang_in=kwargs["lang_in"],
+            lang_out=kwargs["lang_out"],
+            no_dual=False,
+            no_mono=False,
+            qps=kwargs["thread"],
+            use_rich_pbar=False,
+            disable_rich_text_translate=not isinstance(translator, OpenAITranslator),
+            skip_clean=kwargs["skip_subset_fonts"],
+            report_interval=0.5,
+        )
+
+        async def yadt_translate_coro(yadt_config):
+            progress_context, progress_handler = create_progress_handler(yadt_config)
+
+            # 开始翻译
+            with progress_context:
+                async for event in babeldoc_translate(yadt_config):
+                    progress_handler(event)
+                    if yadt_config.debug:
+                        logger.debug(event)
+                    kwargs['callback'](progress_context)
+                    if kwargs['cancellation_event'].is_set():
+                        yadt_config.cancel_translation()
+                        raise CancelledError
+                    if event["type"] == "finish":
+                        result = event["translate_result"]
+                        logger.info("Translation Result:")
+                        logger.info(f"  Original PDF: {result.original_pdf_path}")
+                        logger.info(f"  Time Cost: {result.total_seconds:.2f}s")
+                        logger.info(f"  Mono PDF: {result.mono_pdf_path or 'None'}")
+                        logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
+                        file_mono = result.mono_pdf_path
+                        file_dual = result.dual_pdf_path
+                        break
+            import gc
+            gc.collect()
+            return (
+                str(file_mono),
+                str(file_mono),
+                str(file_dual),
+                gr.update(visible=True),
+                gr.update(visible=True),
+                gr.update(visible=True),
+            )
+        return asyncio.run(yadt_translate_coro(yadt_config))
 
 # Global setup
 custom_blue = gr.themes.Color(
@@ -357,11 +502,15 @@ demo_recaptcha = """
     </script>
     """
 
+from babeldoc import __version__ as babeldoc_version
+
 tech_details_string = f"""
                     <summary>Technical details</summary>
                     - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
+                    - BabelDOC: <a href="https://github.com/funstory-ai/BabelDOC">funstory-ai/BabelDOC</a><br>
                     - GUI by: <a href="https://github.com/reycn">Rongxin</a><br>
-                    - Version: {__version__}
+                    - pdf2zh Version: {__version__} <br>
+                    - BabelDOC Version: {babeldoc_version}
                 """
 cancellation_event_map = {}
 
@@ -446,6 +595,9 @@ with gr.Blocks(
                 )
                 prompt = gr.Textbox(
                     label="Custom Prompt for llm", interactive=True, visible=False
+                )
+                use_babeldoc = gr.Checkbox(
+                    label="Use BabelDOC", interactive=True, value=False
                 )
                 envs.append(prompt)
 
@@ -563,6 +715,7 @@ with gr.Blocks(
             prompt,
             threads,
             skip_subset_fonts,
+            use_babeldoc,
             recaptcha_response,
             state,
             *envs,
@@ -699,4 +852,5 @@ def setup_gui(
 
 # For auto-reloading while developing
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     setup_gui()
