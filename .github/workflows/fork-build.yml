@@ -1,7 +1,9 @@
 name: fork-build
 
 on:
-  workflow_dispatch:
+  # workflow_dispatch:
+  # debug purpose
+  push:
 
 env:
   REGISTRY: ghcr.io
@@ -155,6 +157,19 @@ jobs:
       - check-repository
     if: needs.check-repository.outputs.is_main_repo != 'true'
     steps:
+      - name: checkout babeldoc metadata
+        uses: actions/checkout@v4
+        with:
+          repository: funstory-ai/BabelDOC
+          path: babeldoctemp1234567
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sparse-checkout: babeldoc/assets/embedding_assets_metadata.py
+      - name: Cached Assets
+        id: cache-assets
+        uses: actions/cache@v4.2.0
+        with:
+          path: ~/.cache/babeldoc
+          key: test-1-babeldoc-assets-${{ hashFiles('babeldoctemp1234567/babeldoc/assets/embedding_assets_metadata.py') }}
       - name: 检出代码
         uses: actions/checkout@v4
 
@@ -219,6 +234,9 @@ jobs:
               exit 1
           }
 
+          Write-Host "==== 生成离线资源包 ===="
+          uv run --active babeldoc --generate-offline-assets ./build
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -256,6 +274,32 @@ jobs:
         run: |
           ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
 
+      - name: Delete offline assets and cache
+        shell: pwsh
+        run: |
+          Write-Host "==== 查找并删除离线资源包 ===="
+          $offlineAssetsPath = Get-ChildItem -Path "./build" -Filter "offline_assets_*.zip" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          if ($offlineAssetsPath) {
+            Write-Host "找到离线资源包: $offlineAssetsPath"
+            Remove-Item -Path $offlineAssetsPath -Force
+            Write-Host "已删除离线资源包"
+          } else {
+            Write-Host "未找到离线资源包"
+          }
+          
+          Write-Host "==== 删除缓存目录 ===="
+          $cachePath = "$env:USERPROFILE/.cache/babeldoc"
+          if (Test-Path $cachePath) {
+            Remove-Item -Path $cachePath -Recurse -Force
+            Write-Host "已删除缓存目录: $cachePath"
+          } else {
+            Write-Host "缓存目录不存在: $cachePath"
+          }
+
+      - name: Test - Translate without offline assets
+        run: |
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
+          
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
