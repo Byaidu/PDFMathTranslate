@@ -288,6 +288,13 @@ jobs:
           path: ./test/file/
           if-no-files-found: error
 
+      - name: Setup uv with Python ${{ env.WIN_EXE_PYTHON_VERSION }}
+        uses: astral-sh/setup-uv@1edb52594c857e2b5b13128931090f0640537287 # v5.3.0
+        with:
+          python-version: ${{ env.WIN_EXE_PYTHON_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+
       - name: Generate offline assets
         shell: pwsh
         run: |
