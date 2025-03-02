@@ -2,9 +2,9 @@ name: Test and Release
 
 on:
   push:
-    branches:
-      - main
-      - master
+    # branches:
+    #   - main
+    #   - master
 
 permissions:
   id-token: write
