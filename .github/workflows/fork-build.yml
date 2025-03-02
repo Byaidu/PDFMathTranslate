@@ -157,19 +157,6 @@ jobs:
       - check-repository
     if: needs.check-repository.outputs.is_main_repo != 'true'
     steps:
-      - name: checkout babeldoc metadata
-        uses: actions/checkout@v4
-        with:
-          repository: funstory-ai/BabelDOC
-          path: babeldoctemp1234567
-          token: ${{ secrets.GITHUB_TOKEN }}
-          sparse-checkout: babeldoc/assets/embedding_assets_metadata.py
-      - name: Cached Assets
-        id: cache-assets
-        uses: actions/cache@v4.2.0
-        with:
-          path: ~/.cache/babeldoc
-          key: test-1-babeldoc-assets-${{ hashFiles('babeldoctemp1234567/babeldoc/assets/embedding_assets_metadata.py') }}
       - name: 检出代码
         uses: actions/checkout@v4
 
