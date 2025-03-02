@@ -18,8 +18,9 @@ import os
 
 from pdf2zh.config import ConfigManager
 from babeldoc.translation_config import TranslationConfig as YadtConfig
-from babeldoc.high_level import translate as yadt_translate
+from babeldoc.high_level import async_translate as yadt_translate
 from babeldoc.high_level import init as yadt_init
+from babeldoc.main import create_progress_handler
 
 logger = logging.getLogger(__name__)
 
@@ -386,6 +387,7 @@ def yadt_main(parsed_args) -> int:
             break
     else:
         raise ValueError("Unsupported translation service")
+    import asyncio
 
     for file in untranlate_file:
         file = file.strip("\"'")
@@ -394,6 +396,7 @@ def yadt_main(parsed_args) -> int:
             font=font_path,
             pages=",".join((str(x) for x in getattr(parsed_args, "raw_pages", []))),
             output_dir=outputdir,
+            doc_layout_model=None,
             translator=translator,
             debug=parsed_args.debug,
             lang_in=lang_in,
@@ -402,7 +405,23 @@ def yadt_main(parsed_args) -> int:
             no_mono=False,
             qps=parsed_args.thread,
         )
-        yadt_translate(yadt_config)
+        async def yadt_translate_coro(yadt_config):
+            progress_context, progress_handler = create_progress_handler(yadt_config)
+            # 开始翻译
+            with progress_context:
+                async for event in yadt_translate(yadt_config):
+                    progress_handler(event)
+                    if yadt_config.debug:
+                        logger.debug(event)
+                    if event["type"] == "finish":
+                        result = event["translate_result"]
+                        logger.info("Translation Result:")
+                        logger.info(f"  Original PDF: {result.original_pdf_path}")
+                        logger.info(f"  Time Cost: {result.total_seconds:.2f}s")
+                        logger.info(f"  Mono PDF: {result.mono_pdf_path or 'None'}")
+                        logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
+                        break
+        asyncio.run(yadt_translate_coro(yadt_config))
     return 0
 
 
