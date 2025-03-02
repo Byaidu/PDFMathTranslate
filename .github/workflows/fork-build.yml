@@ -227,31 +227,8 @@ jobs:
           Write-Host "==== 在 venv 环境中安装项目依赖 ===="
           uv pip install .
 
-          Write-Host "==== 创建 site-packages 软链接而不是复制 ===="
-          $sourcePath = Resolve-Path "./dep_build/venv/Lib/site-packages"
-          $targetPath = "./build/site-packages"
-          
-          try {
-              # 确保目标路径的父目录存在，但目标路径本身不存在
-              if (Test-Path $targetPath) {
-                  Remove-Item -Path $targetPath -Recurse -Force
-              }
-              
-              # 使用完整路径并用双引号包围路径
-              $command = "cmd.exe /c mklink /J `"$targetPath`" `"$sourcePath`""
-              Write-Host "执行命令: $command"
-              Invoke-Expression $command
-              
-              if (Test-Path $targetPath) {
-                  Write-Host "成功创建软链接: $targetPath -> $sourcePath"
-              } else {
-                  throw "软链接创建后无法访问"
-              }
-          } catch {
-              Write-Host "警告: 创建软链接失败，错误信息: $_"
-              Write-Host "回退到复制方式"
-              Copy-Item -Path "$sourcePath" -Destination "$targetPath" -Recurse -Force
-          }
+          Write-Host "==== 复制 venv/Lib/site-packages 到 build/ ===="
+          Copy-Item -Path "./dep_build/venv/Lib/site-packages" -Destination "./build/site-packages" -Recurse -Force
 
           Write-Host "==== 复制 script/_pystand_static.int 到 build/ ===="
           $staticFile = "./script/_pystand_static.int"
