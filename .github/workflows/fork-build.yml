@@ -246,7 +246,7 @@ jobs:
           name: win64-exe
           path: ./build
           if-no-files-found: error
-          compression-level: 9
+          compression-level: 1
           include-hidden-files: true
 
   test-win64-exe:
@@ -332,5 +332,5 @@ jobs:
           name: win64-exe-with-assets
           path: ./build
           if-no-files-found: error
-          compression-level: 9
+          compression-level: 1
           include-hidden-files: true
