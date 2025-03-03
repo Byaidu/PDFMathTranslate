@@ -48,4 +48,4 @@ template: |
   ## Assets
 
   - pdf2zh-v$RESOLVED_VERSION-win64.zip: pdf2zh **without** assets(font, model, etc.)
-  - pdf2zh-v$RESOLVED_VERSION-with-assets-win64.zip: pdf2zh **with** assets(font, model, etc.)
+  - pdf2zh-v$RESOLVED_VERSION-with-assets-win64.zip: (**Recommended**) pdf2zh **with** assets(font, model, etc.)
