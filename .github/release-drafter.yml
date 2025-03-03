@@ -49,3 +49,7 @@ template: |
 
   - pdf2zh-v$RESOLVED_VERSION-win64.zip: pdf2zh **without** assets(font, model, etc.)
   - pdf2zh-v$RESOLVED_VERSION-with-assets-win64.zip: (**Recommended**) pdf2zh **with** assets(font, model, etc.)
+
+  > [!NOTE]
+  >
+  > The version without assets will also dynamically download resources when running, but the download may fail due to network issues.
