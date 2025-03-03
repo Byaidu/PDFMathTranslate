@@ -428,17 +428,24 @@ class OpenAITranslator(BaseTranslator):
         self.think_filter_regex = re.compile(think_filter_regex, flags=re.DOTALL)
 
     def do_translate(self, text) -> str:
-        response = self.client.chat.completions.create(
-            model=self.model,
-            **self.options,
-            messages=self.prompt(text, self.prompttext),
-        )
-        if not response.choices:
-            if hasattr(response, "error"):
-                raise ValueError("Error response from Service", response.error)
-        content = response.choices[0].message.content.strip()
-        content = self.think_filter_regex.sub("", content).strip()
-        return content
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                **self.options,
+                messages=self.prompt(text, self.prompttext),
+            )
+            if not response.choices:
+                if hasattr(response, "error"):
+                    raise ValueError("Error response from Service", response.error)
+            content = response.choices[0].message.content.strip()
+            content = self.think_filter_regex.sub("", content).strip()
+            return content
+        except openai.RateLimitError:
+            # 遇到速率限制错误时暂停6秒
+            import time
+            time.sleep(6)
+            # 重试一次
+            return self.do_translate(self, text)
 
     def get_formular_placeholder(self, id: int):
         return "{{v" + str(id) + "}}"
