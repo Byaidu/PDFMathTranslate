@@ -162,6 +162,8 @@ For docker deployment on cloud service:
 
 <details>
   <summary>5. Zotero Plugin</summary>
+
+
 See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
 
 </details>
