@@ -36,6 +36,11 @@ from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
 
 
+from tenacity import retry, retry_if_exception_type
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
+
+
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
@@ -427,6 +432,15 @@ class OpenAITranslator(BaseTranslator):
         self.add_cache_impact_parameters("think_filter_regex", think_filter_regex)
         self.think_filter_regex = re.compile(think_filter_regex, flags=re.DOTALL)
 
+    @retry(
+        retry=retry_if_exception_type(openai.RateLimitError),
+        stop=stop_after_attempt(100),
+        wait=wait_exponential(multiplier=1, min=1, max=15),
+        before_sleep=lambda retry_state: logger.warning(
+            f"RateLimitError, retrying in {retry_state.next_action.sleep} seconds... "
+            f"(Attempt {retry_state.attempt_number}/3)"
+        ),
+    )
     def do_translate(self, text) -> str:
         try:
             response = self.client.chat.completions.create(
@@ -445,7 +459,7 @@ class OpenAITranslator(BaseTranslator):
             import time
             time.sleep(6)
             # 重试一次
-            return self.do_translate(self, text)
+            return self.do_translate(text)
 
     def get_formular_placeholder(self, id: int):
         return "{{v" + str(id) + "}}"
