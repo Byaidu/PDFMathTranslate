@@ -148,6 +148,7 @@ def download_with_limit(url: str, save_path: str, size_limit: int) -> str:
             filename = params["filename"]
         except Exception:  # filename from url
             filename = os.path.basename(url)
+        filename = os.path.splitext(os.path.basename(filename))[0] + ".pdf"
         with open(save_path / filename, "wb") as file:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 total_size += len(chunk)
