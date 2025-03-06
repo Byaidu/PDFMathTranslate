@@ -365,8 +365,17 @@ def translate(
         s_raw = doc_raw.read()
         doc_raw.close()
 
-        if file.startswith(tempfile.gettempdir()):
-            os.unlink(file)
+        temp_dir = Path(tempfile.gettempdir())
+        file_path = Path(file)
+        try:
+            if file_path.exists() and file_path.resolve().is_relative_to(
+                temp_dir.resolve()
+            ):
+                file_path.unlink(missing_ok=True)
+                logger.debug(f"Cleaned temp file: {file_path}")
+        except Exception as e:
+            logger.warning(f"Failed to clean temp file {file_path}", exc_info=True)
+
         s_mono, s_dual = translate_stream(
             s_raw,
             **locals(),
