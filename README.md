@@ -45,6 +45,7 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 
 <h2 id="updates">Updates</h2>
 
+- [Mar. 3, 2025] Experimental support for the new backend [BabelDOC](https://github.com/funstory-ai/BabelDOC) WebUI added as an experimental option (by [@awwaawwa](https://github.com/awwaawwa))
 - [Feb. 22 2025] Better release CI and well-packaged windows-amd64 exe (by [@awwaawwa](https://github.com/awwaawwa))
 - [Dec. 24 2024] The translator now supports local models on [Xinference](https://github.com/xorbitsai/inference) _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
 - [Dec. 19 2024] Non-PDF/A documents are now supported using `-cp` _(by [@reycn](https://github.com/reycn))_
@@ -272,6 +273,8 @@ For downstream applications, please refer to our document about [API Details](./
 <h2 id="acknowledgement">Acknowledgements</h2>
 
 - [Immersive Translation](https://immersivetranslate.com) sponsors monthly Pro membership redemption codes for active contributors to this project, see details at: [CONTRIBUTOR_REWARD.md](https://github.com/funstory-ai/BabelDOC/blob/main/docs/CONTRIBUTOR_REWARD.md)
+
+- New backend: [BabelDOC](https://github.com/funstory-ai/BabelDOC)
 
 - Document merging: [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
