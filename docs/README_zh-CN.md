@@ -123,9 +123,9 @@ pip install pdf2zh
    http://localhost:7860/
    ```
 
-   <img src="./docs/images/gui.gif" width="500"/>
+   <img src="./images/gui.gif" width="500"/>
 
-有关更多详细信息，请参阅 [GUI 文档](./docs/README_GUI.md)。
+有关更多详细信息，请参阅 [GUI 文档](./README_GUI.md)。
 
 </details>
 
@@ -242,13 +242,13 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 | `--config`   | [配置文件](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig)                       | `pdf2zh --config /path/to/config/config.json`  |
 | `--serverport` | [自定义 gradio 服务器端口]                                                                                 | `pdf2zh --serverport 7860`                     |
 | `--babeldoc`| 使用实验性后端 [BabelDOC](https://funstory-ai.github.io/BabelDOC/) 翻译 |`pdf2zh --babeldoc` -s openai example.pdf|
-有关详细说明，请参阅我们的文档 [高级用法](./docs/ADVANCED.md)，以获取每个选项的完整列表。
+|有关详细说明，请参阅我们的文档 [高级用法](./ADVANCED.md)，以获取每个选项的完整列表。|||
 
 <h2 id="downstream">二次开发 (API)</h2>
 
-对于下游应用程序，请参阅我们的文档 [API 详细信息](./docs/APIS.md)，以获取更多信息：
-- [Python API](./docs/APIS.md#api-python)，如何在其他 Python 程序中使用该程序
-- [HTTP API](./docs/APIS.md#api-http)，如何与已安装该程序的服务器进行通信
+对于下游应用程序，请参阅我们的文档 [API 详细信息](./APIS.md)，以获取更多信息：
+- [Python API](./APIS.md#api-python)，如何在其他 Python 程序中使用该程序
+- [HTTP API](./APIS.md#api-http)，如何与已安装该程序的服务器进行通信
 
 <h2 id="todo">待办事项</h2>
 
