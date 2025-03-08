@@ -389,7 +389,12 @@ def yadt_main(parsed_args) -> int:
     ]:
         if service_name == translator.name:
             translator = translator(
-                lang_in, lang_out, service_model, envs=envs, prompt=prompt, ignore_cache=ignore_cache
+                lang_in,
+                lang_out,
+                service_model,
+                envs=envs,
+                prompt=prompt,
+                ignore_cache=ignore_cache,
             )
             break
     else:
