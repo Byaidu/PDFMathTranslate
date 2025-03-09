@@ -396,6 +396,7 @@ def babeldoc_translate_file(**kwargs):
                 "",
                 envs=kwargs["envs"],
                 prompt=kwargs["prompt"],
+                ignore_cache=kwargs["ignore_cache"],
             )
             break
     else:
