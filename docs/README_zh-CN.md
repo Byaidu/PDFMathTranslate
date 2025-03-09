@@ -36,7 +36,7 @@
 科学 PDF 文档翻译及双语对照工具
 
 - 📊 保留公式、图表、目录和注释 *([预览效果](#preview))*
-- 🌐 支持 [多种语言](#language) 和 [诸多翻译服务](#services)
+- 🌐 支持 [多种语言](./ADVANCED.md#language) 和 [诸多翻译服务](./ADVANCED.md#services)
 - 🤖 提供 [命令行工具](#usage)，[图形交互界面](#gui)，以及 [容器化部署](#docker)
 
 欢迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [Telegram 用户群](https://t.me/+Z9_SgnxmsmA5NzBl)
@@ -103,7 +103,7 @@
 </details>
 
 <details>
-  <summary>3. 图形用户界面</summary>
+  <summary id="gui">3. 图形用户界面</summary>
 1. 安装 Python (3.10 <= 版本 <= 3.12)
 2. 安装我们的包：
 
@@ -130,7 +130,7 @@ pip install pdf2zh
 </details>
 
 <details>
-  <summary>4. Docker</summary>
+  <summary id="docker">4. Docker</summary>
 
 1. 拉取并运行：
 
@@ -242,7 +242,8 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 | `--config`   | [配置文件](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig)                       | `pdf2zh --config /path/to/config/config.json`  |
 | `--serverport` | [自定义 gradio 服务器端口]                                                                                 | `pdf2zh --serverport 7860`                     |
 | `--babeldoc`| 使用实验性后端 [BabelDOC](https://funstory-ai.github.io/BabelDOC/) 翻译 |`pdf2zh --babeldoc` -s openai example.pdf|
-|有关详细说明，请参阅我们的文档 [高级用法](./ADVANCED.md)，以获取每个选项的完整列表。|||
+
+有关详细说明，请参阅我们的文档 [高级用法](./ADVANCED.md)，以获取每个选项的完整列表。
 
 <h2 id="downstream">二次开发 (API)</h2>
 
