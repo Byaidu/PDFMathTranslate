@@ -11,6 +11,17 @@ import sys
 from string import Template
 from typing import List, Optional
 
+import logging
+import uvicorn
+
+# 设置基本日志配置
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("uvicorn")
+
+# 禁用 Uvicorn 的日志传播，避免重复配置
+logger.propagate = False
+
+
 from pdf2zh import __version__, log
 from pdf2zh.high_level import translate, download_remote_fonts
 from pdf2zh.doclayout import OnnxModel, ModelInstance
@@ -123,6 +134,11 @@ def create_parser() -> argparse.ArgumentParser:
         help="flask",
     )
     parse_params.add_argument(
+        "--fastapi",
+        action="store_true",
+        help="fastapi",
+    )
+    parse_params.add_argument(
         "--celery",
         action="store_true",
         help="celery",
@@ -156,6 +172,12 @@ def create_parser() -> argparse.ArgumentParser:
         "--serverport",
         type=int,
         help="custom WebUI port.",
+    )
+
+    parse_params.add_argument(
+        "--port",
+        type=int,
+        help="fastapi后端服务端口.",
     )
 
     parse_params.add_argument(
@@ -273,7 +295,16 @@ def main(args: Optional[List[str]] = None) -> int:
 
         flask_app.run(port=11008)
         return 0
+    
+    # 支持fastapi启动服务
+    if parsed_args.fastapi:
+        from pdf2zh.backend_fastapi import app
+        # 启动 FastAPI 应用
+        print(f"Starting FastAPI app on port {parsed_args.port}")
+        uvicorn.run(app, host="127.0.0.1", port=parsed_args.port, log_level="debug")  # 指定日志级别为 debug
+        return 0
 
+    
     if parsed_args.celery:
         from pdf2zh.backend import celery_app
 
