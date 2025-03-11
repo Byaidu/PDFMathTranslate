@@ -6,6 +6,7 @@ from tracemalloc import Snapshot
 import uuid
 from asyncio import CancelledError
 from pathlib import Path
+import typing as T
 
 import gradio as gr
 import requests
@@ -37,7 +38,7 @@ from pdf2zh.translator import (
     TencentTranslator,
     XinferenceTranslator,
     ZhipuTranslator,
-    GorkTranslator,
+    GrokTranslator,
     GroqTranslator,
     DeepseekTranslator,
     OpenAIlikedTranslator,
@@ -67,7 +68,7 @@ service_map: dict[str, BaseTranslator] = {
     "Dify": DifyTranslator,
     "AnythingLLM": AnythingLLMTranslator,
     "Argos Translate": ArgosTranslator,
-    "Grok": GorkTranslator,
+    "Grok": GrokTranslator,
     "Groq": GroqTranslator,
     "DeepSeek": DeepseekTranslator,
     "OpenAI-liked": OpenAIlikedTranslator,
@@ -111,6 +112,27 @@ if ConfigManager.get("PDF2ZH_DEMO"):
     }
     client_key = ConfigManager.get("PDF2ZH_CLIENT_KEY")
     server_key = ConfigManager.get("PDF2ZH_SERVER_KEY")
+
+
+# Limit Enabled Services
+enabled_services: T.Optional[T.List[str]] = ConfigManager.get("ENABLED_SERVICES")
+if isinstance(enabled_services, list):
+    default_services = ["Google", "Bing"]
+    enabled_services_names = [str(_).lower().strip() for _ in enabled_services]
+    enabled_services = [
+        k
+        for k in service_map.keys()
+        if str(k).lower().strip() in enabled_services_names
+    ]
+    if len(enabled_services) == 0:
+        raise RuntimeError(f"No services available.")
+    enabled_services = default_services + enabled_services
+else:
+    enabled_services = list(service_map.keys())
+
+
+# Configure about Gradio show keys
+hidden_gradio_details: bool = bool(ConfigManager.get("HIDDEN_GRADIO_DETAILS"))
 
 
 # Public demo control
@@ -268,6 +290,13 @@ def translate_file(
     _envs = {}
     for i, env in enumerate(translator.envs.items()):
         _envs[env[0]] = envs[i]
+    for k, v in _envs.items():
+        if str(k).upper().endswith("API_KEY") and str(v) == "***":
+            # Load Real API_KEYs from local configure file
+            real_keys: str = ConfigManager.get_env_by_translatername(
+                translator, k, None
+            )
+            _envs[k] = real_keys
 
     print(f"Files before translation: {os.listdir(output)}")
 
@@ -358,7 +387,7 @@ def babeldoc_translate_file(**kwargs):
         AnythingLLMTranslator,
         XinferenceTranslator,
         ArgosTranslator,
-        GorkTranslator,
+        GrokTranslator,
         GroqTranslator,
         DeepseekTranslator,
         OpenAIlikedTranslator,
@@ -383,7 +412,7 @@ def babeldoc_translate_file(**kwargs):
         DifyTranslator,
         AnythingLLMTranslator,
         ArgosTranslator,
-        GorkTranslator,
+        GrokTranslator,
         GroqTranslator,
         DeepseekTranslator,
         OpenAIlikedTranslator,
@@ -563,8 +592,8 @@ with gr.Blocks(
             gr.Markdown("## Option")
             service = gr.Dropdown(
                 label="Service",
-                choices=service_map.keys(),
-                value="Google",
+                choices=enabled_services,
+                value=enabled_services[0],
             )
             envs = []
             for i in range(3):
@@ -622,12 +651,25 @@ with gr.Blocks(
                 for i in range(4):
                     _envs.append(gr.update(visible=False, value=""))
                 for i, env in enumerate(translator.envs.items()):
+                    label = env[0]
+                    value = ConfigManager.get_env_by_translatername(
+                        translator, env[0], env[1]
+                    )
+                    visible = True
+                    if hidden_gradio_details:
+                        if (
+                            "MODEL" not in str(label).upper()
+                            and value
+                            and hidden_gradio_details
+                        ):
+                            visible = False
+                        # Hidden Keys From Gradio
+                        if "API_KEY" in label.upper():
+                            value = "***"  # We use "***" Present Real API_KEY
                     _envs[i] = gr.update(
-                        visible=True,
-                        label=env[0],
-                        value=ConfigManager.get_env_by_translatername(
-                            translator, env[0], env[1]
-                        ),
+                        visible=visible,
+                        label=label,
+                        value=value,
                     )
                 _envs[-1] = gr.update(visible=translator.CustomPrompt)
                 return _envs
