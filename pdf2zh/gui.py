@@ -279,7 +279,14 @@ def translate_file(
     _envs = {}
     for i, env in enumerate(translator.envs.items()):
         _envs[env[0]] = envs[i]
-
+    for k,v in _envs.items():
+        if str(k).upper().endswith("API_KEY") and str(v) == "***":
+            # Load Real API_KEYs from local configure file
+            real_keys: str = ConfigManager.get_env_by_translatername(
+                    translator, k, None
+                )
+            _envs[k] = real_keys
+    
     print(f"Files before translation: {os.listdir(output)}")
 
     def progress_bar(t: tqdm.tqdm):
@@ -637,10 +644,13 @@ with gr.Blocks(
                     value = ConfigManager.get_env_by_translatername(
                             translator, env[0], env[1]
                         )
-                    if "MODEL" not in str(env[0]).upper() and value and hidden_gradio_details:
+                    if "MODEL" not in str(label).upper() and value and hidden_gradio_details:
                         visible = False
                     else:
                         visible = True
+                    # Hidden Keys From Gradio
+                    if "API_KEY" in label.upper():
+                        value = "***"   # We use "***" Present Real API_KEY
                     _envs[i] = gr.update(
                         visible=visible,
                         label=label,
