@@ -117,9 +117,15 @@ if ConfigManager.get("PDF2ZH_DEMO"):
 # Limit Enabled Services
 enabled_services: T.Optional[T.List[str]] = ConfigManager.get("ENABLED_SERVICES")
 if isinstance(enabled_services, list):
+    default_services = ['Google', 'Bing']
     enabled_services_names = [str(_).lower().strip() for _ in enabled_services]
     enabled_services = [k for k in service_map.keys() if str(k).lower().strip() in enabled_services_names]
-    assert(enabled_services)
+    if len(enabled_services) == 0:
+        raise RuntimeError(f'There is not available services.')
+    enabled_services = default_services + enabled_services
+else:
+    enabled_services = list(service_map.keys())
+
 
 # Configure about Gradio show keys
 hidden_gradio_details: bool = bool(ConfigManager.get("HIDDEN_GRADIO_DETAILS"))
@@ -582,7 +588,7 @@ with gr.Blocks(
             service = gr.Dropdown(
                 label="Service",
                 choices=enabled_services,
-                value="",
+                value=enabled_services[0],
             )
             envs = []
             for i in range(3):
@@ -644,13 +650,13 @@ with gr.Blocks(
                     value = ConfigManager.get_env_by_translatername(
                             translator, env[0], env[1]
                         )
-                    if "MODEL" not in str(label).upper() and value and hidden_gradio_details:
-                        visible = False
-                    else:
-                        visible = True
-                    # Hidden Keys From Gradio
-                    if "API_KEY" in label.upper():
-                        value = "***"   # We use "***" Present Real API_KEY
+                    visible = True
+                    if hidden_gradio_details:
+                        if "MODEL" not in str(label).upper() and value and hidden_gradio_details:
+                            visible = False
+                        # Hidden Keys From Gradio
+                        if "API_KEY" in label.upper():
+                            value = "***"   # We use "***" Present Real API_KEY
                     _envs[i] = gr.update(
                         visible=visible,
                         label=label,
