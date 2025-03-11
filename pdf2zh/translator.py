@@ -50,14 +50,14 @@ class BaseTranslator:
     envs = {}
     lang_map: dict[str, str] = {}
     CustomPrompt = False
-    ignore_cache = False
 
-    def __init__(self, lang_in: str, lang_out: str, model: str):
+    def __init__(self, lang_in: str, lang_out: str, model: str, ignore_cache: bool):
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
         lang_out = self.lang_map.get(lang_out.lower(), lang_out)
         self.lang_in = lang_in
         self.lang_out = lang_out
         self.model = model
+        self.ignore_cache = ignore_cache
 
         self.cache = TranslationCache(
             self.name,
@@ -176,8 +176,8 @@ class GoogleTranslator(BaseTranslator):
     name = "google"
     lang_map = {"zh": "zh-CN"}
 
-    def __init__(self, lang_in, lang_out, model, **kwargs):
-        super().__init__(lang_in, lang_out, model)
+    def __init__(self, lang_in, lang_out, model, ignore_cache=False, **kwargs):
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         self.session = requests.Session()
         self.endpoint = "https://translate.google.com/m"
         self.headers = {
@@ -207,8 +207,8 @@ class BingTranslator(BaseTranslator):
     name = "bing"
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, lang_in, lang_out, model, **kwargs):
-        super().__init__(lang_in, lang_out, model)
+    def __init__(self, lang_in, lang_out, model, ignore_cache=False, **kwargs):
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         self.session = requests.Session()
         self.endpoint = "https://www.bing.com/translator"
         self.headers = {
@@ -252,9 +252,11 @@ class DeepLTranslator(BaseTranslator):
     }
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, ignore_cache=False, **kwargs
+    ):
         self.set_envs(envs)
-        super().__init__(lang_in, lang_out, model)
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         auth_key = self.envs["DEEPL_AUTH_KEY"]
         self.client = deepl.Translator(auth_key)
 
@@ -274,9 +276,11 @@ class DeepLXTranslator(BaseTranslator):
     }
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, ignore_cache=False, **kwargs
+    ):
         self.set_envs(envs)
-        super().__init__(lang_in, lang_out, model)
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         self.endpoint = self.envs["DEEPLX_ENDPOINT"]
         self.session = requests.Session()
         auth_key = self.envs["DEEPLX_ACCESS_TOKEN"]
@@ -312,11 +316,12 @@ class OllamaTranslator(BaseTranslator):
         model: str,
         envs=None,
         prompt: Template | None = None,
+        ignore_cache=False,
     ):
         self.set_envs(envs)
         if not model:
             model = self.envs["OLLAMA_MODEL"]
-        super().__init__(lang_in, lang_out, model)
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         self.options = {
             "temperature": 0,  # 随机采样可能会打断公式标记
             "num_predict": 2000,
@@ -356,11 +361,13 @@ class XinferenceTranslator(BaseTranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
         if not model:
             model = self.envs["XINFERENCE_MODEL"]
-        super().__init__(lang_in, lang_out, model)
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = xinference_client.RESTfulClient(self.envs["XINFERENCE_HOST"])
         self.prompttext = prompt
@@ -415,11 +422,12 @@ class OpenAITranslator(BaseTranslator):
         api_key=None,
         envs=None,
         prompt=None,
+        ignore_cache=False,
     ):
         self.set_envs(envs)
         if not model:
             model = self.envs["OPENAI_MODEL"]
-        super().__init__(lang_in, lang_out, model)
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = openai.OpenAI(
             base_url=base_url or self.envs["OPENAI_BASE_URL"],
@@ -482,12 +490,13 @@ class AzureOpenAITranslator(BaseTranslator):
         api_key=None,
         envs=None,
         prompt=None,
+        ignore_cache=False,
     ):
         self.set_envs(envs)
         base_url = self.envs["AZURE_OPENAI_BASE_URL"]
         if not model:
             model = self.envs["AZURE_OPENAI_MODEL"]
-        super().__init__(lang_in, lang_out, model)
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         self.options = {"temperature": 0}
         self.client = openai.AzureOpenAI(
             azure_endpoint=base_url,
@@ -526,13 +535,21 @@ class ModelScopeTranslator(OpenAITranslator):
         api_key=None,
         envs=None,
         prompt=None,
+        ignore_cache=False,
     ):
         self.set_envs(envs)
         base_url = "https://api-inference.modelscope.cn/v1"
         api_key = self.envs["MODELSCOPE_API_KEY"]
         if not model:
             model = self.envs["MODELSCOPE_MODEL"]
-        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
         self.prompttext = prompt
         self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
@@ -546,13 +563,22 @@ class ZhipuTranslator(OpenAITranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
         base_url = "https://open.bigmodel.cn/api/paas/v4"
         api_key = self.envs["ZHIPU_API_KEY"]
         if not model:
             model = self.envs["ZHIPU_MODEL"]
-        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
         self.prompttext = prompt
         self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
@@ -582,13 +608,22 @@ class SiliconTranslator(OpenAITranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
         base_url = "https://api.siliconflow.cn/v1"
         api_key = self.envs["SILICON_API_KEY"]
         if not model:
             model = self.envs["SILICON_MODEL"]
-        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
         self.prompttext = prompt
         self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
@@ -602,13 +637,22 @@ class GeminiTranslator(OpenAITranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
         base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
         api_key = self.envs["GEMINI_API_KEY"]
         if not model:
             model = self.envs["GEMINI_MODEL"]
-        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
         self.prompttext = prompt
         self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
@@ -622,9 +666,11 @@ class AzureTranslator(BaseTranslator):
     }
     lang_map = {"zh": "zh-Hans"}
 
-    def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, ignore_cache=False, **kwargs
+    ):
         self.set_envs(envs)
-        super().__init__(lang_in, lang_out, model)
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         endpoint = self.envs["AZURE_ENDPOINT"]
         api_key = self.envs["AZURE_API_KEY"]
         credential = AzureKeyCredential(api_key)
@@ -653,7 +699,9 @@ class TencentTranslator(BaseTranslator):
         "TENCENTCLOUD_SECRET_KEY": None,
     }
 
-    def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, ignore_cache=False, **kwargs
+    ):
         self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
         try:
@@ -683,9 +731,11 @@ class AnythingLLMTranslator(BaseTranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_out, lang_in, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_out, lang_in, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
-        super().__init__(lang_out, lang_in, model)
+        super().__init__(lang_out, lang_in, model, ignore_cache)
         self.api_url = self.envs["AnythingLLM_URL"]
         self.api_key = self.envs["AnythingLLM_APIKEY"]
         self.headers = {
@@ -720,9 +770,11 @@ class DifyTranslator(BaseTranslator):
         "DIFY_API_KEY": None,  # 替换为实际 API 密钥
     }
 
-    def __init__(self, lang_out, lang_in, model, envs=None, **kwargs):
+    def __init__(
+        self, lang_out, lang_in, model, envs=None, ignore_cache=False, **kwargs
+    ):
         self.set_envs(envs)
-        super().__init__(lang_out, lang_in, model)
+        super().__init__(lang_out, lang_in, model, ignore_cache)
         self.api_url = self.envs["DIFY_API_URL"]
         self.api_key = self.envs["DIFY_API_KEY"]
 
@@ -756,8 +808,8 @@ class DifyTranslator(BaseTranslator):
 class ArgosTranslator(BaseTranslator):
     name = "argos"
 
-    def __init__(self, lang_in, lang_out, model, **kwargs):
-        super().__init__(lang_in, lang_out, model)
+    def __init__(self, lang_in, lang_out, model, ignore_cache=False, **kwargs):
+        super().__init__(lang_in, lang_out, model, ignore_cache)
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
         lang_out = self.lang_map.get(lang_out.lower(), lang_out)
         self.lang_in = lang_in
@@ -802,13 +854,22 @@ class GorkTranslator(OpenAITranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
         base_url = "https://api.x.ai/v1"
         api_key = self.envs["GORK_API_KEY"]
         if not model:
             model = self.envs["GORK_MODEL"]
-        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
         self.prompttext = prompt
 
 
@@ -820,13 +881,22 @@ class GroqTranslator(OpenAITranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
         base_url = "https://api.groq.com/openai/v1"
         api_key = self.envs["GROQ_API_KEY"]
         if not model:
             model = self.envs["GROQ_MODEL"]
-        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
         self.prompttext = prompt
 
 
@@ -838,13 +908,22 @@ class DeepseekTranslator(OpenAITranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
         base_url = "https://api.deepseek.com/v1"
         api_key = self.envs["DEEPSEEK_API_KEY"]
         if not model:
             model = self.envs["DEEPSEEK_MODEL"]
-        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
         self.prompttext = prompt
 
 
@@ -857,7 +936,9 @@ class OpenAIlikedTranslator(OpenAITranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
         if self.envs["OPENAILIKED_BASE_URL"]:
             base_url = self.envs["OPENAILIKED_BASE_URL"]
@@ -872,7 +953,14 @@ class OpenAIlikedTranslator(OpenAITranslator):
             api_key = "openailiked"
         else:
             api_key = self.envs["OPENAILIKED_API_KEY"]
-        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
         self.prompttext = prompt
 
 
@@ -891,7 +979,9 @@ class QwenMtTranslator(OpenAITranslator):
     }
     CustomPrompt = True
 
-    def __init__(self, lang_in, lang_out, model, envs=None, prompt=None):
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
         self.set_envs(envs)
         base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
         api_key = self.envs["ALI_API_KEY"]
@@ -899,7 +989,14 @@ class QwenMtTranslator(OpenAITranslator):
         if not model:
             model = self.envs["ALI_MODEL"]
 
-        super().__init__(lang_in, lang_out, model, base_url=base_url, api_key=api_key)
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
         self.prompttext = prompt
 
     @staticmethod

@@ -13,6 +13,7 @@
 - [Authorization](#auth)
 - [Custom configuration file](#cofig)
 - [Fonts Subseting](#fonts-subset)
+- [Translation cache](#cache)
 
 ---
 
@@ -254,6 +255,18 @@ By default, PDFMathTranslate uses fonts subsetting to decrease sizes of output f
 
 ```bash
 pdf2zh example.pdf --skip-subset-fonts
+```
+
+[⬆️ Back to top](#toc)
+
+---
+
+<h3 id="cache">Translation cache</h3>
+
+PDFMathTranslate caches translated texts to increase speed and avoid unnecessary API calls for same contents. You can use `--ignore-cache` option to ignore translation cache and force retranslation.
+
+```bash
+pdf2zh example.pdf --ignore-cache
 ```
 
 [⬆️ Back to top](#toc)

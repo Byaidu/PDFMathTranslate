@@ -185,6 +185,12 @@ def create_parser() -> argparse.ArgumentParser:
         "but will increase the size of the output file.",
     )
 
+    parse_params.add_argument(
+        "--ignore-cache",
+        action="store_true",
+        help="Ignore cache and force retranslation.",
+    )
+
     return parser
 
 
@@ -308,6 +314,7 @@ def yadt_main(parsed_args) -> int:
         untranlate_file = parsed_args.files
     lang_in = parsed_args.lang_in
     lang_out = parsed_args.lang_out
+    ignore_cache = parsed_args.ignore_cache
     outputdir = None
     if parsed_args.output:
         outputdir = parsed_args.output
@@ -382,7 +389,12 @@ def yadt_main(parsed_args) -> int:
     ]:
         if service_name == translator.name:
             translator = translator(
-                lang_in, lang_out, service_model, envs=envs, prompt=prompt
+                lang_in,
+                lang_out,
+                service_model,
+                envs=envs,
+                prompt=prompt,
+                ignore_cache=ignore_cache,
             )
             break
     else:
