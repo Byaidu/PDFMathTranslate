@@ -7,17 +7,6 @@ import unicodedata
 from copy import copy
 from string import Template
 from typing import cast
-
-logger = logging.getLogger(__name__)
-
-try:
-    import argostranslate.package
-    import argostranslate.translate
-except ImportError:
-    logger.warning(
-        "argos-translate is not installed, if you want to use argostranslate, please install it. If you don't use argostranslate translator, you can safely ignore this warning."
-    )
-
 import deepl
 import ollama
 import openai
@@ -41,6 +30,17 @@ from tenacity import stop_after_attempt
 from tenacity import wait_exponential
 
 
+logger = logging.getLogger(__name__)
+
+try:
+    import argostranslate.package
+    import argostranslate.translate
+except ImportError:
+    logger.warning(
+        "argos-translate is not installed, if you want to use argostranslate, please install it. If you don't use argostranslate translator, you can safely ignore this warning."
+    )
+
+
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
@@ -50,7 +50,7 @@ class BaseTranslator:
     envs = {}
     lang_map: dict[str, str] = {}
     CustomPrompt = False
-    ignore_cache = False
+    ignore_cache = True
 
     def __init__(self, lang_in: str, lang_out: str, model: str):
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
@@ -656,7 +656,13 @@ class TencentTranslator(BaseTranslator):
     def __init__(self, lang_in, lang_out, model, envs=None, **kwargs):
         self.set_envs(envs)
         super().__init__(lang_in, lang_out, model)
-        cred = credential.DefaultCredentialProvider().get_credential()
+        try:
+            cred = credential.DefaultCredentialProvider().get_credential()
+        except EnvironmentError:
+            cred = credential.Credential(
+                self.envs["TENCENTCLOUD_SECRET_ID"],
+                self.envs["TENCENTCLOUD_SECRET_KEY"],
+            )
         self.client = TmtClient(cred, "ap-beijing")
         self.req = TextTranslateRequest()
         self.req.Source = self.lang_in
