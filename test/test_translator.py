@@ -30,7 +30,7 @@ class TestTranslator(unittest.TestCase):
         cache.clean_test_db(self.test_db)
 
     def test_cache(self):
-        translator = AutoIncreaseTranslator("en", "zh", "test")
+        translator = AutoIncreaseTranslator("en", "zh", "test", False)
         # First translation should be cached
         text = "Hello World"
         first_result = translator.translate(text)
@@ -50,7 +50,7 @@ class TestTranslator(unittest.TestCase):
         self.assertNotEqual(first_result, no_cache_result)
 
     def test_add_cache_impact_parameters(self):
-        translator = AutoIncreaseTranslator("en", "zh", "test")
+        translator = AutoIncreaseTranslator("en", "zh", "test", False)
 
         # Test cache with added parameters
         text = "Hello World"
@@ -78,7 +78,7 @@ class TestTranslator(unittest.TestCase):
         self.assertNotEqual(second_result, another_result)
 
     def test_base_translator_throw(self):
-        translator = BaseTranslator("en", "zh", "test")
+        translator = BaseTranslator("en", "zh", "test", False)
         with self.assertRaises(NotImplementedError):
             translator.translate("Hello World")
 

@@ -187,6 +187,7 @@ def translate_file(
     prompt,
     threads,
     skip_subset_fonts,
+    ignore_cache,
     use_babeldoc,
     recaptcha_response,
     state,
@@ -294,6 +295,7 @@ def translate_file(
         "envs": _envs,
         "prompt": Template(prompt) if prompt else None,
         "skip_subset_fonts": skip_subset_fonts,
+        "ignore_cache": ignore_cache,
         "model": ModelInstance.value,
     }
 
@@ -394,6 +396,7 @@ def babeldoc_translate_file(**kwargs):
                 "",
                 envs=kwargs["envs"],
                 prompt=kwargs["prompt"],
+                ignore_cache=kwargs["ignore_cache"],
             )
             break
     else:
@@ -602,6 +605,9 @@ with gr.Blocks(
                 skip_subset_fonts = gr.Checkbox(
                     label="Skip font subsetting", interactive=True, value=False
                 )
+                ignore_cache = gr.Checkbox(
+                    label="Ignore cache", interactive=True, value=False
+                )
                 prompt = gr.Textbox(
                     label="Custom Prompt for llm", interactive=True, visible=False
                 )
@@ -724,6 +730,7 @@ with gr.Blocks(
             prompt,
             threads,
             skip_subset_fonts,
+            ignore_cache,
             use_babeldoc,
             recaptcha_response,
             state,

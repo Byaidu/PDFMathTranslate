@@ -84,6 +84,7 @@ def translate_patch(
     model: OnnxModel = None,
     envs: Dict = None,
     prompt: Template = None,
+    ignore_cache: bool = False,
     **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
@@ -101,6 +102,7 @@ def translate_patch(
         noto,
         envs,
         prompt,
+        ignore_cache,
     )
 
     assert device is not None
@@ -179,6 +181,7 @@ def translate_stream(
     envs: Dict = None,
     prompt: Template = None,
     skip_subset_fonts: bool = False,
+    ignore_cache: bool = False,
     **kwarg: Any,
 ):
     font_list = [("tiro", None)]
@@ -313,6 +316,7 @@ def translate(
     envs: Dict = None,
     prompt: Template = None,
     skip_subset_fonts: bool = False,
+    ignore_cache: bool = False,
     **kwarg: Any,
 ):
     if not files:
