@@ -117,11 +117,15 @@ if ConfigManager.get("PDF2ZH_DEMO"):
 # Limit Enabled Services
 enabled_services: T.Optional[T.List[str]] = ConfigManager.get("ENABLED_SERVICES")
 if isinstance(enabled_services, list):
-    default_services = ['Google', 'Bing']
+    default_services = ["Google", "Bing"]
     enabled_services_names = [str(_).lower().strip() for _ in enabled_services]
-    enabled_services = [k for k in service_map.keys() if str(k).lower().strip() in enabled_services_names]
+    enabled_services = [
+        k
+        for k in service_map.keys()
+        if str(k).lower().strip() in enabled_services_names
+    ]
     if len(enabled_services) == 0:
-        raise RuntimeError(f'No services available.')
+        raise RuntimeError(f"No services available.")
     enabled_services = default_services + enabled_services
 else:
     enabled_services = list(service_map.keys())
@@ -129,6 +133,7 @@ else:
 
 # Configure about Gradio show keys
 hidden_gradio_details: bool = bool(ConfigManager.get("HIDDEN_GRADIO_DETAILS"))
+
 
 # Public demo control
 def verify_recaptcha(response):
@@ -285,14 +290,14 @@ def translate_file(
     _envs = {}
     for i, env in enumerate(translator.envs.items()):
         _envs[env[0]] = envs[i]
-    for k,v in _envs.items():
+    for k, v in _envs.items():
         if str(k).upper().endswith("API_KEY") and str(v) == "***":
             # Load Real API_KEYs from local configure file
             real_keys: str = ConfigManager.get_env_by_translatername(
-                    translator, k, None
-                )
+                translator, k, None
+            )
             _envs[k] = real_keys
-    
+
     print(f"Files before translation: {os.listdir(output)}")
 
     def progress_bar(t: tqdm.tqdm):
@@ -648,15 +653,19 @@ with gr.Blocks(
                 for i, env in enumerate(translator.envs.items()):
                     label = env[0]
                     value = ConfigManager.get_env_by_translatername(
-                            translator, env[0], env[1]
-                        )
+                        translator, env[0], env[1]
+                    )
                     visible = True
                     if hidden_gradio_details:
-                        if "MODEL" not in str(label).upper() and value and hidden_gradio_details:
+                        if (
+                            "MODEL" not in str(label).upper()
+                            and value
+                            and hidden_gradio_details
+                        ):
                             visible = False
                         # Hidden Keys From Gradio
                         if "API_KEY" in label.upper():
-                            value = "***"   # We use "***" Present Real API_KEY
+                            value = "***"  # We use "***" Present Real API_KEY
                     _envs[i] = gr.update(
                         visible=visible,
                         label=label,
