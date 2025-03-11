@@ -845,7 +845,7 @@ class ArgosTranslator(BaseTranslator):
         return translatedText
 
 
-class GorkTranslator(OpenAITranslator):
+class GrokTranslator(OpenAITranslator):
     # https://docs.x.ai/docs/overview#getting-started
     name = "grok"
     envs = {
