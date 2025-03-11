@@ -121,7 +121,7 @@ if isinstance(enabled_services, list):
     enabled_services_names = [str(_).lower().strip() for _ in enabled_services]
     enabled_services = [k for k in service_map.keys() if str(k).lower().strip() in enabled_services_names]
     if len(enabled_services) == 0:
-        raise RuntimeError(f'There is not available services.')
+        raise RuntimeError(f'No services available.')
     enabled_services = default_services + enabled_services
 else:
     enabled_services = list(service_map.keys())
