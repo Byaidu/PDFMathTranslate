@@ -50,7 +50,7 @@ class BaseTranslator:
     envs = {}
     lang_map: dict[str, str] = {}
     CustomPrompt = False
-    ignore_cache = True
+    ignore_cache = False
 
     def __init__(self, lang_in: str, lang_out: str, model: str):
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
