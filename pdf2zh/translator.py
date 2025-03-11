@@ -7,17 +7,6 @@ import unicodedata
 from copy import copy
 from string import Template
 from typing import cast
-
-logger = logging.getLogger(__name__)
-
-try:
-    import argostranslate.package
-    import argostranslate.translate
-except ImportError:
-    logger.warning(
-        "argos-translate is not installed, if you want to use argostranslate, please install it. If you don't use argostranslate translator, you can safely ignore this warning."
-    )
-
 import deepl
 import ollama
 import openai
@@ -39,6 +28,17 @@ from pdf2zh.config import ConfigManager
 from tenacity import retry, retry_if_exception_type
 from tenacity import stop_after_attempt
 from tenacity import wait_exponential
+
+
+logger = logging.getLogger(__name__)
+
+try:
+    import argostranslate.package
+    import argostranslate.translate
+except ImportError:
+    logger.warning(
+        "argos-translate is not installed, if you want to use argostranslate, please install it. If you don't use argostranslate translator, you can safely ignore this warning."
+    )
 
 
 def remove_control_characters(s):
@@ -703,8 +703,14 @@ class TencentTranslator(BaseTranslator):
         self, lang_in, lang_out, model, envs=None, ignore_cache=False, **kwargs
     ):
         self.set_envs(envs)
-        super().__init__(lang_in, lang_out, model, ignore_cache)
-        cred = credential.DefaultCredentialProvider().get_credential()
+        super().__init__(lang_in, lang_out, model)
+        try:
+            cred = credential.DefaultCredentialProvider().get_credential()
+        except EnvironmentError:
+            cred = credential.Credential(
+                self.envs["TENCENTCLOUD_SECRET_ID"],
+                self.envs["TENCENTCLOUD_SECRET_KEY"],
+            )
         self.client = TmtClient(cred, "ap-beijing")
         self.req = TextTranslateRequest()
         self.req.Source = self.lang_in
