@@ -15,6 +15,8 @@ body:
         required: true
       - label: I have carefully checked the issue, and it is unrelated to the network environment.
         required: true
+      - label: I have try `--babeldoc`, and it is still there.
+        required: true
   - type: markdown
     attributes:
       value: |
@@ -85,3 +87,14 @@ body:
         Anything that will give us more context about the issue you are encountering!
     validations:
       required: false
+  - type: checkboxes
+    id: onemoretime
+    attributes:
+      label: before create issue...
+      options:
+      - label: I'm responsible for what I check off.
+        required: true
+      - label: I have already tried the amazing option(--babeldoc)
+        required: true
+      - label: I'm not a liar or issue would have been closed directly.
+        required: true

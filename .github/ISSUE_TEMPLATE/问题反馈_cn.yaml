@@ -15,6 +15,8 @@ body:
         required: true
       - label: 我已经认真检查了问题和网络环境无关（包括但不限于Google不可用，模型下载失败）
         required: true
+      - label: 我已经尝试使用过妙妙选项(--babeldoc)，但是问题依旧存在
+        required: true
   - type: markdown
     attributes:
       value: |
@@ -86,3 +88,14 @@ body:
         任何能让我们对你所遇到的问题有更多了解的东西。
     validations:
       required: false
+  - type: checkboxes
+    id: onemoretime
+    attributes:
+      label: 在发布问题之前...
+      options:
+      - label: 我对自己勾选的选项负责
+        required: true
+      - label: 我已经尝试使用了妙妙选项(--babeldoc)
+        required: true
+      - label: issue被直接关闭，一定是因为我之前的勾选撒了谎
+        required: true
