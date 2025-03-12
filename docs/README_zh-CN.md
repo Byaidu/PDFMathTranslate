@@ -247,7 +247,7 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 
 <h2 id="downstream">二次开发 (API)</h2>
 
-当前的 pdf2zh API 暂时已弃用。API 将在 [pdf2zh 2.0](https://github.com/Byaidu/PDFMathTranslate/issues/586)发布后重新提供。对于需要程序化访问的用户，请使用[BabelDOC](https://github.com/funstory-ai/BabelDOC)的 API。
+当前的 pdf2zh API 暂时已弃用。API 将在 [pdf2zh 2.0](https://github.com/Byaidu/PDFMathTranslate/issues/586)发布后重新提供。对于需要程序化访问的用户，请使用[BabelDOC](https://github.com/funstory-ai/BabelDOC)的 `babeldoc.high_level.async_translate` 函数。
 
 API 暂时弃用意味着：相关代码暂时不会被移除，但不会提供技术支持，也不会修复 bug。
 
