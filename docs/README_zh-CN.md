@@ -45,11 +45,11 @@
 
 <h2 id="updates">更新</h2>
 
-- [2025年2月22日] 更好的发布 CI 和精心打包的 windows-amd64 exe (由 [@awwaawwa](https://github.com/awwaawwa) 提供)
-- [2024年12月24日] 翻译器现在支持在 [Xinference](https://github.com/xorbitsai/inference) 上使用本地模型 _(由 [@imClumsyPanda](https://github.com/imClumsyPanda) 提供)_
-- [2024年12月19日] 现在支持非 PDF/A 文档，使用 `-cp` _(由 [@reycn](https://github.com/reycn) 提供)_
-- [2024年12月13日] 额外支持后端 _(由 [@YadominJinta](https://github.com/YadominJinta) 提供)_
-- [2024年12月10日] 翻译器现在支持 Azure 上的 OpenAI 模型 _(由 [@yidasanqian](https://github.com/yidasanqian) 提供)_
+- [2025 年 2 月 22 日] 更好的发布 CI 和精心打包的 windows-amd64 exe (由 [@awwaawwa](https://github.com/awwaawwa) 提供)
+- [2024 年 12 月 24 日] 翻译器现在支持在 [Xinference](https://github.com/xorbitsai/inference) 上使用本地模型 _(由 [@imClumsyPanda](https://github.com/imClumsyPanda) 提供)_
+- [2024 年 12 月 19 日] 现在支持非 PDF/A 文档，使用 `-cp` _(由 [@reycn](https://github.com/reycn) 提供)_
+- [2024 年 12 月 13 日] 额外支持后端 _(由 [@YadominJinta](https://github.com/YadominJinta) 提供)_
+- [2024 年 12 月 10 日] 翻译器现在支持 Azure 上的 OpenAI 模型 _(由 [@yidasanqian](https://github.com/yidasanqian) 提供)_
 
 <h2 id="preview">预览</h2>
 <div align="center">
@@ -139,23 +139,23 @@ pip install pdf2zh
    docker run -d -p 7860:7860 byaidu/pdf2zh
    ```
 
-2. 在浏览器中打开:
+2. 在浏览器中打开：
 
    ```
    http://localhost:7860/
    ```
 
-对于云服务上的docker部署:
+对于云服务上的 docker 部署：
 
 <div>
 <a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="部署" height="26"></a>
 <a href="https://render.com/deploy">
-  <img src="https://render.com/images/deploy-to-render-button.svg" alt="部署到Koyeb" height="26"></a>
+  <img src="https://render.com/images/deploy-to-render-button.svg" alt="部署到 Koyeb" height="26"></a>
 <a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
-  <img src="https://zeabur.com/button.svg" alt="在Zeabur上部署" height="26"></a>
+  <img src="https://zeabur.com/button.svg" alt="在 Zeabur 上部署" height="26"></a>
 <a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
-  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="部署到Koyeb" height="26"></a>
+  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="部署到 Koyeb" height="26"></a>
 </div>
 
 </details>
@@ -170,8 +170,8 @@ pip install pdf2zh
 <details>
   <summary>6. 命令行</summary>
 
-1. 已安装Python（3.10 <= 版本 <= 3.12）
-2. 安装我们的包:
+1. 已安装 Python（3.10 <= 版本 <= 3.12）
+2. 安装我们的包：
 
    ```bash
    pip install pdf2zh
@@ -187,9 +187,9 @@ pip install pdf2zh
 
 > [!TIP]
 >
-> - 如果你使用Windows并在下载后无法打开文件，请安装 [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) 并重试。
+> - 如果你使用 Windows 并在下载后无法打开文件，请安装 [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) 并重试。
 >
-> - 如果你无法访问Docker Hub，请尝试在 [GitHub容器注册中心](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate) 上使用该镜像。
+> - 如果你无法访问 Docker Hub，请尝试在 [GitHub 容器注册中心](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate) 上使用该镜像。
 > ```bash
 > docker pull ghcr.io/byaidu/pdfmathtranslate
 > docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
@@ -197,7 +197,7 @@ pip install pdf2zh
 
 ### 无法安装？
 
-当前程序在工作前需要一个AI模型(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)，一些用户由于网络问题无法下载。如果你在下载此模型时遇到问题，我们提供以下环境变量的解决方法:
+当前程序在工作前需要一个 AI 模型 (`wybxc/DocLayout-YOLO-DocStructBench-onnx`)，一些用户由于网络问题无法下载。如果你在下载此模型时遇到问题，我们提供以下环境变量的解决方法：
 
 ```shell
 set HF_ENDPOINT=https://hf-mirror.com
@@ -247,9 +247,13 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 
 <h2 id="downstream">二次开发 (API)</h2>
 
-对于下游应用程序，请参阅我们的文档 [API 详细信息](./APIS.md)，以获取更多信息：
+当前的 pdf2zh API 暂时已弃用。API 将在 [pdf2zh 2.0](https://github.com/Byaidu/PDFMathTranslate/issues/586)发布后重新提供。对于需要程序化访问的用户，请使用[BabelDOC](https://github.com/funstory-ai/BabelDOC)的 API。
+
+API 暂时弃用意味着：相关代码暂时不会被移除，但不会提供技术支持，也不会修复 bug。
+
+<!-- 对于下游应用程序，请参阅我们的文档 [API 详细信息](./APIS.md)，以获取更多信息：
 - [Python API](./APIS.md#api-python)，如何在其他 Python 程序中使用该程序
-- [HTTP API](./APIS.md#api-http)，如何与已安装该程序的服务器进行通信
+- [HTTP API](./APIS.md#api-http)，如何与已安装该程序的服务器进行通信 -->
 
 <h2 id="todo">待办事项</h2>
 
