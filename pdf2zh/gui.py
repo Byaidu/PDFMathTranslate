@@ -2,7 +2,6 @@ import asyncio
 import cgi
 import os
 import shutil
-from tracemalloc import Snapshot
 import uuid
 from asyncio import CancelledError
 from pathlib import Path
@@ -45,8 +44,10 @@ from pdf2zh.translator import (
     QwenMtTranslator,
 )
 
-logger = logging.getLogger(__name__)
 from babeldoc.docvision.doclayout import OnnxModel
+from babeldoc import __version__ as babeldoc_version
+
+logger = logging.getLogger(__name__)
 
 BABELDOC_MODEL = OnnxModel.load_available()
 # The following variables associate strings with translators
@@ -125,7 +126,7 @@ if isinstance(enabled_services, list):
         if str(k).lower().strip() in enabled_services_names
     ]
     if len(enabled_services) == 0:
-        raise RuntimeError(f"No services available.")
+        raise RuntimeError("No services available.")
     enabled_services = default_services + enabled_services
 else:
     enabled_services = list(service_map.keys())
@@ -376,14 +377,6 @@ def babeldoc_translate_file(**kwargs):
         DifyTranslator,
         DeepLXTranslator,
         OllamaTranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
         AnythingLLMTranslator,
         XinferenceTranslator,
         ArgosTranslator,
@@ -424,7 +417,7 @@ def babeldoc_translate_file(**kwargs):
                 kwargs["lang_out"],
                 "",
                 envs=kwargs["envs"],
-                prompt=kwargs["prompt"],
+                prompt=prompt,
                 ignore_cache=kwargs["ignore_cache"],
             )
             break
@@ -543,8 +536,6 @@ demo_recaptcha = """
     </script>
     """
 
-from babeldoc import __version__ as babeldoc_version
-
 tech_details_string = f"""
                     <summary>Technical details</summary>
                     - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
@@ -599,8 +590,7 @@ with gr.Blocks(
             for i in range(3):
                 envs.append(
                     gr.Textbox(
-                        visible=False,
-                        interactive=True,
+                        visible=False, interactive=True, max_lines=1, type="text"
                     )
                 )
             with gr.Row():
@@ -670,6 +660,7 @@ with gr.Blocks(
                         visible=visible,
                         label=label,
                         value=value,
+                        type="password" if translator.masks[i] else "text",
                     )
                 _envs[-1] = gr.update(visible=translator.CustomPrompt)
                 return _envs

@@ -50,6 +50,7 @@ class BaseTranslator:
     envs = {}
     lang_map: dict[str, str] = {}
     CustomPrompt = False
+    masks = []
 
     def __init__(self, lang_in: str, lang_out: str, model: str, ignore_cache: bool):
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
@@ -251,6 +252,7 @@ class DeepLTranslator(BaseTranslator):
         "DEEPL_AUTH_KEY": None,
     }
     lang_map = {"zh": "zh-Hans"}
+    masks = [1]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, ignore_cache=False, **kwargs
@@ -275,6 +277,7 @@ class DeepLXTranslator(BaseTranslator):
         "DEEPLX_ACCESS_TOKEN": None,
     }
     lang_map = {"zh": "zh-Hans"}
+    masks = [0, 1]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, ignore_cache=False, **kwargs
@@ -308,6 +311,7 @@ class OllamaTranslator(BaseTranslator):
         "OLLAMA_MODEL": "gemma2",
     }
     CustomPrompt = True
+    masks = [0, 0]
 
     def __init__(
         self,
@@ -360,6 +364,7 @@ class XinferenceTranslator(BaseTranslator):
         "XINFERENCE_MODEL": "gemma-2-it",
     }
     CustomPrompt = True
+    masks = [0, 0]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
@@ -412,6 +417,7 @@ class OpenAITranslator(BaseTranslator):
         "OPENAI_MODEL": "gpt-4o-mini",
     }
     CustomPrompt = True
+    masks = [0, 1, 0]
 
     def __init__(
         self,
@@ -480,6 +486,7 @@ class AzureOpenAITranslator(BaseTranslator):
         "AZURE_OPENAI_MODEL": "gpt-4o-mini",
     }
     CustomPrompt = True
+    masks = [0, 1, 0]
 
     def __init__(
         self,
@@ -525,6 +532,7 @@ class ModelScopeTranslator(OpenAITranslator):
         "MODELSCOPE_MODEL": "Qwen/Qwen2.5-32B-Instruct",
     }
     CustomPrompt = True
+    masks = [0, 1, 0]
 
     def __init__(
         self,
@@ -562,6 +570,7 @@ class ZhipuTranslator(OpenAITranslator):
         "ZHIPU_MODEL": "glm-4-flash",
     }
     CustomPrompt = True
+    masks = [1, 0]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
@@ -607,6 +616,7 @@ class SiliconTranslator(OpenAITranslator):
         "SILICON_MODEL": "Qwen/Qwen2.5-7B-Instruct",
     }
     CustomPrompt = True
+    masks = [1, 0]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
@@ -636,6 +646,7 @@ class GeminiTranslator(OpenAITranslator):
         "GEMINI_MODEL": "gemini-1.5-flash",
     }
     CustomPrompt = True
+    masks = [1, 0]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
@@ -665,6 +676,7 @@ class AzureTranslator(BaseTranslator):
         "AZURE_API_KEY": None,
     }
     lang_map = {"zh": "zh-Hans"}
+    masks = [0, 1]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, ignore_cache=False, **kwargs
@@ -698,6 +710,7 @@ class TencentTranslator(BaseTranslator):
         "TENCENTCLOUD_SECRET_ID": None,
         "TENCENTCLOUD_SECRET_KEY": None,
     }
+    masks = [1, 1]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, ignore_cache=False, **kwargs
@@ -730,6 +743,7 @@ class AnythingLLMTranslator(BaseTranslator):
         "AnythingLLM_APIKEY": None,
     }
     CustomPrompt = True
+    masks = [0, 1]
 
     def __init__(
         self, lang_out, lang_in, model, envs=None, prompt=None, ignore_cache=False
@@ -769,6 +783,7 @@ class DifyTranslator(BaseTranslator):
         "DIFY_API_URL": None,  # 填写实际 Dify API 地址
         "DIFY_API_KEY": None,  # 替换为实际 API 密钥
     }
+    masks = [0, 1]
 
     def __init__(
         self, lang_out, lang_in, model, envs=None, ignore_cache=False, **kwargs
@@ -853,6 +868,7 @@ class GrokTranslator(OpenAITranslator):
         "GORK_MODEL": "grok-2-1212",
     }
     CustomPrompt = True
+    masks = [1, 0]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
@@ -880,6 +896,7 @@ class GroqTranslator(OpenAITranslator):
         "GROQ_MODEL": "llama-3-3-70b-versatile",
     }
     CustomPrompt = True
+    masks = [1, 0]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
@@ -907,6 +924,7 @@ class DeepseekTranslator(OpenAITranslator):
         "DEEPSEEK_MODEL": "deepseek-chat",
     }
     CustomPrompt = True
+    masks = [1, 0]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
@@ -935,6 +953,7 @@ class OpenAIlikedTranslator(OpenAITranslator):
         "OPENAILIKED_MODEL": None,
     }
     CustomPrompt = True
+    masks = [0, 1, 0]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
@@ -978,6 +997,7 @@ class QwenMtTranslator(OpenAITranslator):
         "ALI_DOMAINS": "This sentence is extracted from a scientific paper. When translating, please pay close attention to the use of specialized troubleshooting terminologies and adhere to scientific sentence structures to maintain the technical rigor and precision of the original text.",
     }
     CustomPrompt = True
+    masks = [0, 1, 0]
 
     def __init__(
         self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
