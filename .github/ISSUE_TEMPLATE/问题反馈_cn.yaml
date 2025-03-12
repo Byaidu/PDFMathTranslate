@@ -97,5 +97,3 @@ body:
         required: true
       - label: 我已经尝试使用了妙妙选项(--babeldoc 或 webui 实验性选项 use babeldoc)
         required: true
-      - label: issue被直接关闭，一定是因为我之前的勾选撒了谎
-        required: true

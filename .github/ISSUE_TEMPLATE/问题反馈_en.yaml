@@ -96,5 +96,3 @@ body:
         required: true
       - label: I have already tried the amazing option(--babeldoc  or experimental option in webui `use babeldoc`)
         required: true
-      - label: I'm not a liar or issue would have been closed directly.
-        required: true
