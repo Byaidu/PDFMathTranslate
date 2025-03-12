@@ -15,7 +15,7 @@ body:
         required: true
       - label: I have carefully checked the issue, and it is unrelated to the network environment.
         required: true
-      - label: I have try `--babeldoc`, and it is still there.
+      - label: I have try `--babeldoc` or experimental option in webui `use babeldoc`, and it is still there.
         required: true
   - type: markdown
     attributes:
@@ -94,7 +94,7 @@ body:
       options:
       - label: I'm responsible for what I check off.
         required: true
-      - label: I have already tried the amazing option(--babeldoc)
+      - label: I have already tried the amazing option(--babeldoc  or experimental option in webui `use babeldoc`)
         required: true
       - label: I'm not a liar or issue would have been closed directly.
         required: true
