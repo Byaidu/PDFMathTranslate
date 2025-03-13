@@ -41,14 +41,10 @@ body:
     attributes:
       label: 请选择安装方式
       options:
-        - label: pip
-          value: pip
-        - label: exe
-          value: zip
-        - label: 源码
-          value: source
-        - label: docker
-          value: docker
+        - pip
+        - exe
+        - 源码
+        - docker
     validations:
       required: true
   - type: textarea

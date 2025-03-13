@@ -40,14 +40,10 @@ body:
     attributes:
       label: How to install pdf2zh
       options:
-        - label: pip
-          value: pip
-        - label: exe
-          value: zip
-        - label: source
-          value: source
-        - label: docker
-          value: docker
+        - pip
+        - exe
+        - source
+        - docker
     validations:
       required: true
   - type: textarea
