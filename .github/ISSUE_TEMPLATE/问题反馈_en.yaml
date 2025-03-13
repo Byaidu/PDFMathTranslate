@@ -35,6 +35,21 @@ body:
       render: markdown
     validations:
       required: false
+  - type: dropdown
+  id: install
+  attributes:
+    label: How to install pdf2zh
+    options:
+      - label: pip
+        value: pip
+      - label: exe
+        value: zip
+      - label: source
+        value: source
+      - label: docker
+        value: docker
+  validations:
+    required: true
   - type: textarea
     id: describe
     attributes:
