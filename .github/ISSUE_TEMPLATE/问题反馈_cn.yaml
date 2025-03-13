@@ -36,6 +36,17 @@ body:
       render: markdown
     validations:
       required: false
+  - type: dropdown
+    id: install
+    attributes:
+      label: 请选择安装方式
+      options:
+        - pip
+        - exe
+        - 源码
+        - docker
+    validations:
+      required: true
   - type: textarea
     id: describe
     attributes:
