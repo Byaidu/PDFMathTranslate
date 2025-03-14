@@ -10,3 +10,5 @@ body:
         required: true
   - type: textarea
     id: describe
+    attributes:
+      label: Add a description
