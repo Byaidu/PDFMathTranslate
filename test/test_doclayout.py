@@ -1,11 +1,11 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
+
 import numpy as np
-from pdf2zh.doclayout import (
-    OnnxModel,
-    YoloResult,
-    YoloBox,
-)
+from pdf2zh.doclayout import OnnxModel
+from pdf2zh.doclayout import YoloBox
+from pdf2zh.doclayout import YoloResult
 
 
 class TestOnnxModel(unittest.TestCase):

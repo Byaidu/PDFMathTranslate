@@ -1,9 +1,13 @@
+import json
 import logging
 import os
-import json
-from peewee import Model, SqliteDatabase, AutoField, CharField, TextField, SQL
-from typing import Optional
 
+from peewee import SQL
+from peewee import AutoField
+from peewee import CharField
+from peewee import Model
+from peewee import SqliteDatabase
+from peewee import TextField
 
 # we don't init the database here
 db = SqliteDatabase(None)
@@ -75,7 +79,7 @@ class TranslationCache:
 
     # Since peewee and the underlying sqlite are thread-safe,
     # get and set operations don't need locks.
-    def get(self, original_text: str) -> Optional[str]:
+    def get(self, original_text: str) -> str | None:
         result = _TranslationCache.get_or_none(
             translate_engine=self.translate_engine,
             translate_engine_params=self.translate_engine_params,

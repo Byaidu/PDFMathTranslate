@@ -1,8 +1,14 @@
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-from pdfminer.layout import LTPage, LTChar, LTLine
+from unittest.mock import MagicMock
+from unittest.mock import Mock
+from unittest.mock import patch
+
+from pdf2zh.converter import PDFConverterEx
+from pdf2zh.converter import TranslateConverter
+from pdfminer.layout import LTChar
+from pdfminer.layout import LTLine
+from pdfminer.layout import LTPage
 from pdfminer.pdfinterp import PDFResourceManager
-from pdf2zh.converter import PDFConverterEx, TranslateConverter
 
 
 class TestPDFConverterEx(unittest.TestCase):

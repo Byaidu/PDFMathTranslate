@@ -7,6 +7,7 @@ import unicodedata
 from copy import copy
 from string import Template
 from typing import cast
+
 import deepl
 import ollama
 import openai
@@ -14,21 +15,17 @@ import requests
 import xinference_client
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
+from tenacity import retry
+from tenacity import retry_if_exception_type
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
 from tencentcloud.common import credential
-from tencentcloud.tmt.v20180321.models import (
-    TextTranslateRequest,
-    TextTranslateResponse,
-)
+from tencentcloud.tmt.v20180321.models import TextTranslateRequest
+from tencentcloud.tmt.v20180321.models import TextTranslateResponse
 from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 
 from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
-
-
-from tenacity import retry, retry_if_exception_type
-from tenacity import stop_after_attempt
-from tenacity import wait_exponential
-
 
 logger = logging.getLogger(__name__)
 
@@ -706,7 +703,7 @@ class TencentTranslator(BaseTranslator):
         super().__init__(lang_in, lang_out, model)
         try:
             cred = credential.DefaultCredentialProvider().get_credential()
-        except EnvironmentError:
+        except OSError:
             cred = credential.Credential(
                 self.envs["TENCENTCLOUD_SECRET_ID"],
                 self.envs["TENCENTCLOUD_SECRET_KEY"],

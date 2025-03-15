@@ -1,49 +1,45 @@
 import asyncio
 import cgi
+import logging
 import os
 import shutil
-from tracemalloc import Snapshot
 import uuid
 from asyncio import CancelledError
 from pathlib import Path
-import typing as T
+from string import Template
 
 import gradio as gr
 import requests
 import tqdm
 from gradio_pdf import PDF
-from string import Template
-import logging
 
 from pdf2zh import __version__
-from pdf2zh.high_level import translate
-from pdf2zh.doclayout import ModelInstance
 from pdf2zh.config import ConfigManager
-from pdf2zh.translator import (
-    AnythingLLMTranslator,
-    AzureOpenAITranslator,
-    AzureTranslator,
-    BaseTranslator,
-    BingTranslator,
-    DeepLTranslator,
-    DeepLXTranslator,
-    DifyTranslator,
-    ArgosTranslator,
-    GeminiTranslator,
-    GoogleTranslator,
-    ModelScopeTranslator,
-    OllamaTranslator,
-    OpenAITranslator,
-    SiliconTranslator,
-    TencentTranslator,
-    XinferenceTranslator,
-    ZhipuTranslator,
-    GrokTranslator,
-    GroqTranslator,
-    DeepseekTranslator,
-    OpenAIlikedTranslator,
-    QwenMtTranslator,
-)
+from pdf2zh.doclayout import ModelInstance
+from pdf2zh.high_level import translate
+from pdf2zh.translator import AnythingLLMTranslator
+from pdf2zh.translator import ArgosTranslator
+from pdf2zh.translator import AzureOpenAITranslator
+from pdf2zh.translator import AzureTranslator
+from pdf2zh.translator import BaseTranslator
+from pdf2zh.translator import BingTranslator
+from pdf2zh.translator import DeepLTranslator
+from pdf2zh.translator import DeepLXTranslator
+from pdf2zh.translator import DeepseekTranslator
+from pdf2zh.translator import DifyTranslator
+from pdf2zh.translator import GeminiTranslator
+from pdf2zh.translator import GoogleTranslator
+from pdf2zh.translator import GrokTranslator
+from pdf2zh.translator import GroqTranslator
+from pdf2zh.translator import ModelScopeTranslator
+from pdf2zh.translator import OllamaTranslator
+from pdf2zh.translator import OpenAIlikedTranslator
+from pdf2zh.translator import OpenAITranslator
+from pdf2zh.translator import QwenMtTranslator
+from pdf2zh.translator import SiliconTranslator
+from pdf2zh.translator import TencentTranslator
+from pdf2zh.translator import XinferenceTranslator
+from pdf2zh.translator import ZhipuTranslator
 
 logger = logging.getLogger(__name__)
 from babeldoc.docvision.doclayout import OnnxModel
@@ -115,7 +111,7 @@ if ConfigManager.get("PDF2ZH_DEMO"):
 
 
 # Limit Enabled Services
-enabled_services: T.Optional[T.List[str]] = ConfigManager.get("ENABLED_SERVICES")
+enabled_services: list[str] | None = ConfigManager.get("ENABLED_SERVICES")
 if isinstance(enabled_services, list):
     default_services = ["Google", "Bing"]
     enabled_services_names = [str(_).lower().strip() for _ in enabled_services]
@@ -125,7 +121,7 @@ if isinstance(enabled_services, list):
         if str(k).lower().strip() in enabled_services_names
     ]
     if len(enabled_services) == 0:
-        raise RuntimeError(f"No services available.")
+        raise RuntimeError("No services available.")
     enabled_services = default_services + enabled_services
 else:
     enabled_services = list(service_map.keys())
@@ -364,35 +360,25 @@ def babeldoc_translate_file(**kwargs):
     else:
         prompt = None
 
-    from pdf2zh.translator import (
-        AzureOpenAITranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
-        DeepLXTranslator,
-        OllamaTranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
-        AnythingLLMTranslator,
-        XinferenceTranslator,
-        ArgosTranslator,
-        GrokTranslator,
-        GroqTranslator,
-        DeepseekTranslator,
-        OpenAIlikedTranslator,
-        QwenMtTranslator,
-    )
+    from pdf2zh.translator import AnythingLLMTranslator
+    from pdf2zh.translator import ArgosTranslator
+    from pdf2zh.translator import AzureOpenAITranslator
+    from pdf2zh.translator import AzureTranslator
+    from pdf2zh.translator import DeepLXTranslator
+    from pdf2zh.translator import DeepseekTranslator
+    from pdf2zh.translator import DifyTranslator
+    from pdf2zh.translator import GeminiTranslator
+    from pdf2zh.translator import GrokTranslator
+    from pdf2zh.translator import GroqTranslator
+    from pdf2zh.translator import ModelScopeTranslator
+    from pdf2zh.translator import OllamaTranslator
+    from pdf2zh.translator import OpenAIlikedTranslator
+    from pdf2zh.translator import OpenAITranslator
+    from pdf2zh.translator import QwenMtTranslator
+    from pdf2zh.translator import SiliconTranslator
+    from pdf2zh.translator import TencentTranslator
+    from pdf2zh.translator import XinferenceTranslator
+    from pdf2zh.translator import ZhipuTranslator
 
     for translator in [
         GoogleTranslator,
@@ -431,6 +417,7 @@ def babeldoc_translate_file(**kwargs):
     else:
         raise ValueError("Unsupported translation service")
     import asyncio
+
     from babeldoc.main import create_progress_handler
 
     for file in kwargs["files"]:
@@ -438,7 +425,7 @@ def babeldoc_translate_file(**kwargs):
         yadt_config = YadtConfig(
             input_file=file,
             font=None,
-            pages=",".join((str(x) for x in getattr(kwargs, "raw_pages", []))),
+            pages=",".join(str(x) for x in getattr(kwargs, "raw_pages", [])),
             output_dir=kwargs["output"],
             doc_layout_model=BABELDOC_MODEL,
             translator=translator,
@@ -810,12 +797,12 @@ def parse_user_passwd(file_path: str) -> tuple:
         return tuple_list, content
     if len(file_path) == 2:
         try:
-            with open(file_path[1], "r", encoding="utf-8") as file:
+            with open(file_path[1], encoding="utf-8") as file:
                 content = file.read()
         except FileNotFoundError:
             print(f"Error: File '{file_path[1]}' not found.")
     try:
-        with open(file_path[0], "r", encoding="utf-8") as file:
+        with open(file_path[0], encoding="utf-8") as file:
             tuple_list = [
                 tuple(line.strip().split(",")) for line in file if line.strip()
             ]

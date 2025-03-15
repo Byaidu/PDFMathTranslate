@@ -1,8 +1,14 @@
 [project]
 name = "pdf2zh"
-version = "1.9.6"
+version = "2.0.0.rc0"
 description = "Latex PDF Translator"
-authors = [{ name = "Byaidu", email = "byaidux@gmail.com" }]
+authors = [
+    { name = "Byaidu", email = "byaidux@gmail.com" },
+    { name = "awwaawwa", email = "aw@funstory.ai" }
+]
+maintainers = [
+    { name = "awwaawwa", email = "aw@funstory.ai" }
+]
 license = "AGPL-3.0"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
@@ -23,14 +29,8 @@ dependencies = [
     "openai",
     "azure-ai-translation-text<=1.0.1",
     "gradio",
-    "huggingface_hub",
-    "onnx",
-    "onnxruntime",
-    "opencv-python-headless",
     "tencentcloud-sdk-python-tmt",
-    "pdfminer.six>=20240706",
     "gradio_pdf>=0.0.21",
-    "pikepdf",
     "peewee>=3.17.8",
     "fontTools",
     "babeldoc>=0.1.22, <0.3.0",
@@ -38,23 +38,17 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-backend = [
-    "flask",
-    "celery",
-    "redis"
-]
 argostranslate = [
     "argostranslate"
 ]
 
 [dependency-groups]
 dev = [
-    "black",
-    "flake8",
     "pre-commit",
     "pytest",
     "build",
     "bumpver>=2024.1130",
+    "ruff>=0.9.2",
 ]
 
 [project.urls]
@@ -74,7 +68,7 @@ max-line-length = 88
 
 
 [bumpver]
-current_version = "1.9.6"
+current_version = "2.0.0.rc0"
 version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 
 [bumpver.file_patterns]
@@ -85,3 +79,69 @@ version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 "pdf2zh/__init__.py" = [
     '__version__ = "{version}"'
 ]
+
+
+[tool.ruff]
+src = ["babeldoc"]
+target-version = "py310"
+show-fixes = true
+
+[tool.ruff.format]
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
+
+[tool.ruff.lint]
+ignore = [
+    "E203",   # 冒号前的空格
+    "E261",   # 注释前至少两个空格
+    "E501",   # 行太长
+    "E741",   # 变量名歧义
+    "F841",   # 未使用的变量
+    "C901",   # 太复杂的函数
+    "S101",   # use assert
+    "SIM",    # flake8-simplify
+    "ARG002", # unused argument
+    "S110",   # `try`-`except`-`pass` detected, consider logging the exception
+    "B024",   # abstract class without abstract methods
+    "S112",   # `try`-`except`-`continue` detected, consider logging the exception
+    "COM812", # missing-trailing-comma
+
+]
+select = [
+    "E",   # pycodestyle 错误
+    "F",   # Pyflakes
+    "N",   # PEP8 命名
+    "B",   # flake8-bugbear
+    "I",   # isort
+    "C",   # mccabe
+    "UP",  # pyupgrade
+    "S",   # flake8-bandit
+    "A",   # flake8-builtins
+    "COM", # flake8-commas
+    "ARG", # flake8-unused-arguments
+    "PTH", # 使用 pathlib
+]
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.lint.flake8-annotations]
+suppress-none-returning = true
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# 设置一些规则的特定配置
+[tool.ruff.lint.mccabe]
+max-complexity = 10 # 函数圈复杂度阈值
+
+[tool.ruff.lint.per-file-ignores]
+"babeldoc/pdfinterp.py" = ["N"] # 忽略命名规范
+"tests/*" = ["S101"]            # 在测试文件中允许 assert
+"**/__init__.py" = ["F401"]     # 允许未使用的导入
+# 忽略 S311 警告，因为这是有意的
+"babeldoc/document_il/midend/paragraph_finder.py" = ["S311"]
+"docs/*" = ["A001"]

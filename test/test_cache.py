@@ -1,9 +1,6 @@
 import unittest
+
 from pdf2zh import cache
-import threading
-import multiprocessing
-import random
-import string
 
 
 class TestCache(unittest.TestCase):

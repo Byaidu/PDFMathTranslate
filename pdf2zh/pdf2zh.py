@@ -7,20 +7,22 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from string import Template
-from typing import List, Optional
 
-from pdf2zh import __version__, log
-from pdf2zh.high_level import translate, download_remote_fonts
-from pdf2zh.doclayout import OnnxModel, ModelInstance
-import os
-
-from pdf2zh.config import ConfigManager
-from babeldoc.translation_config import TranslationConfig as YadtConfig
 from babeldoc.high_level import async_translate as yadt_translate
 from babeldoc.high_level import init as yadt_init
 from babeldoc.main import create_progress_handler
+from babeldoc.translation_config import TranslationConfig as YadtConfig
+
+from pdf2zh import __version__
+from pdf2zh import log
+from pdf2zh.config import ConfigManager
+from pdf2zh.doclayout import ModelInstance
+from pdf2zh.doclayout import OnnxModel
+from pdf2zh.high_level import download_remote_fonts
+from pdf2zh.high_level import translate
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +196,7 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
+def parse_args(args: list[str] | None) -> argparse.Namespace:
     parsed_args = create_parser().parse_args(args=args)
 
     if parsed_args.pages:
@@ -235,7 +237,7 @@ def find_all_files_in_directory(directory_path):
     return file_paths
 
 
-def main(args: Optional[List[str]] = None) -> int:
+def main(args: list[str] | None = None) -> int:
     from rich.logging import RichHandler
 
     logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
@@ -288,7 +290,7 @@ def main(args: Optional[List[str]] = None) -> int:
 
     if parsed_args.prompt:
         try:
-            with open(parsed_args.prompt, "r", encoding="utf-8") as file:
+            with open(parsed_args.prompt, encoding="utf-8") as file:
                 content = file.read()
             parsed_args.prompt = Template(content)
         except Exception:
@@ -332,36 +334,34 @@ def yadt_main(parsed_args) -> int:
 
     if parsed_args.prompt:
         try:
-            with open(parsed_args.prompt, "r", encoding="utf-8") as file:
+            with open(parsed_args.prompt, encoding="utf-8") as file:
                 content = file.read()
             prompt = Template(content)
         except Exception:
             raise ValueError("prompt error.")
 
-    from pdf2zh.translator import (
-        AzureOpenAITranslator,
-        GoogleTranslator,
-        BingTranslator,
-        DeepLTranslator,
-        DeepLXTranslator,
-        OllamaTranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
-        AnythingLLMTranslator,
-        XinferenceTranslator,
-        ArgosTranslator,
-        GrokTranslator,
-        GroqTranslator,
-        DeepseekTranslator,
-        OpenAIlikedTranslator,
-        QwenMtTranslator,
-    )
+    from pdf2zh.translator import AnythingLLMTranslator
+    from pdf2zh.translator import ArgosTranslator
+    from pdf2zh.translator import AzureOpenAITranslator
+    from pdf2zh.translator import AzureTranslator
+    from pdf2zh.translator import BingTranslator
+    from pdf2zh.translator import DeepLTranslator
+    from pdf2zh.translator import DeepLXTranslator
+    from pdf2zh.translator import DeepseekTranslator
+    from pdf2zh.translator import DifyTranslator
+    from pdf2zh.translator import GeminiTranslator
+    from pdf2zh.translator import GoogleTranslator
+    from pdf2zh.translator import GrokTranslator
+    from pdf2zh.translator import GroqTranslator
+    from pdf2zh.translator import ModelScopeTranslator
+    from pdf2zh.translator import OllamaTranslator
+    from pdf2zh.translator import OpenAIlikedTranslator
+    from pdf2zh.translator import OpenAITranslator
+    from pdf2zh.translator import QwenMtTranslator
+    from pdf2zh.translator import SiliconTranslator
+    from pdf2zh.translator import TencentTranslator
+    from pdf2zh.translator import XinferenceTranslator
+    from pdf2zh.translator import ZhipuTranslator
 
     for translator in [
         GoogleTranslator,
@@ -406,7 +406,7 @@ def yadt_main(parsed_args) -> int:
         yadt_config = YadtConfig(
             input_file=file,
             font=font_path,
-            pages=",".join((str(x) for x in getattr(parsed_args, "raw_pages", []))),
+            pages=",".join(str(x) for x in getattr(parsed_args, "raw_pages", [])),
             output_dir=outputdir,
             doc_layout_model=None,
             translator=translator,
