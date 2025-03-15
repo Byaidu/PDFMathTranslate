@@ -72,12 +72,12 @@ class BaseTranslator:
         self.envs = copy(self.envs)
         if ConfigManager.get_translator_by_name(self.name):
             self.envs = ConfigManager.get_translator_by_name(self.name)
-        needUpdate = False
+        need_update = False
         for key in self.envs:
             if key in os.environ:
                 self.envs[key] = os.environ[key]
-                needUpdate = True
-        if needUpdate:
+                need_update = True
+        if need_update:
             ConfigManager.set_translator_by_name(self.name, self.envs)
         if envs is not None:
             for key in envs:
@@ -157,16 +157,16 @@ class BaseTranslator:
     def __str__(self):
         return f"{self.name} {self.lang_in} {self.lang_out} {self.model}"
 
-    def get_rich_text_left_placeholder(self, id: int):
-        return f"<b{id}>"
+    def get_rich_text_left_placeholder(self, placeholder_id: int):
+        return f"<b{placeholder_id}>"
 
-    def get_rich_text_right_placeholder(self, id: int):
-        return f"</b{id}>"
+    def get_rich_text_right_placeholder(self, placeholder_id: int):
+        return f"</b{placeholder_id}>"
 
-    def get_formular_placeholder(self, id: int):
+    def get_formular_placeholder(self, placeholder_id: int):
         return self.get_rich_text_left_placeholder(
-            id
-        ) + self.get_rich_text_right_placeholder(id)
+            placeholder_id
+        ) + self.get_rich_text_right_placeholder(placeholder_id)
 
 
 class GoogleTranslator(BaseTranslator):
@@ -743,21 +743,16 @@ class AnythingLLMTranslator(BaseTranslator):
         self.prompttext = prompt
 
     def do_translate(self, text):
-        messages = self.prompt(text, self.prompttext)
         payload = {
-            "message": messages,
-            "mode": "chat",
-            "sessionId": "translation_expert",
+            "message": text,
+            "prompt": self.prompt(text, self.prompttext)[0]["content"],
         }
 
         response = requests.post(
-            self.api_url, headers=self.headers, data=json.dumps(payload)
+            self.api_url, headers=self.headers, data=json.dumps(payload), timeout=30
         )
         response.raise_for_status()
-        data = response.json()
-
-        if "textResponse" in data:
-            return data["textResponse"].strip()
+        return response.json()["content"]
 
 
 class DifyTranslator(BaseTranslator):
@@ -793,7 +788,7 @@ class DifyTranslator(BaseTranslator):
 
         # 向 Dify 服务器发送请求
         response = requests.post(
-            self.api_url, headers=headers, data=json.dumps(payload)
+            self.api_url, headers=headers, data=json.dumps(payload), timeout=30
         )
         response.raise_for_status()
         response_data = response.json()
@@ -812,8 +807,11 @@ class ArgosTranslator(BaseTranslator):
         self.lang_in = lang_in
         self.lang_out = lang_out
         argostranslate.package.update_package_index()
-        available_packages = argostranslate.package.get_available_packages()
+
+    def translate(self, text: str, ignore_cache: bool = False):
+        # Translate
         try:
+            available_packages = argostranslate.package.get_available_packages()
             available_package = list(
                 filter(
                     lambda x: x.from_code == self.lang_in
@@ -821,15 +819,14 @@ class ArgosTranslator(BaseTranslator):
                     available_packages,
                 )
             )[0]
-        except Exception:
+        except Exception as err:
             raise ValueError(
                 "lang_in and lang_out pair not supported by Argos Translate."
-            )
+            ) from err
         download_path = available_package.download()
         argostranslate.package.install_from_path(download_path)
 
-    def translate(self, text: str, ignore_cache: bool = False):
-        # Translate
+        # Get installed languages
         installed_languages = argostranslate.translate.get_installed_languages()
         from_lang = list(filter(lambda x: x.code == self.lang_in, installed_languages))[
             0
@@ -838,8 +835,8 @@ class ArgosTranslator(BaseTranslator):
             0
         ]
         translation = from_lang.get_translation(to_lang)
-        translatedText = translation.translate(text)
-        return translatedText
+        translated_text = translation.translate(text)
+        return translated_text
 
 
 class GrokTranslator(OpenAITranslator):

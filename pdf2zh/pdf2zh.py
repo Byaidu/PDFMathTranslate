@@ -9,6 +9,7 @@ import argparse
 import logging
 import os
 import sys
+from pathlib import Path
 from string import Template
 
 from babeldoc.high_level import async_translate as yadt_translate
@@ -17,7 +18,6 @@ from babeldoc.main import create_progress_handler
 from babeldoc.translation_config import TranslationConfig as YadtConfig
 
 from pdf2zh import __version__
-from pdf2zh import log
 from pdf2zh.config import ConfigManager
 from pdf2zh.doclayout import ModelInstance
 from pdf2zh.doclayout import OnnxModel
@@ -210,6 +210,16 @@ def parse_args(args: list[str] | None) -> argparse.Namespace:
         parsed_args.raw_pages = parsed_args.pages
         parsed_args.pages = pages
 
+    if parsed_args.prompt:
+        try:
+            prompt_path = Path(parsed_args.prompt)
+            content = prompt_path.read_text(encoding="utf-8")
+            parsed_args.prompt = Template(content)
+        except Exception as err:
+            raise ValueError("prompt error.") from err
+
+    print(parsed_args)
+
     return parsed_args
 
 
@@ -220,8 +230,9 @@ def find_all_files_in_directory(directory_path):
     :param directory_path: str, the path to the directory to search
     :return: list of PDF file paths
     """
+    directory_path = Path(directory_path)
     # Check if the provided path is a directory
-    if not os.path.isdir(directory_path):
+    if not directory_path.is_dir():
         raise ValueError(f"The provided path '{directory_path}' is not a directory.")
 
     file_paths = []
@@ -232,7 +243,7 @@ def find_all_files_in_directory(directory_path):
             # Check if the file is a PDF
             if file.lower().endswith(".pdf"):
                 # Append the full file path to the list
-                file_paths.append(os.path.join(root, file))
+                file_paths.append(Path(root) / file)
 
     return file_paths
 
@@ -254,11 +265,26 @@ def main(args: list[str] | None = None) -> int:
 
     parsed_args = parse_args(args)
 
-    if parsed_args.config:
-        ConfigManager.custome_config(parsed_args.config)
-
     if parsed_args.debug:
-        log.setLevel(logging.DEBUG)
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    if parsed_args.config:
+        try:
+            config_path = Path(parsed_args.config)
+            content = config_path.read_text(encoding="utf-8")
+            ConfigManager.load_config(content)
+        except Exception as err:
+            raise ValueError("config error.") from err
+
+    if parsed_args.prompt:
+        try:
+            prompt_path = Path(parsed_args.prompt)
+            content = prompt_path.read_text(encoding="utf-8")
+            parsed_args.prompt = Template(content)
+        except Exception as err:
+            raise ValueError("prompt error.") from err
+
+    print(parsed_args)
 
     if parsed_args.onnx:
         ModelInstance.value = OnnxModel(parsed_args.onnx)
@@ -288,17 +314,6 @@ def main(args: list[str] | None = None) -> int:
         celery_app.start(argv=sys.argv[2:])
         return 0
 
-    if parsed_args.prompt:
-        try:
-            with open(parsed_args.prompt, encoding="utf-8") as file:
-                content = file.read()
-            parsed_args.prompt = Template(content)
-        except Exception:
-            raise ValueError("prompt error.")
-
-    print(parsed_args)
-    if parsed_args.babeldoc:
-        return yadt_main(parsed_args)
     if parsed_args.dir:
         untranlate_file = find_all_files_in_directory(parsed_args.files[0])
         parsed_args.files = untranlate_file
@@ -334,11 +349,11 @@ def yadt_main(parsed_args) -> int:
 
     if parsed_args.prompt:
         try:
-            with open(parsed_args.prompt, encoding="utf-8") as file:
-                content = file.read()
+            prompt_path = Path(parsed_args.prompt)
+            content = prompt_path.read_text(encoding="utf-8")
             prompt = Template(content)
-        except Exception:
-            raise ValueError("prompt error.")
+        except Exception as err:
+            raise ValueError("prompt error.") from err
 
     from pdf2zh.translator import AnythingLLMTranslator
     from pdf2zh.translator import ArgosTranslator

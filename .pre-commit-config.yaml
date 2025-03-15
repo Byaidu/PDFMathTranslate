@@ -9,6 +9,6 @@ repos:
       # Run the linter.
       - id: ruff
         args: [ "--fix",
-                "--ignore=E203,E261,E501,E741,F841" ]
+                "--ignore=E203,E261,E501,E741,F841,A002" ]
       # Run the formatter.
       - id: ruff-format

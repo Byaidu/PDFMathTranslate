@@ -1,7 +1,6 @@
 import asyncio
 import cgi
 import logging
-import os
 import shutil
 import uuid
 from asyncio import CancelledError
@@ -11,6 +10,8 @@ from string import Template
 import gradio as gr
 import requests
 import tqdm
+from babeldoc import __version__ as babeldoc_version
+from babeldoc.docvision.doclayout import OnnxModel
 from gradio_pdf import PDF
 
 from pdf2zh import __version__
@@ -42,7 +43,6 @@ from pdf2zh.translator import XinferenceTranslator
 from pdf2zh.translator import ZhipuTranslator
 
 logger = logging.getLogger(__name__)
-from babeldoc.docvision.doclayout import OnnxModel
 
 BABELDOC_MODEL = OnnxModel.load_available()
 # The following variables associate strings with translators
@@ -139,7 +139,7 @@ def verify_recaptcha(response):
     recaptcha_url = "https://www.google.com/recaptcha/api/siteverify"
     print("reCAPTCHA", server_key, response)
     data = {"secret": server_key, "response": response}
-    result = requests.post(recaptcha_url, data=data).json()
+    result = requests.post(recaptcha_url, data=data, timeout=10).json()
     print("reCAPTCHA", result.get("success"))
     return result.get("success")
 
@@ -165,15 +165,17 @@ def download_with_limit(url: str, save_path: str, size_limit: int) -> str:
             _, params = cgi.parse_header(content)
             filename = params["filename"]
         except Exception:  # filename from url
-            filename = os.path.basename(url)
-        filename = os.path.splitext(os.path.basename(filename))[0] + ".pdf"
-        with open(save_path / filename, "wb") as file:
+            filename = Path(url).name
+        filename = Path(filename).stem + ".pdf"
+        save_path = Path(save_path)
+        file_path = save_path / filename
+        with file_path.open("wb") as file:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 total_size += len(chunk)
                 if size_limit and total_size > size_limit:
                     raise gr.Error("Exceeds file size limit")
                 file.write(chunk)
-    return save_path / filename
+    return file_path
 
 
 def stop_translate_file(state: dict) -> None:
@@ -209,7 +211,7 @@ def translate_file(
     use_babeldoc,
     recaptcha_response,
     state,
-    progress=gr.Progress(),
+    progress=None,
     *envs,
 ):
     """
@@ -239,6 +241,9 @@ def translate_file(
         - The progress bar
         - The progress bar
     """
+    if progress is None:
+        progress = gr.Progress()
+
     session_id = uuid.uuid4()
     state["session_id"] = session_id
     cancellation_event_map[session_id] = asyncio.Event()
@@ -264,7 +269,7 @@ def translate_file(
             5 * 1024 * 1024 if flag_demo else None,
         )
 
-    filename = os.path.splitext(os.path.basename(file_path))[0]
+    filename = Path(file_path).stem
     file_raw = output / f"{filename}.pdf"
     file_mono = output / f"{filename}-mono.pdf"
     file_dual = output / f"{filename}-dual.pdf"
@@ -294,7 +299,7 @@ def translate_file(
             )
             _envs[k] = real_keys
 
-    print(f"Files before translation: {os.listdir(output)}")
+    print(f"Files before translation: {[f.name for f in Path(output).iterdir()]}")
 
     def progress_bar(t: tqdm.tqdm):
         desc = getattr(t, "desc", "Translating...")
@@ -330,8 +335,8 @@ def translate_file(
         translate(**param)
     except CancelledError:
         del cancellation_event_map[session_id]
-        raise gr.Error("Translation cancelled")
-    print(f"Files after translation: {os.listdir(output)}")
+        raise gr.Error("Translation cancelled") from None
+    print(f"Files after translation: {[f.name for f in Path(output).iterdir()]}")
 
     if not file_mono.exists() or not file_dual.exists():
         raise gr.Error("No output")
@@ -530,7 +535,6 @@ demo_recaptcha = """
     </script>
     """
 
-from babeldoc import __version__ as babeldoc_version
 
 tech_details_string = f"""
                     <summary>Technical details</summary>
@@ -583,11 +587,11 @@ with gr.Blocks(
                 value=enabled_services[0],
             )
             envs = []
-            for i in range(3):
+            for _i in range(3):
                 envs.append(
                     gr.Textbox(
                         visible=False,
-                        interactive=True,
+                        value="",
                     )
                 )
             with gr.Row():
@@ -632,33 +636,18 @@ with gr.Blocks(
                 )
                 envs.append(prompt)
 
-            def on_select_service(service, evt: gr.EventData):
+            def on_select_service(service, _evt: gr.EventData):
                 translator = service_map[service]
                 _envs = []
-                for i in range(4):
+                for _i in range(4):
                     _envs.append(gr.update(visible=False, value=""))
                 for i, env in enumerate(translator.envs.items()):
-                    label = env[0]
-                    value = ConfigManager.get_env_by_translatername(
-                        translator, env[0], env[1]
-                    )
-                    visible = True
-                    if hidden_gradio_details:
-                        if (
-                            "MODEL" not in str(label).upper()
-                            and value
-                            and hidden_gradio_details
-                        ):
-                            visible = False
-                        # Hidden Keys From Gradio
-                        if "API_KEY" in label.upper():
-                            value = "***"  # We use "***" Present Real API_KEY
+                    key, value = env
                     _envs[i] = gr.update(
-                        visible=visible,
-                        label=label,
+                        visible=True,
+                        label=key,
                         value=value,
                     )
-                _envs[-1] = gr.update(visible=translator.CustomPrompt)
                 return _envs
 
             def on_select_filetype(file_type):
@@ -781,49 +770,52 @@ with gr.Blocks(
     )
 
 
-def parse_user_passwd(file_path: str) -> tuple:
+def parse_user_passwd(file_path: list) -> tuple[list, str]:
     """
-    Parse the user name and password from the file.
+    This function parses a user password file.
 
     Inputs:
-        - file_path: The file path to read.
-    Outputs:
-        - tuple_list: The list of tuples of user name and password.
-        - content: The content of the file
+        - file_path: The path to the file
+
+    Returns:
+        - A tuple containing the user list and HTML
     """
-    tuple_list = []
     content = ""
-    if not file_path:
-        return tuple_list, content
     if len(file_path) == 2:
         try:
-            with open(file_path[1], encoding="utf-8") as file:
-                content = file.read()
+            path = Path(file_path[1])
+            content = path.read_text(encoding="utf-8")
         except FileNotFoundError:
             print(f"Error: File '{file_path[1]}' not found.")
     try:
-        with open(file_path[0], encoding="utf-8") as file:
-            tuple_list = [
-                tuple(line.strip().split(",")) for line in file if line.strip()
-            ]
+        path = Path(file_path[0])
+        tuple_list = [
+            tuple(line.strip().split(","))
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
     except FileNotFoundError:
-        print(f"Error: File '{file_path[0]}' not found.")
+        tuple_list = []
     return tuple_list, content
 
 
 def setup_gui(
-    share: bool = False, auth_file: list = ["", ""], server_port=7860
+    share: bool = False, auth_file: list | None = None, server_port=7860
 ) -> None:
     """
-    Setup the GUI with the given parameters.
+    This function sets up the GUI for the application.
 
     Inputs:
-        - share: Whether to share the GUI.
-        - auth_file: The file path to read the user name and password.
+        - share: Whether to share the GUI
+        - auth_file: The authentication file
+        - server_port: The port to run the server on
 
-    Outputs:
+    Returns:
         - None
     """
+    if auth_file is None:
+        auth_file = ["", ""]
+
     user_list, html = parse_user_passwd(auth_file)
     if flag_demo:
         demo.launch(server_name="0.0.0.0", max_file_size="5mb", inbrowser=True)

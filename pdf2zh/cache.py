@@ -1,6 +1,6 @@
 import json
 import logging
-import os
+from pathlib import Path
 
 from peewee import SQL
 from peewee import AutoField
@@ -51,9 +51,9 @@ class TranslationCache:
         return obj
 
     def __init__(self, translate_engine: str, translate_engine_params: dict = None):
-        assert (
-            len(translate_engine) < 20
-        ), "current cache require translate engine name less than 20 characters"
+        assert len(translate_engine) < 20, (
+            "current cache require translate engine name less than 20 characters"
+        )
         self.translate_engine = translate_engine
         self.replace_params(translate_engine_params)
 
@@ -100,14 +100,14 @@ class TranslationCache:
 
 
 def init_db(remove_exists=False):
-    cache_folder = os.path.join(os.path.expanduser("~"), ".cache", "pdf2zh")
-    os.makedirs(cache_folder, exist_ok=True)
+    cache_folder = Path.home() / ".cache" / "pdf2zh"
+    cache_folder.mkdir(parents=True, exist_ok=True)
     # The current version does not support database migration, so add the version number to the file name.
-    cache_db_path = os.path.join(cache_folder, "cache.v1.db")
-    if remove_exists and os.path.exists(cache_db_path):
-        os.remove(cache_db_path)
+    cache_db_path = cache_folder / "cache.v1.db"
+    if remove_exists and cache_db_path.exists():
+        cache_db_path.unlink()
     db.init(
-        cache_db_path,
+        str(cache_db_path),
         pragmas={
             "journal_mode": "wal",
             "busy_timeout": 1000,
@@ -117,9 +117,11 @@ def init_db(remove_exists=False):
 
 
 def init_test_db():
+    import os
     import tempfile
 
-    cache_db_path = tempfile.mktemp(suffix=".db")
+    fd, cache_db_path = tempfile.mkstemp(suffix=".db")
+    os.close(fd)  # Close the file descriptor as we only need the path
     test_db = SqliteDatabase(
         cache_db_path,
         pragmas={
@@ -136,15 +138,15 @@ def init_test_db():
 def clean_test_db(test_db):
     test_db.drop_tables([_TranslationCache])
     test_db.close()
-    db_path = test_db.database
-    if os.path.exists(db_path):
-        os.remove(test_db.database)
-    wal_path = db_path + "-wal"
-    if os.path.exists(wal_path):
-        os.remove(wal_path)
-    shm_path = db_path + "-shm"
-    if os.path.exists(shm_path):
-        os.remove(shm_path)
+    db_path = Path(test_db.database)
+    if db_path.exists():
+        db_path.unlink()
+    wal_path = Path(str(db_path) + "-wal")
+    if wal_path.exists():
+        wal_path.unlink()
+    shm_path = Path(str(db_path) + "-shm")
+    if shm_path.exists():
+        shm_path.unlink()
 
 
 init_db()
