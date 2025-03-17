@@ -210,6 +210,7 @@ def translate_file(
     threads,
     skip_subset_fonts,
     ignore_cache,
+    vfont,
     use_babeldoc,
     recaptcha_response,
     state,
@@ -325,6 +326,7 @@ def translate_file(
         "prompt": Template(prompt) if prompt else None,
         "skip_subset_fonts": skip_subset_fonts,
         "ignore_cache": ignore_cache,
+        "vfont": vfont,  # 添加自定义公式字体正则表达式
         "model": ModelInstance.value,
     }
 
@@ -637,6 +639,11 @@ with gr.Blocks(
                 ignore_cache = gr.Checkbox(
                     label="Ignore cache", interactive=True, value=False
                 )
+                vfont = gr.Textbox(
+                    label="Custom formula font regex (vfont)",
+                    interactive=True,
+                    value=ConfigManager.get("PDF2ZH_VFONT", "")
+                )
                 prompt = gr.Textbox(
                     label="Custom Prompt for llm", interactive=True, visible=False
                 )
@@ -685,6 +692,10 @@ with gr.Blocks(
                     return gr.update(visible=True)
                 else:
                     return gr.update(visible=False)
+                    
+            def on_vfont_change(value):
+                ConfigManager.set("PDF2ZH_VFONT", value)
+                return value
 
             output_title = gr.Markdown("## Translated", visible=False)
             output_file_mono = gr.File(
@@ -773,6 +784,7 @@ with gr.Blocks(
             threads,
             skip_subset_fonts,
             ignore_cache,
+            vfont,
             use_babeldoc,
             recaptcha_response,
             state,
