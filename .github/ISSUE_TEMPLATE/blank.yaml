@@ -1,0 +1,14 @@
+name: Blank Issue
+description: Create a blank issue for discussion
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: before ...
+      options:
+      - label: This issue is not about question or bug.
+        required: true
+  - type: textarea
+    id: describe
+    attributes:
+      label: Add a description
