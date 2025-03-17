@@ -720,6 +720,11 @@ with gr.Blocks(
                 service,
                 envs,
             )
+            vfont.change(
+                on_vfont_change,
+                inputs=vfont,
+                outputs=None
+            )
             file_type.select(
                 on_select_filetype,
                 file_type,
