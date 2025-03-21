@@ -141,10 +141,8 @@ def verify_recaptcha(response):
     This function verifies the reCAPTCHA response.
     """
     recaptcha_url = "https://www.google.com/recaptcha/api/siteverify"
-    print("reCAPTCHA", server_key, response)
     data = {"secret": server_key, "response": response}
     result = requests.post(recaptcha_url, data=data).json()
-    print("reCAPTCHA", result.get("success"))
     return result.get("success")
 
 
