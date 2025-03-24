@@ -43,15 +43,15 @@
 
 <h2 id="updates">最近の更新</h2>
 
-- [2024年11月26日] CLIがオンラインファイルをサポートするようになりました *(by [@reycn](https://github.com/reycn))*  
-- [2024年11月24日] 依存関係のサイズを削減するために [ONNX](https://github.com/onnx/onnx) サポートを追加しました *(by [@Wybxc](https://github.com/Wybxc))*  
-- [2024年11月23日] 🌟 [公共サービス](#demo) がオンラインになりました! *(by [@Byaidu](https://github.com/Byaidu))*  
-- [2024年11月23日] ウェブボットを防ぐためのファイアウォールを追加しました *(by [@Byaidu](https://github.com/Byaidu))*  
-- [2024年11月22日] GUIがイタリア語をサポートし、改善されました *(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))*  
-- [2024年11月22日] デプロイされたサービスを他の人と共有できるようになりました *(by [@Zxis233](https://github.com/Zxis233))*  
-- [2024年11月22日] Tencent翻訳をサポートしました *(by [@hellofinch](https://github.com/hellofinch))*  
-- [2024年11月21日] GUIがバイリンガルドキュメントのダウンロードをサポートするようになりました *(by [@reycn](https://github.com/reycn))*  
-- [2024年11月20日] 🌟 [デモ](#demo) がオンラインになりました! *(by [@reycn](https://github.com/reycn))*  
+- [2024 年 11 月 26 日] CLI がオンラインファイルをサポートするようになりました *(by [@reycn](https://github.com/reycn))*  
+- [2024 年 11 月 24 日] 依存関係のサイズを削減するために [ONNX](https://github.com/onnx/onnx) サポートを追加しました *(by [@Wybxc](https://github.com/Wybxc))*  
+- [2024 年 11 月 23 日] 🌟 [公共サービス](#demo) がオンラインになりました！*(by [@Byaidu](https://github.com/Byaidu))*  
+- [2024 年 11 月 23 日] ウェブボットを防ぐためのファイアウォールを追加しました *(by [@Byaidu](https://github.com/Byaidu))*  
+- [2024 年 11 月 22 日] GUI がイタリア語をサポートし、改善されました *(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))*  
+- [2024 年 11 月 22 日] デプロイされたサービスを他の人と共有できるようになりました *(by [@Zxis233](https://github.com/Zxis233))*  
+- [2024 年 11 月 22 日] Tencent 翻訳をサポートしました *(by [@hellofinch](https://github.com/hellofinch))*  
+- [2024 年 11 月 21 日] GUI がバイリンガルドキュメントのダウンロードをサポートするようになりました *(by [@reycn](https://github.com/reycn))*  
+- [2024 年 11 月 20 日] 🌟 [デモ](#demo) がオンラインになりました！*(by [@reycn](https://github.com/reycn))*  
 
 <h2 id="preview">プレビュー</h2>
 
@@ -67,14 +67,14 @@
 
 ### デモ
 
-インストールなしで [HuggingFace上のデモ](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker), [ModelScope上のデモ](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) を試すことができます。
+インストールなしで [HuggingFace 上のデモ](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker), [ModelScope 上のデモ](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) を試すことができます。
 デモの計算リソースは限られているため、乱用しないようにしてください。
 
 <h2 id="install">インストールと使用方法</h2>
 
-このプロジェクトを使用するための4つの方法を提供しています：[コマンドライン](#cmd)、[ポータブル](#portable)、[GUI](#gui)、および [Docker](#docker)。
+このプロジェクトを使用するための 4 つの方法を提供しています：[コマンドライン](#cmd)、[ポータブル](#portable)、[GUI](#gui)、および [Docker](#docker)。
 
-pdf2zhの実行には追加モデル（`wybxc/DocLayout-YOLO-DocStructBench-onnx`）が必要です。このモデルはModelScopeでも見つけることができます。起動時にこのモデルのダウンロードに問題がある場合は、以下の環境変数を使用してください：
+pdf2zh の実行には追加モデル（`wybxc/DocLayout-YOLO-DocStructBench-onnx`）が必要です。このモデルは ModelScope でも見つけることができます。起動時にこのモデルのダウンロードに問題がある場合は、以下の環境変数を使用してください：
 
 ```shell
 set HF_ENDPOINT=https://hf-mirror.com
@@ -85,9 +85,9 @@ For PowerShell user:
 $env:HF_ENDPOINT = https://hf-mirror.com
 ```
 
-<h3 id="cmd">方法1. コマンドライン</h3>
+<h3 id="cmd">方法 1. コマンドライン</h3>
 
-  1. Pythonがインストールされていること (バージョン3.10 <= バージョン <= 3.12)
+  1. Python がインストールされていること (バージョン 3.10 <= バージョン <= 3.12)
   2. パッケージをインストールします：
 
       ```bash
@@ -100,15 +100,15 @@ $env:HF_ENDPOINT = https://hf-mirror.com
       pdf2zh document.pdf
       ```
 
-<h3 id="portable">方法2. ポータブル</h3>
+<h3 id="portable">方法 2. ポータブル</h3>
 
-Python環境を事前にインストールする必要はありません
+Python 環境を事前にインストールする必要はありません
 
 [setup.bat](https://raw.githubusercontent.com/Byaidu/PDFMathTranslate/refs/heads/main/script/setup.bat) をダウンロードしてダブルクリックして実行します
 
-<h3 id="gui">方法3. GUI</h3>
+<h3 id="gui">方法 3. GUI</h3>
 
-1. Pythonがインストールされていること (バージョン3.10 <= バージョン <= 3.12)
+1. Python がインストールされていること (バージョン 3.10 <= バージョン <= 3.12)
 2. パッケージをインストールします：
 
       ```bash
@@ -121,7 +121,7 @@ Python環境を事前にインストールする必要はありません
       pdf2zh -i
       ```
 
-4. ブラウザが自動的に起動しない場合は、次のURLを開きます：
+4. ブラウザが自動的に起動しない場合は、次の URL を開きます：
 
     ```bash
     http://localhost:7860/
@@ -129,9 +129,9 @@ Python環境を事前にインストールする必要はありません
 
     <img src="./images/gui.gif" width="500"/>
 
-詳細については、[GUIのドキュメント](./README_GUI.md) を参照してください。
+詳細については、[GUI のドキュメント](./README_GUI.md) を参照してください。
 
-<h3 id="docker">方法4. Docker</h3>
+<h3 id="docker">方法 4. Docker</h3>
 
 1. プルして実行します：
 
@@ -146,7 +146,7 @@ Python環境を事前にインストールする必要はありません
     http://localhost:7860/
     ```
 
-クラウドサービスでのDockerデプロイメント用：
+クラウドサービスでの Docker デプロイメント用：
 
 <div>
 <a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
@@ -161,7 +161,7 @@ Python環境を事前にインストールする必要はありません
 
 <h2 id="usage">高度なオプション</h2>
 
-コマンドラインで翻訳コマンドを実行し、現在の作業ディレクトリに翻訳されたドキュメント `example-mono.pdf` とバイリンガルドキュメント `example-dual.pdf` を生成します。デフォルトではGoogle翻訳サービスを使用します。More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
+コマンドラインで翻訳コマンドを実行し、現在の作業ディレクトリに翻訳されたドキュメント `example-mono.pdf` とバイリンガルドキュメント `example-dual.pdf` を生成します。デフォルトでは Google 翻訳サービスを使用します。More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
 
 
 <img src="./images/cmd.explained.png" width="580px"  alt="cmd"/>  
@@ -172,7 +172,7 @@ Python環境を事前にインストールする必要はありません
 | -------- | ------- |------- |
 | files | ローカルファイル |  `pdf2zh ~/local.pdf` |
 | links | オンラインファイル |  `pdf2zh http://arxiv.org/paper.pdf` |
-| `-i`  | [GUIに入る](#gui) |  `pdf2zh -i` |
+| `-i`  | [GUI に入る](#gui) |  `pdf2zh -i` |
 | `-p`  | [部分的なドキュメント翻訳](#partial) |  `pdf2zh example.pdf -p 1` |
 | `-li` | [ソース言語](#languages) |  `pdf2zh example.pdf -li en` |
 | `-lo` | [ターゲット言語](#languages) |  `pdf2zh example.pdf -lo zh` |
@@ -180,11 +180,11 @@ Python環境を事前にインストールする必要はありません
 | `-t`  | [マルチスレッド](#threads) | `pdf2zh example.pdf -t 1` |
 | `-o`  | 出力ディレクトリ | `pdf2zh example.pdf -o output` |
 | `-f`, `-c` | [例外](#exceptions) | `pdf2zh example.pdf -f "(MS.*)"` |
-| `--share` | [gradio公開リンクを取得] | `pdf2zh -i --share` |
+| `--share` | [gradio 公開リンクを取得] | `pdf2zh -i --share` |
 | `--authorized` | [[ウェブ認証とカスタム認証ページの追加](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.)] | `pdf2zh -i --authorized users.txt [auth.html]` |
 | `--prompt` | [カスタムビッグモデルのプロンプトを使用する] | `pdf2zh --prompt [prompt.txt]` |
-| `--onnx` | [カスタムDocLayout-YOLO ONNXモデルの使用] | `pdf2zh --onnx [onnx/model/path]` |
-| `--serverport` | [カスタムWebUIポートを使用する] | `pdf2zh --serverport 7860` |
+| `--onnx` | [カスタム DocLayout-YOLO ONNX モデルの使用] | `pdf2zh --onnx [onnx/model/path]` |
+| `--serverport` | [カスタム WebUI ポートを使用する] | `pdf2zh --serverport 7860` |
 | `--dir` | [batch translate] | `pdf2zh --dir /path/to/translate/` |
 | `--config` | [configuration file](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig) | `pdf2zh --config /path/to/config/config.json` |
 | `--serverport` | [custom gradio server port] | `pdf2zh --serverport 7860` |
@@ -283,7 +283,7 @@ pdf2zh example.pdf -t 1
 
 <h3 id="prompt">カスタム プロンプト</h3>
 
-`--prompt`を使用して、LLMで使用するプロンプトを指定します：
+`--prompt`を使用して、LLM で使用するプロンプトを指定します：
 
 ```bash
 pdf2zh example.pdf -pr prompt.txt
@@ -306,7 +306,7 @@ pdf2zh example.pdf -pr prompt.txt
 ```
 
 
-カスタムプロンプトファイルでは、以下の3つの変数が使用できます。
+カスタムプロンプトファイルでは、以下の 3 つの変数が使用できます。
 
 |**変数**|**内容**|
 |-|-|

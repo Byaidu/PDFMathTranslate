@@ -51,14 +51,14 @@ class TestCache(unittest.TestCase):
         # Test with different param types
         array_params = ["param1", "param2"]
         cache_instance2 = cache.TranslationCache("test_engine", array_params)
-        cache_instance2.set("hello", "你好2")
-        self.assertEqual(cache_instance2.get("hello"), "你好2")
+        cache_instance2.set("hello", "你好 2")
+        self.assertEqual(cache_instance2.get("hello"), "你好 2")
 
         # Test with nested structures
         nested_params = {"options": {"temp": 0.8, "models": ["a", "b"]}}
         cache_instance3 = cache.TranslationCache("test_engine", nested_params)
-        cache_instance3.set("hello", "你好3")
-        self.assertEqual(cache_instance3.get("hello"), "你好3")
+        cache_instance3.set("hello", "你好 3")
+        self.assertEqual(cache_instance3.get("hello"), "你好 3")
 
     def test_engine_distinction(self):
         """Test that cache distinguishes between different translation engines"""
@@ -153,8 +153,8 @@ class TestCache(unittest.TestCase):
         )
 
         # Cache should work with updated params
-        cache_instance.set("hello2", "你好2")
-        self.assertEqual(cache_instance.get("hello2"), "你好2")
+        cache_instance.set("hello2", "你好 2")
+        self.assertEqual(cache_instance.get("hello2"), "你好 2")
 
     # Sometimes the problem of "database is locked" occurs. Temporarily disable this test.
     # def test_thread_safety(self):

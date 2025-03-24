@@ -1,4 +1,4 @@
-name: Format Code with Black
+name: Lint Code
 
 on: [push, pull_request]
 

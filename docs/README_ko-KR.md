@@ -45,16 +45,16 @@
 
 <h2 id="updates">최근 업데이트</h2>
 
-- [2024년 12월 24일] [Xinference](https://github.com/xorbitsai/inference) 실행 로컬 LLM 지원 추가 _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
-- [2024년 11월 26일] CLI가 온라인 파일을 지원하게 되었습니다 _(by [@reycn](https://github.com/reycn))_
-- [2024년 11월 24일] 의존성 크기를 줄이기 위해 [ONNX](https://github.com/onnx/onnx) 지원 추가 _(by [@Wybxc](https://github.com/Wybxc))_
-- [2024년 11월 23일] 🌟 [무료 공공 서비스](#demo) 온라인! _(by [@Byaidu](https://github.com/Byaidu))_
-- [2024년 11월 23일] 웹 봇을 방지하기 위한 방화벽 추가 _(by [@Byaidu](https://github.com/Byaidu))_
-- [2024년 11월 22일] GUI가 이탈리아어를 지원하고 개선되었습니다 _(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))_
-- [2024년 11월 22일] 배포된 서비스를 다른 사람과 공유할 수 있게 되었습니다 _(by [@Zxis233](https://github.com/Zxis233))_
-- [2024년 11월 22일] Tencent 번역 지원 _(by [@hellofinch](https://github.com/hellofinch))_
-- [2024년 11월 21일] GUI가 이중 언어 문서 다운로드를 지원하게 되었습니다 _(by [@reycn](https://github.com/reycn))_
-- [2024년 11월 20일] 🌟 [데모](#demo)가 온라인이 되었습니다! _(by [@reycn](https://github.com/reycn))_
+- [2024 년 12 월 24 일] [Xinference](https://github.com/xorbitsai/inference) 실행 로컬 LLM 지원 추가 _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
+- [2024 년 11 월 26 일] CLI 가 온라인 파일을 지원하게 되었습니다 _(by [@reycn](https://github.com/reycn))_
+- [2024 년 11 월 24 일] 의존성 크기를 줄이기 위해 [ONNX](https://github.com/onnx/onnx) 지원 추가 _(by [@Wybxc](https://github.com/Wybxc))_
+- [2024 년 11 월 23 일] 🌟 [무료 공공 서비스](#demo) 온라인! _(by [@Byaidu](https://github.com/Byaidu))_
+- [2024 년 11 월 23 일] 웹 봇을 방지하기 위한 방화벽 추가 _(by [@Byaidu](https://github.com/Byaidu))_
+- [2024 년 11 월 22 일] GUI 가 이탈리아어를 지원하고 개선되었습니다 _(by [@Byaidu](https://github.com/Byaidu), [@reycn](https://github.com/reycn))_
+- [2024 년 11 월 22 일] 배포된 서비스를 다른 사람과 공유할 수 있게 되었습니다 _(by [@Zxis233](https://github.com/Zxis233))_
+- [2024 년 11 월 22 일] Tencent 번역 지원 _(by [@hellofinch](https://github.com/hellofinch))_
+- [2024 년 11 월 21 일] GUI 가 이중 언어 문서 다운로드를 지원하게 되었습니다 _(by [@reycn](https://github.com/reycn))_
+- [2024 년 11 월 20 일] 🌟 [데모](#demo)가 온라인이 되었습니다! _(by [@reycn](https://github.com/reycn))_
 
 <h2 id="preview">미리보기</h2>
 
@@ -70,14 +70,14 @@
 
 ### 데모
 
-설치 없이 [HuggingFace의 데모](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)와 [ModelScope의 데모](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate)를 사용해 볼 수 있습니다.
+설치 없이 [HuggingFace 의 데모](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)와 [ModelScope 의 데모](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate)를 사용해 볼 수 있습니다.
 데모의 컴퓨팅 리소스가 제한되어 있으므로 남용하지 말아주세요.
 
 <h2 id="install">설치 및 사용법</h2>
 
-이 프로젝트를 사용하는 4가지 방법을 제공합니다: [커맨드라인 도구](#cmd), [포터블](#portable), [GUI](#gui), 및 [Docker](#docker).
+이 프로젝트를 사용하는 4 가지 방법을 제공합니다: [커맨드라인 도구](#cmd), [포터블](#portable), [GUI](#gui), 및 [Docker](#docker).
 
-pdf2zh 실행에는 추가 모델(`wybxc/DocLayout-YOLO-DocStructBench-onnx`)이 필요합니다. 이 모델은 ModelScope에서도 찾을 수 있습니다. 시작할 때 이 모델 다운로드에 문제가 있다면 다음 환경 변수를 사용하세요:
+pdf2zh 실행에는 추가 모델 (`wybxc/DocLayout-YOLO-DocStructBench-onnx`) 이 필요합니다. 이 모델은 ModelScope 에서도 찾을 수 있습니다. 시작할 때 이 모델 다운로드에 문제가 있다면 다음 환경 변수를 사용하세요:
 
 ```shell
 set HF_ENDPOINT=https://hf-mirror.com
@@ -91,7 +91,7 @@ $env:HF_ENDPOINT = https://hf-mirror.com
 
 <h3 id="cmd">방법 1. 커맨드라인 도구</h3>
 
-1. Python이 설치되어 있어야 합니다 (버전 3.10 <= 버전 <= 3.12)
+1. Python 이 설치되어 있어야 합니다 (버전 3.10 <= 버전 <= 3.12)
 2. 패키지를 설치합니다:
 
    ```bash
@@ -112,7 +112,7 @@ Python 환경을 미리 설치할 필요가 없습니다.
 
 <h3 id="gui">방법 3. GUI</h3>
 
-1. Python이 설치되어 있어야 합니다 (버전 3.10 <= 버전 <= 3.12)
+1. Python 이 설치되어 있어야 합니다 (버전 3.10 <= 버전 <= 3.12)
 2. 패키지를 설치합니다:
 
    ```bash
@@ -125,7 +125,7 @@ Python 환경을 미리 설치할 필요가 없습니다.
    pdf2zh -i
    ```
 
-4. 브라우저가 자동으로 시작되지 않으면 다음 URL을 엽니다:
+4. 브라우저가 자동으로 시작되지 않으면 다음 URL 을 엽니다:
 
    ```bash
    http://localhost:7860/
@@ -232,14 +232,14 @@ pdf2zh example.pdf -li en -lo ko
 | **Gemini**          | `gemini`       | `GEMINI_API_KEY`, `GEMINI_MODEL`                                      | `[Your Key]`, `gemini-1.5-flash`                         | [Gemini](https://ai.google.dev/gemini-api/docs/openai) 참조                                                                                                                                                |
 | **Azure**           | `azure`        | `AZURE_ENDPOINT`, `AZURE_API_KEY`                                     | `https://api.translator.azure.cn`, `[Your Key]`          | [Azure](https://docs.azure.cn/en-us/ai-services/translator/text-translation-overview) 참조                                                                                                                 |
 | **Tencent**         | `tencent`      | `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY`                   | `[Your ID]`, `[Your Key]`                                | [Tencent](https://www.tencentcloud.com/products/tmt?from_qcintl=122110104) 참조                                                                                                                            |
-| **Dify**            | `dify`         | `DIFY_API_URL`, `DIFY_API_KEY`                                        | `[Your DIFY URL]`, `[Your Key]`                          | [Dify](https://github.com/langgenius/dify) 참조, Dify의 워크플로우 입력에서 lang_out, lang_in, text 세 변수를 정의해야 합니다.                                                                             |
+| **Dify**            | `dify`         | `DIFY_API_URL`, `DIFY_API_KEY`                                        | `[Your DIFY URL]`, `[Your Key]`                          | [Dify](https://github.com/langgenius/dify) 참조, Dify 의 워크플로우 입력에서 lang_out, lang_in, text 세 변수를 정의해야 합니다.                                                                             |
 | **AnythingLLM**     | `anythingllm`  | `AnythingLLM_URL`, `AnythingLLM_APIKEY`                               | `[Your AnythingLLM URL]`, `[Your Key]`                   | [anything-llm](https://github.com/Mintplex-Labs/anything-llm) 참조                                                                                                                                         |
 | **Argos Translate** | `argos`        |                                                                       |                                                          | [argos-translate](https://github.com/argosopentech/argos-translate) 참조                                                                                                                                   |
 | **Grok**            | `grok`         | `GORK_API_KEY`, `GORK_MODEL`                                          | `[Your GORK_API_KEY]`, `grok-2-1212`                     | [Grok](https://docs.x.ai/docs/overview) 참조                                                                                                                                                               |
 | **DeepSeek**        | `deepseek`     | `DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL`                                  | `[Your DEEPSEEK_API_KEY]`, `deepseek-chat`               | [DeepSeek](https://www.deepseek.com/) 참조                                                                                                                                                                 |
 | **OpenAI-Liked**    | `openailiked` | `OPENAILIKED_BASE_URL`, `OPENAILIKED_API_KEY`, `OPENAILIKED_MODEL`       | `url`, `[Your Key]`, `model name`                        | 없음                                                                                                                                                                                                       |
 
-위 표에 없는 OpenAI API와 호환되는 대형 언어 모델의 경우, 표의 OpenAI와 동일한 방식으로 환경 변수를 설정할 수 있습니다.
+위 표에 없는 OpenAI API 와 호환되는 대형 언어 모델의 경우, 표의 OpenAI 와 동일한 방식으로 환경 변수를 설정할 수 있습니다.
 
 `-s service` 또는 `-s service:model`을 사용하여 번역 서비스를 지정합니다:
 
@@ -285,7 +285,7 @@ pdf2zh example.pdf -t 1
 
 <h3 id="prompt">사용자 정의 프롬프트</h3>
 
-`--prompt`를 사용하여 LLM에서 사용할 프롬프트를 지정합니다:
+`--prompt`를 사용하여 LLM 에서 사용할 프롬프트를 지정합니다:
 
 ```bash
 pdf2zh example.pdf -pr prompt.txt
