@@ -459,14 +459,14 @@ class OpenAITranslator(BaseTranslator):
         content = self.think_filter_regex.sub("", content).strip()
         return content
 
-    def get_formular_placeholder(self, id: int):
-        return "{{v" + str(id) + "}}"
+    def get_formular_placeholder(self, placeholder_id: int):
+        return "{{v" + str(placeholder_id) + "}}"
 
-    def get_rich_text_left_placeholder(self, id: int):
-        return self.get_formular_placeholder(id)
+    def get_rich_text_left_placeholder(self, placeholder_id: int):
+        return self.get_formular_placeholder(placeholder_id)
 
-    def get_rich_text_right_placeholder(self, id: int):
-        return self.get_formular_placeholder(id + 1)
+    def get_rich_text_right_placeholder(self, placeholder_id: int):
+        return self.get_formular_placeholder(placeholder_id + 1)
 
 
 class AzureOpenAITranslator(BaseTranslator):
