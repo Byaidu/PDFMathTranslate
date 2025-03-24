@@ -19,10 +19,6 @@ from babeldoc.translation_config import TranslationConfig as YadtConfig
 
 from pdf2zh import __version__
 from pdf2zh.config import ConfigManager
-from pdf2zh.doclayout import ModelInstance
-from pdf2zh.doclayout import OnnxModel
-from pdf2zh.high_level import download_remote_fonts
-from pdf2zh.high_level import translate
 
 logger = logging.getLogger(__name__)
 
@@ -286,11 +282,6 @@ def main(args: list[str] | None = None) -> int:
 
     print(parsed_args)
 
-    if parsed_args.onnx:
-        ModelInstance.value = OnnxModel(parsed_args.onnx)
-    else:
-        ModelInstance.value = OnnxModel.load_available()
-
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
 
@@ -302,25 +293,6 @@ def main(args: list[str] | None = None) -> int:
             setup_gui(parsed_args.share, parsed_args.authorized)
         return 0
 
-    if parsed_args.flask:
-        from pdf2zh.backend import flask_app
-
-        flask_app.run(port=11008)
-        return 0
-
-    if parsed_args.celery:
-        from pdf2zh.backend import celery_app
-
-        celery_app.start(argv=sys.argv[2:])
-        return 0
-
-    if parsed_args.dir:
-        untranlate_file = find_all_files_in_directory(parsed_args.files[0])
-        parsed_args.files = untranlate_file
-        translate(model=ModelInstance.value, **vars(parsed_args))
-        return 0
-
-    translate(model=ModelInstance.value, **vars(parsed_args))
     return 0
 
 
@@ -338,7 +310,6 @@ def yadt_main(parsed_args) -> int:
 
     # yadt require init before translate
     yadt_init()
-    font_path = download_remote_fonts(lang_out.lower())
 
     param = parsed_args.service.split(":", 1)
     service_name = param[0]
@@ -420,7 +391,7 @@ def yadt_main(parsed_args) -> int:
         file = file.strip("\"'")
         yadt_config = YadtConfig(
             input_file=file,
-            font=font_path,
+            font=None,
             pages=",".join(str(x) for x in getattr(parsed_args, "raw_pages", [])),
             output_dir=outputdir,
             doc_layout_model=None,
