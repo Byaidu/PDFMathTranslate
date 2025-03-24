@@ -1,0 +1,44 @@
+name: Lint Code and Review Dog Report
+
+on: [push, pull_request]
+
+jobs:
+  ruff:
+    name: runner / ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install ruff
+        run: pip install ruff
+        
+      - name: Install reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+          
+      - name: Run ruff with reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ruff check . --output-format=rdjson | reviewdog -f=rdjson -reporter=github-pr-review -fail-on-error
+          
+  autocorrect:
+    name: runner / autocorrect
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: AutoCorrect
+        uses: huacnlee/autocorrect-action@main
+      - name: Report ReviewDog
+        if: failure()
+        uses: huacnlee/autocorrect-action@v2
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          reviewdog: true
