@@ -1,0 +1,15 @@
+name: Format Code with Black
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ruff
+        uses: astral-sh/ruff-action@v3
+      - name: AutoCorrect
+        uses: huacnlee/autocorrect-action@main
