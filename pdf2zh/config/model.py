@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import enum
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
+from pydantic import BaseModel
 from pydantic import Field
-from pydantic_settings import BaseSettings
-from pydantic_settings import SettingsConfigDict
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class WatermarkOutputMode(enum.Enum):
     Both = "both"  # Output both watermarked and non-watermarked versions
 
 
-class BasicSettings(BaseSettings):
+class BasicSettings(BaseModel):
     """Basic application settings"""
 
     input_files: set[str] = Field(
@@ -42,7 +43,7 @@ class BasicSettings(BaseSettings):
     )
 
 
-class TranslationSettings(BaseSettings):
+class TranslationSettings(BaseModel):
     """Translation related settings"""
 
     pages: str | None = Field(
@@ -60,7 +61,7 @@ class TranslationSettings(BaseSettings):
     ignore_cache: bool = Field(default=False, description="Ignore translation cache")
 
 
-class PDFSettings(BaseSettings):
+class PDFSettings(BaseModel):
     """PDF processing settings"""
 
     no_dual: bool = Field(
@@ -109,46 +110,47 @@ class PDFSettings(BaseSettings):
     )
 
 
-class OpenAISettings(BaseSettings):
+class OpenAISettings(BaseModel):
     """OpenAI API settings"""
 
-    openai: bool = Field(default=False, description="Use OpenAI for translation")
-    openai_model: str = Field(default="gpt-4o-mini", description="OpenAI model to use")
+    openai_model: str = Field(
+        default="gpt-4o-mini", description="OpenAI model to use", alias="model"
+    )
     openai_base_url: str | None = Field(
-        default=None, description="Base URL for OpenAI API"
+        default=None, description="Base URL for OpenAI API", alias="base-url"
     )
     openai_api_key: str | None = Field(
-        default=None, description="API key for OpenAI service"
+        default=None, description="API key for OpenAI service", alias="api-key"
     )
 
 
-class Settings(BaseSettings):
+class SettingsModel(BaseModel):
     """Main settings class that combines all sub-settings"""
 
-    basic: BasicSettings = Field(default_factory=BasicSettings)
-    translation: TranslationSettings = Field(default_factory=TranslationSettings)
-    pdf: PDFSettings = Field(default_factory=PDFSettings)
-    openai: OpenAISettings = Field(default_factory=OpenAISettings)
+    config: str | None = Field(
+        default=None, description="Path to TOML configuration file"
+    )
     report_interval: float = Field(
         default=0.1, description="Progress report interval in seconds"
     )
-
-    model_config = SettingsConfigDict(
-        env_prefix="PDF2ZH_",
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        use_enum_values=True,
-        validate_default=True,
-        extra="ignore",
-        cli_parse_args=True,
-        cli_avoid_json=True,
-        cli_hide_none_type=True,
-        cli_prog_name="pdf2zh",
-        cli_implicit_flags=True,
-        cli_ignore_unknown_args=True,
-        cli_kebab_case=True,
+    use_openai: bool = Field(
+        default=False, description="Use OpenAI for translation", alias="openai"
     )
+    basic: BasicSettings = Field(default_factory=BasicSettings)
+    translation: TranslationSettings = Field(default_factory=TranslationSettings)
+    pdf: PDFSettings = Field(default_factory=PDFSettings)
+    openai_detail: OpenAISettings = Field(default_factory=OpenAISettings)
+
+    def __init__(self, **data: Any) -> None:
+        """Initialize settings with TOML config support."""
+        super().__init__(**data)
+
+        # Update the TOML config source with the user-specified config file
+        # if it's provided through the initializer or CLI
+        if hasattr(self, "config") and self.config:
+            # Re-initialize with proper config file
+            self.__class__.settings_customise_sources.__defaults__ = None  # type: ignore
+            self.__init__(**data)
 
     def get_output_dir(self) -> Path:
         """Get output directory, create if not exists"""
@@ -163,7 +165,7 @@ class Settings(BaseSettings):
     def validate_settings(self) -> None:
         """Validate settings"""
         # Validate translation service selection
-        if not self.openai.openai:
+        if not self.use:
             raise ValueError("Must select a translation service: --openai")
 
         # Validate OpenAI parameters
@@ -195,30 +197,3 @@ class Settings(BaseSettings):
                 page = int(part)
                 ranges.append((page, page))
         return ranges
-
-
-class ConfigManager:
-    """Singleton configuration manager"""
-
-    _instance: Optional["ConfigManager"] = None
-    _settings: Settings | None = None
-
-    def __new__(cls) -> "ConfigManager":
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
-    @property
-    def settings(self) -> Settings:
-        if self._settings is None:
-            self._settings = Settings()
-            self._settings.validate_settings()
-        return self._settings
-
-    def reload(self) -> None:
-        """Reload settings"""
-        self._settings = Settings()
-        self._settings.validate_settings()
-
-
-ConfigManager().settings.model_dump()
