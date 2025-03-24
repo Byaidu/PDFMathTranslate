@@ -46,7 +46,9 @@ def build_args_parser(
                 if arg is bool:
                     parser.add_argument(
                         f"--{args_name}",
-                        action="store_true",
+                        action="store_true"
+                        if field_detail.default is False
+                        else "store_false",
                         default=field_detail.default,
                         help=field_detail.description,
                     )
@@ -81,7 +83,13 @@ class ConfigManager:
         pass
 
 
+# disable not necessary log for normal usage
+log.setLevel(logging.INFO)
+
 if __name__ == "__main__":
+    # only for debug
+    log.setLevel(logging.DEBUG)
     logging.basicConfig(level=logging.DEBUG)
+
     config_manager = ConfigManager()
     config_manager.parse_cli_args()
