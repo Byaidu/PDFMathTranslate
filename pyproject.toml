@@ -34,7 +34,9 @@ dependencies = [
     "peewee>=3.17.8",
     "fontTools",
     "babeldoc>=0.1.22, <0.3.0",
-    "rich"
+    "rich",
+    "pydantic-settings>=2.8.1",
+    "pydantic>=2.10.6",
 ]
 
 [project.optional-dependencies]
