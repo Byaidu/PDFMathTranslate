@@ -13,6 +13,10 @@ from pdf2zh.config.model import SettingsModel
 log = logging.getLogger(__name__)
 
 
+class MagicDefault:
+    pass
+
+
 def build_args_parser(
     parser: argparse.ArgumentParser | None = None,
     settings_model: BaseModel | None = None,
@@ -57,7 +61,7 @@ def build_args_parser(
                         action="store_true"
                         if field_detail.default is False
                         else "store_false",
-                        default=field_detail.default,
+                        default=MagicDefault(),
                         help=field_detail.description,
                     )
                 elif arg == NoneType:
@@ -66,7 +70,7 @@ def build_args_parser(
                     parser.add_argument(
                         f"--{args_name}",
                         type=arg,
-                        default=field_detail.default,
+                        default=MagicDefault,
                         help=field_detail.description,
                     )
     return parser
@@ -88,7 +92,71 @@ class ConfigManager:
         parser = build_args_parser()
         args = parser.parse_args()
         print(args)
-        pass
+        self._settings = self.create_settings_from_args(args)
+        print(self._settings.model_dump_json())
+
+    def create_settings_from_args(self, args: argparse.Namespace) -> SettingsModel:
+        """
+        Create SettingsModel instance from parsed command line arguments
+
+        Args:
+            args: Parsed command line arguments
+
+        Returns:
+            SettingsModel instance with values from command line args
+        """
+        args_dict = vars(args)
+
+        # Build the model directly without pre-building a field map
+        settings = self._build_model_from_args(SettingsModel, args_dict)
+        assert isinstance(settings, SettingsModel)
+        return settings
+
+    def _build_model_from_args(
+        self, model_class: type[BaseModel], args_dict: dict
+    ) -> BaseModel:
+        """
+        Recursively build model instances from arguments dictionary
+
+        Args:
+            model_class: Pydantic model class to instantiate
+            args_dict: Dictionary of arguments
+
+        Returns:
+            Instance of the specified model class
+        """
+        model_kwargs = {}
+
+        # Process all fields in the model
+        for field_name, field_detail in model_class.model_fields.items():
+            # Get the corresponding CLI argument name
+            arg_name = field_detail.alias or field_name
+            arg_name = arg_name.replace("_", "-").lower()
+
+            # If the argument was provided, add it to the kwargs
+            if arg_name in args_dict and args_dict[arg_name] is not None:
+                args = args_dict[arg_name]
+                if isinstance(args, MagicDefault) or args == MagicDefault:
+                    # If the argument is a MagicDefault, skip it
+                    continue
+                model_kwargs[field_name] = args_dict[arg_name]
+
+            # Handle nested models
+            if field_detail.default_factory is not None:
+                nested_model_class = field_detail.default_factory
+                model_kwargs[field_name] = self._build_model_from_args(
+                    nested_model_class, args_dict
+                )
+
+        # Create and return the model instance
+        return model_class(**model_kwargs)
+
+    @property
+    def settings(self) -> SettingsModel:
+        """Get current settings"""
+        if self._settings is None:
+            raise RuntimeError("Settings not initialized")
+        return self._settings
 
 
 # disable not necessary log for normal usage
