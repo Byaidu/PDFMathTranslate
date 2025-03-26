@@ -16,9 +16,13 @@ log = logging.getLogger(__name__)
 def build_args_parser(
     parser: argparse.ArgumentParser | None = None,
     settings_model: BaseModel | None = None,
+    field_name_set: set[str] | None = None,
 ) -> argparse.ArgumentParser:
     if parser is None:
         parser = argparse.ArgumentParser()
+
+    if field_name_set is None:
+        field_name_set = set()
 
     if settings_model is not None:
         parser = parser.add_argument_group(
@@ -28,10 +32,14 @@ def build_args_parser(
     else:
         settings_model = SettingsModel
     for field_name, field_detail in settings_model.model_fields.items():
+        if field_name in field_name_set:
+            log.critical(f"duplicate field name: {field_name}")
+            raise ValueError(f"duplicate field name: {field_name}")
+        field_name_set.add(field_name)
         if field_detail.default_factory is not None:
             if settings_model != SettingsModel:
                 raise ValueError("not supported nested settings models")
-            build_args_parser(parser, field_detail.default_factory)
+            build_args_parser(parser, field_detail.default_factory, field_name_set)
         else:
             type_hint = typing.get_type_hints(settings_model)[field_name]
             original_type = typing.get_origin(type_hint)
