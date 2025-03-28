@@ -244,22 +244,22 @@ class ConfigManager:
         """Initialize configuration from all sources"""
         # Parse CLI arguments (highest priority)
         parser, _ = build_args_parser()
-        args = parser.parse_args()
-        cli_settings = self.create_settings_from_args(args).model_dump()
+        cli_args = {
+            k: v for k, v in vars(parser.parse_args()).items() if v is not MagicDefault
+        }
 
         # Parse environment variables (middle priority)
-        env_settings = self.parse_env_vars()
-
+        env_vars = self.parse_env_vars()
         # Merge all settings by priority
-        merged_settings = self.merge_settings(
+        merged_args = self.merge_settings(
             [
-                cli_settings,
-                env_settings,
+                cli_args,
+                env_vars,
             ]
         )
 
         # Create settings model from merged dictionary
-        self._settings = SettingsModel(**merged_settings)
+        self._settings = self._build_model_from_args(SettingsModel, merged_args)
         log.debug(f"Initialized settings: {self._settings.model_dump_json()}")
 
     def create_settings_from_args(self, args: argparse.Namespace) -> SettingsModel:
@@ -298,7 +298,11 @@ class ConfigManager:
         for field_name, field_detail in model_class.model_fields.items():
             # Get the corresponding CLI argument name
             arg_name = field_detail.alias or field_name
-            arg_name = arg_name.replace("_", "-").lower()
+            arg_name = (
+                arg_name.replace("_", "-").lower()
+                if arg_name not in args_dict
+                else arg_name
+            )
 
             # If the argument was provided, add it to the kwargs
             if arg_name in args_dict and args_dict[arg_name] is not None:
