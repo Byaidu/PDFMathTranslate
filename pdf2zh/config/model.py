@@ -175,6 +175,9 @@ class SettingsModel(BaseModel):
         if self.openai and not self.openai_detail.openai_api_key:
             raise ValueError("OpenAI API key is required when using OpenAI service")
 
+        # Note: openai_api_key format validation is not needed
+        # Note: rpc_doclayout URL format validation is not needed
+
         if (
             self.openai_detail.openai_base_url
             and self.openai_detail.openai_base_url.endswith(r"/chat/completions/?")
@@ -190,6 +193,23 @@ class SettingsModel(BaseModel):
                 raise ValueError(f"File does not exist: {file}")
             if not file_path.suffix.lower() == ".pdf":
                 raise ValueError(f"File is not a PDF file: {file}")
+
+        # Validate PDF output mode
+        if self.pdf.no_dual and self.pdf.no_mono:
+            raise ValueError("Cannot disable both dual and mono output modes")
+
+        # Validate regex patterns
+        if self.pdf.formular_font_pattern:
+            try:
+                re.compile(self.pdf.formular_font_pattern)
+            except re.error as e:
+                raise ValueError(f"Invalid formular_font_pattern: {e}") from e
+
+        if self.pdf.formular_char_pattern:
+            try:
+                re.compile(self.pdf.formular_char_pattern)
+            except re.error as e:
+                raise ValueError(f"Invalid formular_char_pattern: {e}") from e
 
         if self.pdf.enhance_compatibility:
             self.pdf.skip_clean = True
@@ -223,14 +243,38 @@ class SettingsModel(BaseModel):
             return None
 
         ranges: list[tuple[int, int]] = []
-        for part in self.translation.pages.split(","):
-            part = part.strip()
-            if "-" in part:
-                start, end = part.split("-")
-                start_as_int = int(start) if start else 1
-                end_as_int = int(end) if end else -1
-                ranges.append((start_as_int, end_as_int))
-            else:
-                page = int(part)
-                ranges.append((page, page))
+        try:
+            for part in self.translation.pages.split(","):
+                part = part.strip()
+                if "-" in part:
+                    start, end = part.split("-")
+                    try:
+                        start_as_int = int(start) if start else 1
+                        end_as_int = int(end) if end else -1
+                        if start_as_int < 1 and start:
+                            raise ValueError(f"Invalid start page number: {start}")
+                        if end_as_int < -1:
+                            raise ValueError(f"Invalid end page number: {end}")
+                        if end_as_int != -1 and start_as_int > end_as_int:
+                            raise ValueError(
+                                f"Start page {start} is greater than end page {end}"
+                            )
+                        ranges.append((start_as_int, end_as_int))
+                    except ValueError as e:
+                        if "invalid literal for int()" in str(e):
+                            raise ValueError(
+                                f"Invalid page number format in range: {part}"
+                            ) from e
+                        raise
+                else:
+                    try:
+                        page = int(part)
+                        if page < 1:
+                            raise ValueError(f"Invalid page number: {page}")
+                        ranges.append((page, page))
+                    except ValueError as e:
+                        raise ValueError(f"Invalid page number format: {part}") from e
+        except ValueError as e:
+            raise ValueError(f"Error parsing pages parameter: {e}") from e
+
         return ranges
