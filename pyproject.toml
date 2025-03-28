@@ -81,6 +81,9 @@ version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 "pdf2zh/__init__.py" = [
     '__version__ = "{version}"'
 ]
+"pdf2zh/const.py" = [
+    '__version__ = "{version}"'
+]
 
 
 [tool.ruff]
