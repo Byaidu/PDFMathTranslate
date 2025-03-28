@@ -31,6 +31,7 @@ def build_args_parser(
     settings_model: BaseModel | None = None,
     field_name2type: dict[str, Any] | None = None,
     recursion_depth: int = 0,
+    set_count: int = 0,
 ) -> tuple[argparse.ArgumentParser, dict[str, Any]]:
     if parser is None:
         parser = argparse.ArgumentParser()
@@ -59,6 +60,7 @@ def build_args_parser(
                 field_detail.default_factory,
                 field_name2type,
                 recursion_depth + 1,
+                set_count,
             )
         else:
             type_hint = typing.get_type_hints(settings_model)[field_name]
@@ -70,6 +72,25 @@ def build_args_parser(
             if original_type is None:
                 args = [type_hint]
             args_name = field_name.replace("_", "-").lower()
+
+            if original_type is set:
+                if set_count > 0:
+                    raise ValueError("not supported multiple set arguments")
+
+                if len(args) > 1:
+                    raise ValueError("not supported multiple set arguments")
+
+                if args[0] is not str:
+                    raise ValueError("set type must be str")
+
+                set_count += 1
+                parser.add_argument(
+                    f"{args_name}",
+                    nargs="+",
+                    type=str,
+                    help=field_detail.description,
+                )
+
             for arg in args:
                 if arg is bool:
                     parser.add_argument(
