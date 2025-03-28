@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import enum
 import logging
+import re
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -52,7 +53,7 @@ class TranslationSettings(BaseModel):
     min_text_length: int = Field(
         default=5, description="Minimum text length to translate"
     )
-    lang_in: str = Field(default="en", description="Source language code")
+    lang_in: str = Field(default="auto", description="Source language code")
     lang_out: str = Field(default="zh", description="Target language code")
     output: str | None = Field(
         default=None, description="Output directory for translated files"
@@ -151,12 +152,36 @@ class SettingsModel(BaseModel):
     def validate_settings(self) -> None:
         """Validate settings"""
         # Validate translation service selection
+
+        if self.basic.warmup:
+            # warmup mode only download and verify assets
+            # so no need to validate other settings
+            return
+
+        if self.basic.generate_offline_assets and self.basic.restore_offline_assets:
+            raise ValueError(
+                "generate_offline_assets and restore_offline_assets cannot both be set"
+            )
+
+        if self.basic.generate_offline_assets:
+            # only generate offline assets
+            # so no need to validate other settings
+            return
+
         if not self.openai:
             raise ValueError("Must select a translation service: --openai")
 
         # Validate OpenAI parameters
         if self.openai and not self.openai_detail.openai_api_key:
             raise ValueError("OpenAI API key is required when using OpenAI service")
+
+        if (
+            self.openai_detail.openai_base_url
+            and self.openai_detail.openai_base_url.endswith(r"/chat/completions/?")
+        ):
+            self.openai_detail.openai_base_url = re.sub(
+                r"/chat/completions/?$", "", self.openai_detail.openai_base_url
+            )
 
         # Validate files
         for file in self.basic.input_files:
@@ -165,6 +190,32 @@ class SettingsModel(BaseModel):
                 raise ValueError(f"File does not exist: {file}")
             if not file_path.suffix.lower() == ".pdf":
                 raise ValueError(f"File is not a PDF file: {file}")
+
+        if self.pdf.enhance_compatibility:
+            self.pdf.skip_clean = True
+            self.pdf.disable_rich_text_translate = True
+
+        if self.pdf.max_pages_per_part and self.pdf.max_pages_per_part < 0:
+            raise ValueError("max_pages_per_part must be greater than 0")
+
+        if self.pdf.watermark_output_mode not in WatermarkOutputMode:
+            raise ValueError(
+                f"Invalid watermark output mode: {self.pdf.watermark_output_mode}"
+            )
+
+        if self.translation.qps < 1:
+            raise ValueError("qps must be greater than 0")
+
+        if self.translation.min_text_length < 0:
+            raise ValueError("min_text_length must be greater than or equal to 0")
+
+        if self.report_interval < 0.05:
+            raise ValueError("report_interval must be greater than or equal to 0.05")
+
+        if self.pdf.split_short_lines and self.pdf.short_line_split_factor < 0.1:
+            raise ValueError(
+                "short_line_split_factor must be greater than or equal to 0.1"
+            )
 
     def parse_pages(self) -> list[tuple[int, int]] | None:
         """Parse pages string into list of page ranges"""

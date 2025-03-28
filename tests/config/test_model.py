@@ -40,7 +40,7 @@ class TestTranslationSettings:
         settings = TranslationSettings()
         assert settings.pages is None
         assert settings.min_text_length == 5
-        assert settings.lang_in == "en"
+        assert settings.lang_in == "auto"
         assert settings.lang_out == "zh"
         assert settings.output is None
         assert settings.qps == 4
