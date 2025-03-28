@@ -178,10 +178,7 @@ class SettingsModel(BaseModel):
         # Note: openai_api_key format validation is not needed
         # Note: rpc_doclayout URL format validation is not needed
 
-        if (
-            self.openai_detail.openai_base_url
-            and self.openai_detail.openai_base_url.endswith(r"/chat/completions/?")
-        ):
+        if self.openai_detail.openai_base_url:
             self.openai_detail.openai_base_url = re.sub(
                 r"/chat/completions/?$", "", self.openai_detail.openai_base_url
             )
