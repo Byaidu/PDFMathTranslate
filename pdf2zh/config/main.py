@@ -5,14 +5,19 @@ import logging
 import os
 import typing
 from inspect import getdoc
+from pathlib import Path
 from types import NoneType
 from typing import Any
 from typing import get_args
 from typing import get_origin
 
+import tomlkit
 from pydantic import BaseModel
 
 from pdf2zh.config.model import SettingsModel
+from pdf2zh.const import DEFAULT_CONFIG_DIR
+from pdf2zh.const import DEFAULT_CONFIG_FILE
+from pdf2zh.const import VERSION_DEFAULT_CONFIG_FILE
 
 log = logging.getLogger(__name__)
 
@@ -100,6 +105,78 @@ class ConfigManager:
             _, field_name2type = build_args_parser(None, SettingsModel)
             cls._field_name2type = field_name2type
         return cls._instance
+
+    def _ensure_config_dir(self) -> None:
+        """Ensure the configuration directory exists"""
+        DEFAULT_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    def _read_toml_file(self, file_path: Path) -> dict:
+        """Read and parse a TOML file
+
+        Args:
+            file_path: Path to the TOML file
+
+        Returns:
+            Parsed TOML content as dictionary
+        """
+        try:
+            with file_path.open(encoding="utf-8") as f:
+                return dict(tomlkit.load(f))
+        except FileNotFoundError:
+            log.debug(f"Config file not found: {file_path}")
+            return {}
+        except Exception as e:
+            log.warning(f"Error reading config file {file_path}: {e}")
+            return {}
+
+    def _write_toml_file(self, file_path: Path, content: dict) -> None:
+        """Write content to a TOML file
+
+        Args:
+            file_path: Path to write the TOML file
+            content: Content to write as dictionary
+        """
+        try:
+            with file_path.open("w", encoding="utf-8") as f:
+                tomlkit.dump(content, f)
+        except Exception as e:
+            log.warning(f"Error writing config file {file_path}: {e}")
+
+    def _is_file_content_identical(self, file_path: Path, content: dict) -> bool:
+        """Check if file content is identical to the given content
+
+        Args:
+            file_path: Path to the file to check
+            content: Content to compare with
+
+        Returns:
+            True if content is identical, False otherwise
+        """
+        try:
+            existing_content = self._read_toml_file(file_path)
+            return existing_content == content
+        except Exception:
+            return False
+
+    def _get_default_config(self) -> dict:
+        """Get default configuration from model
+
+        Returns:
+            Default configuration as dictionary
+        """
+        default_model = SettingsModel()
+        return default_model.model_dump(exclude_unset=True)
+
+    def _update_version_default_config(self) -> None:
+        """Update version default configuration file if needed"""
+        self._ensure_config_dir()
+        default_config = self._get_default_config()
+
+        if not self._is_file_content_identical(
+            VERSION_DEFAULT_CONFIG_FILE, default_config
+        ):
+            self._write_toml_file(VERSION_DEFAULT_CONFIG_FILE, default_config)
+            log.debug("Updated version default configuration file")
 
     def parse_cli_args(self) -> None:
         """Parse command line arguments"""
@@ -244,12 +321,15 @@ class ConfigManager:
         """Initialize configuration from all sources"""
         # Parse CLI arguments (highest priority)
         parser, _ = build_args_parser()
-        cli_args = {
-            k: v for k, v in vars(parser.parse_args()).items() if v is not MagicDefault
-        }
+        args = parser.parse_args()
+        cli_args = {k: v for k, v in vars(args).items() if v is not MagicDefault}
 
         # Parse environment variables (middle priority)
         env_vars = self.parse_env_vars()
+
+        # Read default configuration file (lower priority)
+        default_config_file = self._read_toml_file(DEFAULT_CONFIG_FILE)
+
         # Merge all settings by priority
         merged_args = self.merge_settings(
             [
@@ -257,10 +337,18 @@ class ConfigManager:
                 env_vars,
             ]
         )
-
+        if "config_file" in merged_args:
+            user_config = self._read_toml_file(Path(merged_args["config_file"]))
+            del merged_args["config_file"]
+            merged_args = self.merge_settings(
+                [merged_args, user_config, default_config_file]
+            )
         # Create settings model from merged dictionary
         self._settings = self._build_model_from_args(SettingsModel, merged_args)
         log.debug(f"Initialized settings: {self._settings.model_dump_json()}")
+
+        # Update version default configuration if needed
+        self._update_version_default_config()
 
     def create_settings_from_args(self, args: argparse.Namespace) -> SettingsModel:
         """

@@ -125,8 +125,8 @@ class OpenAISettings(BaseModel):
 class SettingsModel(BaseModel):
     """Main settings class that combines all sub-settings"""
 
-    config: str | None = Field(
-        default=None, description="Path to TOML configuration file"
+    config_file: str | None = Field(
+        default=None, description="Path to the configuration file"
     )
     report_interval: float = Field(
         default=0.1, description="Progress report interval in seconds"
