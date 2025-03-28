@@ -453,7 +453,6 @@ class TestConfigManager:
             "20",
             "--report-interval",
             "0.5",
-            "--input-files",
             "file1.pdf",  # Single file for now
         ]
 
@@ -465,10 +464,10 @@ class TestConfigManager:
             assert cm.settings.report_interval == 0.5
             # input_files should be empty set by default
             assert isinstance(cm.settings.basic.input_files, set)
-            assert len(cm.settings.basic.input_files) == 0
+            assert len(cm.settings.basic.input_files) == 1
 
         # Test with input files
-        test_args_with_files = ["--debug", "--input-files", "file1.pdf,file2.pdf"]
+        test_args_with_files = ["--debug", "file1.pdf", "file2.pdf"]
 
         with patch("sys.argv", ["script.py"] + test_args_with_files):
             cm.parse_cli_args()

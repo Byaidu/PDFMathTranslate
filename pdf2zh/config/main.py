@@ -90,6 +90,7 @@ def build_args_parser(
                     type=str,
                     help=field_detail.description,
                 )
+                continue
 
             for arg in args:
                 if arg is bool:
