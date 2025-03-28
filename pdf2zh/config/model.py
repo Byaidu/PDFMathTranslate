@@ -3,9 +3,9 @@ from __future__ import annotations
 import enum
 import logging
 from pathlib import Path
-from typing import Any
 
 from pydantic import BaseModel
+from pydantic import ConfigDict
 from pydantic import Field
 
 log = logging.getLogger(__name__)
@@ -102,9 +102,6 @@ class PDFSettings(BaseModel):
     max_pages_per_part: int | None = Field(
         default=None, description="Maximum pages per part for split translation"
     )
-    no_watermark: bool = Field(
-        default=False, description="[DEPRECATED] Do not add watermark to translated PDF"
-    )
     translate_table_text: bool = Field(
         default=False, description="Translate table text (experimental)"
     )
@@ -133,24 +130,13 @@ class SettingsModel(BaseModel):
     report_interval: float = Field(
         default=0.1, description="Progress report interval in seconds"
     )
-    use_openai: bool = Field(
-        default=False, description="Use OpenAI for translation", alias="openai"
-    )
+    openai: bool = Field(default=False, description="Use OpenAI for translation")
     basic: BasicSettings = Field(default_factory=BasicSettings)
     translation: TranslationSettings = Field(default_factory=TranslationSettings)
     pdf: PDFSettings = Field(default_factory=PDFSettings)
     openai_detail: OpenAISettings = Field(default_factory=OpenAISettings)
 
-    def __init__(self, **data: Any) -> None:
-        """Initialize settings with TOML config support."""
-        super().__init__(**data)
-
-        # Update the TOML config source with the user-specified config file
-        # if it's provided through the initializer or CLI
-        if hasattr(self, "config") and self.config:
-            # Re-initialize with proper config file
-            self.__class__.settings_customise_sources.__defaults__ = None  # type: ignore
-            self.__init__(**data)
+    model_config = ConfigDict(extra="allow")
 
     def get_output_dir(self) -> Path:
         """Get output directory, create if not exists"""
@@ -165,11 +151,11 @@ class SettingsModel(BaseModel):
     def validate_settings(self) -> None:
         """Validate settings"""
         # Validate translation service selection
-        if not self.use:
+        if not self.openai:
             raise ValueError("Must select a translation service: --openai")
 
         # Validate OpenAI parameters
-        if self.openai.openai and not self.openai.openai_api_key:
+        if self.openai and not self.openai_detail.openai_api_key:
             raise ValueError("OpenAI API key is required when using OpenAI service")
 
         # Validate files

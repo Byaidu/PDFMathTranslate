@@ -25,7 +25,8 @@ def build_args_parser(
     parser: argparse.ArgumentParser | None = None,
     settings_model: BaseModel | None = None,
     field_name2type: dict[str, Any] | None = None,
-) -> argparse.ArgumentParser:
+    recursion_depth: int = 0,
+) -> tuple[argparse.ArgumentParser, dict[str, Any]]:
     if parser is None:
         parser = argparse.ArgumentParser()
 
@@ -39,15 +40,21 @@ def build_args_parser(
         )
     else:
         settings_model = SettingsModel
+
     for field_name, field_detail in settings_model.model_fields.items():
         if field_name in field_name2type:
             log.critical(f"duplicate field name: {field_name}")
             raise ValueError(f"duplicate field name: {field_name}")
         field_name2type[field_name] = field_detail.annotation
         if field_detail.default_factory is not None:
-            if settings_model != SettingsModel:
+            if recursion_depth > 0:
                 raise ValueError("not supported nested settings models")
-            build_args_parser(parser, field_detail.default_factory, field_name2type)
+            build_args_parser(
+                parser,
+                field_detail.default_factory,
+                field_name2type,
+                recursion_depth + 1,
+            )
         else:
             type_hint = typing.get_type_hints(settings_model)[field_name]
             original_type = typing.get_origin(type_hint)
@@ -85,12 +92,13 @@ class ConfigManager:
 
     _instance: ConfigManager | None = None
     _settings: SettingsModel | None = None
+    _field_name2type: dict[str, Any] | None = None
 
     def __new__(cls) -> ConfigManager:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            _, field_name_set = build_args_parser()
-            cls._field_name_set = field_name_set
+            _, field_name2type = build_args_parser(None, SettingsModel)
+            cls._field_name2type = field_name2type
         return cls._instance
 
     def parse_cli_args(self) -> None:
@@ -107,7 +115,9 @@ class ConfigManager:
         Returns:
             Dictionary with settings derived from environment variables
         """
-        # Get field names using the same method as CLI parsing
+        if self._field_name2type is None:
+            raise RuntimeError("ConfigManager not properly initialized")
+
         env_settings = {}
 
         for field_name, type_hint in self._field_name2type.items():
