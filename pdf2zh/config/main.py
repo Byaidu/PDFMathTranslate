@@ -121,13 +121,34 @@ class ConfigManager:
         """
         try:
             with file_path.open(encoding="utf-8") as f:
-                return dict(tomlkit.load(f))
+                content = tomlkit.load(f)
+                # Convert "null" strings back to None
+                return self._process_toml_content(dict(content))
         except FileNotFoundError:
             log.debug(f"Config file not found: {file_path}")
             return {}
         except Exception as e:
             log.warning(f"Error reading config file {file_path}: {e}")
             return {}
+
+    def _process_toml_content(self, content: dict) -> dict:
+        """Process TOML content recursively, converting special values
+
+        Args:
+            content: Dictionary from TOML file
+
+        Returns:
+            Processed dictionary
+        """
+        result = {}
+        for key, value in content.items():
+            if isinstance(value, dict):
+                result[key] = self._process_toml_content(value)
+            elif isinstance(value, str) and value == "null":
+                result[key] = None
+            else:
+                result[key] = value
+        return result
 
     def _write_toml_file(self, file_path: Path, content: dict) -> None:
         """Write content to a TOML file
@@ -137,8 +158,19 @@ class ConfigManager:
             content: Content to write as dictionary
         """
         try:
+            # Convert None to "null" string
+            toml_content = tomlkit.document()
+            for key, value in content.items():
+                if isinstance(value, dict):
+                    section = tomlkit.table()
+                    for k, v in value.items():
+                        section.add(k, "null" if v is None else v)
+                    toml_content.add(key, section)
+                else:
+                    toml_content.add(key, "null" if value is None else value)
+
             with file_path.open("w", encoding="utf-8") as f:
-                tomlkit.dump(content, f)
+                tomlkit.dump(toml_content, f)
         except Exception as e:
             log.warning(f"Error writing config file {file_path}: {e}")
 
@@ -165,15 +197,27 @@ class ConfigManager:
             Default configuration as dictionary
         """
         default_model = SettingsModel()
-        return default_model.model_dump(exclude_unset=True)
+        config_dict = default_model.model_dump(mode="json")
+
+        # Convert sets to lists for TOML serialization
+        if "basic" in config_dict and "input_files" in config_dict["basic"]:
+            config_dict["basic"]["input_files"] = list(
+                config_dict["basic"]["input_files"]
+            )
+
+        return config_dict
 
     def _update_version_default_config(self) -> None:
         """Update version default configuration file if needed"""
         self._ensure_config_dir()
         default_config = self._get_default_config()
 
-        if not self._is_file_content_identical(
-            VERSION_DEFAULT_CONFIG_FILE, default_config
+        # Always write if file doesn't exist
+        if (
+            not VERSION_DEFAULT_CONFIG_FILE.exists()
+            or not self._is_file_content_identical(
+                VERSION_DEFAULT_CONFIG_FILE, default_config
+            )
         ):
             self._write_toml_file(VERSION_DEFAULT_CONFIG_FILE, default_config)
             log.debug("Updated version default configuration file")

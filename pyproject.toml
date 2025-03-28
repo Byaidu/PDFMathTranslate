@@ -37,7 +37,6 @@ dependencies = [
     "rich",
     "pydantic-settings>=2.8.1",
     "pydantic>=2.10.6",
-    "tomlkit>=0.12.0",
 ]
 
 [project.optional-dependencies]

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from argparse import Namespace
+from pathlib import Path
+from unittest.mock import mock_open
 from unittest.mock import patch
 
 import pytest
+import tomlkit
 from pdf2zh.config.main import ConfigManager
 from pdf2zh.config.main import MagicDefault
 from pdf2zh.config.main import build_args_parser
@@ -39,9 +42,9 @@ class TestBuildArgsParser:
         parser, field_name2type = build_args_parser()
 
         # Check some known fields
-        assert "config" in field_name2type
-        assert "report_interval" in field_name2type
-        assert "openai" in field_name2type
+        assert "config_file" in field_name2type
+        assert "basic" in field_name2type
+        assert "translation" in field_name2type
 
 
 class TestConfigManager:
@@ -156,3 +159,141 @@ class TestConfigManager:
         assert cm.settings.translation.qps == 15  # CLI value should override env var
         assert cm.settings.report_interval == 0.5  # Should use env var
         assert cm.settings is not None
+
+    @pytest.fixture
+    def sample_toml_content(self) -> str:
+        """Sample TOML configuration content"""
+        return """
+        debug = true
+        report_interval = 0.5
+        qps = 10
+        """
+
+    @pytest.fixture
+    def temp_config_dir(self, tmp_path: Path) -> Path:
+        """Create a temporary config directory"""
+        config_dir = tmp_path / ".config" / "pdf2zh"
+        config_dir.mkdir(parents=True)
+        return config_dir
+
+    def test_read_toml_file(self, sample_toml_content: str):
+        """Test reading TOML configuration file"""
+        cm = ConfigManager()
+
+        # Test successful read
+        with patch("pathlib.Path.open", mock_open(read_data=sample_toml_content)):
+            config = cm._read_toml_file(Path("test.toml"))
+            assert config["debug"] is True
+            assert config["report_interval"] == 0.5
+            assert config["qps"] == 10
+
+        # Test file not found
+        with patch("pathlib.Path.open", side_effect=FileNotFoundError):
+            config = cm._read_toml_file(Path("nonexistent.toml"))
+            assert config == {}
+
+        # Test invalid TOML
+        with patch("pathlib.Path.open", mock_open(read_data="invalid = toml [")):
+            config = cm._read_toml_file(Path("invalid.toml"))
+            assert config == {}
+
+    def test_write_toml_file(self, temp_config_dir: Path):
+        """Test writing TOML configuration file"""
+        cm = ConfigManager()
+        test_file = temp_config_dir / "test.toml"
+        test_content = {"debug": True, "report_interval": 0.5}
+
+        # Test successful write
+        cm._write_toml_file(test_file, test_content)
+        assert test_file.exists()
+
+        # Verify content
+        with test_file.open() as f:
+            loaded_content = tomlkit.load(f)
+            assert dict(loaded_content) == test_content
+
+    def test_is_file_content_identical(self, sample_toml_content: str):
+        """Test comparing file content with given content"""
+        cm = ConfigManager()
+        test_content = {"debug": True, "report_interval": 0.5, "qps": 10}
+
+        # Test identical content
+        with patch("pathlib.Path.open", mock_open(read_data=sample_toml_content)):
+            assert cm._is_file_content_identical(Path("test.toml"), test_content)
+
+        # Test different content
+        different_content = {"debug": False, "report_interval": 1.0}
+        assert not cm._is_file_content_identical(Path("test.toml"), different_content)
+
+    def test_update_version_default_config(self, temp_config_dir: Path):
+        """Test updating version default configuration file"""
+        cm = ConfigManager()
+        version_file = temp_config_dir / "version.default.toml"
+
+        with (
+            patch.object(ConfigManager, "_ensure_config_dir"),
+            patch("pdf2zh.config.main.VERSION_DEFAULT_CONFIG_FILE", version_file),
+        ):
+            # First update should create the file
+            cm._update_version_default_config()
+            assert version_file.exists()
+
+            # Second update with same content should not modify the file
+            initial_mtime = version_file.stat().st_mtime
+            cm._update_version_default_config()
+            assert version_file.stat().st_mtime == initial_mtime
+
+    def test_config_file_priority(
+        self, monkeypatch: pytest.MonkeyPatch, temp_config_dir: Path
+    ):
+        """Test configuration file priority order"""
+        cm = ConfigManager()
+
+        # Create test files
+        user_config = temp_config_dir / "user.toml"
+        default_config = temp_config_dir / "default.toml"
+
+        # Set up test configurations
+        user_config_content = {"debug": True, "qps": 20}
+        default_config_content = {"debug": False, "qps": 10, "report_interval": 0.5}
+
+        with patch("pdf2zh.const.DEFAULT_CONFIG_FILE", default_config):
+            # Write test configurations
+            cm._write_toml_file(user_config, user_config_content)
+            cm._write_toml_file(default_config, default_config_content)
+
+            # Set up environment and CLI args
+            monkeypatch.setenv("PDF2ZH_REPORT_INTERVAL", "1.0")
+            args = Namespace(
+                config_file=str(user_config),
+                debug=MagicDefault,
+                qps=MagicDefault,
+                report_interval=MagicDefault,
+            )
+
+            # Initialize configuration
+            with patch("argparse.ArgumentParser.parse_args", return_value=args):
+                cm.initialize_config()
+
+            # Verify priority: CLI > Env > User Config > Default Config
+            assert cm.settings.basic.debug is True  # from user config
+            assert cm.settings.translation.qps == 20  # from user config
+            assert cm.settings.report_interval == 1.0  # from env var
+
+    def test_ensure_config_dir(self, temp_config_dir: Path):
+        """Test configuration directory creation"""
+        cm = ConfigManager()
+        test_dir = temp_config_dir / "subdir"
+
+        with patch("pdf2zh.config.main.DEFAULT_CONFIG_DIR", test_dir):
+            # Directory should not exist initially
+            assert not test_dir.exists()
+
+            # Create directory
+            cm._ensure_config_dir()
+            assert test_dir.exists()
+            assert test_dir.is_dir()
+
+            # Should not raise error when directory already exists
+            cm._ensure_config_dir()
+            assert test_dir.exists()
