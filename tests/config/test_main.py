@@ -297,3 +297,246 @@ class TestConfigManager:
             # Should not raise error when directory already exists
             cm._ensure_config_dir()
             assert test_dir.exists()
+
+    def test_process_toml_content(self):
+        """Test processing of TOML content with various data types and structures"""
+        cm = ConfigManager()
+
+        # Test basic types
+        content = {
+            "string": "value",
+            "number": 42,
+            "float": 3.14,
+            "bool": True,
+            "null_str": "null",
+        }
+        processed = cm._process_toml_content(content)
+        assert processed["string"] == "value"
+        assert processed["number"] == 42
+        assert processed["float"] == 3.14
+        assert processed["bool"] is True
+        assert processed["null_str"] is None
+
+        # Test nested structures
+        nested_content = {
+            "level1": {
+                "level2": {"value": "null", "list": [1, 2, 3], "nested_null": "null"}
+            }
+        }
+        processed = cm._process_toml_content(nested_content)
+        assert processed["level1"]["level2"]["value"] is None
+        assert processed["level1"]["level2"]["list"] == [1, 2, 3]
+        assert processed["level1"]["level2"]["nested_null"] is None
+
+    def test_complex_env_vars(self, monkeypatch: pytest.MonkeyPatch):
+        """Test parsing of complex environment variables"""
+        cm = ConfigManager()
+
+        # Test basic types first
+        monkeypatch.setenv("PDF2ZH_DEBUG", "true")
+        monkeypatch.setenv("PDF2ZH_QPS", "20")
+        env_settings = cm.parse_env_vars()
+        assert "debug" in env_settings
+        assert env_settings["debug"] is True
+        assert env_settings["qps"] == 20
+
+        # Test optional types
+        monkeypatch.setenv("PDF2ZH_REPORT_INTERVAL", "0.5")
+        env_settings = cm.parse_env_vars()
+        assert env_settings["report_interval"] == 0.5
+
+    def test_get_default_config(self):
+        """Test default configuration generation"""
+        cm = ConfigManager()
+        default_config = cm._get_default_config()
+
+        # Verify basic structure
+        assert isinstance(default_config, dict)
+        assert "basic" in default_config
+        assert "translation" in default_config
+
+        # Verify input_files is converted to list
+        if "input_files" in default_config["basic"]:
+            assert isinstance(default_config["basic"]["input_files"], list)
+
+        # Verify essential configuration fields
+        assert "debug" in default_config["basic"]
+        assert "qps" in default_config["translation"]
+        assert isinstance(default_config["basic"]["debug"], bool)
+        assert isinstance(default_config["translation"]["qps"], int | float)
+
+    def test_settings_not_initialized(self):
+        """Test accessing settings before initialization"""
+        cm = ConfigManager()
+        cm._settings = None  # Force settings to be None
+        with pytest.raises(RuntimeError, match="Settings not initialized"):
+            _ = cm.settings
+
+    def test_initialize_config_with_invalid_file(self, monkeypatch: pytest.MonkeyPatch):
+        """Test initialization with invalid config file"""
+        cm = ConfigManager()
+
+        # Create args with non-existent config file
+        args = Namespace(
+            config_file="nonexistent.toml",
+            debug=MagicDefault,
+            report_interval=MagicDefault,
+        )
+
+        # Mock command line arguments
+        with patch("argparse.ArgumentParser.parse_args", return_value=args):
+            # Should not raise exception, should use default values
+            cm.initialize_config()
+            assert cm.settings is not None
+
+    def test_initialize_config_with_invalid_toml(self, temp_config_dir: Path):
+        """Test initialization with invalid TOML content"""
+        cm = ConfigManager()
+        invalid_config = temp_config_dir / "invalid.toml"
+
+        # Create invalid TOML file
+        invalid_config.write_text("invalid = toml [ content")
+
+        args = Namespace(
+            config_file=str(invalid_config),
+            debug=MagicDefault,
+            report_interval=MagicDefault,
+        )
+
+        # Mock command line arguments
+        with patch("argparse.ArgumentParser.parse_args", return_value=args):
+            # Should not raise exception, should use default values
+            cm.initialize_config()
+            assert cm.settings is not None
+
+    def test_nested_config_priority(self, monkeypatch: pytest.MonkeyPatch):
+        """Test priority handling with nested configurations"""
+        cm = ConfigManager()
+
+        # Set up nested configurations at different levels
+        cli_args = {"translation": {"model": "gpt-4", "temperature": 0.8}}
+
+        env_vars = {
+            "translation": {"model": "gpt-3.5", "temperature": 0.7, "max_tokens": 1000}
+        }
+
+        default_config = {
+            "translation": {
+                "model": "gpt-3",
+                "temperature": 0.5,
+                "max_tokens": 500,
+                "timeout": 30,
+            }
+        }
+
+        # Test merging with priority
+        result = cm.merge_settings([cli_args, env_vars, default_config])
+
+        # CLI values should take precedence
+        assert result["translation"]["model"] == "gpt-4"
+        assert result["translation"]["temperature"] == 0.8
+
+        # Env vars should take precedence over defaults
+        assert result["translation"]["max_tokens"] == 1000
+
+        # Default values should be preserved if not overridden
+        assert result["translation"]["timeout"] == 30
+
+    def test_parse_cli_args(self):
+        """Test command line argument parsing"""
+        cm = ConfigManager()
+
+        # Test with basic argument types
+        test_args = [
+            "--debug",
+            "--qps",
+            "20",
+            "--report-interval",
+            "0.5",
+            "--input-files",
+            "file1.pdf",  # Single file for now
+        ]
+
+        with patch("sys.argv", ["script.py"] + test_args):
+            cm.parse_cli_args()
+
+            assert cm.settings.basic.debug is True
+            assert cm.settings.translation.qps == 20
+            assert cm.settings.report_interval == 0.5
+            # input_files should be empty set by default
+            assert isinstance(cm.settings.basic.input_files, set)
+            assert len(cm.settings.basic.input_files) == 0
+
+        # Test with input files
+        test_args_with_files = ["--debug", "--input-files", "file1.pdf,file2.pdf"]
+
+        with patch("sys.argv", ["script.py"] + test_args_with_files):
+            cm.parse_cli_args()
+            assert isinstance(cm.settings.basic.input_files, set)
+            assert "file1.pdf" in cm.settings.basic.input_files
+            assert "file2.pdf" in cm.settings.basic.input_files
+
+    def test_end_to_end_config(
+        self, temp_config_dir: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """Test end-to-end configuration with all sources"""
+        cm = ConfigManager()
+
+        # Create test config file
+        config_file = temp_config_dir / "test_config.toml"
+        config_content = """
+        [basic]
+        debug = false
+        
+        [translation]
+        model = "gpt-3"
+        qps = 5
+        """
+        config_file.write_text(config_content)
+
+        # Set environment variables
+        monkeypatch.setenv("PDF2ZH_QPS", "10")
+        monkeypatch.setenv("PDF2ZH_REPORT_INTERVAL", "1.0")
+
+        # Create CLI arguments
+        args = Namespace(
+            config_file=str(config_file),
+            debug=True,  # Should override config file
+            qps=MagicDefault,  # Should use env var
+            report_interval=MagicDefault,  # Should use env var
+            input_files={"test.pdf"},  # Add a test file
+        )
+
+        # Initialize with all sources
+        with patch("argparse.ArgumentParser.parse_args", return_value=args):
+            cm.initialize_config()
+
+            # Verify priority order
+            assert cm.settings.basic.debug is True  # From CLI
+            assert cm.settings.translation.qps == 10  # From env var
+            assert cm.settings.report_interval == 1.0  # From env var
+            assert "test.pdf" in cm.settings.basic.input_files  # From CLI args
+
+    def test_file_system_operations(self, temp_config_dir: Path):
+        """Test actual file system operations"""
+        cm = ConfigManager()
+
+        # Test directory creation
+        test_dir = temp_config_dir / "new_config_dir"
+        with patch("pdf2zh.config.main.DEFAULT_CONFIG_DIR", test_dir):
+            cm._ensure_config_dir()
+            assert test_dir.exists()
+            assert test_dir.is_dir()
+
+        # Test file writing and reading
+        test_file = test_dir / "test.toml"
+        test_content = {"basic": {"debug": True}, "translation": {"qps": 15}}
+
+        # Write file
+        cm._write_toml_file(test_file, test_content)
+        assert test_file.exists()
+
+        # Read and verify content
+        read_content = cm._read_toml_file(test_file)
+        assert read_content["basic"]["debug"] is True
+        assert read_content["translation"]["qps"] == 15

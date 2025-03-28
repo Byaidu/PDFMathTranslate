@@ -239,7 +239,7 @@ class TestSettingsModel:
     def test_default_values(self):
         """Test default values of SettingsModel"""
         settings = SettingsModel()
-        assert settings.config is None
+        assert settings.config_file is None
         assert settings.report_interval == 0.1
         assert settings.openai is False
         assert isinstance(settings.basic, BasicSettings)
