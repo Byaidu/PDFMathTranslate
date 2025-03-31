@@ -253,6 +253,11 @@ For detailed explanations, please refer to our document about [Advanced Usage](.
 The current pdf2zh API is temporarily deprecated. The API will be provided again after [pdf2zh 2.0](https://github.com/Byaidu/PDFMathTranslate/issues/586) is released. For users who need programmatic access, please use the `babeldoc.high_level.async_translate` function of [BabelDOC](https://github.com/funstory-ai/BabelDOC).
 
 This API being temporarily deprecated means: the relevant code will not be removed for now, but no technical support will be provided, and no bug fixes will be made.
+
+> [!WARNING]
+>
+> pdf2zh 2.0 does not guarantee compatibility with versions prior to the v2.0.0 final release. Secondary development is not recommended. Please wait patiently for the API to stabilize.
+
 <!-- For downstream applications, please refer to our document about [API Details](./docs/APIS.md) for futher information about:
 
 - [Python API](./docs/APIS.md#api-python), how to use the program in other Python programs

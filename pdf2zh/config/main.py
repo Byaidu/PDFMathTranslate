@@ -383,7 +383,7 @@ class ConfigManager:
 
         return result
 
-    def initialize_config(self) -> None:
+    def initialize_config(self) -> SettingsModel:
         """Initialize configuration from all sources"""
         # Parse CLI arguments (highest priority)
         parser, _ = build_args_parser()
@@ -415,6 +415,7 @@ class ConfigManager:
 
         # Update version default configuration if needed
         self._update_version_default_config()
+        return self._settings
 
     def create_settings_from_args(self, args: argparse.Namespace) -> SettingsModel:
         """

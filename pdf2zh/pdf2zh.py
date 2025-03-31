@@ -5,7 +5,7 @@ output it to plain text, html, xml or tags.
 
 from __future__ import annotations
 
-import argparse
+import asyncio
 import logging
 import os
 import sys
@@ -17,206 +17,10 @@ from babeldoc.high_level import init as yadt_init
 from babeldoc.main import create_progress_handler
 from babeldoc.translation_config import TranslationConfig as YadtConfig
 
-from pdf2zh import __version__
 from pdf2zh.config import ConfigManager
+from pdf2zh.config.model import SettingsModel
 
 logger = logging.getLogger(__name__)
-
-
-def create_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description=__doc__, add_help=True)
-    parser.add_argument(
-        "files",
-        type=str,
-        default=None,
-        nargs="*",
-        help="One or more paths to PDF files.",
-    )
-    parser.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=f"pdf2zh v{__version__}",
-    )
-    parser.add_argument(
-        "--debug",
-        "-d",
-        default=False,
-        action="store_true",
-        help="Use debug logging level.",
-    )
-    parse_params = parser.add_argument_group(
-        "Parser",
-        description="Used during PDF parsing",
-    )
-    parse_params.add_argument(
-        "--pages",
-        "-p",
-        type=str,
-        help="The list of page numbers to parse.",
-    )
-    parse_params.add_argument(
-        "--vfont",
-        "-f",
-        type=str,
-        default="",
-        help="The regex to math font name of formula.",
-    )
-    parse_params.add_argument(
-        "--vchar",
-        "-c",
-        type=str,
-        default="",
-        help="The regex to math character of formula.",
-    )
-    parse_params.add_argument(
-        "--lang-in",
-        "-li",
-        type=str,
-        default="en",
-        help="The code of source language.",
-    )
-    parse_params.add_argument(
-        "--lang-out",
-        "-lo",
-        type=str,
-        default="zh",
-        help="The code of target language.",
-    )
-    parse_params.add_argument(
-        "--service",
-        "-s",
-        type=str,
-        default="google",
-        help="The service to use for translation.",
-    )
-    parse_params.add_argument(
-        "--output",
-        "-o",
-        type=str,
-        default="",
-        help="Output directory for files.",
-    )
-    parse_params.add_argument(
-        "--thread",
-        "-t",
-        type=int,
-        default=4,
-        help="The number of threads to execute translation.",
-    )
-    parse_params.add_argument(
-        "--interactive",
-        "-i",
-        action="store_true",
-        help="Interact with GUI.",
-    )
-    parse_params.add_argument(
-        "--share",
-        action="store_true",
-        help="Enable Gradio Share",
-    )
-    parse_params.add_argument(
-        "--flask",
-        action="store_true",
-        help="flask",
-    )
-    parse_params.add_argument(
-        "--celery",
-        action="store_true",
-        help="celery",
-    )
-    parse_params.add_argument(
-        "--authorized",
-        type=str,
-        nargs="+",
-        help="user name and password.",
-    )
-    parse_params.add_argument(
-        "--prompt",
-        type=str,
-        help="user custom prompt.",
-    )
-
-    parse_params.add_argument(
-        "--compatible",
-        "-cp",
-        action="store_true",
-        help="Convert the PDF file into PDF/A format to improve compatibility.",
-    )
-
-    parse_params.add_argument(
-        "--onnx",
-        type=str,
-        help="custom onnx model path.",
-    )
-
-    parse_params.add_argument(
-        "--serverport",
-        type=int,
-        help="custom WebUI port.",
-    )
-
-    parse_params.add_argument(
-        "--dir",
-        action="store_true",
-        help="translate directory.",
-    )
-
-    parse_params.add_argument(
-        "--config",
-        type=str,
-        help="config file.",
-    )
-
-    parse_params.add_argument(
-        "--babeldoc",
-        default=False,
-        action="store_true",
-        help="Use experimental backend babeldoc.",
-    )
-
-    parse_params.add_argument(
-        "--skip-subset-fonts",
-        action="store_true",
-        help="Skip font subsetting. "
-        "This option can improve compatibility "
-        "but will increase the size of the output file.",
-    )
-
-    parse_params.add_argument(
-        "--ignore-cache",
-        action="store_true",
-        help="Ignore cache and force retranslation.",
-    )
-
-    return parser
-
-
-def parse_args(args: list[str] | None) -> argparse.Namespace:
-    parsed_args = create_parser().parse_args(args=args)
-
-    if parsed_args.pages:
-        pages = []
-        for p in parsed_args.pages.split(","):
-            if "-" in p:
-                start, end = p.split("-")
-                pages.extend(range(int(start) - 1, int(end)))
-            else:
-                pages.append(int(p) - 1)
-        parsed_args.raw_pages = parsed_args.pages
-        parsed_args.pages = pages
-
-    if parsed_args.prompt:
-        try:
-            prompt_path = Path(parsed_args.prompt)
-            content = prompt_path.read_text(encoding="utf-8")
-            parsed_args.prompt = Template(content)
-        except Exception as err:
-            raise ValueError("prompt error.") from err
-
-    print(parsed_args)
-
-    return parsed_args
 
 
 def find_all_files_in_directory(directory_path):
@@ -244,10 +48,14 @@ def find_all_files_in_directory(directory_path):
     return file_paths
 
 
-def main(args: list[str] | None = None) -> int:
+async def main(args: list[str] | None = None) -> int:
     from rich.logging import RichHandler
 
     logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
+
+    settings = ConfigManager().initialize_config()
+    if settings.basic.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     # disable httpx, openai, httpcore, http11 logs
     logging.getLogger("httpx").setLevel("CRITICAL")
@@ -259,28 +67,15 @@ def main(args: list[str] | None = None) -> int:
     logging.getLogger("http11").setLevel("CRITICAL")
     logging.getLogger("http11").propagate = False
 
-    parsed_args = parse_args(args)
+    print(settings)
 
-    if parsed_args.debug:
-        logging.getLogger().setLevel(logging.DEBUG)
+    if settings.basic.input_files:
+        for file in list(settings.basic.input_files):
+            new_settings = settings.clone()
+            new_settings.basic.input_files = [file]
+            await do_translate(new_settings)
 
-    if parsed_args.config:
-        try:
-            config_path = Path(parsed_args.config)
-            content = config_path.read_text(encoding="utf-8")
-            ConfigManager.load_config(content)
-        except Exception as err:
-            raise ValueError("config error.") from err
-
-    if parsed_args.prompt:
-        try:
-            prompt_path = Path(parsed_args.prompt)
-            content = prompt_path.read_text(encoding="utf-8")
-            parsed_args.prompt = Template(content)
-        except Exception as err:
-            raise ValueError("prompt error.") from err
-
-    print(parsed_args)
+    return 0
 
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
@@ -292,6 +87,16 @@ def main(args: list[str] | None = None) -> int:
         else:
             setup_gui(parsed_args.share, parsed_args.authorized)
         return 0
+
+    return 0
+
+
+async def do_translate(settings: SettingsModel) -> int:
+    translator = settings.get_translator()
+    if translator is None:
+        raise ValueError("No translator found")
+
+    assert len(settings.basic.input_files) == 1, "Only one input file is supported"
 
     return 0
 
@@ -426,4 +231,4 @@ def yadt_main(parsed_args) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(asyncio.run(main()))
