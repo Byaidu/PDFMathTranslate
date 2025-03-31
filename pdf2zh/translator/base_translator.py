@@ -3,6 +3,7 @@ import logging
 from abc import ABC
 from abc import abstractmethod
 
+from pdf2zh.config.model import SettingsModel
 from pdf2zh.translator.base_rate_limiter import BaseRateLimiter
 from pdf2zh.translator.cache import TranslationCache
 
@@ -15,10 +16,18 @@ class BaseTranslator(ABC):
     name = "base"
     lang_map = {}
 
-    def __init__(self, lang_in, lang_out, ignore_cache, rate_limiter: BaseRateLimiter):
-        self.ignore_cache = ignore_cache
-        lang_in = self.lang_map.get(lang_in.lower(), lang_in)
-        lang_out = self.lang_map.get(lang_out.lower(), lang_out)
+    def __init__(
+        self,
+        settings: SettingsModel,
+        rate_limiter: BaseRateLimiter,
+    ):
+        self.ignore_cache = settings.translation.ignore_cache
+        lang_in = self.lang_map.get(
+            settings.translation.lang_in.lower(), settings.translation.lang_in
+        )
+        lang_out = self.lang_map.get(
+            settings.translation.lang_out.lower(), settings.translation.lang_out
+        )
         self.lang_in = lang_in
         self.lang_out = lang_out
         self.rate_limiter = rate_limiter

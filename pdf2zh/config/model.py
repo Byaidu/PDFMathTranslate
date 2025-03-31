@@ -9,9 +9,6 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 
-from pdf2zh.translator import BaseTranslator
-from pdf2zh.translator import OpenAITranslator
-
 log = logging.getLogger(__name__)
 
 
@@ -139,18 +136,6 @@ class SettingsModel(BaseModel):
     openai_detail: OpenAISettings = Field(default_factory=OpenAISettings)
 
     model_config = ConfigDict(extra="allow")
-
-    def get_translator(self) -> BaseTranslator:
-        if self.openai:
-            return OpenAITranslator(
-                self.translation.lang_in,
-                self.translation.lang_out,
-                self.openai_detail.openai_model,
-                self.openai_detail.openai_base_url,
-                self.openai_detail.openai_api_key,
-            )
-        else:
-            return None
 
     def clone(self) -> SettingsModel:
         return self.model_copy(deep=True)

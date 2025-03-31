@@ -2,6 +2,8 @@ import logging
 
 import openai
 from babeldoc.document_il.utils.atomic_integer import AtomicInteger
+from pdf2zh.config.model import SettingsModel
+from pdf2zh.translator.base_rate_limiter import BaseRateLimiter
 from pdf2zh.translator.base_translator import BaseTranslator
 from tenacity import retry
 from tenacity import retry_if_exception_type
@@ -17,18 +19,17 @@ class OpenAITranslator(BaseTranslator):
 
     def __init__(
         self,
-        lang_in,
-        lang_out,
-        model,
-        base_url=None,
-        api_key=None,
-        ignore_cache=False,
+        settings: SettingsModel,
+        rate_limiter: BaseRateLimiter,
     ):
-        super().__init__(lang_in, lang_out, ignore_cache)
+        super().__init__(settings, rate_limiter)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        self.client = openai.OpenAI(base_url=base_url, api_key=api_key)
+        self.client = openai.OpenAI(
+            base_url=settings.openai_detail.openai_base_url,
+            api_key=settings.openai_detail.openai_api_key,
+        )
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
-        self.model = model
+        self.model = settings.openai_detail.openai_model
         self.add_cache_impact_parameters("model", self.model)
         self.add_cache_impact_parameters("prompt", self.prompt(""))
         self.token_count = AtomicInteger()
