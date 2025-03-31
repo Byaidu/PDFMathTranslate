@@ -62,6 +62,19 @@ async def main() -> int:
     logging.getLogger("http11").setLevel("CRITICAL")
     logging.getLogger("http11").propagate = False
 
+    for v in logging.Logger.manager.loggerDict.values():
+        if getattr(v, "name", None) is None:
+            continue
+        if (
+            v.name.startswith("pdfminer")
+            or v.name.startswith("peewee")
+            or v.name.startswith("httpx")
+            or "http11" in v.name
+            or "openai" in v.name
+        ):
+            v.disabled = True
+            v.propagate = False
+
     logger.debug(f"settings: {settings}")
 
     await do_translate(settings)
