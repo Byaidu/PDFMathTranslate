@@ -114,14 +114,12 @@ class PDFSettings(BaseModel):
 class OpenAISettings(BaseModel):
     """OpenAI API settings"""
 
-    openai_model: str = Field(
-        default="gpt-4o-mini", description="OpenAI model to use", alias="model"
-    )
+    openai_model: str = Field(default="gpt-4o-mini", description="OpenAI model to use")
     openai_base_url: str | None = Field(
-        default=None, description="Base URL for OpenAI API", alias="base-url"
+        default=None, description="Base URL for OpenAI API"
     )
     openai_api_key: str | None = Field(
-        default=None, description="API key for OpenAI service", alias="api-key"
+        default=None, description="API key for OpenAI service"
     )
 
 

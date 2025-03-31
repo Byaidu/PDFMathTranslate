@@ -165,7 +165,7 @@ class ConfigManager:
         result = {}
         for key, value in content.items():
             if isinstance(value, dict):
-                result[key] = self._process_toml_content(value)
+                result.update(self._process_toml_content(value))
             elif isinstance(value, str) and value == "null":
                 result[key] = None
             else:
@@ -388,7 +388,11 @@ class ConfigManager:
         # Parse CLI arguments (highest priority)
         parser, _ = build_args_parser()
         args = parser.parse_args()
-        cli_args = {k: v for k, v in vars(args).items() if v is not MagicDefault}
+        cli_args = {
+            k.replace("-", "_"): v
+            for k, v in vars(args).items()
+            if v is not MagicDefault
+        }
 
         # Parse environment variables (middle priority)
         env_vars = self.parse_env_vars()
@@ -409,6 +413,8 @@ class ConfigManager:
             merged_args = self.merge_settings(
                 [merged_args, user_config, default_config_file]
             )
+        else:
+            merged_args = self.merge_settings([merged_args, default_config_file])
         # Create settings model from merged dictionary
         self._settings = self._build_model_from_args(SettingsModel, merged_args)
         log.debug(f"Initialized settings: {self._settings.model_dump_json()}")
@@ -462,10 +468,15 @@ class ConfigManager:
             # If the argument was provided, add it to the kwargs
             if arg_name in args_dict and args_dict[arg_name] is not None:
                 args = args_dict[arg_name]
-                if isinstance(args, MagicDefault) or args == MagicDefault:
+                if (
+                    isinstance(args, MagicDefault)
+                    or args == MagicDefault
+                    or args == "null"
+                    or args is None
+                ):
                     # If the argument is a MagicDefault, skip it
                     continue
-                model_kwargs[field_name] = args_dict[arg_name]
+                model_kwargs[field_name] = args
 
             # Handle nested models
             if field_detail.default_factory is not None:
