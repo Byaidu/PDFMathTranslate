@@ -62,7 +62,7 @@ async def main() -> int:
     logging.getLogger("http11").setLevel("CRITICAL")
     logging.getLogger("http11").propagate = False
 
-    print(settings)
+    logger.debug(f"settings: {settings}")
 
     await do_translate(settings)
     return 0
