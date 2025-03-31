@@ -35,7 +35,7 @@ jobs:
           key: test-1-babeldoc-assets-${{ hashFiles('babeldoctemp1234567/babeldoc/assets/embedding_assets_metadata.py') }}
       - uses: actions/checkout@v4
       - name: Setup uv with Python ${{ matrix.python-version }}
-        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5.4.1
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
