@@ -491,44 +491,6 @@ def babeldoc_translate_file(**kwargs):
 
 
 # Global setup
-custom_blue = gr.themes.Color(
-    c50="#E8F3FF",
-    c100="#BEDAFF",
-    c200="#94BFFF",
-    c300="#6AA1FF",
-    c400="#4080FF",
-    c500="#165DFF",  # Primary color
-    c600="#0E42D2",
-    c700="#0A2BA6",
-    c800="#061D79",
-    c900="#03114D",
-    c950="#020B33",
-)
-
-custom_css = """
-    .secondary-text {color: #999 !important;}
-    footer {visibility: hidden}
-    .env-warning {color: #dd5500 !important;}
-    .env-success {color: #559900 !important;}
-
-    /* Add dashed border to input-file class */
-    .input-file {
-        border: 1.2px dashed #165DFF !important;
-        border-radius: 6px !important;
-    }
-
-    .progress-bar-wrap {
-        border-radius: 8px !important;
-    }
-
-    .progress-bar {
-        border-radius: 8px !important;
-    }
-
-    .pdf-canvas canvas {
-        width: 100%;
-    }
-    """
 
 demo_recaptcha = """
     <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
@@ -553,96 +515,159 @@ tech_details_string = f"""
                 """
 cancellation_event_map = {}
 
+# 定义主题和样式
+custom_theme = gr.themes.Soft(
+    primary_hue="purple",
+    secondary_hue="blue",
+    neutral_hue="slate",
+    radius_size="lg",
+    spacing_size="md",
+    text_size="md"
+).set(
+    button_primary_background_fill="linear-gradient(90deg, #6e48aa 0%, #9d50bb 100%)",
+    button_primary_background_fill_hover="linear-gradient(90deg, #7d55b8 0%, #a45dc4 100%)",
+    button_primary_text_color="#ffffff",
+    button_primary_border_color="#6e48aa",
+    block_title_text_color="#4a2a7a",
+    block_label_text_color="#4a2a7a",
+    input_border_color_focus="#9d50bb",
+)
 
-# The following code creates the GUI
+custom_css = """
+:root {
+    --primary-color: #6e48aa;
+    --secondary-color: #9d50bb;
+    --light-bg: #f8f9fa;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.gradio-container {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f5f7fa;
+}
+
+.settings-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 1.5rem;
+}
+
+.settings-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+
+.input-file {
+    border: 2px dashed #d1d5db !important;
+    border-radius: 12px !important;
+    padding: 2rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.input-file:hover {
+    border-color: var(--primary-color) !important;
+}
+
+@media (max-width: 768px) {
+    .gradio-row {
+        flex-direction: column !important;
+    }
+}
+"""
+
 with gr.Blocks(
-    title="PDFMathTranslate - PDF Translation with preserved formats",
-    theme=gr.themes.Default(
-        primary_hue=custom_blue, spacing_size="md", radius_size="lg"
-    ),
-    css=custom_css,
-    head=demo_recaptcha if flag_demo else "",
+        title="PDFMathTranslate - 现代化PDF翻译工具",
+        theme=custom_theme,
+        css=custom_css,
+        head=demo_recaptcha if flag_demo else "",
 ) as demo:
-    gr.Markdown(
-        "# [PDFMathTranslate @ GitHub](https://github.com/Byaidu/PDFMathTranslate)"
-    )
+    # 标题部分
+    gr.Markdown("""
+    <div style="text-align: center;">
+        <h1 style="margin-bottom: 0.5rem; color: #4a2a7a;">
+            <i class="fa-solid fa-language"></i> PDFMathTranslate
+        </h1>
+        <p style="color: #6b7280; margin-top: 0;">
+            保留格式的专业PDF翻译工具
+        </p>
+    </div>
+    """)
 
-    with gr.Row():
+    with gr.Row(equal_height=False):
+        # 左侧输入和设置面板
         with gr.Column(scale=1):
-            gr.Markdown("## File | < 5 MB" if flag_demo else "## File")
-            file_type = gr.Radio(
-                choices=["File", "Link"],
-                label="Type",
-                value="File",
-            )
-            file_input = gr.File(
-                label="File",
-                file_count="single",
-                file_types=[".pdf"],
-                type="filepath",
-                elem_classes=["input-file"],
-            )
-            link_input = gr.Textbox(
-                label="Link",
-                visible=False,
-                interactive=True,
-            )
-            gr.Markdown("## Option")
-            service = gr.Dropdown(
-                label="Service",
-                choices=enabled_services,
-                value=enabled_services[0],
-            )
-            envs = []
-            for i in range(3):
-                envs.append(
-                    gr.Textbox(
+            # 文件输入区域
+            with gr.Group(elem_classes=["settings-panel"]):
+                gr.Markdown("""<div class="settings-title"><i class="fa-solid fa-file-import"></i> 文档输入</div>""")
+
+                file_type = gr.Radio(
+                    choices=["File", "Link"],
+                    label="输入方式",
+                    value="File",
+                    elem_classes=["radio-item"]
+                )
+
+                with gr.Row():
+                    file_input = gr.File(
+                        label="上传PDF文件",
+                        file_count="single",
+                        file_types=[".pdf"],
+                        type="filepath",
+                        elem_classes=["input-file"]
+                    )
+                    link_input = gr.Textbox(
+                        label="PDF文档链接",
+                        placeholder="https://example.com/document.pdf",
                         visible=False,
                         interactive=True,
                     )
-                )
-            with gr.Row():
-                lang_from = gr.Dropdown(
-                    label="Translate from",
-                    choices=lang_map.keys(),
-                    value=ConfigManager.get("PDF2ZH_LANG_FROM", "English"),
-                )
-                lang_to = gr.Dropdown(
-                    label="Translate to",
-                    choices=lang_map.keys(),
-                    value=ConfigManager.get("PDF2ZH_LANG_TO", "Simplified Chinese"),
-                )
-            page_range = gr.Radio(
-                choices=page_map.keys(),
-                label="Pages",
-                value=list(page_map.keys())[0],
-            )
 
-            page_input = gr.Textbox(
-                label="Page range",
-                visible=False,
-                interactive=True,
-            )
+            # 翻译设置区域
+            with gr.Group(elem_classes=["settings-panel"]):
+                gr.Markdown("""<div class="settings-title"><i class="fa-solid fa-gears"></i> 翻译设置</div>""")
 
-            with gr.Accordion("Open for More Experimental Options!", open=False):
-                gr.Markdown("#### Experimental")
-                threads = gr.Textbox(
-                    label="number of threads", interactive=True, value="4"
-                )
-                skip_subset_fonts = gr.Checkbox(
-                    label="Skip font subsetting", interactive=True, value=False
-                )
-                ignore_cache = gr.Checkbox(
-                    label="Ignore cache", interactive=True, value=False
-                )
-                prompt = gr.Textbox(
-                    label="Custom Prompt for llm", interactive=True, visible=False
-                )
-                use_babeldoc = gr.Checkbox(
-                    label="Use BabelDOC", interactive=True, value=False
-                )
-                envs.append(prompt)
+                with gr.Row():
+                    service = gr.Dropdown(
+                        label="翻译服务",
+                        choices=enabled_services,
+                        value=enabled_services[0]
+                    )
 
+                envs = []
+                for i in range(3):
+                    envs.append(gr.Textbox(visible=False))
+
+                with gr.Row():
+                    lang_from = gr.Dropdown(
+                        label="源语言",
+                        choices=lang_map.keys(),
+                        value=ConfigManager.get("PDF2ZH_LANG_FROM", "English")
+                    )
+                    lang_to = gr.Dropdown(
+                        label="目标语言",
+                        choices=lang_map.keys(),
+                        value=ConfigManager.get("PDF2ZH_LANG_TO", "Simplified Chinese")
+                    )
+
+                with gr.Row():
+                    page_range = gr.Radio(
+                        choices=page_map.keys(),
+                        label="页面选择",
+                        value=list(page_map.keys())[0]
+                    )
+                    page_input = gr.Textbox(
+                        label="自定义页面范围",
+                        visible=False,
+                        placeholder="例如: 1-5, 8, 10-12"
+                    )
             def on_select_service(service, evt: gr.EventData):
                 translator = service_map[service]
                 _envs = []
@@ -683,56 +708,119 @@ with gr.Blocks(
                     return gr.update(visible=True)
                 else:
                     return gr.update(visible=False)
+            # 高级设置区域
+            with gr.Accordion("高级设置", open=False):
+                with gr.Group(elem_classes=["settings-panel"]):
+                    gr.Markdown("""<div class="settings-title"><i class="fa-solid fa-sliders"></i> 高级选项</div>""")
 
-            output_title = gr.Markdown("## Translated", visible=False)
-            output_file_mono = gr.File(
-                label="Download Translation (Mono)", visible=False
-            )
-            output_file_dual = gr.File(
-                label="Download Translation (Dual)", visible=False
-            )
+                    threads = gr.Slider(
+                        minimum=1,
+                        maximum=16,
+                        step=1,
+                        label="处理线程数",
+                        value=4
+                    )
+
+                    with gr.Row():
+                        skip_subset_fonts = gr.Checkbox(
+                            label="跳过字体子集化",
+                            value=False,
+                            interactive=True
+                        )
+                        ignore_cache = gr.Checkbox(
+                            label="忽略缓存",
+                            value=False,
+                            interactive=True
+                        )
+                        use_babeldoc = gr.Checkbox(
+                            label="使用BabelDOC",
+                            value=False,
+                            interactive=True
+                        )
+
+                    prompt = gr.Textbox(
+                        label="自定义LLM提示词",
+                        visible=False,
+                        interactive=True,
+                        placeholder="输入翻译模型的自定义指令..."
+                    )
+                    envs.append(prompt)
+
+
+
+            # 输出区域
+            output_title = gr.Markdown(
+                """<div class="settings-title"><i class="fa-solid fa-file-export"></i> 翻译结果</div>""", visible=False)
+
+            with gr.Row():
+                output_file_mono = gr.File(
+                    label="单语版本下载",
+                    visible=False
+                )
+                output_file_dual = gr.File(
+                    label="双语版本下载",
+                    visible=False
+                )
+
+            # 操作按钮
+            with gr.Row():
+                translate_btn = gr.Button(
+                    "开始翻译",
+                    variant="primary",
+                    size="lg"
+                )
+                cancellation_btn = gr.Button(
+                    "取消",
+                    variant="secondary",
+                    size="lg"
+                )
+
+            # 隐藏元素
             recaptcha_response = gr.Textbox(
-                label="reCAPTCHA Response", elem_id="verify", visible=False
+                label="reCAPTCHA验证",
+                elem_id="verify",
+                visible=False
             )
             recaptcha_box = gr.HTML('<div id="recaptcha-box"></div>')
-            translate_btn = gr.Button("Translate", variant="primary")
-            cancellation_btn = gr.Button("Cancel", variant="secondary")
-            tech_details_tog = gr.Markdown(
-                tech_details_string,
-                elem_classes=["secondary-text"],
-            )
-            page_range.select(on_select_page, page_range, page_input)
-            service.select(
-                on_select_service,
-                service,
-                envs,
-            )
-            file_type.select(
-                on_select_filetype,
-                file_type,
-                [file_input, link_input],
-                js=(
-                    f"""
-                    (a,b)=>{{
-                        try{{
-                            grecaptcha.render('recaptcha-box',{{
-                                'sitekey':'{client_key}',
-                                'callback':'onVerify'
-                            }});
-                        }}catch(error){{}}
-                        return [a];
-                    }}
-                    """
-                    if flag_demo
-                    else ""
-                ),
-            )
 
+        # 右侧预览区域
         with gr.Column(scale=2):
-            gr.Markdown("## Preview")
-            preview = PDF(label="Document Preview", visible=True, height=2000)
+            with gr.Group(elem_classes=["settings-panel"]):
+                gr.Markdown("""<div class="settings-title"><i class="fa-solid fa-file-pdf"></i> 文档预览</div>""")
+                preview = PDF(
+                    label="PDF预览",
+                    visible=True,
+                    height=2000
+                )
 
-    # Event handlers
+    # 状态管理
+    state = gr.State({"session_id": None})
+
+    # 事件处理 (保持不变)
+    page_range.select(on_select_page, page_range, page_input)
+    service.select(on_select_service, service, envs)
+
+    file_type.select(
+        on_select_filetype,
+        file_type,
+        [file_input, link_input],
+        js=(
+            f"""
+            (a,b)=>{{
+                try{{
+                    grecaptcha.render('recaptcha-box',{{
+                        'sitekey':'{client_key}',
+                        'callback':'onVerify'
+                    }});
+                }}catch(error){{}}
+                return [a];
+            }}
+            """
+            if flag_demo
+            else ""
+        ),
+    )
+
     file_input.upload(
         lambda x: x,
         inputs=file_input,
@@ -753,8 +841,6 @@ with gr.Blocks(
             else ""
         ),
     )
-
-    state = gr.State({"session_id": None})
 
     translate_btn.click(
         translate_file,
@@ -790,7 +876,6 @@ with gr.Blocks(
         stop_translate_file,
         inputs=[state],
     )
-
 
 def parse_user_passwd(file_path: str) -> tuple:
     """
