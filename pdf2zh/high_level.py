@@ -6,6 +6,7 @@ import multiprocessing.connection
 import multiprocessing.queues
 import queue
 import threading
+import traceback
 from collections.abc import AsyncGenerator
 from functools import partial
 from logging.handlers import QueueHandler
@@ -16,10 +17,89 @@ from babeldoc.high_level import async_translate as babeldoc_translate
 from babeldoc.main import create_progress_handler
 from babeldoc.translation_config import TranslationConfig as BabelDOCConfig
 from babeldoc.translation_config import WatermarkOutputMode as BabelDOCWatermarkMode
+from rich.logging import RichHandler
 
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.translator import get_translator
 from pdf2zh.utils import asynchronize
+
+
+# Custom exception classes for structured error handling
+class TranslationError(Exception):
+    """Base class for all translation-related errors."""
+
+    def __reduce__(self):
+        """Support for pickling the exception when passing between processes."""
+        return (self.__class__, (str(self),))
+
+
+class BabeldocError(TranslationError):
+    """Error originating from the babeldoc library."""
+
+    def __init__(self, message, original_error=None):
+        super().__init__(message)
+        self.original_error = original_error
+
+    def __reduce__(self):
+        """Support for pickling the exception when passing between processes."""
+        return (self.__class__, (str(self), self.original_error))
+
+    def __str__(self):
+        if self.original_error:
+            return f"{super().__str__()} - Original error: {self.original_error}"
+        return super().__str__()
+
+
+class SubprocessError(TranslationError):
+    """Error occurring in the translation subprocess outside of babeldoc."""
+
+    def __init__(self, message, traceback_str=None):
+        super().__init__(message)
+        self.traceback_str = traceback_str
+
+    def __reduce__(self):
+        """Support for pickling the exception when passing between processes."""
+        return (self.__class__, (str(self), self.traceback_str))
+
+    def __str__(self):
+        if self.traceback_str:
+            return f"{super().__str__()}\nTraceback: {self.traceback_str}"
+        return super().__str__()
+
+
+class IPCError(TranslationError):
+    """Error in inter-process communication."""
+
+    def __init__(self, message, details=None):
+        super().__init__(message)
+        self.details = details
+
+    def __reduce__(self):
+        """Support for pickling the exception when passing between processes."""
+        return (self.__class__, (str(self), self.details))
+
+    def __str__(self):
+        if self.details:
+            return f"{super().__str__()} - Details: {self.details}"
+        return super().__str__()
+
+
+class SubprocessCrashError(TranslationError):
+    """Error occurring when the subprocess crashes unexpectedly."""
+
+    def __init__(self, message, exit_code=None):
+        super().__init__(message)
+        self.exit_code = exit_code
+
+    def __reduce__(self):
+        """Support for pickling the exception when passing between processes."""
+        return (self.__class__, (str(self), self.exit_code))
+
+    def __str__(self):
+        if self.exit_code is not None:
+            return f"{super().__str__()} (exit code: {self.exit_code})"
+        return super().__str__()
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,44 +113,102 @@ def _translate_wrapper(
 ):
     logger = logging.getLogger(__name__)
 
-    logging.getLogger("asyncio").setLevel(logging.WARNING)
-    logging.getLogger("httpx").setLevel(logging.WARNING)
-    logging.getLogger("openai").setLevel(logging.WARNING)
-    logging.getLogger("pdfminer").setLevel(logging.WARNING)
-    logging.getLogger("httpcore").setLevel(logging.WARNING)
-    logging.getLogger("peewee").setLevel(logging.WARNING)
+    try:
+        logging.getLogger("asyncio").setLevel(logging.WARNING)
+        logging.getLogger("httpx").setLevel(logging.WARNING)
+        logging.getLogger("openai").setLevel(logging.WARNING)
+        logging.getLogger("pdfminer").setLevel(logging.WARNING)
+        logging.getLogger("httpcore").setLevel(logging.WARNING)
+        logging.getLogger("peewee").setLevel(logging.WARNING)
 
-    queue_handler = QueueHandler(logger_queue)
-    logging.basicConfig(level=logging.INFO, handlers=[queue_handler])
+        queue_handler = QueueHandler(logger_queue)
+        logging.basicConfig(level=logging.INFO, handlers=[queue_handler])
 
-    config = create_babeldoc_config(settings, file)
+        config = create_babeldoc_config(settings, file)
 
-    def cancel_recv_thread():
-        pipe_cancel_message_recv.recv()
-        config.cancel_translation()
+        def cancel_recv_thread():
+            try:
+                pipe_cancel_message_recv.recv()
+                logger.debug("Cancel signal received in subprocess")
+                config.cancel_translation()
+            except Exception as e:
+                logger.error(f"Error in cancel_recv_thread: {e}")
 
-    cancel_t = threading.Thread(target=cancel_recv_thread, daemon=True)
-    cancel_t.start()
+        cancel_t = threading.Thread(target=cancel_recv_thread, daemon=True)
+        cancel_t.start()
 
-    async def translate_wrapper_async():
+        async def translate_wrapper_async():
+            try:
+                async for event in babeldoc_translate(config):
+                    logger.debug(f"sub process generate event: {event}")
+                    if event["type"] == "error":
+                        # Convert babeldoc error to structured exception
+                        error_msg = str(event.get("error", "Unknown babeldoc error"))
+                        error = BabeldocError(
+                            message=f"Babeldoc translation error: {error_msg}",
+                            original_error=error_msg,
+                        )
+                        pipe_progress_send.send(error)
+                        break
+                    # Send normal progress events as before
+                    pipe_progress_send.send(event)
+                    if event["type"] == "finish":
+                        break
+            except Exception as e:
+                # Capture non-babeldoc errors during translation
+                tb_str = traceback.format_exc()
+                logger.error(f"Error in translate_wrapper_async: {e}\n{tb_str}")
+                error = SubprocessError(
+                    message=f"Error during translation process: {e}",
+                    traceback_str=tb_str,
+                )
+                try:
+                    pipe_progress_send.send(error)
+                except Exception as pipe_err:
+                    logger.error(f"Failed to send error through pipe: {pipe_err}")
+
+        # Run the async translation in the subprocess's event loop
         try:
-            async for event in babeldoc_translate(config):
-                logger.debug(f"sub process generate event: {event}")
-                if event["type"] == "error":
-                    event["error"] = str(event["error"])
-                pipe_progress_send.send(event)
-                if event["type"] == "finish" or event["type"] == "error":
-                    break
-        finally:
-            logger.debug("sub process send close")
+            asyncio.run(translate_wrapper_async())
+        except Exception as e:
+            # Capture errors that might occur outside the async context
+            tb_str = traceback.format_exc()
+            logger.error(f"Error running async translation: {e}\n{tb_str}")
+            error = SubprocessError(
+                message=f"Failed to run translation process: {e}", traceback_str=tb_str
+            )
+            try:
+                pipe_progress_send.send(error)
+            except Exception as pipe_err:
+                logger.error(f"Failed to send error through pipe: {pipe_err}")
+    except Exception as e:
+        # Capture any errors during setup or initialization
+        tb_str = traceback.format_exc()
+        logger.error(f"Subprocess initialization error: {e}\n{tb_str}")
+        try:
+            error = SubprocessError(
+                message=f"Translation subprocess initialization error: {e}",
+                traceback_str=tb_str,
+            )
+            pipe_progress_send.send(error)
+        except Exception as pipe_err:
+            logger.error(f"Failed to send error through pipe: {pipe_err}")
+    finally:
+        logger.debug("sub process send close")
+        try:
             pipe_progress_send.send(None)
             pipe_progress_send.close()
             logger.debug("sub process close pipe progress send")
+        except Exception as e:
+            logger.error(f"Error closing progress pipe: {e}")
+
+        try:
             logging.getLogger().removeHandler(queue_handler)
+            logging.getLogger().addHandler(RichHandler())
             logger_queue.put(None)
             logger_queue.close()
-
-    asyncio.run(translate_wrapper_async())
+        except Exception as e:
+            logger.error(f"Error closing logger queue: {e}")
 
 
 async def _translate_in_subprocess(
@@ -97,13 +235,33 @@ async def _translate_in_subprocess(
                     logger.debug("recv none event")
                     cb.finished_callback_without_args()
                     break
-                cb.step_callback(event)
+
+                # Handle different types of messages from the subprocess
+                if isinstance(event, TranslationError):
+                    # Received a structured error object
+                    logger.error(f"Received error from subprocess: {event}")
+                    cb.error_callback(event)
+                    break
+                elif isinstance(event, dict):
+                    # Process normal progress events
+                    cb.step_callback(event)
+                else:
+                    # Unexpected message type
+                    logger.warning(
+                        f"Unexpected message type from subprocess: {type(event)}"
+                    )
+                    error = IPCError(f"Unexpected message type: {type(event)}")
+                    cb.error_callback(error)
+                    break
             except EOFError:
                 logger.debug("recv eof error")
-                cb.finished_callback_without_args()
+                error = IPCError("Connection to subprocess was closed unexpectedly")
+                cb.error_callback(error)
                 break
             except Exception as e:
                 logger.error(f"Error receiving event: {e}")
+                error = IPCError(f"IPC error: {e}", details=str(e))
+                cb.error_callback(error)
                 break
 
     def log_thread():
@@ -139,8 +297,14 @@ async def _translate_in_subprocess(
         ),
     )
     translate_process.start()
+
     try:
         async for event in cb:
+            # Check for errors before yielding events
+            if cb.has_error():
+                # Let AsyncCallback.__anext__ raise the error
+                # This will break out of the loop
+                break
             yield event.args[0]
     except asyncio.CancelledError:
         logger.info("Process Translation cancelled")
@@ -152,9 +316,12 @@ async def _translate_in_subprocess(
         pipe_progress_send.send(None)
         logger.debug("set cancel event")
         cancel_event.set()
-        translate_process.terminate()
-        logger.debug("join translate process")
         translate_process.join(timeout=1)
+        logger.debug("join translate process")
+        if translate_process.is_alive():
+            logger.error("Translate process did not finish in time, terminate it")
+            translate_process.terminate()
+            translate_process.join(timeout=1)
         if translate_process.is_alive():
             logger.error("Translate process did not finish in time, killing it")
             try:
@@ -167,7 +334,23 @@ async def _translate_in_subprocess(
         recv_t.join(timeout=0.1)
         if recv_t.is_alive():
             logger.error("Recv thread did not finish in time")
+
         logger.debug("translate process exit code: %s", translate_process.exitcode)
+
+        # Check if the process crashed but no error was captured through IPC
+        if translate_process.exitcode not in (0, None) and not cb.has_error():
+            error = SubprocessCrashError(
+                f"Translation subprocess crashed with exit code {translate_process.exitcode}",
+                exit_code=translate_process.exitcode,
+            )
+            # We need to raise the error as we're outside the async for loop now
+            raise error
+        elif cb.has_error():
+            # If we have a stored error but haven't raised it yet (exited the loop normally)
+            # re-raise it now
+            # Note: In most cases, this won't execute because the error would already have been
+            # raised by AsyncCallback.__anext__
+            raise cb.error
 
 
 def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfig:
@@ -250,12 +433,31 @@ async def do_translate_async_stream(
     else:
         logger.info("translate in subprocess")
 
-    async for event in translate_func():
-        yield event
-        if settings.basic.debug:
-            logger.debug(event)
-        if event["type"] == "finish" or event["type"] == "error":
-            break
+    try:
+        async for event in translate_func():
+            yield event
+            if settings.basic.debug:
+                logger.debug(event)
+            if event["type"] == "finish":
+                break
+    except TranslationError as e:
+        # Log and re-raise structured errors
+        logger.error(f"Translation error: {e}")
+        if isinstance(e, BabeldocError) and e.original_error:
+            logger.error(f"Original babeldoc error: {e.original_error}")
+        elif isinstance(e, SubprocessError) and e.traceback_str:
+            logger.error(f"Subprocess traceback: {e.traceback_str}")
+        # Create an error event to yield to client code
+        error_event = {
+            "type": "error",
+            "error": str(e),
+            "error_type": e.__class__.__name__,
+            "details": getattr(e, "original_error", "")
+            or getattr(e, "traceback_str", "")
+            or "",
+        }
+        yield error_event
+        raise  # Re-raise the exception so that the caller can handle it if needed
 
 
 async def do_translate_file_async(
@@ -276,6 +478,9 @@ async def do_translate_file_async(
     input_files = settings.basic.input_files
     assert len(input_files) >= 1, "At least one input file is required"
     settings.basic.input_files = set()
+
+    error_count = 0
+
     for file in input_files:
         logger.info(f"translate file: {file}")
         # 开始翻译
@@ -294,22 +499,56 @@ async def do_translate_file_async(
                         logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
                         break
                     if event["type"] == "error":
-                        raise RuntimeError(event["error"])
+                        error_msg = event.get("error", "Unknown error")
+                        error_type = event.get("error_type", "UnknownError")
+                        details = event.get("details", "")
+
+                        logger.error(f"Error translating file {file}: {error_msg}")
+                        logger.error(f"Error type: {error_type}")
+                        if details:
+                            logger.error(f"Error details: {details}")
+
+                        error_count += 1
+                        if not ignore_error:
+                            raise RuntimeError(f"Translation error: {error_msg}")
+                        break
+            except TranslationError as e:
+                # Already logged in do_translate_async_stream
+                error_count += 1
+                if not ignore_error:
+                    raise
             except Exception as e:
                 logger.error(f"Error translating file {file}: {e}")
-
+                error_count += 1
                 if not ignore_error:
-                    raise e
+                    raise
 
-    return 0
+    return error_count
 
 
-def do_translate_file(settings: SettingsModel):
+def do_translate_file(settings: SettingsModel, ignore_error: bool = False) -> int:
+    """
+    Translate files synchronously, returning the number of errors encountered.
+
+    Args:
+        settings: Translation settings
+        ignore_error: If True, continue translating other files when an error occurs
+
+    Returns:
+        Number of errors encountered during translation
+
+    Raises:
+        TranslationError: If a translation error occurs and ignore_error is False
+        Exception: For other errors if ignore_error is False
+    """
     try:
-        asyncio.run(do_translate_file_async(settings))
+        return asyncio.run(do_translate_file_async(settings, ignore_error))
     except RuntimeError as e:
+        # Handle the case where run() is called from a running event loop
         if "asyncio.run() cannot be called from a running event loop" in str(e):
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(do_translate_file_async(settings))
+            return loop.run_until_complete(
+                do_translate_file_async(settings, ignore_error)
+            )
         else:
-            raise e
+            raise
