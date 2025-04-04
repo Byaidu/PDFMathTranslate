@@ -226,8 +226,11 @@ def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfi
 
 
 async def do_translate_async_stream(
-    settings: SettingsModel, file: Path
+    settings: SettingsModel, file: Path | str
 ) -> AsyncGenerator[dict, None]:
+    if isinstance(file, str):
+        file = Path(file)
+
     if settings.basic.input_files:
         logger.warning(
             "settings.basic.input_files is for cli & config, "
