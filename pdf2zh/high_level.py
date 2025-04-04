@@ -280,6 +280,7 @@ async def _translate_in_subprocess(
                 break
             except Exception:
                 logger.error("Failure in listener_process")
+                break
 
     recv_t = threading.Thread(target=recv_thread)
     recv_t.start()
@@ -308,32 +309,68 @@ async def _translate_in_subprocess(
             yield event.args[0]
     except asyncio.CancelledError:
         logger.info("Process Translation cancelled")
+    except KeyboardInterrupt:
+        logger.info("KeyboardInterrupt received in main process")
     finally:
         logger.debug("send cancel message")
-        pipe_cancel_message_send.send(True)
+        try:
+            pipe_cancel_message_send.send(True)
+        except (OSError, BrokenPipeError) as e:
+            logger.debug(f"Failed to send cancel message: {e}")
         logger.debug("close pipe cancel message")
-        pipe_cancel_message_send.close()
-        pipe_progress_send.send(None)
+        try:
+            pipe_cancel_message_send.close()
+        except Exception as e:
+            logger.debug(f"Failed to close pipe_cancel_message_send: {e}")
+
+        try:
+            pipe_progress_send.send(None)
+        except (OSError, BrokenPipeError) as e:
+            logger.debug(f"Failed to send None to pipe_progress_send: {e}")
+
         logger.debug("set cancel event")
         cancel_event.set()
-        translate_process.join(timeout=1)
+
+        # 关闭接收端管道以中断recv_thread中的阻塞接收
+        try:
+            pipe_progress_recv.close()
+            logger.debug("closed pipe_progress_recv")
+        except Exception as e:
+            logger.debug(f"Failed to close pipe_progress_recv: {e}")
+
+        # 终止子进程，使用超时防止卡住
+        translate_process.join(timeout=2)
         logger.debug("join translate process")
         if translate_process.is_alive():
-            logger.error("Translate process did not finish in time, terminate it")
+            logger.info("Translate process did not finish in time, terminate it")
             translate_process.terminate()
             translate_process.join(timeout=1)
         if translate_process.is_alive():
-            logger.error("Translate process did not finish in time, killing it")
+            logger.info("Translate process did not finish in time, killing it")
             try:
                 translate_process.kill()
-                translate_process.join()
+                translate_process.join(timeout=1)
                 logger.info("Translate process killed")
-            except Exception:
-                logger.exception("Error killing translate process:")
+            except Exception as e:
+                logger.exception(f"Error killing translate process: {e}")
+
+        # 等待接收线程，使用超时防止卡住
         logger.debug("join recv thread")
-        recv_t.join(timeout=0.1)
+        recv_t.join(timeout=2)
         if recv_t.is_alive():
-            logger.error("Recv thread did not finish in time")
+            logger.warning("Recv thread did not finish in time")
+
+        # 等待日志线程，使用超时防止卡住
+        log_t.join(timeout=1)
+        if log_t.is_alive():
+            logger.warning("Log thread did not finish in time")
+
+        # 尝试关闭日志队列
+        try:
+            logger_queue.put(None)
+            logger_queue.close()
+        except Exception as e:
+            logger.debug(f"Failed to close logger_queue: {e}")
 
         logger.debug("translate process exit code: %s", translate_process.exitcode)
 
@@ -543,12 +580,19 @@ def do_translate_file(settings: SettingsModel, ignore_error: bool = False) -> in
     """
     try:
         return asyncio.run(do_translate_file_async(settings, ignore_error))
+    except KeyboardInterrupt:
+        logger.info("Translation interrupted by user (Ctrl+C)")
+        return 1  # Return error count = 1 to indicate interruption
     except RuntimeError as e:
         # Handle the case where run() is called from a running event loop
         if "asyncio.run() cannot be called from a running event loop" in str(e):
             loop = asyncio.get_event_loop()
-            return loop.run_until_complete(
-                do_translate_file_async(settings, ignore_error)
-            )
+            try:
+                return loop.run_until_complete(
+                    do_translate_file_async(settings, ignore_error)
+                )
+            except KeyboardInterrupt:
+                logger.info("Translation interrupted by user (Ctrl+C) in event loop")
+                return 1  # Return error count = 1 to indicate interruption
         else:
             raise
