@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncGenerator
 from pathlib import Path
 
 from babeldoc.docvision.table_detection.rapidocr import RapidOCRModel
@@ -13,7 +14,9 @@ from pdf2zh.translator import get_translator
 logger = logging.getLogger(__name__)
 
 
-async def do_translate_file(settings: SettingsModel, file: Path) -> int:
+async def do_translate_stream(
+    settings: SettingsModel, file: Path
+) -> AsyncGenerator[dict, None]:
     translator = get_translator(settings)
     if translator is None:
         raise ValueError("No translator found")
@@ -66,12 +69,33 @@ async def do_translate_file(settings: SettingsModel, file: Path) -> int:
         skip_scanned_detection=settings.pdf.skip_scanned_detection,
     )
 
-    progress_context, progress_handler = create_progress_handler(babeldoc_config)
+    # 开始翻译
+    async for event in babeldoc_translate(babeldoc_config):
+        yield event
+        if babeldoc_config.debug:
+            logger.debug(event)
+        if event["type"] == "finish" or event["type"] == "error":
+            break
+
+
+async def do_translate_file(settings: SettingsModel, file: Path) -> int:
+    rich_pbar_config = BabelDOCConfig(
+        translator=None,
+        lang_in=None,
+        lang_out=None,
+        input_file=file,
+        font=None,
+        pages=settings.translation.pages,
+        output_dir=settings.translation.output,
+        doc_layout_model=1,
+        use_rich_pbar=True,
+    )
+    progress_context, progress_handler = create_progress_handler(rich_pbar_config)
     # 开始翻译
     with progress_context:
-        async for event in babeldoc_translate(babeldoc_config):
+        async for event in do_translate_stream(settings, file):
             progress_handler(event)
-            if babeldoc_config.debug:
+            if settings.basic.debug:
                 logger.debug(event)
             if event["type"] == "finish":
                 result = event["translate_result"]
