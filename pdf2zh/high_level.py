@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import AsyncGenerator
 from pathlib import Path
@@ -105,5 +106,18 @@ async def do_translate_file(settings: SettingsModel, file: Path) -> int:
                 logger.info(f"  Mono PDF: {result.mono_pdf_path or 'None'}")
                 logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
                 break
+            if event["type"] == "error":
+                raise RuntimeError(event["error"])
 
     return 0
+
+
+def translate_file(settings: SettingsModel, file: Path):
+    try:
+        asyncio.run(do_translate_file(settings, file))
+    except RuntimeError as e:
+        if "asyncio.run() cannot be called from a running event loop" in str(e):
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(do_translate_file(settings, file))
+        else:
+            raise e
