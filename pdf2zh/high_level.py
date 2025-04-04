@@ -226,9 +226,19 @@ def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfi
     return babeldoc_config
 
 
-async def do_translate_stream(
+async def do_translate_async_stream(
     settings: SettingsModel, file: Path
 ) -> AsyncGenerator[dict, None]:
+    if settings.basic.input_files:
+        logger.warning(
+            "settings.basic.input_files is for cli & config, "
+            "pdf2zh.highlevel.do_translate_async_stream will ignore this field "
+            "and only translate the file pointed to by the file parameter."
+        )
+
+    if not file.exists():
+        raise FileNotFoundError(f"file {file} not found")
+
     # 开始翻译
     translate_func = partial(_translate_in_subprocess, settings, file)
     if settings.basic.debug:
@@ -246,45 +256,57 @@ async def do_translate_stream(
             break
 
 
-async def do_translate_file(settings: SettingsModel, file: Path) -> int:
+async def do_translate_file_async(
+    settings: SettingsModel, ignore_error: bool = False
+) -> int:
     rich_pbar_config = BabelDOCConfig(
         translator=None,
         lang_in=None,
         lang_out=None,
-        input_file=file,
+        input_file=None,
         font=None,
-        pages=settings.translation.pages,
-        output_dir=settings.translation.output,
+        pages=None,
+        output_dir=None,
         doc_layout_model=1,
         use_rich_pbar=True,
     )
     progress_context, progress_handler = create_progress_handler(rich_pbar_config)
-    # 开始翻译
-    with progress_context:
-        async for event in do_translate_stream(settings, file):
-            progress_handler(event)
-            if settings.basic.debug:
-                logger.debug(event)
-            if event["type"] == "finish":
-                result = event["translate_result"]
-                logger.info("Translation Result:")
-                logger.info(f"  Original PDF: {result.original_pdf_path}")
-                logger.info(f"  Time Cost: {result.total_seconds:.2f}s")
-                logger.info(f"  Mono PDF: {result.mono_pdf_path or 'None'}")
-                logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
-                break
-            if event["type"] == "error":
-                raise RuntimeError(event["error"])
+    input_files = settings.basic.input_files
+    settings.basic.input_files = set()
+    for file in input_files:
+        logger.info(f"translate file: {file}")
+        # 开始翻译
+        with progress_context:
+            try:
+                async for event in do_translate_async_stream(settings, file):
+                    progress_handler(event)
+                    if settings.basic.debug:
+                        logger.debug(event)
+                    if event["type"] == "finish":
+                        result = event["translate_result"]
+                        logger.info("Translation Result:")
+                        logger.info(f"  Original PDF: {result.original_pdf_path}")
+                        logger.info(f"  Time Cost: {result.total_seconds:.2f}s")
+                        logger.info(f"  Mono PDF: {result.mono_pdf_path or 'None'}")
+                        logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
+                        break
+                    if event["type"] == "error":
+                        raise RuntimeError(event["error"])
+            except Exception as e:
+                logger.error(f"Error translating file {file}: {e}")
+
+                if not ignore_error:
+                    raise e
 
     return 0
 
 
-def translate_file(settings: SettingsModel, file: Path):
+def do_translate_file(settings: SettingsModel):
     try:
-        asyncio.run(do_translate_file(settings, file))
+        asyncio.run(do_translate_file_async(settings))
     except RuntimeError as e:
         if "asyncio.run() cannot be called from a running event loop" in str(e):
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(do_translate_file(settings, file))
+            loop.run_until_complete(do_translate_file_async(settings))
         else:
             raise e

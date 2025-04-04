@@ -12,8 +12,7 @@ import sys
 from pathlib import Path
 
 from pdf2zh.config import ConfigManager
-from pdf2zh.config.model import SettingsModel
-from pdf2zh.high_level import do_translate_file
+from pdf2zh.high_level import do_translate_file_async
 
 logger = logging.getLogger(__name__)
 
@@ -76,17 +75,8 @@ async def main() -> int:
             v.propagate = False
 
     logger.debug(f"settings: {settings}")
-
-    await do_translate(settings)
-    return 0
-
-
-async def do_translate(settings: SettingsModel) -> int:
     assert len(settings.basic.input_files) >= 1, "At least one input file is required"
-
-    for file in list(settings.basic.input_files):
-        await do_translate_file(settings, file)
-
+    await do_translate_file_async(settings, ignore_error=True)
     return 0
 
 
