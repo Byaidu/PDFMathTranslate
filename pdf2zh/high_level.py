@@ -33,7 +33,6 @@ def _translate_wrapper(
 ):
     logger = logging.getLogger(__name__)
 
-    logging.getLogger("pika").setLevel(logging.WARNING)
     logging.getLogger("asyncio").setLevel(logging.WARNING)
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("openai").setLevel(logging.WARNING)
