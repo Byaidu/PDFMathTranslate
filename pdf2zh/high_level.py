@@ -274,6 +274,7 @@ async def do_translate_file_async(
     )
     progress_context, progress_handler = create_progress_handler(rich_pbar_config)
     input_files = settings.basic.input_files
+    assert len(input_files) >= 1, "At least one input file is required"
     settings.basic.input_files = set()
     for file in input_files:
         logger.info(f"translate file: {file}")
