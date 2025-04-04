@@ -63,6 +63,7 @@ async def do_translate_file(settings: SettingsModel, file: Path) -> int:
         split_strategy=split_strategy,
         # 添加表格模型，仅在需要翻译表格时
         table_model=table_model,
+        skip_scanned_detection=settings.pdf.skip_scanned_detection,
     )
 
     progress_context, progress_handler = create_progress_handler(babeldoc_config)

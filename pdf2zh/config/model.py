@@ -106,6 +106,9 @@ class PDFSettings(BaseModel):
     translate_table_text: bool = Field(
         default=True, description="Translate table text (experimental)"
     )
+    skip_scanned_detection: bool = Field(
+        default=False, description="Skip scanned detection"
+    )
 
 
 class OpenAISettings(BaseModel):
