@@ -12,7 +12,7 @@ class QPSRateLimiter(BaseRateLimiter):
         self.window_size = max_qps  # Track requests in a sliding window
         self.lock = threading.Lock()
 
-    def wait(self):
+    def wait(self, _rate_limit_params: dict = None):
         with self.lock:
             now = time.time()
 

@@ -28,7 +28,7 @@ class BingTranslator(BaseTranslator):
         )[0]
         return url, ig, iid, key, token
 
-    def do_translate(self, text):
+    def do_translate(self, text, rate_limit_params: dict = None):
         text = text[:1000]  # bing translate max length
         url, ig, iid, key, token = self.find_sid()
         response = self.session.post(

@@ -45,7 +45,7 @@ class OpenAITranslator(BaseTranslator):
             f"(Attempt {retry_state.attempt_number}/100)"
         ),
     )
-    def do_translate(self, text) -> str:
+    def do_translate(self, text, rate_limit_params: dict = None) -> str:
         response = self.client.chat.completions.create(
             model=self.model,
             **self.options,
@@ -73,7 +73,7 @@ class OpenAITranslator(BaseTranslator):
             f"(Attempt {retry_state.attempt_number}/100)"
         ),
     )
-    def do_llm_translate(self, text):
+    def do_llm_translate(self, text, rate_limit_params: dict = None):
         if text is None:
             return None
 

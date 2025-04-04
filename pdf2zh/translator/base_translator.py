@@ -60,7 +60,7 @@ class BaseTranslator(ABC):
         """
         self.cache.add_params(k, v)
 
-    def translate(self, text, ignore_cache=False):
+    def translate(self, text, ignore_cache=False, rate_limit_params: dict = None):
         """
         Translate the text, and the other part should call this method.
         :param text: text to translate
@@ -72,13 +72,13 @@ class BaseTranslator(ABC):
             if cache is not None:
                 self.translate_cache_call_count += 1
                 return cache
-        self.rate_limiter.wait()
+        self.rate_limiter.wait(rate_limit_params)
         translation = self.do_translate(text)
         if not (self.ignore_cache or ignore_cache):
             self.cache.set(text, translation)
         return translation
 
-    def llm_translate(self, text, ignore_cache=False):
+    def llm_translate(self, text, ignore_cache=False, rate_limit_params: dict = None):
         """
         Translate the text, and the other part should call this method.
         :param text: text to translate
@@ -90,14 +90,14 @@ class BaseTranslator(ABC):
             if cache is not None:
                 self.translate_cache_call_count += 1
                 return cache
-        self.rate_limiter.wait()
+        self.rate_limiter.wait(rate_limit_params)
         translation = self.do_llm_translate(text)
         if not (self.ignore_cache or ignore_cache):
             self.cache.set(text, translation)
         return translation
 
     @abstractmethod
-    def do_llm_translate(self, text):
+    def do_llm_translate(self, text, rate_limit_params: dict = None):
         """
         Actual translate text, override this method
         :param text: text to translate
@@ -106,7 +106,7 @@ class BaseTranslator(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_translate(self, text):
+    def do_translate(self, text, rate_limit_params: dict = None):
         """
         Actual translate text, override this method
         :param text: text to translate
