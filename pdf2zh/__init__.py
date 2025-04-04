@@ -16,8 +16,11 @@ from pdf2zh.high_level import do_translate_file_async
 log = logging.getLogger(__name__)
 
 __version__ = "2.0.0.rc0"
-__author__ = "Byaidu"
-# __all__ = ["translate", "translate_stream"]
+__author__ = "Byaidu, awwaawwa"
+__license__ = "AGPL-3.0"
+__maintainer__ = "awwaawwa"
+__email__ = "aw@funstory.ai"
+
 __all__ = [
     "SettingsModel",
     "BasicSettings",
