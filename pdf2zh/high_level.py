@@ -1,6 +1,14 @@
 import asyncio
 import logging
+import logging.handlers
+import multiprocessing
+import multiprocessing.connection
+import multiprocessing.queues
+import queue
+import threading
 from collections.abc import AsyncGenerator
+from functools import partial
+from logging.handlers import QueueHandler
 from pathlib import Path
 
 from babeldoc.docvision.table_detection.rapidocr import RapidOCRModel
@@ -11,13 +19,159 @@ from babeldoc.translation_config import WatermarkOutputMode as BabelDOCWatermark
 
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.translator import get_translator
+from pdf2zh.utils import asynchronize
 
 logger = logging.getLogger(__name__)
 
 
-async def do_translate_stream(
-    settings: SettingsModel, file: Path
-) -> AsyncGenerator[dict, None]:
+def _translate_wrapper(
+    settings: SettingsModel,
+    file: Path,
+    pipe_progress_send: multiprocessing.connection.Connection,
+    pipe_cancel_message_recv: multiprocessing.connection.Connection,
+    logger_queue: multiprocessing.Queue,
+):
+    logger = logging.getLogger(__name__)
+
+    logging.getLogger("pika").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("openai").setLevel(logging.WARNING)
+    logging.getLogger("pdfminer").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("peewee").setLevel(logging.WARNING)
+
+    queue_handler = QueueHandler(logger_queue)
+    logging.basicConfig(level=logging.INFO, handlers=[queue_handler])
+
+    config = create_babeldoc_config(settings, file)
+
+    def cancel_recv_thread():
+        pipe_cancel_message_recv.recv()
+        config.cancel_translation()
+
+    cancel_t = threading.Thread(target=cancel_recv_thread, daemon=True)
+    cancel_t.start()
+
+    async def translate_wrapper_async():
+        try:
+            async for event in babeldoc_translate(config):
+                logger.debug(f"sub process generate event: {event}")
+                if event["type"] == "error":
+                    event["error"] = str(event["error"])
+                pipe_progress_send.send(event)
+                if event["type"] == "finish" or event["type"] == "error":
+                    break
+        finally:
+            logger.debug("sub process send close")
+            pipe_progress_send.send(None)
+            pipe_progress_send.close()
+            logger.debug("sub process close pipe progress send")
+            logging.getLogger().removeHandler(queue_handler)
+            logger_queue.put(None)
+            logger_queue.close()
+
+    asyncio.run(translate_wrapper_async())
+
+
+async def _translate_in_subprocess(
+    settings: SettingsModel,
+    file: Path,
+):
+    # 30 minutes timeout
+    cb = asynchronize.AsyncCallback(timeout=30 * 60)
+
+    (pipe_progress_recv, pipe_progress_send) = multiprocessing.Pipe(duplex=False)
+    (pipe_cancel_message_recv, pipe_cancel_message_send) = multiprocessing.Pipe(
+        duplex=False
+    )
+    logger_queue = multiprocessing.Queue()
+    cancel_event = threading.Event()
+
+    def recv_thread():
+        while True:
+            if cancel_event.is_set():
+                break
+            try:
+                event = pipe_progress_recv.recv()
+                if event is None:
+                    logger.debug("recv none event")
+                    cb.finished_callback_without_args()
+                    break
+                cb.step_callback(event)
+            except EOFError:
+                logger.debug("recv eof error")
+                cb.finished_callback_without_args()
+                break
+            except Exception as e:
+                logger.error(f"Error receiving event: {e}")
+                break
+
+    def log_thread():
+        while True:
+            try:
+                record = logger_queue.get()
+                if record is None:
+                    logger.info("Listener stopped.")
+                    break
+                logger.handle(record)
+            except KeyboardInterrupt:
+                logger.info("Listener stopped.")
+                break
+            except queue.Empty:
+                logger.info("Listener stopped.")
+                break
+            except Exception:
+                logger.error("Failure in listener_process")
+
+    recv_t = threading.Thread(target=recv_thread)
+    recv_t.start()
+    log_t = threading.Thread(target=log_thread)
+    log_t.start()
+
+    translate_process = multiprocessing.Process(
+        target=_translate_wrapper,
+        args=(
+            settings,
+            file,
+            pipe_progress_send,
+            pipe_cancel_message_recv,
+            logger_queue,
+        ),
+    )
+    translate_process.start()
+    try:
+        async for event in cb:
+            yield event.args[0]
+    except asyncio.CancelledError:
+        logger.info("Process Translation cancelled")
+    finally:
+        logger.debug("send cancel message")
+        pipe_cancel_message_send.send(True)
+        logger.debug("close pipe cancel message")
+        pipe_cancel_message_send.close()
+        pipe_progress_send.send(None)
+        logger.debug("set cancel event")
+        cancel_event.set()
+        translate_process.terminate()
+        logger.debug("join translate process")
+        translate_process.join(timeout=1)
+        if translate_process.is_alive():
+            logger.error("Translate process did not finish in time, killing it")
+            try:
+                translate_process.kill()
+                translate_process.join()
+                logger.info("Translate process killed")
+            except Exception:
+                logger.exception("Error killing translate process:")
+        logger.debug("join recv thread")
+        recv_t.join(timeout=0.1)
+        if recv_t.is_alive():
+            logger.error("Recv thread did not finish in time")
+        logger.debug("translate process exit code: %s", translate_process.exitcode)
+
+
+def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfig:
     translator = get_translator(settings)
     if translator is None:
         raise ValueError("No translator found")
@@ -69,11 +223,24 @@ async def do_translate_stream(
         table_model=table_model,
         skip_scanned_detection=settings.pdf.skip_scanned_detection,
     )
+    return babeldoc_config
 
+
+async def do_translate_stream(
+    settings: SettingsModel, file: Path
+) -> AsyncGenerator[dict, None]:
     # 开始翻译
-    async for event in babeldoc_translate(babeldoc_config):
+    translate_func = partial(_translate_in_subprocess, settings, file)
+    if settings.basic.debug:
+        babeldoc_config = create_babeldoc_config(settings, file)
+        logger.debug("debug mode, translate in main process")
+        translate_func = partial(babeldoc_translate, config=babeldoc_config)
+    else:
+        logger.info("translate in subprocess")
+
+    async for event in translate_func():
         yield event
-        if babeldoc_config.debug:
+        if settings.basic.debug:
             logger.debug(event)
         if event["type"] == "finish" or event["type"] == "error":
             break

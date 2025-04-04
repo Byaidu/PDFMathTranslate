@@ -301,6 +301,10 @@ This API being temporarily deprecated means: the relevant code will not be remov
 
 - Multilingual Font: [Go Noto Universal](https://github.com/satbyy/go-noto-universal)
 
+- [Asynchronize](https://github.com/multimeric/Asynchronize/tree/master?tab=readme-ov-file)
+
+- [Rich logging with multiprocessing](https://github.com/SebastianGrans/Rich-multiprocess-logging/tree/main)
+
 <h2 id="contrib">Contributors</h2>
 
 <a href="https://github.com/Byaidu/PDFMathTranslate/graphs/contributors">
