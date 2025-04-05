@@ -30,10 +30,6 @@ class BasicSettings(BaseModel):
     warmup: bool = Field(
         default=False, description="Only download and verify required assets then exit"
     )
-    rpc_doclayout: str | None = Field(
-        default=None,
-        description="RPC service host address for document layout analysis",
-    )
     generate_offline_assets: str | None = Field(
         default=None,
         description="Generate offline assets package in the specified directory",
@@ -52,6 +48,10 @@ class TranslationSettings(BaseModel):
     )
     min_text_length: int = Field(
         default=5, description="Minimum text length to translate"
+    )
+    rpc_doclayout: str | None = Field(
+        default=None,
+        description="RPC service host address for document layout analysis",
     )
     lang_in: str = Field(default="auto", description="Source language code")
     lang_out: str = Field(default="zh", description="Target language code")
