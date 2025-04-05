@@ -75,6 +75,13 @@ async def main() -> int:
             v.propagate = False
 
     logger.debug(f"settings: {settings}")
+
+    if settings.basic.gui:
+        from pdf2zh.gui import setup_gui
+
+        setup_gui()
+        return 0
+
     assert len(settings.basic.input_files) >= 1, "At least one input file is required"
     await do_translate_file_async(settings, ignore_error=True)
     return 0

@@ -86,7 +86,7 @@ def build_args_parser(
                 set_count += 1
                 parser.add_argument(
                     f"{args_name}",
-                    nargs="+",
+                    nargs="*",
                     type=str,
                     help=field_detail.description,
                 )

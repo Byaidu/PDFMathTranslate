@@ -27,6 +27,7 @@ class BasicSettings(BaseModel):
         default=set(), description="Input PDF files to process"
     )
     debug: bool = Field(default=False, description="Enable debug mode")
+    gui: bool = Field(default=False, description="Enable GUI mode")
     warmup: bool = Field(
         default=False, description="Only download and verify required assets then exit"
     )

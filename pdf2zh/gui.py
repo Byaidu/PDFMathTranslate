@@ -3,73 +3,21 @@ import cgi
 import logging
 import shutil
 import uuid
-from asyncio import CancelledError
 from pathlib import Path
 from string import Template
 
 import gradio as gr
 import requests
-import tqdm
 from babeldoc import __version__ as babeldoc_version
-from babeldoc.docvision.doclayout import OnnxModel
 from gradio_pdf import PDF
 
 from pdf2zh import __version__
 from pdf2zh.config import ConfigManager
-from pdf2zh.doclayout import ModelInstance
-from pdf2zh.high_level import translate
-from pdf2zh.translator import AnythingLLMTranslator
-from pdf2zh.translator import ArgosTranslator
-from pdf2zh.translator import AzureOpenAITranslator
-from pdf2zh.translator import AzureTranslator
-from pdf2zh.translator import BaseTranslator
-from pdf2zh.translator import BingTranslator
-from pdf2zh.translator import DeepLTranslator
-from pdf2zh.translator import DeepLXTranslator
-from pdf2zh.translator import DeepseekTranslator
-from pdf2zh.translator import DifyTranslator
-from pdf2zh.translator import GeminiTranslator
-from pdf2zh.translator import GoogleTranslator
-from pdf2zh.translator import GrokTranslator
-from pdf2zh.translator import GroqTranslator
-from pdf2zh.translator import ModelScopeTranslator
-from pdf2zh.translator import OllamaTranslator
-from pdf2zh.translator import OpenAIlikedTranslator
-from pdf2zh.translator import OpenAITranslator
-from pdf2zh.translator import QwenMtTranslator
-from pdf2zh.translator import SiliconTranslator
-from pdf2zh.translator import TencentTranslator
-from pdf2zh.translator import XinferenceTranslator
-from pdf2zh.translator import ZhipuTranslator
+from pdf2zh.config.model import SettingsModel
+from pdf2zh.high_level import TranslationError
+from pdf2zh.high_level import do_translate_async_stream
 
 logger = logging.getLogger(__name__)
-
-BABELDOC_MODEL = OnnxModel.load_available()
-# The following variables associate strings with translators
-service_map: dict[str, BaseTranslator] = {
-    "Google": GoogleTranslator,
-    "Bing": BingTranslator,
-    "DeepL": DeepLTranslator,
-    "DeepLX": DeepLXTranslator,
-    "Ollama": OllamaTranslator,
-    "Xinference": XinferenceTranslator,
-    "AzureOpenAI": AzureOpenAITranslator,
-    "OpenAI": OpenAITranslator,
-    "Zhipu": ZhipuTranslator,
-    "ModelScope": ModelScopeTranslator,
-    "Silicon": SiliconTranslator,
-    "Gemini": GeminiTranslator,
-    "Azure": AzureTranslator,
-    "Tencent": TencentTranslator,
-    "Dify": DifyTranslator,
-    "AnythingLLM": AnythingLLMTranslator,
-    "Argos Translate": ArgosTranslator,
-    "Grok": GrokTranslator,
-    "Groq": GroqTranslator,
-    "DeepSeek": DeepseekTranslator,
-    "OpenAI-liked": OpenAIlikedTranslator,
-    "Ali Qwen-Translation": QwenMtTranslator,
-}
 
 # The following variables associate strings with specific languages
 lang_map = {
@@ -90,60 +38,51 @@ page_map = {
     "All": None,
     "First": [0],
     "First 5 pages": list(range(0, 5)),
-    "Others": None,
+    "Range": None,  # User-defined range
 }
 
-# Check if this is a public demo, which has resource limits
-flag_demo = False
+# Load configuration
+config_manager = ConfigManager()
+try:
+    # Load configuration from files and environment variables
+    settings = config_manager.initialize_config()
+    # Check if sensitive inputs should be disabled in GUI
+    disable_sensitive_input = getattr(
+        settings.basic, "disable_gui_sensitive_input", False
+    )
+except Exception as e:
+    logger.warning(f"Could not load initial config: {e}")
+    settings = SettingsModel()
+    disable_sensitive_input = False
 
-# Limit resources
-if ConfigManager.get("PDF2ZH_DEMO"):
-    flag_demo = True
-    service_map = {
-        "Google": GoogleTranslator,
-    }
-    page_map = {
-        "First": [0],
-        "First 20 pages": list(range(0, 20)),
-    }
-    client_key = ConfigManager.get("PDF2ZH_CLIENT_KEY")
-    server_key = ConfigManager.get("PDF2ZH_SERVER_KEY")
-
-
-# Limit Enabled Services
-enabled_services: list[str] | None = ConfigManager.get("ENABLED_SERVICES")
-if isinstance(enabled_services, list):
-    default_services = ["Google", "Bing"]
-    enabled_services_names = [str(_).lower().strip() for _ in enabled_services]
-    enabled_services = [
-        k
-        for k in service_map.keys()
-        if str(k).lower().strip() in enabled_services_names
-    ]
-    if len(enabled_services) == 0:
-        raise RuntimeError("No services available.")
-    enabled_services = default_services + enabled_services
+# Define default values
+default_lang_from = (
+    settings.translation.lang_in
+    if settings.translation.lang_in != "auto"
+    else "English"
+)
+default_lang_to = settings.translation.lang_out
+for display_name, code in lang_map.items():
+    if code == default_lang_to:
+        default_lang_to = display_name
+        break
 else:
-    enabled_services = list(service_map.keys())
+    default_lang_to = "Simplified Chinese"  # Fallback
+
+# Available translation services
+# This will eventually be dynamically determined based on available translators
+available_services = ["OpenAI"]
+
+# Map service names to translate implementation details (to be expanded)
+service_config_map = {
+    "OpenAI": {
+        "use_openai": True,
+        "sensitive_fields": ["openai_api_key", "openai_base_url"],
+    }
+}
 
 
-# Configure about Gradio show keys
-hidden_gradio_details: bool = bool(ConfigManager.get("HIDDEN_GRADIO_DETAILS"))
-
-
-# Public demo control
-def verify_recaptcha(response):
-    """
-    This function verifies the reCAPTCHA response.
-    """
-    recaptcha_url = "https://www.google.com/recaptcha/api/siteverify"
-    data = {"secret": server_key, "response": response}
-    result = requests.post(recaptcha_url, data=data, timeout=10).json()
-    print("reCAPTCHA", result.get("success"))
-    return result.get("success")
-
-
-def download_with_limit(url: str, save_path: str, size_limit: int) -> str:
+def download_with_limit(url: str, save_path: str, size_limit: int = None) -> str:
     """
     This function downloads a file from a URL and saves it to a specified path.
 
@@ -177,7 +116,7 @@ def download_with_limit(url: str, save_path: str, size_limit: int) -> str:
     return file_path
 
 
-def stop_translate_file(state: dict) -> None:
+async def stop_translate_file(state: dict) -> None:
     """
     This function stops the translation process.
 
@@ -186,15 +125,24 @@ def stop_translate_file(state: dict) -> None:
 
     Returns:- None
     """
-    session_id = state["session_id"]
-    if session_id is None:
+    if "current_task" not in state or state["current_task"] is None:
         return
-    if session_id in cancellation_event_map:
-        logger.info(f"Stopping translation for session {session_id}")
-        cancellation_event_map[session_id].set()
+
+    logger.info(
+        f"Stopping translation for session {state.get('session_id', 'unknown')}"
+    )
+    # Cancel the task
+    try:
+        state["current_task"].cancel()
+        # Wait briefly for cancellation to take effect
+        await asyncio.sleep(0.1)
+    except Exception as e:
+        logger.error(f"Error stopping translation: {e}")
+    finally:
+        state["current_task"] = None
 
 
-def translate_file(
+async def translate_file(
     file_type,
     file_input,
     link_input,
@@ -207,14 +155,14 @@ def translate_file(
     threads,
     skip_subset_fonts,
     ignore_cache,
-    use_babeldoc,
-    recaptcha_response,
     state,
+    openai_model=None,
+    openai_base_url=None,
+    openai_api_key=None,
     progress=None,
-    *envs,
 ):
     """
-    This function translates a PDF file from one language to another.
+    This function translates a PDF file from one language to another using the new architecture.
 
     Inputs:
         - file_type: The type of file to translate
@@ -227,263 +175,193 @@ def translate_file(
         - page_input: The input for the page range
         - prompt: The custom prompt for the llm
         - threads: The number of threads to use
-        - recaptcha_response: The reCAPTCHA response
+        - skip_subset_fonts: Whether to skip subsetting fonts
+        - ignore_cache: Whether to ignore the translation cache
         - state: The state of the translation process
+        - openai_model: The OpenAI model to use
+        - openai_base_url: The base URL for OpenAI API
+        - openai_api_key: The OpenAI API key
         - progress: The progress bar
-        - envs: The environment variables
 
     Returns:
-        - The translated file
-        - The translated file
-        - The translated file
-        - The progress bar
-        - The progress bar
-        - The progress bar
+        - The translated mono PDF file
+        - The preview PDF file
+        - The translated dual PDF file
+        - The visibility state of the mono PDF output
+        - The visibility state of the dual PDF output
+        - The visibility state of the output title
     """
+    # Setup progress tracking
     if progress is None:
         progress = gr.Progress()
 
-    session_id = uuid.uuid4()
+    # Initialize session
+    session_id = str(uuid.uuid4())
     state["session_id"] = session_id
-    cancellation_event_map[session_id] = asyncio.Event()
-    # Translate PDF content using selected service.
-    if flag_demo and not verify_recaptcha(recaptcha_response):
-        raise gr.Error("reCAPTCHA fail")
 
+    # Track progress
     progress(0, desc="Starting translation...")
 
-    output = Path("pdf2zh_files")
+    # Prepare output directory
+    output = Path("pdf2zh_files") / session_id
     output.mkdir(parents=True, exist_ok=True)
 
+    # Get input file path
     if file_type == "File":
         if not file_input:
-            raise gr.Error("No input")
+            raise gr.Error("No file input provided")
         file_path = shutil.copy(file_input, output)
     else:
         if not link_input:
-            raise gr.Error("No input")
-        file_path = download_with_limit(
-            link_input,
-            output,
-            5 * 1024 * 1024 if flag_demo else None,
-        )
+            raise gr.Error("No link input provided")
+        try:
+            file_path = download_with_limit(link_input, output)
+        except Exception as e:
+            raise gr.Error(f"Error downloading file: {e}") from e
 
-    filename = Path(file_path).stem
-    file_raw = output / f"{filename}.pdf"
-    file_mono = output / f"{filename}-mono.pdf"
-    file_dual = output / f"{filename}-dual.pdf"
+    # Create settings model
+    translate_settings = settings.clone()
 
-    translator = service_map[service]
-    if page_range != "Others":
-        selected_page = page_map[page_range]
+    # Map UI language selections to language codes
+    source_lang = lang_map.get(lang_from, "auto")
+    target_lang = lang_map.get(lang_to, "zh")
+
+    # Set up page selection
+    if page_range == "Range" and page_input:
+        pages = page_input  # The backend parser handles the format
     else:
-        selected_page = []
-        for p in page_input.split(","):
-            if "-" in p:
-                start, end = p.split("-")
-                selected_page.extend(range(int(start) - 1, int(end)))
-            else:
-                selected_page.append(int(p) - 1)
-    lang_from = lang_map[lang_from]
-    lang_to = lang_map[lang_to]
+        # Use predefined ranges from page_map
+        selected_pages = page_map[page_range]
+        if selected_pages is None:
+            pages = None  # All pages
+        else:
+            # Convert page indices to comma-separated string
+            pages = ",".join(
+                str(p + 1) for p in selected_pages
+            )  # +1 because UI is 1-indexed
 
-    _envs = {}
-    for i, env in enumerate(translator.envs.items()):
-        _envs[env[0]] = envs[i]
-    for k, v in _envs.items():
-        if str(k).upper().endswith("API_KEY") and str(v) == "***":
-            # Load Real API_KEYs from local configure file
-            real_keys: str = ConfigManager.get_env_by_translatername(
-                translator, k, None
-            )
-            _envs[k] = real_keys
+    # Update settings with UI values
+    translate_settings.basic.input_files = {str(file_path)}
+    translate_settings.translation.lang_in = source_lang
+    translate_settings.translation.lang_out = target_lang
+    translate_settings.translation.pages = pages
+    translate_settings.translation.output = str(output)
+    translate_settings.translation.qps = int(threads)
+    translate_settings.translation.ignore_cache = ignore_cache
+    translate_settings.pdf.skip_clean = skip_subset_fonts
 
-    print(f"Files before translation: {[f.name for f in Path(output).iterdir()]}")
+    # Set service-specific settings
+    if service == "OpenAI":
+        translate_settings.openai = True
+        # Only update sensitive fields if they're provided and not disabled
+        if not disable_sensitive_input:
+            if openai_model:
+                translate_settings.openai_detail.openai_model = openai_model
+            if openai_base_url:
+                translate_settings.openai_detail.openai_base_url = openai_base_url
+            if openai_api_key and openai_api_key != "***":
+                translate_settings.openai_detail.openai_api_key = openai_api_key
+    else:
+        # Handle other services when implemented
+        pass
 
-    def progress_bar(t: tqdm.tqdm):
-        desc = getattr(t, "desc", "Translating...")
-        if desc == "":
-            desc = "Translating..."
-        progress(t.n / t.total, desc=desc)
+    # Add custom prompt if provided
+    if prompt:
+        # This might need adjustment based on how prompt is handled in the new system
+        translate_settings.custom_prompt = Template(prompt)
+
+    # Validate settings before proceeding
+    try:
+        translate_settings.validate_settings()
+    except ValueError as e:
+        raise gr.Error(f"Invalid settings: {e}") from e
+
+    # Create a function to process events and update progress
+    async def process_translation():
+        mono_path = None
+        dual_path = None
+
+        try:
+            async for event in do_translate_async_stream(
+                translate_settings, Path(file_path)
+            ):
+                if event["type"] == "progress":
+                    # Update progress bar
+                    progress_value = event.get("progress", 0)
+                    desc = event.get("desc", "Translating...")
+                    progress(progress_value, desc=desc)
+                elif event["type"] == "finish":
+                    # Extract result paths
+                    result = event["translate_result"]
+                    mono_path = result.mono_pdf_path
+                    dual_path = result.dual_pdf_path
+                    progress(1.0, desc="Translation complete!")
+                    break
+                elif event["type"] == "error":
+                    # Handle error event
+                    error_msg = event.get("error", "Unknown error")
+                    error_details = event.get("details", "")
+                    error_str = f"{error_msg}" + (
+                        f": {error_details}" if error_details else ""
+                    )
+                    raise gr.Error(f"Translation error: {error_str}")
+        except asyncio.CancelledError:
+            # Handle task cancellation
+            logger.info(f"Translation for session {session_id} was cancelled")
+            raise gr.Error("Translation was cancelled") from None
+        except TranslationError as e:
+            # Handle structured translation errors
+            logger.error(f"Translation error: {e}")
+            raise gr.Error(f"Translation error: {e}") from e
+        except Exception as e:
+            # Handle other exceptions
+            logger.error(f"Error in translate_file: {e}", exc_info=True)
+            raise gr.Error(f"Translation failed: {e}") from e
+
+        return mono_path, dual_path
+
+    # Create and store the task
+    task = asyncio.create_task(process_translation())
+    state["current_task"] = task
 
     try:
-        threads = int(threads)
-    except ValueError:
-        threads = 1
+        # Wait for the translation to complete
+        mono_path, dual_path = await task
 
-    param = {
-        "files": [str(file_raw)],
-        "pages": selected_page,
-        "lang_in": lang_from,
-        "lang_out": lang_to,
-        "service": f"{translator.name}",
-        "output": output,
-        "thread": int(threads),
-        "callback": progress_bar,
-        "cancellation_event": cancellation_event_map[session_id],
-        "envs": _envs,
-        "prompt": Template(prompt) if prompt else None,
-        "skip_subset_fonts": skip_subset_fonts,
-        "ignore_cache": ignore_cache,
-        "model": ModelInstance.value,
-    }
-
-    try:
-        if use_babeldoc:
-            return babeldoc_translate_file(**param)
-        translate(**param)
-    except CancelledError:
-        del cancellation_event_map[session_id]
-        raise gr.Error("Translation cancelled") from None
-    print(f"Files after translation: {[f.name for f in Path(output).iterdir()]}")
-
-    if not file_mono.exists() or not file_dual.exists():
-        raise gr.Error("No output")
-
-    progress(1.0, desc="Translation complete!")
-
-    return (
-        str(file_mono),
-        str(file_mono),
-        str(file_dual),
-        gr.update(visible=True),
-        gr.update(visible=True),
-        gr.update(visible=True),
-    )
-
-
-def babeldoc_translate_file(**kwargs):
-    from babeldoc.high_level import init as babeldoc_init
-
-    babeldoc_init()
-    from babeldoc.high_level import async_translate as babeldoc_translate
-    from babeldoc.translation_config import TranslationConfig as YadtConfig
-
-    if kwargs["prompt"]:
-        prompt = kwargs["prompt"]
-    else:
-        prompt = None
-
-    from pdf2zh.translator import AnythingLLMTranslator
-    from pdf2zh.translator import ArgosTranslator
-    from pdf2zh.translator import AzureOpenAITranslator
-    from pdf2zh.translator import AzureTranslator
-    from pdf2zh.translator import DeepLXTranslator
-    from pdf2zh.translator import DeepseekTranslator
-    from pdf2zh.translator import DifyTranslator
-    from pdf2zh.translator import GeminiTranslator
-    from pdf2zh.translator import GrokTranslator
-    from pdf2zh.translator import GroqTranslator
-    from pdf2zh.translator import ModelScopeTranslator
-    from pdf2zh.translator import OllamaTranslator
-    from pdf2zh.translator import OpenAIlikedTranslator
-    from pdf2zh.translator import OpenAITranslator
-    from pdf2zh.translator import QwenMtTranslator
-    from pdf2zh.translator import SiliconTranslator
-    from pdf2zh.translator import TencentTranslator
-    from pdf2zh.translator import XinferenceTranslator
-    from pdf2zh.translator import ZhipuTranslator
-
-    for translator in [
-        GoogleTranslator,
-        BingTranslator,
-        DeepLTranslator,
-        DeepLXTranslator,
-        OllamaTranslator,
-        XinferenceTranslator,
-        AzureOpenAITranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
-        AnythingLLMTranslator,
-        ArgosTranslator,
-        GrokTranslator,
-        GroqTranslator,
-        DeepseekTranslator,
-        OpenAIlikedTranslator,
-        QwenMtTranslator,
-    ]:
-        if kwargs["service"] == translator.name:
-            translator = translator(
-                kwargs["lang_in"],
-                kwargs["lang_out"],
-                "",
-                envs=kwargs["envs"],
-                prompt=kwargs["prompt"],
-                ignore_cache=kwargs["ignore_cache"],
-            )
-            break
-    else:
-        raise ValueError("Unsupported translation service")
-    import asyncio
-
-    from babeldoc.main import create_progress_handler
-
-    for file in kwargs["files"]:
-        file = file.strip("\"'")
-        yadt_config = YadtConfig(
-            input_file=file,
-            font=None,
-            pages=",".join(str(x) for x in getattr(kwargs, "raw_pages", [])),
-            output_dir=kwargs["output"],
-            doc_layout_model=BABELDOC_MODEL,
-            translator=translator,
-            debug=False,
-            lang_in=kwargs["lang_in"],
-            lang_out=kwargs["lang_out"],
-            no_dual=False,
-            no_mono=False,
-            qps=kwargs["thread"],
-            use_rich_pbar=False,
-            disable_rich_text_translate=not isinstance(translator, OpenAITranslator),
-            skip_clean=kwargs["skip_subset_fonts"],
-            report_interval=0.5,
+        # Return results to update UI
+        return (
+            str(mono_path) if mono_path else None,  # Output mono file
+            str(mono_path) if mono_path else None,  # Preview
+            str(dual_path) if dual_path else None,  # Output dual file
+            gr.update(visible=bool(mono_path)),  # Show mono download if available
+            gr.update(visible=bool(dual_path)),  # Show dual download if available
+            gr.update(
+                visible=bool(mono_path or dual_path)
+            ),  # Show output title if any output
         )
-
-        async def yadt_translate_coro(yadt_config):
-            progress_context, progress_handler = create_progress_handler(yadt_config)
-
-            # 开始翻译
-            with progress_context:
-                async for event in babeldoc_translate(yadt_config):
-                    progress_handler(event)
-                    if yadt_config.debug:
-                        logger.debug(event)
-                    kwargs["callback"](progress_context)
-                    if kwargs["cancellation_event"].is_set():
-                        yadt_config.cancel_translation()
-                        raise CancelledError
-                    if event["type"] == "finish":
-                        result = event["translate_result"]
-                        logger.info("Translation Result:")
-                        logger.info(f"  Original PDF: {result.original_pdf_path}")
-                        logger.info(f"  Time Cost: {result.total_seconds:.2f}s")
-                        logger.info(f"  Mono PDF: {result.mono_pdf_path or 'None'}")
-                        logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
-                        file_mono = result.mono_pdf_path
-                        file_dual = result.dual_pdf_path
-                        break
-            import gc
-
-            gc.collect()
-            return (
-                str(file_mono),
-                str(file_mono),
-                str(file_dual),
-                gr.update(visible=True),
-                gr.update(visible=True),
-                gr.update(visible=True),
-            )
-
-        return asyncio.run(yadt_translate_coro(yadt_config))
+    except gr.Error as e:
+        # Forward Gradio errors
+        raise
+    except asyncio.CancelledError:
+        # Return None for all outputs if cancelled
+        return (
+            None,
+            None,
+            None,
+            gr.update(visible=False),
+            gr.update(visible=False),
+            gr.update(visible=False),
+        )
+    except Exception as e:
+        # Catch any other errors
+        logger.error(f"Error in translate_file: {e}", exc_info=True)
+        raise gr.Error(f"Translation failed: {e}") from e
+    finally:
+        # Clear task reference
+        state["current_task"] = None
 
 
-# Global setup
+# Custom theme definition
 custom_blue = gr.themes.Color(
     c50="#E8F3FF",
     c100="#BEDAFF",
@@ -523,18 +401,6 @@ custom_css = """
     }
     """
 
-demo_recaptcha = """
-    <script src="https://www.google.com/recaptcha/api.js?render=explicit" async defer></script>
-    <script type="text/javascript">
-        var onVerify = function(token) {
-            el=document.getElementById('verify').getElementsByTagName('textarea')[0];
-            el.value=token;
-            el.dispatchEvent(new Event('input'));
-        };
-    </script>
-    """
-
-
 tech_details_string = f"""
                     <summary>Technical details</summary>
                     - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
@@ -543,8 +409,6 @@ tech_details_string = f"""
                     - pdf2zh Version: {__version__} <br>
                     - BabelDOC Version: {babeldoc_version}
                 """
-cancellation_event_map = {}
-
 
 # The following code creates the GUI
 with gr.Blocks(
@@ -553,7 +417,6 @@ with gr.Blocks(
         primary_hue=custom_blue, spacing_size="md", radius_size="lg"
     ),
     css=custom_css,
-    head=demo_recaptcha if flag_demo else "",
 ) as demo:
     gr.Markdown(
         "# [PDFMathTranslate @ GitHub](https://github.com/Byaidu/PDFMathTranslate)"
@@ -561,7 +424,7 @@ with gr.Blocks(
 
     with gr.Row():
         with gr.Column(scale=1):
-            gr.Markdown("## File | < 5 MB" if flag_demo else "## File")
+            gr.Markdown("## File")
             file_type = gr.Radio(
                 choices=["File", "Link"],
                 label="Type",
@@ -579,87 +442,88 @@ with gr.Blocks(
                 visible=False,
                 interactive=True,
             )
-            gr.Markdown("## Option")
+
+            gr.Markdown("## Translation Options")
             service = gr.Dropdown(
                 label="Service",
-                choices=enabled_services,
-                value=enabled_services[0],
+                choices=available_services,
+                value=available_services[0] if available_services else None,
             )
-            envs = []
-            for _i in range(3):
-                envs.append(
-                    gr.Textbox(
-                        visible=False,
-                        value="",
-                    )
-                )
+
             with gr.Row():
                 lang_from = gr.Dropdown(
                     label="Translate from",
-                    choices=lang_map.keys(),
-                    value=ConfigManager.get("PDF2ZH_LANG_FROM", "English"),
+                    choices=list(lang_map.keys()),
+                    value=default_lang_from,
                 )
                 lang_to = gr.Dropdown(
                     label="Translate to",
-                    choices=lang_map.keys(),
-                    value=ConfigManager.get("PDF2ZH_LANG_TO", "Simplified Chinese"),
+                    choices=list(lang_map.keys()),
+                    value=default_lang_to,
                 )
+
             page_range = gr.Radio(
-                choices=page_map.keys(),
+                choices=list(page_map.keys()),
                 label="Pages",
                 value=list(page_map.keys())[0],
             )
 
             page_input = gr.Textbox(
-                label="Page range",
+                label="Page range (e.g., 1,3,5-10,-5)",
                 visible=False,
                 interactive=True,
+                placeholder="e.g., 1,3,5-10",
             )
 
-            with gr.Accordion("Open for More Experimental Options!", open=False):
-                gr.Markdown("#### Experimental")
-                threads = gr.Textbox(
-                    label="number of threads", interactive=True, value="4"
+            # OpenAI specific settings (initially visible if OpenAI is default)
+            with gr.Group(visible=(service.value == "OpenAI")) as openai_settings:
+                openai_model = gr.Textbox(
+                    label="OpenAI Model",
+                    value=settings.openai_detail.openai_model,
+                    interactive=True,
                 )
+                openai_base_url = gr.Textbox(
+                    label="OpenAI Base URL (optional)",
+                    value=settings.openai_detail.openai_base_url or "",
+                    interactive=not disable_sensitive_input,
+                    visible=not disable_sensitive_input,
+                )
+                openai_api_key = gr.Textbox(
+                    label="OpenAI API Key",
+                    type="password",
+                    value="***" if settings.openai_detail.openai_api_key else "",
+                    interactive=not disable_sensitive_input,
+                    visible=not disable_sensitive_input,
+                )
+
+            # Additional translation options
+            with gr.Accordion("Advanced Options", open=False):
+                threads = gr.Number(
+                    label="Threads (QPS)",
+                    value=settings.translation.qps or 4,
+                    precision=0,
+                    minimum=1,
+                    interactive=True,
+                )
+
+                # PDF options
                 skip_subset_fonts = gr.Checkbox(
-                    label="Skip font subsetting", interactive=True, value=False
+                    label="Skip font subsetting",
+                    value=settings.pdf.skip_clean,
+                    interactive=True,
                 )
+
                 ignore_cache = gr.Checkbox(
-                    label="Ignore cache", interactive=True, value=False
+                    label="Ignore cache",
+                    value=settings.translation.ignore_cache,
+                    interactive=True,
                 )
+
                 prompt = gr.Textbox(
-                    label="Custom Prompt for llm", interactive=True, visible=False
+                    label="Custom Prompt for LLM",
+                    interactive=True,
+                    placeholder="Optional: Add custom prompt for the translation model",
                 )
-                use_babeldoc = gr.Checkbox(
-                    label="Use BabelDOC", interactive=True, value=False
-                )
-                envs.append(prompt)
-
-            def on_select_service(service, _evt: gr.EventData):
-                translator = service_map[service]
-                _envs = []
-                for _i in range(4):
-                    _envs.append(gr.update(visible=False, value=""))
-                for i, env in enumerate(translator.envs.items()):
-                    key, value = env
-                    _envs[i] = gr.update(
-                        visible=True,
-                        label=key,
-                        value=value,
-                    )
-                return _envs
-
-            def on_select_filetype(file_type):
-                return (
-                    gr.update(visible=file_type == "File"),
-                    gr.update(visible=file_type == "Link"),
-                )
-
-            def on_select_page(choice):
-                if choice == "Others":
-                    return gr.update(visible=True)
-                else:
-                    return gr.update(visible=False)
 
             output_title = gr.Markdown("## Translated", visible=False)
             output_file_mono = gr.File(
@@ -668,41 +532,13 @@ with gr.Blocks(
             output_file_dual = gr.File(
                 label="Download Translation (Dual)", visible=False
             )
-            recaptcha_response = gr.Textbox(
-                label="reCAPTCHA Response", elem_id="verify", visible=False
-            )
-            recaptcha_box = gr.HTML('<div id="recaptcha-box"></div>')
+
             translate_btn = gr.Button("Translate", variant="primary")
-            cancellation_btn = gr.Button("Cancel", variant="secondary")
-            tech_details_tog = gr.Markdown(
+            cancel_btn = gr.Button("Cancel", variant="secondary")
+
+            tech_details = gr.Markdown(
                 tech_details_string,
                 elem_classes=["secondary-text"],
-            )
-            page_range.select(on_select_page, page_range, page_input)
-            service.select(
-                on_select_service,
-                service,
-                envs,
-            )
-            file_type.select(
-                on_select_filetype,
-                file_type,
-                [file_input, link_input],
-                js=(
-                    f"""
-                    (a,b)=>{{
-                        try{{
-                            grecaptcha.render('recaptcha-box',{{
-                                'sitekey':'{client_key}',
-                                'callback':'onVerify'
-                            }});
-                        }}catch(error){{}}
-                        return [a];
-                    }}
-                    """
-                    if flag_demo
-                    else ""
-                ),
             )
 
         with gr.Column(scale=2):
@@ -710,29 +546,54 @@ with gr.Blocks(
             preview = PDF(label="Document Preview", visible=True, height=2000)
 
     # Event handlers
+    def on_select_filetype(file_type):
+        """Update visibility based on selected file type"""
+        return (
+            gr.update(visible=file_type == "File"),
+            gr.update(visible=file_type == "Link"),
+        )
+
+    def on_select_page(choice):
+        """Update page input visibility based on selection"""
+        return gr.update(visible=choice == "Range")
+
+    def on_select_service(service_name):
+        """Update service-specific settings visibility"""
+        # For now, we only have OpenAI
+        if service_name == "OpenAI":
+            return gr.update(visible=True)
+        return gr.update(visible=False)
+
+    # Default file handler
     file_input.upload(
         lambda x: x,
         inputs=file_input,
         outputs=preview,
-        js=(
-            f"""
-            (a,b)=>{{
-                try{{
-                    grecaptcha.render('recaptcha-box',{{
-                        'sitekey':'{client_key}',
-                        'callback':'onVerify'
-                    }});
-                }}catch(error){{}}
-                return [a];
-            }}
-            """
-            if flag_demo
-            else ""
-        ),
     )
 
-    state = gr.State({"session_id": None})
+    # Event bindings
+    file_type.select(
+        on_select_filetype,
+        file_type,
+        [file_input, link_input],
+    )
 
+    page_range.select(
+        on_select_page,
+        page_range,
+        page_input,
+    )
+
+    service.select(
+        on_select_service,
+        service,
+        openai_settings,
+    )
+
+    # State for managing translation tasks
+    state = gr.State({"session_id": None, "current_task": None})
+
+    # Translation button click handler
     translate_btn.click(
         translate_file,
         inputs=[
@@ -748,22 +609,24 @@ with gr.Blocks(
             threads,
             skip_subset_fonts,
             ignore_cache,
-            use_babeldoc,
-            recaptcha_response,
             state,
-            *envs,
+            # OpenAI specific settings
+            openai_model,
+            openai_base_url,
+            openai_api_key,
         ],
         outputs=[
-            output_file_mono,
-            preview,
-            output_file_dual,
-            output_file_mono,
-            output_file_dual,
-            output_title,
+            output_file_mono,  # Mono PDF file
+            preview,  # Preview
+            output_file_dual,  # Dual PDF file
+            output_file_mono,  # Visibility of mono output
+            output_file_dual,  # Visibility of dual output
+            output_title,  # Visibility of output title
         ],
-    ).then(lambda: None, js="()=>{grecaptcha.reset()}" if flag_demo else "")
+    )
 
-    cancellation_btn.click(
+    # Cancel button click handler
+    cancel_btn.click(
         stop_translate_file,
         inputs=[state],
     )
@@ -812,17 +675,29 @@ def setup_gui(
     Returns:
         - None
     """
-    if auth_file is None:
-        auth_file = ["", ""]
 
-    user_list, html = parse_user_passwd(auth_file)
-    if flag_demo:
-        demo.launch(server_name="0.0.0.0", max_file_size="5mb", inbrowser=True)
-    else:
-        if len(user_list) == 0:
+    user_list = None
+    html = None
+
+    if auth_file:
+        user_list, html = parse_user_passwd(auth_file)
+
+    if not auth_file or not user_list:
+        try:
+            demo.launch(
+                server_name="0.0.0.0",
+                debug=True,
+                inbrowser=True,
+                share=share,
+                server_port=server_port,
+            )
+        except Exception:
+            print(
+                "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
+            )
             try:
                 demo.launch(
-                    server_name="0.0.0.0",
+                    server_name="127.0.0.1",
                     debug=True,
                     inbrowser=True,
                     share=share,
@@ -830,27 +705,29 @@ def setup_gui(
                 )
             except Exception:
                 print(
-                    "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
+                    "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
                 )
-                try:
-                    demo.launch(
-                        server_name="127.0.0.1",
-                        debug=True,
-                        inbrowser=True,
-                        share=share,
-                        server_port=server_port,
-                    )
-                except Exception:
-                    print(
-                        "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
-                    )
-                    demo.launch(
-                        debug=True, inbrowser=True, share=True, server_port=server_port
-                    )
-        else:
+                demo.launch(
+                    debug=True, inbrowser=True, share=True, server_port=server_port
+                )
+    else:
+        try:
+            demo.launch(
+                server_name="0.0.0.0",
+                debug=True,
+                inbrowser=True,
+                share=share,
+                auth=user_list,
+                auth_message=html,
+                server_port=server_port,
+            )
+        except Exception:
+            print(
+                "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
+            )
             try:
                 demo.launch(
-                    server_name="0.0.0.0",
+                    server_name="127.0.0.1",
                     debug=True,
                     inbrowser=True,
                     share=share,
@@ -860,30 +737,16 @@ def setup_gui(
                 )
             except Exception:
                 print(
-                    "Error launching GUI using 0.0.0.0.\nThis may be caused by global mode of proxy software."
+                    "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
                 )
-                try:
-                    demo.launch(
-                        server_name="127.0.0.1",
-                        debug=True,
-                        inbrowser=True,
-                        share=share,
-                        auth=user_list,
-                        auth_message=html,
-                        server_port=server_port,
-                    )
-                except Exception:
-                    print(
-                        "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
-                    )
-                    demo.launch(
-                        debug=True,
-                        inbrowser=True,
-                        share=True,
-                        auth=user_list,
-                        auth_message=html,
-                        server_port=server_port,
-                    )
+                demo.launch(
+                    debug=True,
+                    inbrowser=True,
+                    share=True,
+                    auth=user_list,
+                    auth_message=html,
+                    server_port=server_port,
+                )
 
 
 # For auto-reloading while developing
