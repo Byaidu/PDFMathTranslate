@@ -242,6 +242,7 @@ async def translate_file(
 
     # Update settings with UI values
     translate_settings.basic.input_files = {str(file_path)}
+    translate_settings.report_interval = 0.2
     translate_settings.translation.lang_in = source_lang
     translate_settings.translation.lang_out = target_lang
     translate_settings.translation.pages = pages
@@ -285,10 +286,18 @@ async def translate_file(
             async for event in do_translate_async_stream(
                 translate_settings, Path(file_path)
             ):
-                if event["type"] == "progress":
+                if event["type"] in (
+                    "progress_start",
+                    "progress_update",
+                    "progress_end",
+                ):
                     # Update progress bar
-                    progress_value = event.get("progress", 0)
-                    desc = event.get("desc", "Translating...")
+                    desc = event["stage"]
+                    progress_value = event["overall_progress"] / 100.0
+                    part_index = event["part_index"]
+                    total_parts = event["total_parts"]
+                    desc = f"{desc} ({part_index}/{total_parts})"
+                    logger.info(f"Progress: {progress_value}, {desc}")
                     progress(progress_value, desc=desc)
                 elif event["type"] == "finish":
                     # Extract result paths
