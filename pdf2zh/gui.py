@@ -47,9 +47,7 @@ try:
     # Load configuration from files and environment variables
     settings = config_manager.initialize_config()
     # Check if sensitive inputs should be disabled in GUI
-    disable_sensitive_input = getattr(
-        settings.basic, "disable_gui_sensitive_input", False
-    )
+    disable_sensitive_input = settings.basic.disable_gui_sensitive_input
 except Exception as e:
     logger.warning(f"Could not load initial config: {e}")
     settings = SettingsModel()
@@ -114,6 +112,193 @@ def download_with_limit(url: str, save_path: str, size_limit: int = None) -> str
                     raise gr.Error("Exceeds file size limit")
                 file.write(chunk)
     return file_path
+
+
+def _prepare_input_file(
+    file_type: str, file_input: str, link_input: str, output_dir: Path
+) -> Path:
+    """
+    This function prepares the input file for translation.
+
+    Inputs:
+        - file_type: The type of file to translate (File or Link)
+        - file_input: The path to the file to translate
+        - link_input: The link to the file to translate
+        - output_dir: The directory to save the file to
+
+    Returns:
+        - The path of the input file
+    """
+    if file_type == "File":
+        if not file_input:
+            raise gr.Error("No file input provided")
+        file_path = shutil.copy(file_input, output_dir)
+    else:
+        if not link_input:
+            raise gr.Error("No link input provided")
+        try:
+            file_path = download_with_limit(link_input, output_dir)
+        except Exception as e:
+            raise gr.Error(f"Error downloading file: {e}") from e
+
+    return Path(file_path)
+
+
+def _build_translate_settings(
+    base_settings: SettingsModel, file_path: Path, output_dir: Path, ui_inputs: dict
+) -> SettingsModel:
+    """
+    This function builds translation settings from UI inputs.
+
+    Inputs:
+        - base_settings: The base settings model to build upon
+        - file_path: The path to the input file
+        - output_dir: The output directory
+        - ui_inputs: A dictionary of UI inputs
+
+    Returns:
+        - A configured SettingsModel instance
+    """
+    # Clone base settings to avoid modifying the original
+    translate_settings = base_settings.clone()
+
+    # Extract UI values
+    service = ui_inputs.get("service")
+    lang_from = ui_inputs.get("lang_from")
+    lang_to = ui_inputs.get("lang_to")
+    page_range = ui_inputs.get("page_range")
+    page_input = ui_inputs.get("page_input")
+    prompt = ui_inputs.get("prompt")
+    threads = ui_inputs.get("threads")
+    skip_subset_fonts = ui_inputs.get("skip_subset_fonts")
+    ignore_cache = ui_inputs.get("ignore_cache")
+
+    # Map UI language selections to language codes
+    source_lang = lang_map.get(lang_from, "auto")
+    target_lang = lang_map.get(lang_to, "zh")
+
+    # Set up page selection
+    if page_range == "Range" and page_input:
+        pages = page_input  # The backend parser handles the format
+    else:
+        # Use predefined ranges from page_map
+        selected_pages = page_map[page_range]
+        if selected_pages is None:
+            pages = None  # All pages
+        else:
+            # Convert page indices to comma-separated string
+            pages = ",".join(
+                str(p + 1) for p in selected_pages
+            )  # +1 because UI is 1-indexed
+
+    # Update settings with UI values
+    translate_settings.basic.input_files = {str(file_path)}
+    translate_settings.report_interval = 0.2
+    translate_settings.translation.lang_in = source_lang
+    translate_settings.translation.lang_out = target_lang
+    translate_settings.translation.pages = pages
+    translate_settings.translation.output = str(output_dir)
+    translate_settings.translation.qps = int(threads)
+    translate_settings.translation.ignore_cache = ignore_cache
+    translate_settings.pdf.skip_clean = skip_subset_fonts
+
+    # Set service-specific settings
+    if service == "OpenAI":
+        translate_settings.openai = True
+        # Only update sensitive fields if they're provided and not disabled
+        if not disable_sensitive_input:
+            openai_model = ui_inputs.get("openai_model")
+            openai_base_url = ui_inputs.get("openai_base_url")
+            openai_api_key = ui_inputs.get("openai_api_key")
+
+            if openai_model:
+                translate_settings.openai_detail.openai_model = openai_model
+            if openai_base_url:
+                translate_settings.openai_detail.openai_base_url = openai_base_url
+            if openai_api_key and openai_api_key != "***":
+                translate_settings.openai_detail.openai_api_key = openai_api_key
+    else:
+        # Handle other services when implemented
+        pass
+
+    # Add custom prompt if provided
+    if prompt:
+        # This might need adjustment based on how prompt is handled in the new system
+        translate_settings.custom_prompt = Template(prompt)
+
+    # Validate settings before proceeding
+    try:
+        translate_settings.validate_settings()
+    except ValueError as e:
+        raise gr.Error(f"Invalid settings: {e}") from e
+
+    return translate_settings
+
+
+async def _run_translation_task(
+    settings: SettingsModel, file_path: Path, state: dict, progress: gr.Progress
+) -> tuple[Path | None, Path | None]:
+    """
+    This function runs the translation task and handles progress updates.
+
+    Inputs:
+        - settings: The translation settings
+        - file_path: The path to the input file
+        - state: The state dictionary for tracking the task
+        - progress: The Gradio progress bar
+
+    Returns:
+        - A tuple of (mono_pdf_path, dual_pdf_path)
+    """
+    mono_path = None
+    dual_path = None
+
+    try:
+        async for event in do_translate_async_stream(settings, file_path):
+            if event["type"] in (
+                "progress_start",
+                "progress_update",
+                "progress_end",
+            ):
+                # Update progress bar
+                desc = event["stage"]
+                progress_value = event["overall_progress"] / 100.0
+                part_index = event["part_index"]
+                total_parts = event["total_parts"]
+                desc = f"{desc} ({part_index}/{total_parts})"
+                logger.info(f"Progress: {progress_value}, {desc}")
+                progress(progress_value, desc=desc)
+            elif event["type"] == "finish":
+                # Extract result paths
+                result = event["translate_result"]
+                mono_path = result.mono_pdf_path
+                dual_path = result.dual_pdf_path
+                progress(1.0, desc="Translation complete!")
+                break
+            elif event["type"] == "error":
+                # Handle error event
+                error_msg = event.get("error", "Unknown error")
+                error_details = event.get("details", "")
+                error_str = f"{error_msg}" + (
+                    f": {error_details}" if error_details else ""
+                )
+                raise gr.Error(f"Translation error: {error_str}")
+    except asyncio.CancelledError:
+        # Handle task cancellation - let translate_file handle the UI updates
+        logger.info(
+            f"Translation for session {state.get('session_id', 'unknown')} was cancelled"
+        )
+        raise  # Re-raise for the calling function to handle
+    except TranslationError as e:
+        # Handle structured translation errors
+        logger.error(f"Translation error: {e}")
+        raise gr.Error(f"Translation error: {e}") from e
+    except Exception as e:
+        # Handle other exceptions
+        logger.error(f"Error in _run_translation_task: {e}", exc_info=True)
+        raise gr.Error(f"Translation failed: {e}") from e
+
+    return mono_path, dual_path
 
 
 async def stop_translate_file(state: dict) -> None:
@@ -195,7 +380,7 @@ async def translate_file(
     if progress is None:
         progress = gr.Progress()
 
-    # Initialize session
+    # Initialize session and output directory
     session_id = str(uuid.uuid4())
     state["session_id"] = session_id
 
@@ -203,141 +388,44 @@ async def translate_file(
     progress(0, desc="Starting translation...")
 
     # Prepare output directory
-    output = Path("pdf2zh_files") / session_id
-    output.mkdir(parents=True, exist_ok=True)
+    output_dir = Path("pdf2zh_files") / session_id
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Get input file path
-    if file_type == "File":
-        if not file_input:
-            raise gr.Error("No file input provided")
-        file_path = shutil.copy(file_input, output)
-    else:
-        if not link_input:
-            raise gr.Error("No link input provided")
-        try:
-            file_path = download_with_limit(link_input, output)
-        except Exception as e:
-            raise gr.Error(f"Error downloading file: {e}") from e
-
-    # Create settings model
-    translate_settings = settings.clone()
-
-    # Map UI language selections to language codes
-    source_lang = lang_map.get(lang_from, "auto")
-    target_lang = lang_map.get(lang_to, "zh")
-
-    # Set up page selection
-    if page_range == "Range" and page_input:
-        pages = page_input  # The backend parser handles the format
-    else:
-        # Use predefined ranges from page_map
-        selected_pages = page_map[page_range]
-        if selected_pages is None:
-            pages = None  # All pages
-        else:
-            # Convert page indices to comma-separated string
-            pages = ",".join(
-                str(p + 1) for p in selected_pages
-            )  # +1 because UI is 1-indexed
-
-    # Update settings with UI values
-    translate_settings.basic.input_files = {str(file_path)}
-    translate_settings.report_interval = 0.2
-    translate_settings.translation.lang_in = source_lang
-    translate_settings.translation.lang_out = target_lang
-    translate_settings.translation.pages = pages
-    translate_settings.translation.output = str(output)
-    translate_settings.translation.qps = int(threads)
-    translate_settings.translation.ignore_cache = ignore_cache
-    translate_settings.pdf.skip_clean = skip_subset_fonts
-
-    # Set service-specific settings
-    if service == "OpenAI":
-        translate_settings.openai = True
-        # Only update sensitive fields if they're provided and not disabled
-        if not disable_sensitive_input:
-            if openai_model:
-                translate_settings.openai_detail.openai_model = openai_model
-            if openai_base_url:
-                translate_settings.openai_detail.openai_base_url = openai_base_url
-            if openai_api_key and openai_api_key != "***":
-                translate_settings.openai_detail.openai_api_key = openai_api_key
-    else:
-        # Handle other services when implemented
-        pass
-
-    # Add custom prompt if provided
-    if prompt:
-        # This might need adjustment based on how prompt is handled in the new system
-        translate_settings.custom_prompt = Template(prompt)
-
-    # Validate settings before proceeding
-    try:
-        translate_settings.validate_settings()
-    except ValueError as e:
-        raise gr.Error(f"Invalid settings: {e}") from e
-
-    # Create a function to process events and update progress
-    async def process_translation():
-        mono_path = None
-        dual_path = None
-
-        try:
-            async for event in do_translate_async_stream(
-                translate_settings, Path(file_path)
-            ):
-                if event["type"] in (
-                    "progress_start",
-                    "progress_update",
-                    "progress_end",
-                ):
-                    # Update progress bar
-                    desc = event["stage"]
-                    progress_value = event["overall_progress"] / 100.0
-                    part_index = event["part_index"]
-                    total_parts = event["total_parts"]
-                    desc = f"{desc} ({part_index}/{total_parts})"
-                    logger.info(f"Progress: {progress_value}, {desc}")
-                    progress(progress_value, desc=desc)
-                elif event["type"] == "finish":
-                    # Extract result paths
-                    result = event["translate_result"]
-                    mono_path = result.mono_pdf_path
-                    dual_path = result.dual_pdf_path
-                    progress(1.0, desc="Translation complete!")
-                    break
-                elif event["type"] == "error":
-                    # Handle error event
-                    error_msg = event.get("error", "Unknown error")
-                    error_details = event.get("details", "")
-                    error_str = f"{error_msg}" + (
-                        f": {error_details}" if error_details else ""
-                    )
-                    raise gr.Error(f"Translation error: {error_str}")
-        except asyncio.CancelledError:
-            # Handle task cancellation
-            logger.info(f"Translation for session {session_id} was cancelled")
-            raise gr.Error("Translation was cancelled") from None
-        except TranslationError as e:
-            # Handle structured translation errors
-            logger.error(f"Translation error: {e}")
-            raise gr.Error(f"Translation error: {e}") from e
-        except Exception as e:
-            # Handle other exceptions
-            logger.error(f"Error in translate_file: {e}", exc_info=True)
-            raise gr.Error(f"Translation failed: {e}") from e
-
-        return mono_path, dual_path
-
-    # Create and store the task
-    task = asyncio.create_task(process_translation())
-    state["current_task"] = task
+    # Collection of UI inputs for config building
+    ui_inputs = {
+        "service": service,
+        "lang_from": lang_from,
+        "lang_to": lang_to,
+        "page_range": page_range,
+        "page_input": page_input,
+        "prompt": prompt,
+        "threads": threads,
+        "skip_subset_fonts": skip_subset_fonts,
+        "ignore_cache": ignore_cache,
+        "openai_model": openai_model,
+        "openai_base_url": openai_base_url,
+        "openai_api_key": openai_api_key,
+    }
 
     try:
+        # Step 1: Prepare input file
+        file_path = _prepare_input_file(file_type, file_input, link_input, output_dir)
+
+        # Step 2: Build translation settings
+        translate_settings = _build_translate_settings(
+            settings.clone(), file_path, output_dir, ui_inputs
+        )
+
+        # Step 3: Create and run the translation task
+        task = asyncio.create_task(
+            _run_translation_task(translate_settings, file_path, state, progress)
+        )
+        state["current_task"] = task
+
         # Wait for the translation to complete
         mono_path, dual_path = await task
 
-        # Return results to update UI
+        # Build success UI updates
         return (
             str(mono_path) if mono_path else None,  # Output mono file
             str(mono_path) if mono_path else None,  # Preview
@@ -348,9 +436,6 @@ async def translate_file(
                 visible=bool(mono_path or dual_path)
             ),  # Show output title if any output
         )
-    except gr.Error as e:
-        # Forward Gradio errors
-        raise
     except asyncio.CancelledError:
         # Return None for all outputs if cancelled
         return (
@@ -361,8 +446,11 @@ async def translate_file(
             gr.update(visible=False),
             gr.update(visible=False),
         )
+    except gr.Error:
+        # Re-raise Gradio errors without modification
+        raise
     except Exception as e:
-        # Catch any other errors
+        # Catch any other errors and wrap in gr.Error
         logger.error(f"Error in translate_file: {e}", exc_info=True)
         raise gr.Error(f"Translation failed: {e}") from e
     finally:
@@ -489,7 +577,8 @@ with gr.Blocks(
                 openai_model = gr.Textbox(
                     label="OpenAI Model",
                     value=settings.openai_detail.openai_model,
-                    interactive=True,
+                    interactive=not disable_sensitive_input,
+                    visible=not disable_sensitive_input,
                 )
                 openai_base_url = gr.Textbox(
                     label="OpenAI Base URL (optional)",
@@ -497,10 +586,15 @@ with gr.Blocks(
                     interactive=not disable_sensitive_input,
                     visible=not disable_sensitive_input,
                 )
+                display_key = ""
+                if disable_sensitive_input:
+                    display_key = "***"
+                elif settings.openai_detail.openai_api_key:
+                    display_key = settings.openai_detail.openai_api_key
                 openai_api_key = gr.Textbox(
                     label="OpenAI API Key",
                     type="password",
-                    value="***" if settings.openai_detail.openai_api_key else "",
+                    value=display_key,
                     interactive=not disable_sensitive_input,
                     visible=not disable_sensitive_input,
                 )

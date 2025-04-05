@@ -39,6 +39,9 @@ class BasicSettings(BaseModel):
         default=None,
         description="Restore offline assets package from the specified file",
     )
+    disable_gui_sensitive_input: bool = Field(
+        default=False, description="Disable GUI sensitive input"
+    )
 
 
 class TranslationSettings(BaseModel):
