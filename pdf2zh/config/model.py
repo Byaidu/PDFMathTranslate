@@ -4,6 +4,7 @@ import enum
 import logging
 import re
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
@@ -118,6 +119,8 @@ class PDFSettings(BaseModel):
 class OpenAISettings(BaseModel):
     """OpenAI API settings"""
 
+    translate_engine_type: Literal["openai"] = Field(default="openai")
+
     openai_model: str = Field(default="gpt-4o-mini", description="OpenAI model to use")
     openai_base_url: str | None = Field(
         default=None, description="Base URL for OpenAI API"
@@ -125,6 +128,25 @@ class OpenAISettings(BaseModel):
     openai_api_key: str | None = Field(
         default=None, description="API key for OpenAI service"
     )
+
+
+class BingSettings(BaseModel):
+    """Bing Translation settings"""
+
+    translate_engine_type: Literal["bing"] = Field(default="bing")
+
+
+class GoogleSettings(BaseModel):
+    """Google Translation settings"""
+
+    translate_engine_type: Literal["google"] = Field(default="google")
+
+
+AVAILABLE_TRANSLATE_ENGINE_SETTINGS = [
+    OpenAISettings,
+    BingSettings,
+    GoogleSettings,
+]
 
 
 class SettingsModel(BaseModel):
@@ -136,11 +158,14 @@ class SettingsModel(BaseModel):
     report_interval: float = Field(
         default=0.1, description="Progress report interval in seconds"
     )
-    openai: bool = Field(default=False, description="Use OpenAI for translation")
     basic: BasicSettings = Field(default_factory=BasicSettings)
     translation: TranslationSettings = Field(default_factory=TranslationSettings)
     pdf: PDFSettings = Field(default_factory=PDFSettings)
+
     openai_detail: OpenAISettings = Field(default_factory=OpenAISettings)
+    openai: bool = Field(default=False, description="Use OpenAI for translation")
+    google: bool = Field(default=False, description="Use Google for translation")
+    bing: bool = Field(default=False, description="Use Bing for translation")
 
     model_config = ConfigDict(extra="allow")
 

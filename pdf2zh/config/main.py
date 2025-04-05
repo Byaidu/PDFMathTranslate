@@ -8,6 +8,7 @@ from inspect import getdoc
 from pathlib import Path
 from types import NoneType
 from typing import Any
+from typing import Literal
 from typing import get_args
 from typing import get_origin
 
@@ -69,6 +70,8 @@ def build_args_parser(
             log.debug(
                 f"field_name: {field_name}, type_hint: {type_hint}, original_type: {original_type}, args: {args}"
             )
+            if original_type is Literal:
+                continue
             if original_type is None:
                 args = [type_hint]
             args_name = field_name.replace("_", "-").lower()
