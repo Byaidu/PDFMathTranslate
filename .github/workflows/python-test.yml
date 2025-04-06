@@ -49,17 +49,17 @@ jobs:
           uv run pytest .
 
       - name: Test - Translate a PDF file with plain text only
-        run: uv run pdf2zh ./test/file/translate.cli.plain.text.pdf -o ./test/file
+        run: uv run pdf2zh ./test/file/translate.cli.plain.text.pdf --output ./test/file
 
       - name: Test - Translate a PDF file figure
-        run: uv run pdf2zh ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
+        run: uv run pdf2zh ./test/file/translate.cli.text.with.figure.pdf --output ./test/file
 
       # - name: Test - Translate a PDF file with unknown font
       #   run:
       #     pdf2zh ./test/file/translate.cli.font.unknown.pdf
 
       - name: Test - Start GUI and exit
-        run: timeout 10 uv run pdf2zh -i  || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
+        run: timeout 10 uv run pdf2zh --gui  || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
       - name: Build as a package
         run: uv build

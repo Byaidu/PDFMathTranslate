@@ -165,39 +165,102 @@ class ConfigManager:
         Returns:
             Processed dictionary
         """
-        result = {}
+        # First convert "null" strings to None
+        processed = {}
         for key, value in content.items():
             if isinstance(value, dict):
-                result.update(self._process_toml_content(value))
+                processed[key] = self._process_toml_content(value)
             elif isinstance(value, str) and value == "null":
-                result[key] = None
+                processed[key] = None
             else:
-                result[key] = value
-        return result
+                processed[key] = value
+
+        # Then flatten the dictionary
+        return self._flatten_dict(processed)
 
     def _write_toml_file(self, file_path: Path, content: dict) -> None:
         """Write content to a TOML file
 
         Args:
             file_path: Path to write the TOML file
-            content: Content to write as dictionary
+            content: Content to write as dictionary, can be flattened or nested
         """
         try:
-            # Convert None to "null" string
+            # Check if this is a flattened dictionary with underscores
+            has_underscores = any("_" in key for key in content.keys())
+
+            # Special case handling for some TOML files that mix styles
+            # Some keys may contain underscores but shouldn't be treated as nested keys
+            special_keys = {"report_interval"}
+
+            # Convert None values to "null" strings for tomlkit
+            def convert_none_to_null(d):
+                result = {}
+                for k, v in d.items():
+                    if v is None:
+                        result[k] = "null"
+                    elif isinstance(v, dict):
+                        result[k] = convert_none_to_null(v)
+                    else:
+                        result[k] = v
+                return result
+
+            content = convert_none_to_null(content)
+
             toml_content = tomlkit.document()
-            for key, value in content.items():
-                if isinstance(value, dict):
-                    section = tomlkit.table()
-                    for k, v in value.items():
-                        section.add(k, "null" if v is None else v)
-                    toml_content.add(key, section)
-                else:
-                    toml_content.add(key, "null" if value is None else value)
+
+            if has_underscores:
+                # Group keys by their prefix to handle nested structure
+                structured = {}
+                for key, value in content.items():
+                    # Skip special case keys
+                    if key in special_keys:
+                        structured[key] = value
+                        continue
+
+                    # Split on underscore for regular keys
+                    parts = key.split("_")
+                    if len(parts) == 1 or key in special_keys:
+                        structured[key] = value
+                    else:
+                        current = structured
+                        for _i, part in enumerate(parts[:-1]):
+                            if part not in current:
+                                current[part] = {}
+                            current = current[part]
+                        current[parts[-1]] = value
+
+                # Add structured content to document
+                for key, value in structured.items():
+                    if isinstance(value, dict):
+                        section = tomlkit.table()
+                        for k, v in value.items():
+                            if isinstance(v, dict):
+                                subsection = tomlkit.table()
+                                for sk, sv in v.items():
+                                    subsection.add(sk, sv)
+                                section.add(k, subsection)
+                            else:
+                                section.add(k, v)
+                        toml_content.add(key, section)
+                    else:
+                        toml_content.add(key, value)
+            else:
+                # Handle nested structure directly
+                for key, value in content.items():
+                    if isinstance(value, dict):
+                        section = tomlkit.table()
+                        for k, v in value.items():
+                            section.add(k, v)
+                        toml_content.add(key, section)
+                    else:
+                        toml_content.add(key, value)
 
             with file_path.open("w", encoding="utf-8") as f:
                 tomlkit.dump(toml_content, f)
         except Exception as e:
             log.warning(f"Error writing config file {file_path}: {e}")
+            raise
 
     def _is_file_content_identical(self, file_path: Path, content: dict) -> bool:
         """Check if file content is identical to the given content
@@ -211,9 +274,49 @@ class ConfigManager:
         """
         try:
             existing_content = self._read_toml_file(file_path)
-            return existing_content == content
-        except Exception:
+
+            # Normalize content by flattening it if needed
+            if not any("_" in key for key in content.keys()):
+                flattened_content = self._flatten_dict(content)
+            else:
+                flattened_content = content.copy()
+
+            # Sort keys for consistent comparison
+            existing_keys = sorted(existing_content.keys())
+            content_keys = sorted(flattened_content.keys())
+
+            # Compare keys and values
+            if existing_keys != content_keys:
+                return False
+
+            for key in existing_keys:
+                if existing_content[key] != flattened_content[key]:
+                    return False
+
+            return True
+        except Exception as e:
+            log.warning(f"Error comparing file content: {e}")
             return False
+
+    def _flatten_dict(self, d: dict, prefix: str = "", separator: str = "_") -> dict:
+        """Flatten a nested dictionary structure
+
+        Args:
+            d: Dictionary to flatten
+            prefix: Prefix for keys in the flattened dictionary
+            separator: Separator between key parts
+
+        Returns:
+            Flattened dictionary
+        """
+        result = {}
+        for k, v in d.items():
+            key = f"{prefix}{separator}{k}" if prefix else k
+            if isinstance(v, dict):
+                result.update(self._flatten_dict(v, key, separator))
+            else:
+                result[key] = v
+        return result
 
     def _get_default_config(self) -> dict:
         """Get default configuration from model
@@ -230,7 +333,9 @@ class ConfigManager:
                 config_dict["basic"]["input_files"]
             )
 
-        return config_dict
+        # Flatten the dictionary to match TOML processing behavior
+        flattened_dict = self._flatten_dict(config_dict)
+        return flattened_dict
 
     def _update_version_default_config(self) -> None:
         """Update version default configuration file if needed"""

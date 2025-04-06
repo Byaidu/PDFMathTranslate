@@ -17,7 +17,8 @@ class TestBasicSettings:
         assert settings.input_files == set()
         assert settings.debug is False
         assert settings.warmup is False
-        assert settings.rpc_doclayout is None
+        # rpc_doclayout has been moved to TranslationSettings
+        # assert settings.rpc_doclayout is None
         assert settings.generate_offline_assets is None
         assert settings.restore_offline_assets is None
 
@@ -107,7 +108,7 @@ class TestPDFSettings:
         assert settings.use_alternating_pages_dual is False
         assert settings.watermark_output_mode == WatermarkOutputMode.Watermarked
         assert settings.max_pages_per_part is None
-        assert settings.translate_table_text is False
+        assert settings.translate_table_text is True
 
     def test_watermark_mode_validation(self):
         """Test watermark mode validation"""
@@ -126,7 +127,7 @@ class TestPDFSettings:
         """Test mutual exclusion of PDF output modes"""
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             pdf={"no_dual": True, "no_mono": True},
         )
         with pytest.raises(
@@ -139,7 +140,7 @@ class TestPDFSettings:
         # Test invalid font pattern
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             pdf={"formular_font_pattern": "["},
         )
         with pytest.raises(ValueError, match="Invalid formular_font_pattern"):
@@ -148,7 +149,7 @@ class TestPDFSettings:
         # Test invalid char pattern
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             pdf={"formular_char_pattern": "["},
         )
         with pytest.raises(ValueError, match="Invalid formular_char_pattern"):
@@ -157,7 +158,7 @@ class TestPDFSettings:
         # Test valid patterns
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             pdf={"formular_font_pattern": r"\w+", "formular_char_pattern": r"\d+"},
         )
         settings.validate_settings()  # Should not raise any error
@@ -167,7 +168,7 @@ class TestPDFSettings:
         # Test invalid max_pages_per_part
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             pdf={"max_pages_per_part": -1},
         )
         with pytest.raises(
@@ -178,7 +179,7 @@ class TestPDFSettings:
         # Test invalid short_line_split_factor
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             pdf={"split_short_lines": True, "short_line_split_factor": 0.05},
         )
         with pytest.raises(
@@ -199,8 +200,11 @@ class TestOpenAISettings:
     def test_alias_fields(self):
         """Test alias field names work correctly"""
         settings = OpenAISettings(
-            model="gpt-4",
-            **{"base-url": "http://api.example.com", "api-key": "test-key"},
+            openai_model="gpt-4",
+            **{
+                "openai_base_url": "http://api.example.com",
+                "openai_api_key": "test-key",
+            },
         )
         assert settings.openai_model == "gpt-4"
         assert settings.openai_base_url == "http://api.example.com"
@@ -212,8 +216,8 @@ class TestOpenAISettings:
         settings = SettingsModel(
             openai=True,
             openai_detail={
-                "api-key": "test-key",
-                "base-url": "http://api.example.com/chat/completions/",
+                "openai_api_key": "test-key",
+                "openai_base_url": "http://api.example.com/chat/completions/",
             },
         )
         # Store original URL
@@ -226,7 +230,10 @@ class TestOpenAISettings:
         # Test URL without /chat/completions/ suffix
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key", "base-url": "http://api.example.com"},
+            openai_detail={
+                "openai_api_key": "test-key",
+                "openai_base_url": "http://api.example.com",
+            },
         )
         original_url = settings.openai_detail.openai_base_url
         settings.validate_settings()
@@ -276,7 +283,9 @@ class TestSettingsModel:
             settings.validate_settings()
 
         # Test valid OpenAI settings
-        settings = SettingsModel(openai=True, openai_detail={"api-key": "test-key"})
+        settings = SettingsModel(
+            openai=True, openai_detail={"openai_api_key": "test-key"}
+        )
 
         # Create a test PDF file
         test_pdf = tmp_path / "test.pdf"
@@ -288,7 +297,7 @@ class TestSettingsModel:
         # Test invalid input file
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             basic={"input_files": {"nonexistent.pdf"}},
         )
         with pytest.raises(ValueError, match="File does not exist"):
@@ -299,7 +308,7 @@ class TestSettingsModel:
         non_pdf.touch()
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             basic={"input_files": {str(non_pdf)}},
         )
         with pytest.raises(ValueError, match="File is not a PDF file"):
@@ -336,7 +345,7 @@ class TestSettingsModel:
         """Test enhance_compatibility setting effects"""
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             pdf={"enhance_compatibility": True},
         )
         settings.validate_settings()
@@ -347,7 +356,9 @@ class TestSettingsModel:
         """Test boundary value validations"""
         # Test QPS validation
         settings = SettingsModel(
-            openai=True, openai_detail={"api-key": "test-key"}, translation={"qps": 0}
+            openai=True,
+            openai_detail={"openai_api_key": "test-key"},
+            translation={"qps": 0},
         )
         with pytest.raises(ValueError, match="qps must be greater than 0"):
             settings.validate_settings()
@@ -355,7 +366,7 @@ class TestSettingsModel:
         # Test min_text_length validation
         settings = SettingsModel(
             openai=True,
-            openai_detail={"api-key": "test-key"},
+            openai_detail={"openai_api_key": "test-key"},
             translation={"min_text_length": -1},
         )
         with pytest.raises(
@@ -365,7 +376,9 @@ class TestSettingsModel:
 
         # Test report_interval validation
         settings = SettingsModel(
-            openai=True, openai_detail={"api-key": "test-key"}, report_interval=0.04
+            openai=True,
+            openai_detail={"openai_api_key": "test-key"},
+            report_interval=0.04,
         )
         with pytest.raises(
             ValueError, match="report_interval must be greater than or equal to 0.05"
