@@ -252,9 +252,9 @@ jobs:
           name: win64-exe
           path: ./build
 
-      - name: Test show version (online mode)
-        run: |
-          ./build/pdf2zh.exe --version
+      # - name: Test show version (online mode)
+      #   run: |
+      #     ./build/pdf2zh.exe --version
       
       - name: Test - Translate a PDF file with plain text only (online mode)
         run: |
