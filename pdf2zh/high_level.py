@@ -4,6 +4,7 @@ import logging.handlers
 import multiprocessing
 import multiprocessing.connection
 import multiprocessing.queues
+import platform
 import queue
 import threading
 import traceback
@@ -331,7 +332,7 @@ async def _translate_in_subprocess(
         logger.debug("set cancel event")
         cancel_event.set()
 
-        # 关闭接收端管道以中断recv_thread中的阻塞接收
+        # 关闭接收端管道以中断 recv_thread 中的阻塞接收
         try:
             pipe_progress_recv.close()
             logger.debug("closed pipe_progress_recv")
@@ -463,9 +464,17 @@ async def do_translate_async_stream(
 
     # 开始翻译
     translate_func = partial(_translate_in_subprocess, settings, file)
-    if settings.basic.debug:
+
+    # Windows 平台上不使用子进程翻译，因为 Windows 上的 multiprocessing 实现与 Unix 平台有差异，
+    # 在某些情况下可能导致管道通信和进程管理的问题
+    if settings.basic.debug or platform.system() == "Windows":
         babeldoc_config = create_babeldoc_config(settings, file)
-        logger.debug("debug mode, translate in main process")
+        if settings.basic.debug:
+            logger.debug("debug mode, translate in main process")
+        else:
+            logger.info(
+                "Windows platform detected, translating in main process to avoid subprocess issues"
+            )
         translate_func = partial(babeldoc_translate, config=babeldoc_config)
     else:
         logger.info("translate in subprocess")
