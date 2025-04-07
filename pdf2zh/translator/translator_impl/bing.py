@@ -1,16 +1,22 @@
 import re
 
 import requests
+from pdf2zh.config.model import SettingsModel
+from pdf2zh.translator.base_rate_limiter import BaseRateLimiter
 from pdf2zh.translator.base_translator import BaseTranslator
 
 
 class BingTranslator(BaseTranslator):
     # https://github.com/immersive-translate/old-immersive-translate/blob/6df13da22664bea2f51efe5db64c63aca59c4e79/src/background/translationService.js
     name = "bing"
-    lang_map = {"zh": "zh-Hans"}
+    lang_map = {"zh": "zh-Hans", "zh-CN": "zh-Hans", "zh-TW": "zh-Hant", "auto": "en"}
 
-    def __init__(self, lang_in, lang_out, model, ignore_cache=False, **kwargs):
-        super().__init__(lang_in, lang_out, model, ignore_cache)
+    def __init__(
+        self,
+        settings: SettingsModel,
+        rate_limiter: BaseRateLimiter,
+    ):
+        super().__init__(settings, rate_limiter)
         self.session = requests.Session()
         self.endpoint = "https://www.bing.com/translator"
         self.headers = {

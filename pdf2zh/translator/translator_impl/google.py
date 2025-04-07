@@ -4,6 +4,8 @@ import re
 import unicodedata
 
 import requests
+from pdf2zh.config.model import SettingsModel
+from pdf2zh.translator.base_rate_limiter import BaseRateLimiter
 from pdf2zh.translator.base_translator import BaseTranslator
 
 logger = logging.getLogger(__name__)
@@ -17,8 +19,12 @@ class GoogleTranslator(BaseTranslator):
     name = "google"
     lang_map = {"zh": "zh-CN"}
 
-    def __init__(self, lang_in, lang_out, model, ignore_cache=False, **kwargs):
-        super().__init__(lang_in, lang_out, model, ignore_cache)
+    def __init__(
+        self,
+        settings: SettingsModel,
+        rate_limiter: BaseRateLimiter,
+    ):
+        super().__init__(settings, rate_limiter)
         self.session = requests.Session()
         self.endpoint = "https://translate.google.com/m"
         self.headers = {

@@ -96,7 +96,6 @@ class BaseTranslator(ABC):
             self.cache.set(text, translation)
         return translation
 
-    @abstractmethod
     def do_llm_translate(self, text, rate_limit_params: dict = None):
         """
         Actual translate text, override this method
