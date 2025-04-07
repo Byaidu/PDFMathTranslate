@@ -3,6 +3,7 @@ import pdf2zh.pdf2zh
 import os
 import babeldoc.assets.assets
 import pathlib
+import asyncio
 
 WAIT_FOR_INPUT = False
 if len(sys.argv) == 1:
@@ -16,7 +17,7 @@ for file in files:
         babeldoc.assets.assets.restore_offline_assets_package(pathlib.Path(os.path.dirname(__file__)))
 
 try:
-    code = pdf2zh.pdf2zh.main()
+    code = asyncio.run(pdf2zh.pdf2zh.main())
     print(f"pdf2zh.pdf2zh.main() return code: {code}")
     if WAIT_FOR_INPUT:
         input("Press Enter to continue...")
