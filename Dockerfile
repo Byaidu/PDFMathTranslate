@@ -25,4 +25,4 @@ COPY . .
 
 RUN uv pip install --system --no-cache . && uv pip install --system --no-cache -U babeldoc "pymupdf<1.25.3" && babeldoc --version && babeldoc --warmup
 
-CMD ["pdf2zh", "-i"]
+CMD ["pdf2zh", "--gui"]

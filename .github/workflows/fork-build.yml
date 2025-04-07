@@ -258,15 +258,15 @@ jobs:
       
       - name: Test - Translate a PDF file with plain text only (online mode)
         run: |
-          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf --output ./test/file
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf --output ./test/file --bing
 
       - name: Test - Translate a PDF file figure
         run: |
-          ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf --output ./test/file
+          ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf --output ./test/file --bing
 
       - name: Test - Translate without offline assets (online mode)
         run: |
-          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf --output ./test/file
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf --output ./test/file --bing
           
       - name: Upload test results
         uses: actions/upload-artifact@v4
