@@ -170,8 +170,30 @@ def _build_translate_settings(
     page_input = ui_inputs.get("page_input")
     prompt = ui_inputs.get("prompt")
     threads = ui_inputs.get("threads")
-    skip_subset_fonts = ui_inputs.get("skip_subset_fonts")
     ignore_cache = ui_inputs.get("ignore_cache")
+
+    # PDF Output Options
+    no_mono = ui_inputs.get("no_mono")
+    no_dual = ui_inputs.get("no_dual")
+    dual_translate_first = ui_inputs.get("dual_translate_first")
+    use_alternating_pages_dual = ui_inputs.get("use_alternating_pages_dual")
+    watermark_output_mode = ui_inputs.get("watermark_output_mode")
+
+    # Advanced Translation Options
+    min_text_length = ui_inputs.get("min_text_length")
+    rpc_doclayout = ui_inputs.get("rpc_doclayout")
+
+    # Advanced PDF Options
+    skip_clean = ui_inputs.get("skip_clean")
+    disable_rich_text_translate = ui_inputs.get("disable_rich_text_translate")
+    enhance_compatibility = ui_inputs.get("enhance_compatibility")
+    split_short_lines = ui_inputs.get("split_short_lines")
+    short_line_split_factor = ui_inputs.get("short_line_split_factor")
+    translate_table_text = ui_inputs.get("translate_table_text")
+    skip_scanned_detection = ui_inputs.get("skip_scanned_detection")
+    max_pages_per_part = ui_inputs.get("max_pages_per_part")
+    formular_font_pattern = ui_inputs.get("formular_font_pattern")
+    formular_char_pattern = ui_inputs.get("formular_char_pattern")
 
     # Map UI language selections to language codes
     source_lang = lang_map.get(lang_from, "auto")
@@ -200,7 +222,49 @@ def _build_translate_settings(
     translate_settings.translation.output = str(output_dir)
     translate_settings.translation.qps = int(threads)
     translate_settings.translation.ignore_cache = ignore_cache
-    translate_settings.pdf.skip_clean = skip_subset_fonts
+
+    # Update Translation Settings
+    if min_text_length is not None:
+        translate_settings.translation.min_text_length = int(min_text_length)
+    if rpc_doclayout:
+        translate_settings.translation.rpc_doclayout = rpc_doclayout
+
+    # Update PDF Settings
+    translate_settings.pdf.no_mono = no_mono
+    translate_settings.pdf.no_dual = no_dual
+    translate_settings.pdf.dual_translate_first = dual_translate_first
+    translate_settings.pdf.use_alternating_pages_dual = use_alternating_pages_dual
+
+    # Map watermark mode from UI to enum
+    if watermark_output_mode == "Watermarked":
+        from pdf2zh.config.model import WatermarkOutputMode
+
+        translate_settings.pdf.watermark_output_mode = WatermarkOutputMode.Watermarked
+    elif watermark_output_mode == "No Watermark":
+        from pdf2zh.config.model import WatermarkOutputMode
+
+        translate_settings.pdf.watermark_output_mode = WatermarkOutputMode.NoWatermark
+
+    # Update Advanced PDF Settings
+    translate_settings.pdf.skip_clean = skip_clean
+    translate_settings.pdf.disable_rich_text_translate = disable_rich_text_translate
+    translate_settings.pdf.enhance_compatibility = enhance_compatibility
+    translate_settings.pdf.split_short_lines = split_short_lines
+
+    if short_line_split_factor is not None:
+        translate_settings.pdf.short_line_split_factor = float(short_line_split_factor)
+
+    translate_settings.pdf.translate_table_text = translate_table_text
+    translate_settings.pdf.skip_scanned_detection = skip_scanned_detection
+
+    if max_pages_per_part is not None and max_pages_per_part > 0:
+        translate_settings.pdf.max_pages_per_part = int(max_pages_per_part)
+
+    if formular_font_pattern:
+        translate_settings.pdf.formular_font_pattern = formular_font_pattern
+
+    if formular_char_pattern:
+        translate_settings.pdf.formular_char_pattern = formular_char_pattern
 
     # Set service-specific settings
     if service == "OpenAI":
@@ -336,9 +400,27 @@ async def translate_file(
     lang_to,
     page_range,
     page_input,
+    # PDF Output Options
+    no_mono,
+    no_dual,
+    dual_translate_first,
+    use_alternating_pages_dual,
+    watermark_output_mode,
+    # Advanced Options
     prompt,
     threads,
-    skip_subset_fonts,
+    min_text_length,
+    rpc_doclayout,
+    skip_clean,
+    disable_rich_text_translate,
+    enhance_compatibility,
+    split_short_lines,
+    short_line_split_factor,
+    translate_table_text,
+    skip_scanned_detection,
+    max_pages_per_part,
+    formular_font_pattern,
+    formular_char_pattern,
     ignore_cache,
     state,
     openai_model=None,
@@ -360,7 +442,7 @@ async def translate_file(
         - page_input: The input for the page range
         - prompt: The custom prompt for the llm
         - threads: The number of threads to use
-        - skip_subset_fonts: Whether to skip subsetting fonts
+        - skip_clean: Whether to skip subsetting fonts
         - ignore_cache: Whether to ignore the translation cache
         - state: The state of the translation process
         - openai_model: The OpenAI model to use
@@ -398,9 +480,27 @@ async def translate_file(
         "lang_to": lang_to,
         "page_range": page_range,
         "page_input": page_input,
+        # PDF Output Options
+        "no_mono": no_mono,
+        "no_dual": no_dual,
+        "dual_translate_first": dual_translate_first,
+        "use_alternating_pages_dual": use_alternating_pages_dual,
+        "watermark_output_mode": watermark_output_mode,
+        # Advanced Options
         "prompt": prompt,
         "threads": threads,
-        "skip_subset_fonts": skip_subset_fonts,
+        "min_text_length": min_text_length,
+        "rpc_doclayout": rpc_doclayout,
+        "skip_clean": skip_clean,
+        "disable_rich_text_translate": disable_rich_text_translate,
+        "enhance_compatibility": enhance_compatibility,
+        "split_short_lines": split_short_lines,
+        "short_line_split_factor": short_line_split_factor,
+        "translate_table_text": translate_table_text,
+        "skip_scanned_detection": skip_scanned_detection,
+        "max_pages_per_part": max_pages_per_part,
+        "formular_font_pattern": formular_font_pattern,
+        "formular_char_pattern": formular_char_pattern,
         "ignore_cache": ignore_cache,
         "openai_model": openai_model,
         "openai_base_url": openai_base_url,
@@ -572,6 +672,40 @@ with gr.Blocks(
                 placeholder="e.g., 1,3,5-10",
             )
 
+            # PDF Output Options
+            gr.Markdown("## PDF Output Options")
+            with gr.Row():
+                no_mono = gr.Checkbox(
+                    label="Disable monolingual output",
+                    value=settings.pdf.no_mono,
+                    interactive=True,
+                )
+                no_dual = gr.Checkbox(
+                    label="Disable bilingual output",
+                    value=settings.pdf.no_dual,
+                    interactive=True,
+                )
+
+            with gr.Row():
+                dual_translate_first = gr.Checkbox(
+                    label="Put translated pages first in dual mode",
+                    value=settings.pdf.dual_translate_first,
+                    interactive=True,
+                )
+                use_alternating_pages_dual = gr.Checkbox(
+                    label="Use alternating pages for dual PDF",
+                    value=settings.pdf.use_alternating_pages_dual,
+                    interactive=True,
+                )
+
+            watermark_output_mode = gr.Radio(
+                choices=["Watermarked", "No Watermark"],
+                label="Watermark mode",
+                value="Watermarked"
+                if settings.pdf.watermark_output_mode.value == "watermarked"
+                else "No Watermark",
+            )
+
             # OpenAI specific settings (initially visible if OpenAI is default)
             with gr.Group(visible=(service.value == "OpenAI")) as openai_settings:
                 openai_model = gr.Textbox(
@@ -601,6 +735,13 @@ with gr.Blocks(
 
             # Additional translation options
             with gr.Accordion("Advanced Options", open=False):
+                prompt = gr.Textbox(
+                    label="Custom prompt for translation",
+                    value="",
+                    interactive=True,
+                    placeholder="Custom prompt for the translator",
+                )
+
                 threads = gr.Number(
                     label="Threads (QPS)",
                     value=settings.translation.qps or 4,
@@ -609,23 +750,96 @@ with gr.Blocks(
                     interactive=True,
                 )
 
-                # PDF options
-                skip_subset_fonts = gr.Checkbox(
-                    label="Skip font subsetting",
+                min_text_length = gr.Number(
+                    label="Minimum text length to translate",
+                    value=settings.translation.min_text_length,
+                    precision=0,
+                    minimum=0,
+                    interactive=True,
+                )
+
+                rpc_doclayout = gr.Textbox(
+                    label="RPC service for document layout analysis (optional)",
+                    value=settings.translation.rpc_doclayout or "",
+                    interactive=True,
+                    placeholder="http://host:port",
+                )
+
+                # PDF options section
+                gr.Markdown("### PDF Options")
+
+                skip_clean = gr.Checkbox(
+                    label="Skip font subsetting (skip_clean)",
                     value=settings.pdf.skip_clean,
                     interactive=True,
+                )
+
+                disable_rich_text_translate = gr.Checkbox(
+                    label="Disable rich text translation",
+                    value=settings.pdf.disable_rich_text_translate,
+                    interactive=True,
+                )
+
+                enhance_compatibility = gr.Checkbox(
+                    label="Enhance compatibility (auto-enables skip_clean and disable_rich_text)",
+                    value=settings.pdf.enhance_compatibility,
+                    interactive=True,
+                )
+
+                split_short_lines = gr.Checkbox(
+                    label="Force split short lines into different paragraphs",
+                    value=settings.pdf.split_short_lines,
+                    interactive=True,
+                )
+
+                short_line_split_factor = gr.Slider(
+                    label="Split threshold factor for short lines",
+                    value=settings.pdf.short_line_split_factor,
+                    minimum=0.1,
+                    maximum=1.0,
+                    step=0.1,
+                    interactive=True,
+                    visible=settings.pdf.split_short_lines,
+                )
+
+                translate_table_text = gr.Checkbox(
+                    label="Translate table text (experimental)",
+                    value=settings.pdf.translate_table_text,
+                    interactive=True,
+                )
+
+                skip_scanned_detection = gr.Checkbox(
+                    label="Skip scanned detection",
+                    value=settings.pdf.skip_scanned_detection,
+                    interactive=True,
+                )
+
+                max_pages_per_part = gr.Number(
+                    label="Maximum pages per part (for split translation)",
+                    value=settings.pdf.max_pages_per_part,
+                    precision=0,
+                    minimum=0,
+                    interactive=True,
+                )
+
+                formular_font_pattern = gr.Textbox(
+                    label="Font pattern to identify formula text (regex)",
+                    value=settings.pdf.formular_font_pattern or "",
+                    interactive=True,
+                    placeholder="e.g., CMMI|CMR",
+                )
+
+                formular_char_pattern = gr.Textbox(
+                    label="Character pattern to identify formula text (regex)",
+                    value=settings.pdf.formular_char_pattern or "",
+                    interactive=True,
+                    placeholder="e.g., [∫∬∭∮∯∰∇∆]",
                 )
 
                 ignore_cache = gr.Checkbox(
                     label="Ignore cache",
                     value=settings.translation.ignore_cache,
                     interactive=True,
-                )
-
-                prompt = gr.Textbox(
-                    label="Custom Prompt for LLM",
-                    interactive=True,
-                    placeholder="Optional: Add custom prompt for the translation model",
                 )
 
             output_title = gr.Markdown("## Translated", visible=False)
@@ -667,6 +881,25 @@ with gr.Blocks(
             return gr.update(visible=True)
         return gr.update(visible=False)
 
+    def on_enhance_compatibility_change(enhance_value):
+        """Update skip_clean and disable_rich_text_translate when enhance_compatibility changes"""
+        if enhance_value:
+            # When enhanced compatibility is enabled, both options are auto-enabled and disabled for user modification
+            return (
+                gr.update(value=True, interactive=False),
+                gr.update(value=True, interactive=False),
+            )
+        else:
+            # When disabled, allow user to modify these settings
+            return (
+                gr.update(interactive=True),
+                gr.update(interactive=True),
+            )
+
+    def on_split_short_lines_change(split_value):
+        """Update short_line_split_factor visibility based on split_short_lines value"""
+        return gr.update(visible=split_value)
+
     # Default file handler
     file_input.upload(
         lambda x: x,
@@ -693,6 +926,20 @@ with gr.Blocks(
         openai_settings,
     )
 
+    # Add event handler for enhance_compatibility
+    enhance_compatibility.change(
+        on_enhance_compatibility_change,
+        enhance_compatibility,
+        [skip_clean, disable_rich_text_translate],
+    )
+
+    # Add event handler for split_short_lines
+    split_short_lines.change(
+        on_split_short_lines_change,
+        split_short_lines,
+        short_line_split_factor,
+    )
+
     # State for managing translation tasks
     state = gr.State({"session_id": None, "current_task": None})
 
@@ -708,9 +955,27 @@ with gr.Blocks(
             lang_to,
             page_range,
             page_input,
+            # PDF Output Options
+            no_mono,
+            no_dual,
+            dual_translate_first,
+            use_alternating_pages_dual,
+            watermark_output_mode,
+            # Advanced Options
             prompt,
             threads,
-            skip_subset_fonts,
+            min_text_length,
+            rpc_doclayout,
+            skip_clean,
+            disable_rich_text_translate,
+            enhance_compatibility,
+            split_short_lines,
+            short_line_split_factor,
+            translate_table_text,
+            skip_scanned_detection,
+            max_pages_per_part,
+            formular_font_pattern,
+            formular_char_pattern,
             ignore_cache,
             state,
             # OpenAI specific settings
