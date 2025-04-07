@@ -4,11 +4,14 @@ import os
 import babeldoc.assets.assets
 import pathlib
 import asyncio
+import multiprocessing
 
 WAIT_FOR_INPUT = False
 if len(sys.argv) == 1:
     sys.argv.append("--gui")  # 无参数时自动添加 -i 参数
     WAIT_FOR_INPUT = True
+
+multiprocessing.set_executable(os.path.join(os.path.dirname(__file__), 'runtime', 'pythonw.exe'))
 
 files = os.listdir(os.path.dirname(__file__))
 for file in files:
