@@ -475,7 +475,7 @@ async def do_translate_async_stream(
             logger.info(
                 "Windows platform detected, translating in main process to avoid subprocess issues"
             )
-        translate_func = partial(babeldoc_translate, config=babeldoc_config)
+        translate_func = partial(babeldoc_translate, translation_config=babeldoc_config)
     else:
         logger.info("translate in subprocess")
 
