@@ -131,6 +131,10 @@ class OpenAISettings(BaseModel):
     def validate_settings(self) -> None:
         if not self.openai_api_key:
             raise ValueError("OpenAI API key is required")
+        if self.openai_base_url:
+            self.openai_base_url = re.sub(
+                "/chat/completions/?$", "", self.openai_base_url
+            )
 
 
 class BingSettings(BaseModel):
@@ -265,12 +269,12 @@ class SettingsModel(BaseModel):
 
     def parse_pages(self) -> list[tuple[int, int]] | None:
         """Parse pages string into list of page ranges"""
-        if not self.translation.pages:
+        if not self.pdf.pages:
             return None
 
         ranges: list[tuple[int, int]] = []
         try:
-            for part in self.translation.pages.split(","):
+            for part in self.pdf.pages.split(","):
                 part = part.strip()
                 if "-" in part:
                     start, end = part.split("-")

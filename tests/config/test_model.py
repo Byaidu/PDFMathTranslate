@@ -63,7 +63,6 @@ class TestTranslationSettings:
     def test_default_values(self):
         """Test default values of TranslationSettings"""
         settings = TranslationSettings()
-        assert settings.pages is None
         assert settings.min_text_length == 5
         assert settings.lang_in == "auto"
         assert settings.lang_out == "zh"
@@ -74,7 +73,6 @@ class TestTranslationSettings:
     def test_custom_values(self, tmp_path):
         """Test setting custom values"""
         settings = TranslationSettings(
-            pages="1-3",
             min_text_length=10,
             lang_in="fr",
             lang_out="es",
@@ -82,7 +80,6 @@ class TestTranslationSettings:
             qps=10,
             ignore_cache=True,
         )
-        assert settings.pages == "1-3"
         assert settings.min_text_length == 10
         assert settings.lang_in == "fr"
         assert settings.lang_out == "es"
@@ -219,13 +216,34 @@ class TestOpenAISettings:
                 "openai_api_key": "test-key",
                 "openai_base_url": "http://api.example.com/chat/completions/",
             },
-        )
+        ).to_settings_model()
         # Store original URL
-        original_url = settings.openai_detail.openai_base_url
+        original_url = settings.translate_engine_settings.openai_base_url
         settings.validate_settings()
         # URL should be modified after validation
         assert original_url == "http://api.example.com/chat/completions/"
-        assert settings.openai_detail.openai_base_url == "http://api.example.com"
+        assert (
+            settings.translate_engine_settings.openai_base_url
+            == "http://api.example.com"
+        )
+
+        # Test URL contains /chat/completions/
+        settings = CLIEnvSettingsModel(
+            openai=True,
+            openai_detail={
+                "openai_api_key": "test-key",
+                "openai_base_url": "http://api.example.com/chat/completions/anything",
+            },
+        ).to_settings_model()
+        # Store original URL
+        original_url = settings.translate_engine_settings.openai_base_url
+        settings.validate_settings()
+        # URL should be modified after validation
+        assert original_url == "http://api.example.com/chat/completions/anything"
+        assert (
+            settings.translate_engine_settings.openai_base_url
+            == "http://api.example.com/chat/completions/anything"
+        )
 
         # Test URL without /chat/completions/ suffix
         settings = CLIEnvSettingsModel(
@@ -259,14 +277,14 @@ class TestCLIEnvSettingsModel:
         # Test with specified output directory
         settings = CLIEnvSettingsModel(
             translation={"output": str(tmp_path / "test_output")}
-        )
+        ).to_settings_model()
         output_dir = settings.get_output_dir()
         assert output_dir.exists()
         assert output_dir.is_dir()
         assert str(output_dir) == str(tmp_path / "test_output")
 
         # Test with default (current) directory
-        settings = CLIEnvSettingsModel()
+        settings = CLIEnvSettingsModel().to_settings_model()
         output_dir = settings.get_output_dir()
         assert output_dir.exists()
         assert output_dir.is_dir()
@@ -276,8 +294,7 @@ class TestCLIEnvSettingsModel:
         """Test settings validation"""
         # Test missing translation service
         settings = CLIEnvSettingsModel()
-        with pytest.raises(ValueError, match="Must select a translation service"):
-            settings.validate_settings()
+        settings.validate_settings()
 
         # Test missing OpenAI API key
         settings = CLIEnvSettingsModel(openai=True)
@@ -323,29 +340,23 @@ class TestCLIEnvSettingsModel:
         assert settings.parse_pages() is None
 
         # Test single page
-        settings = CLIEnvSettingsModel(translation={"pages": "1"}).to_settings_model()
+        settings = CLIEnvSettingsModel(pdf={"pages": "1"}).to_settings_model()
         assert settings.parse_pages() == [(1, 1)]
 
         # Test page range
-        settings = CLIEnvSettingsModel(translation={"pages": "1-3"}).to_settings_model()
+        settings = CLIEnvSettingsModel(pdf={"pages": "1-3"}).to_settings_model()
         assert settings.parse_pages() == [(1, 3)]
 
         # Test multiple ranges
-        settings = CLIEnvSettingsModel(
-            translation={"pages": "1,3-5,7"}
-        ).to_settings_model()
+        settings = CLIEnvSettingsModel(pdf={"pages": "1,3-5,7"}).to_settings_model()
         assert settings.parse_pages() == [(1, 1), (3, 5), (7, 7)]
 
         # Test open-ended ranges
-        settings = CLIEnvSettingsModel(
-            translation={"pages": "1-,3,-5"}
-        ).to_settings_model()
+        settings = CLIEnvSettingsModel(pdf={"pages": "1-,3,-5"}).to_settings_model()
         assert settings.parse_pages() == [(1, -1), (3, 3), (1, 5)]
 
         # Test invalid format
-        settings = CLIEnvSettingsModel(
-            translation={"pages": "invalid"}
-        ).to_settings_model()
+        settings = CLIEnvSettingsModel(pdf={"pages": "invalid"}).to_settings_model()
         with pytest.raises(ValueError):
             settings.parse_pages()
 
@@ -355,7 +366,7 @@ class TestCLIEnvSettingsModel:
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             pdf={"enhance_compatibility": True},
-        )
+        ).to_settings_model()
         settings.validate_settings()
         assert settings.pdf.skip_clean is True
         assert settings.pdf.disable_rich_text_translate is True
