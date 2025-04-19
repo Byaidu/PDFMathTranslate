@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel
-from pydantic import ConfigDict
 from pydantic import Field
 
 log = logging.getLogger(__name__)
@@ -48,9 +47,6 @@ class BasicSettings(BaseModel):
 class TranslationSettings(BaseModel):
     """Translation related settings"""
 
-    pages: str | None = Field(
-        default=None, description="Pages to translate (e.g. '1,2,1-,-3,3-5')"
-    )
     min_text_length: int = Field(
         default=5, description="Minimum text length to translate"
     )
@@ -70,6 +66,9 @@ class TranslationSettings(BaseModel):
 class PDFSettings(BaseModel):
     """PDF processing settings"""
 
+    pages: str | None = Field(
+        default=None, description="Pages to translate (e.g. '1,2,1-,-3,3-5')"
+    )
     no_dual: bool = Field(
         default=False, description="Do not output bilingual PDF files"
     )
@@ -129,17 +128,27 @@ class OpenAISettings(BaseModel):
         default=None, description="API key for OpenAI service"
     )
 
+    def validate_settings(self) -> None:
+        if not self.openai_api_key:
+            raise ValueError("OpenAI API key is required")
+
 
 class BingSettings(BaseModel):
     """Bing Translation settings"""
 
     translate_engine_type: Literal["bing"] = Field(default="bing")
 
+    def validate_settings(self) -> None:
+        pass
+
 
 class GoogleSettings(BaseModel):
     """Google Translation settings"""
 
     translate_engine_type: Literal["google"] = Field(default="google")
+
+    def validate_settings(self) -> None:
+        pass
 
 
 AVAILABLE_TRANSLATE_ENGINE_SETTINGS = [
@@ -162,12 +171,9 @@ class SettingsModel(BaseModel):
     translation: TranslationSettings = Field(default_factory=TranslationSettings)
     pdf: PDFSettings = Field(default_factory=PDFSettings)
 
-    openai_detail: OpenAISettings = Field(default_factory=OpenAISettings)
-    openai: bool = Field(default=False, description="Use OpenAI for translation")
-    google: bool = Field(default=False, description="Use Google for translation")
-    bing: bool = Field(default=False, description="Use Bing for translation")
-
-    model_config = ConfigDict(extra="allow")
+    translate_engine_settings: OpenAISettings | BingSettings | GoogleSettings | None = (
+        Field(description="Translation engine settings")
+    )
 
     def clone(self) -> SettingsModel:
         return self.model_copy(deep=True)
@@ -201,20 +207,10 @@ class SettingsModel(BaseModel):
             # so no need to validate other settings
             return
 
-        if not self.openai:
-            raise ValueError("Must select a translation service: --openai")
+        if not self.translate_engine_settings:
+            raise ValueError("Must provide a translation service")
 
-        # Validate OpenAI parameters
-        if self.openai and not self.openai_detail.openai_api_key:
-            raise ValueError("OpenAI API key is required when using OpenAI service")
-
-        # Note: openai_api_key format validation is not needed
-        # Note: rpc_doclayout URL format validation is not needed
-
-        if self.openai_detail.openai_base_url:
-            self.openai_detail.openai_base_url = re.sub(
-                r"/chat/completions/?$", "", self.openai_detail.openai_base_url
-            )
+        self.translate_engine_settings.validate_settings()
 
         # Validate files
         for file in self.basic.input_files:

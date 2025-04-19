@@ -70,9 +70,9 @@ class TestConfigManager:
         cm = ConfigManager()
         env_settings = cm.parse_env_vars()
 
-        assert env_settings["debug"] is True
+        assert env_settings["basic"]["debug"] is True
         assert env_settings["report_interval"] == 0.5
-        assert env_settings["qps"] == 10
+        assert env_settings["translation"]["qps"] == 10
         assert "invalid_key" not in env_settings
 
     def test_convert_env_value(self):
@@ -148,11 +148,12 @@ class TestConfigManager:
             debug=True,
             report_interval=MagicDefault,  # Should use env var
             qps=15,  # Should override env var
+            google=True,
         )
 
         # Initialize configuration
         with patch("argparse.ArgumentParser.parse_args", return_value=args):
-            cm.initialize_config()
+            config = cm.initialize_config()
 
         # Verify settings
         assert cm.settings.basic.debug is True
@@ -255,8 +256,12 @@ class TestConfigManager:
         default_config = temp_config_dir / "default.toml"
 
         # Set up test configurations
-        user_config_content = {"debug": True, "qps": 20}
-        default_config_content = {"debug": False, "qps": 10, "report_interval": 0.5}
+        user_config_content = {"basic": {"debug": True}, "translation": {"qps": 20}}
+        default_config_content = {
+            "basic": {"debug": True},
+            "translation": {"qps": 20},
+            "report_interval": 0.5,
+        }
 
         with patch("pdf2zh.const.DEFAULT_CONFIG_FILE", default_config):
             # Write test configurations
@@ -271,7 +276,7 @@ class TestConfigManager:
                 qps=MagicDefault,
                 report_interval=MagicDefault,
             )
-
+            cm.default_config_file_path = default_config
             # Initialize configuration
             with patch("argparse.ArgumentParser.parse_args", return_value=args):
                 cm.initialize_config()
@@ -325,9 +330,9 @@ class TestConfigManager:
             }
         }
         processed = cm._process_toml_content(nested_content)
-        assert processed["level1_level2_value"] is None
-        assert processed["level1_level2_list"] == [1, 2, 3]
-        assert processed["level1_level2_nested_null"] is None
+        assert processed["level1"]["level2"]["value"] is None
+        assert processed["level1"]["level2"]["list"] == [1, 2, 3]
+        assert processed["level1"]["level2"]["nested_null"] is None
 
     def test_complex_env_vars(self, monkeypatch: pytest.MonkeyPatch):
         """Test parsing of complex environment variables"""
@@ -337,9 +342,9 @@ class TestConfigManager:
         monkeypatch.setenv("PDF2ZH_DEBUG", "true")
         monkeypatch.setenv("PDF2ZH_QPS", "20")
         env_settings = cm.parse_env_vars()
-        assert "debug" in env_settings
-        assert env_settings["debug"] is True
-        assert env_settings["qps"] == 20
+        assert "basic" in env_settings and "debug" in env_settings["basic"]
+        assert env_settings["basic"]["debug"] is True
+        assert env_settings["translation"]["qps"] == 20
 
         # Test optional types
         monkeypatch.setenv("PDF2ZH_REPORT_INTERVAL", "0.5")
@@ -353,9 +358,6 @@ class TestConfigManager:
 
         # Verify basic structure
         assert isinstance(default_config, dict)
-        # Check for flattened structure with basic_ prefix instead of basic section
-        assert any(key.startswith("basic_") for key in default_config)
-        assert any(key.startswith("translation_") for key in default_config)
 
         # Verify input_files is converted to list
         input_files_key = [
@@ -365,10 +367,12 @@ class TestConfigManager:
             assert isinstance(default_config[input_files_key[0]], list)
 
         # Verify essential configuration fields
-        assert "basic_debug" in default_config
-        assert "translation_qps" in default_config
-        assert isinstance(default_config["basic_debug"], bool)
-        assert isinstance(default_config["translation_qps"], int | float)
+        assert "basic" in default_config and "debug" in default_config["basic"]
+        assert (
+            "translation" in default_config and "qps" in default_config["translation"]
+        )
+        assert isinstance(default_config["basic"]["debug"], bool)
+        assert isinstance(default_config["translation"]["qps"], int | float)
 
     def test_settings_not_initialized(self):
         """Test accessing settings before initialization"""
@@ -488,6 +492,9 @@ class TestConfigManager:
 
         # Create test config file
         config_file = temp_config_dir / "test_config.toml"
+        test_input_pdf = temp_config_dir / "test.pdf"
+        with test_input_pdf.open("w") as f:
+            f.write("1")
         config_content = """
         [basic]
         debug = false
@@ -508,7 +515,7 @@ class TestConfigManager:
             debug=True,  # Should override config file
             qps=MagicDefault,  # Should use env var
             report_interval=MagicDefault,  # Should use env var
-            input_files={"test.pdf"},  # Add a test file
+            input_files={test_input_pdf.as_posix()},  # Add a test file
         )
 
         # Initialize with all sources
@@ -519,7 +526,9 @@ class TestConfigManager:
             assert cm.settings.basic.debug is True  # From CLI
             assert cm.settings.translation.qps == 10  # From env var
             assert cm.settings.report_interval == 1.0  # From env var
-            assert "test.pdf" in cm.settings.basic.input_files  # From CLI args
+            assert (
+                test_input_pdf.as_posix() in cm.settings.basic.input_files
+            )  # From CLI args
 
     def test_file_system_operations(self, temp_config_dir: Path):
         """Test actual file system operations"""
@@ -542,5 +551,5 @@ class TestConfigManager:
 
         # Read and verify content
         read_content = cm._read_toml_file(test_file)
-        assert read_content["basic_debug"] is True
-        assert read_content["translation_qps"] == 15
+        assert read_content["basic"]["debug"] is True
+        assert read_content["translation"]["qps"] == 15

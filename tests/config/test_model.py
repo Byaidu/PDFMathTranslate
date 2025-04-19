@@ -1,10 +1,10 @@
 from pathlib import Path
 
 import pytest
+from pdf2zh.config.cli_env_model import CLIEnvSettingsModel
 from pdf2zh.config.model import BasicSettings
 from pdf2zh.config.model import OpenAISettings
 from pdf2zh.config.model import PDFSettings
-from pdf2zh.config.model import SettingsModel
 from pdf2zh.config.model import TranslationSettings
 from pdf2zh.config.model import WatermarkOutputMode
 from pydantic import ValidationError
@@ -36,13 +36,13 @@ class TestBasicSettings:
 
     def test_warmup_mode(self):
         """Test warmup mode validation"""
-        settings = SettingsModel(basic={"warmup": True})
+        settings = CLIEnvSettingsModel(basic={"warmup": True})
         # Warmup mode should bypass other validations
         settings.validate_settings()  # Should not raise any error
 
     def test_offline_assets_mutual_exclusion(self):
         """Test mutual exclusion of offline assets options"""
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             basic={
                 "generate_offline_assets": "path1",
                 "restore_offline_assets": "path2",
@@ -55,7 +55,7 @@ class TestBasicSettings:
             settings.validate_settings()
 
         # Test generate_offline_assets alone should work
-        settings = SettingsModel(basic={"generate_offline_assets": "path1"})
+        settings = CLIEnvSettingsModel(basic={"generate_offline_assets": "path1"})
         settings.validate_settings()  # Should not raise any error
 
 
@@ -125,7 +125,7 @@ class TestPDFSettings:
 
     def test_output_modes_mutual_exclusion(self):
         """Test mutual exclusion of PDF output modes"""
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             pdf={"no_dual": True, "no_mono": True},
@@ -138,7 +138,7 @@ class TestPDFSettings:
     def test_formula_patterns(self):
         """Test formula pattern validation"""
         # Test invalid font pattern
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             pdf={"formular_font_pattern": "["},
@@ -147,7 +147,7 @@ class TestPDFSettings:
             settings.validate_settings()
 
         # Test invalid char pattern
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             pdf={"formular_char_pattern": "["},
@@ -156,7 +156,7 @@ class TestPDFSettings:
             settings.validate_settings()
 
         # Test valid patterns
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             pdf={"formular_font_pattern": r"\w+", "formular_char_pattern": r"\d+"},
@@ -166,7 +166,7 @@ class TestPDFSettings:
     def test_page_split_settings(self):
         """Test page split related settings"""
         # Test invalid max_pages_per_part
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             pdf={"max_pages_per_part": -1},
@@ -177,7 +177,7 @@ class TestPDFSettings:
             settings.validate_settings()
 
         # Test invalid short_line_split_factor
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             pdf={"split_short_lines": True, "short_line_split_factor": 0.05},
@@ -213,7 +213,7 @@ class TestOpenAISettings:
     def test_base_url_handling(self):
         """Test base URL handling"""
         # Test URL with /chat/completions/ suffix
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={
                 "openai_api_key": "test-key",
@@ -228,7 +228,7 @@ class TestOpenAISettings:
         assert settings.openai_detail.openai_base_url == "http://api.example.com"
 
         # Test URL without /chat/completions/ suffix
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={
                 "openai_api_key": "test-key",
@@ -242,10 +242,10 @@ class TestOpenAISettings:
         assert settings.openai_detail.openai_base_url == "http://api.example.com"
 
 
-class TestSettingsModel:
+class TestCLIEnvSettingsModel:
     def test_default_values(self):
-        """Test default values of SettingsModel"""
-        settings = SettingsModel()
+        """Test default values of CLIEnvSettingsModel"""
+        settings = CLIEnvSettingsModel()
         assert settings.config_file is None
         assert settings.report_interval == 0.1
         assert settings.openai is False
@@ -257,14 +257,16 @@ class TestSettingsModel:
     def test_get_output_dir(self, tmp_path: Path):
         """Test get_output_dir method"""
         # Test with specified output directory
-        settings = SettingsModel(translation={"output": str(tmp_path / "test_output")})
+        settings = CLIEnvSettingsModel(
+            translation={"output": str(tmp_path / "test_output")}
+        )
         output_dir = settings.get_output_dir()
         assert output_dir.exists()
         assert output_dir.is_dir()
         assert str(output_dir) == str(tmp_path / "test_output")
 
         # Test with default (current) directory
-        settings = SettingsModel()
+        settings = CLIEnvSettingsModel()
         output_dir = settings.get_output_dir()
         assert output_dir.exists()
         assert output_dir.is_dir()
@@ -273,17 +275,17 @@ class TestSettingsModel:
     def test_validate_settings(self, tmp_path: Path):
         """Test settings validation"""
         # Test missing translation service
-        settings = SettingsModel()
+        settings = CLIEnvSettingsModel()
         with pytest.raises(ValueError, match="Must select a translation service"):
             settings.validate_settings()
 
         # Test missing OpenAI API key
-        settings = SettingsModel(openai=True)
+        settings = CLIEnvSettingsModel(openai=True)
         with pytest.raises(ValueError, match="OpenAI API key is required"):
             settings.validate_settings()
 
         # Test valid OpenAI settings
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True, openai_detail={"openai_api_key": "test-key"}
         )
 
@@ -295,7 +297,7 @@ class TestSettingsModel:
         settings.validate_settings()  # Should not raise any error
 
         # Test invalid input file
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             basic={"input_files": {"nonexistent.pdf"}},
@@ -306,7 +308,7 @@ class TestSettingsModel:
         # Test non-PDF file
         non_pdf = tmp_path / "test.txt"
         non_pdf.touch()
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             basic={"input_files": {str(non_pdf)}},
@@ -317,33 +319,39 @@ class TestSettingsModel:
     def test_parse_pages(self):
         """Test page range parsing"""
         # Test None case
-        settings = SettingsModel()
+        settings = CLIEnvSettingsModel().to_settings_model()
         assert settings.parse_pages() is None
 
         # Test single page
-        settings = SettingsModel(translation={"pages": "1"})
+        settings = CLIEnvSettingsModel(translation={"pages": "1"}).to_settings_model()
         assert settings.parse_pages() == [(1, 1)]
 
         # Test page range
-        settings = SettingsModel(translation={"pages": "1-3"})
+        settings = CLIEnvSettingsModel(translation={"pages": "1-3"}).to_settings_model()
         assert settings.parse_pages() == [(1, 3)]
 
         # Test multiple ranges
-        settings = SettingsModel(translation={"pages": "1,3-5,7"})
+        settings = CLIEnvSettingsModel(
+            translation={"pages": "1,3-5,7"}
+        ).to_settings_model()
         assert settings.parse_pages() == [(1, 1), (3, 5), (7, 7)]
 
         # Test open-ended ranges
-        settings = SettingsModel(translation={"pages": "1-,3,-5"})
+        settings = CLIEnvSettingsModel(
+            translation={"pages": "1-,3,-5"}
+        ).to_settings_model()
         assert settings.parse_pages() == [(1, -1), (3, 3), (1, 5)]
 
         # Test invalid format
-        settings = SettingsModel(translation={"pages": "invalid"})
+        settings = CLIEnvSettingsModel(
+            translation={"pages": "invalid"}
+        ).to_settings_model()
         with pytest.raises(ValueError):
             settings.parse_pages()
 
     def test_enhance_compatibility_effects(self):
         """Test enhance_compatibility setting effects"""
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             pdf={"enhance_compatibility": True},
@@ -355,7 +363,7 @@ class TestSettingsModel:
     def test_boundary_values(self):
         """Test boundary value validations"""
         # Test QPS validation
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             translation={"qps": 0},
@@ -364,7 +372,7 @@ class TestSettingsModel:
             settings.validate_settings()
 
         # Test min_text_length validation
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             translation={"min_text_length": -1},
@@ -375,7 +383,7 @@ class TestSettingsModel:
             settings.validate_settings()
 
         # Test report_interval validation
-        settings = SettingsModel(
+        settings = CLIEnvSettingsModel(
             openai=True,
             openai_detail={"openai_api_key": "test-key"},
             report_interval=0.04,

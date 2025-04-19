@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import logging
 import os
 import typing
@@ -15,6 +16,7 @@ from typing import get_origin
 import tomlkit
 from pydantic import BaseModel
 
+from pdf2zh.config.cli_env_model import CLIEnvSettingsModel
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.const import DEFAULT_CONFIG_DIR
 from pdf2zh.const import DEFAULT_CONFIG_FILE
@@ -29,7 +31,7 @@ class MagicDefault:
 
 def build_args_parser(
     parser: argparse.ArgumentParser | None = None,
-    settings_model: BaseModel | None = None,
+    settings_model: type[BaseModel] | None = None,
     field_name2type: dict[str, Any] | None = None,
     recursion_depth: int = 0,
     set_count: int = 0,
@@ -46,7 +48,7 @@ def build_args_parser(
             description=getdoc(settings_model),
         )
     else:
-        settings_model = SettingsModel
+        settings_model = CLIEnvSettingsModel
 
     for field_name, field_detail in settings_model.model_fields.items():
         if field_name in field_name2type:
@@ -122,13 +124,11 @@ class ConfigManager:
 
     _instance: ConfigManager | None = None
     _settings: SettingsModel | None = None
-    _field_name2type: dict[str, Any] | None = None
+    default_config_file_path = DEFAULT_CONFIG_FILE
 
     def __new__(cls) -> ConfigManager:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            _, field_name2type = build_args_parser(None, SettingsModel)
-            cls._field_name2type = field_name2type
         return cls._instance
 
     def _ensure_config_dir(self) -> None:
@@ -175,8 +175,7 @@ class ConfigManager:
             else:
                 processed[key] = value
 
-        # Then flatten the dictionary
-        return self._flatten_dict(processed)
+        return processed
 
     def _write_toml_file(self, file_path: Path, content: dict) -> None:
         """Write content to a TOML file
@@ -186,13 +185,6 @@ class ConfigManager:
             content: Content to write as dictionary, can be flattened or nested
         """
         try:
-            # Check if this is a flattened dictionary with underscores
-            has_underscores = any("_" in key for key in content.keys())
-
-            # Special case handling for some TOML files that mix styles
-            # Some keys may contain underscores but shouldn't be treated as nested keys
-            special_keys = {"report_interval"}
-
             # Convert None values to "null" strings for tomlkit
             def convert_none_to_null(d):
                 result = {}
@@ -209,55 +201,18 @@ class ConfigManager:
 
             toml_content = tomlkit.document()
 
-            if has_underscores:
-                # Group keys by their prefix to handle nested structure
-                structured = {}
-                for key, value in content.items():
-                    # Skip special case keys
-                    if key in special_keys:
-                        structured[key] = value
-                        continue
-
-                    # Split on underscore for regular keys
-                    parts = key.split("_")
-                    if len(parts) == 1 or key in special_keys:
-                        structured[key] = value
-                    else:
-                        current = structured
-                        for _i, part in enumerate(parts[:-1]):
-                            if part not in current:
-                                current[part] = {}
-                            current = current[part]
-                        current[parts[-1]] = value
-
-                # Add structured content to document
-                for key, value in structured.items():
-                    if isinstance(value, dict):
-                        section = tomlkit.table()
-                        for k, v in value.items():
-                            if isinstance(v, dict):
-                                subsection = tomlkit.table()
-                                for sk, sv in v.items():
-                                    subsection.add(sk, sv)
-                                section.add(k, subsection)
-                            else:
-                                section.add(k, v)
-                        toml_content.add(key, section)
-                    else:
-                        toml_content.add(key, value)
-            else:
-                # Handle nested structure directly
-                for key, value in content.items():
-                    if isinstance(value, dict):
-                        section = tomlkit.table()
-                        for k, v in value.items():
-                            section.add(k, v)
-                        toml_content.add(key, section)
-                    else:
-                        toml_content.add(key, value)
+            # Handle nested structure directly
+            for key, value in content.items():
+                if isinstance(value, dict):
+                    section = tomlkit.table()
+                    for k, v in value.items():
+                        section.add(k, v)
+                    toml_content.add(key, section)
+                else:
+                    toml_content.add(key, value)
 
             with file_path.open("w", encoding="utf-8") as f:
-                tomlkit.dump(toml_content, f)
+                tomlkit.dump(content, f)
         except Exception as e:
             log.warning(f"Error writing config file {file_path}: {e}")
             raise
@@ -274,49 +229,10 @@ class ConfigManager:
         """
         try:
             existing_content = self._read_toml_file(file_path)
-
-            # Normalize content by flattening it if needed
-            if not any("_" in key for key in content.keys()):
-                flattened_content = self._flatten_dict(content)
-            else:
-                flattened_content = content.copy()
-
-            # Sort keys for consistent comparison
-            existing_keys = sorted(existing_content.keys())
-            content_keys = sorted(flattened_content.keys())
-
-            # Compare keys and values
-            if existing_keys != content_keys:
-                return False
-
-            for key in existing_keys:
-                if existing_content[key] != flattened_content[key]:
-                    return False
-
-            return True
+            return existing_content == content
         except Exception as e:
             log.warning(f"Error comparing file content: {e}")
             return False
-
-    def _flatten_dict(self, d: dict, prefix: str = "", separator: str = "_") -> dict:
-        """Flatten a nested dictionary structure
-
-        Args:
-            d: Dictionary to flatten
-            prefix: Prefix for keys in the flattened dictionary
-            separator: Separator between key parts
-
-        Returns:
-            Flattened dictionary
-        """
-        result = {}
-        for k, v in d.items():
-            key = f"{prefix}{separator}{k}" if prefix else k
-            if isinstance(v, dict):
-                result.update(self._flatten_dict(v, key, separator))
-            else:
-                result[key] = v
-        return result
 
     def _get_default_config(self) -> dict:
         """Get default configuration from model
@@ -324,18 +240,11 @@ class ConfigManager:
         Returns:
             Default configuration as dictionary
         """
-        default_model = SettingsModel()
+        default_model = CLIEnvSettingsModel()
         config_dict = default_model.model_dump(mode="json")
 
-        # Convert sets to lists for TOML serialization
-        if "basic" in config_dict and "input_files" in config_dict["basic"]:
-            config_dict["basic"]["input_files"] = list(
-                config_dict["basic"]["input_files"]
-            )
-
         # Flatten the dictionary to match TOML processing behavior
-        flattened_dict = self._flatten_dict(config_dict)
-        return flattened_dict
+        return config_dict
 
     def _update_version_default_config(self) -> None:
         """Update version default configuration file if needed"""
@@ -356,48 +265,101 @@ class ConfigManager:
         """Parse command line arguments"""
         parser, _ = build_args_parser()
         args = parser.parse_args()
-        log.debug(f"CLI args: {args}")
-        self._settings = self.create_settings_from_args(args)
+        cli_args = {
+            k.replace("-", "_"): v
+            for k, v in vars(args).items()
+            if v is not MagicDefault
+        }
+
+        cli_parsed_args = self.parse_dict_vars(
+            dict_vars=cli_args,
+        )
+        log.debug(f"CLI args: {cli_parsed_args}")
+        self._settings = self._build_model_from_args(
+            CLIEnvSettingsModel, cli_parsed_args
+        ).to_settings_model()
         log.debug(f"Settings from CLI: {self._settings.model_dump_json()}")
 
-    def parse_env_vars(self) -> dict:
+    def parse_env_vars(
+        self,
+        dedup_field_name: set[str] | None = None,
+        recursion_depth: int = 0,
+        settings_model: type[BaseModel] | None = None,
+    ) -> dict:
+        return self.parse_dict_vars(
+            dedup_field_name,
+            recursion_depth,
+            settings_model,
+            os.environ,
+            prefix="PDF2ZH_",
+        )
+
+    def parse_dict_vars(
+        self,
+        dedup_field_name: set[str] | None = None,
+        recursion_depth: int = 0,
+        settings_model: type[BaseModel] | None = None,
+        dict_vars: dict | None = None,
+        prefix: str = "",
+    ) -> dict:
         """Parse environment variables into a settings dictionary
 
         Returns:
             Dictionary with settings derived from environment variables
         """
-        if self._field_name2type is None:
-            raise RuntimeError("ConfigManager not properly initialized")
 
         env_settings = {}
+        if dedup_field_name is None:
+            dedup_field_name = set()
+        if settings_model is None:
+            settings_model = CLIEnvSettingsModel
 
-        for field_name, type_hint in self._field_name2type.items():
-            # Convert field name to environment variable format (uppercase)
-            env_name = f"PDF2ZH_{field_name.upper()}"
+        dict_vars = {k.replace("-", "_").upper(): v for k, v in dict_vars.items()}
+        for field_name, field_detail in settings_model.model_fields.items():
+            if field_name in dedup_field_name:
+                log.critical(f"duplicate field name: {field_name}")
+                raise ValueError(f"duplicate field name: {field_name}")
+            dedup_field_name.add(field_name)
+            if field_detail.default_factory is not None:
+                if recursion_depth > 0:
+                    raise ValueError("not supported nested settings models")
+                parsed = self.parse_dict_vars(
+                    dedup_field_name,
+                    recursion_depth + 1,
+                    field_detail.default_factory,
+                    dict_vars,
+                    prefix=prefix,
+                )
+                if parsed:
+                    env_settings[field_name] = parsed
+            else:
+                type_hint = typing.get_type_hints(settings_model)[field_name]
+                env_name = f"{prefix}{field_name.upper()}"
 
-            if env_name in os.environ:
-                # Get the value from environment
-                env_value = os.environ[env_name]
+                if env_name in dict_vars:
+                    # Get the value from environment
+                    env_value = dict_vars[env_name]
 
-                # Get type information for proper conversion
-                origin_type = get_origin(type_hint)
-                type_args = get_args(type_hint)
+                    # Get type information for proper conversion
+                    origin_type = get_origin(type_hint)
+                    type_args = get_args(type_hint)
 
-                # Convert the value to the appropriate type
-                try:
-                    converted_value = self._convert_env_value(
-                        env_value, type_hint, origin_type, type_args
-                    )
-                    # Add to settings dict
-                    env_settings[field_name] = converted_value
-                except (ValueError, TypeError) as e:
-                    log.warning(
-                        f"Could not convert environment variable {env_name}: {e}"
-                    )
-                else:
-                    log.warning(f"Field {field_name} not found in type hints")
+                    # Convert the value to the appropriate type
+                    try:
+                        converted_value = self._convert_env_value(
+                            env_value, type_hint, origin_type, type_args
+                        )
+                        # Add to settings dict
+                        env_settings[field_name] = converted_value
+                    except (ValueError, TypeError) as e:
+                        log.warning(
+                            f"Could not convert environment variable {env_name}: {e}"
+                        )
+                    else:
+                        log.warning(f"Field {field_name} not found in type hints")
 
-        log.debug(f"Environment settings: {env_settings}")
+        if recursion_depth == 0:
+            log.debug(f"Environment settings: {env_settings}")
         return env_settings
 
     def _convert_env_value(
@@ -431,9 +393,25 @@ class ConfigManager:
             raise ValueError(
                 f"Could not convert '{value}' to any of the types: {type_args}"
             )
-
+        elif origin_type is set:
+            if isinstance(value, list):
+                return set(value)
+            elif isinstance(value, set):
+                return value
+            elif isinstance(value, str):
+                literal_eval = ast.literal_eval(value)
+                if literal_eval is None:
+                    return set()
+                if isinstance(literal_eval, set):
+                    return literal_eval
+                if isinstance(literal_eval, list):
+                    return set(literal_eval)
+            else:
+                raise ValueError(f"Could not convert '{value}' to set")
         # Handle basic types
         if type_hint is bool:
+            if isinstance(value, bool):
+                return value
             return value.lower() in ("true", "1", "yes", "y", "on")
         elif type_hint is int:
             return int(value)
@@ -441,7 +419,18 @@ class ConfigManager:
             return float(value)
         elif type_hint is str:
             return value
-
+        args = typing.get_args(type_hint)
+        for arg in args:
+            if arg is bool:
+                if isinstance(value, bool):
+                    return value
+                return value.lower() in ("true", "1", "yes", "y", "on")
+            elif arg is int:
+                return int(value)
+            elif arg is float:
+                return float(value)
+            elif arg is str:
+                return value
         # For other types, try direct conversion
         return type_hint(value)
 
@@ -496,22 +485,26 @@ class ConfigManager:
         # Parse CLI arguments (highest priority)
         parser, _ = build_args_parser()
         args = parser.parse_args()
-        cli_args = {
+        cli_args: dict[str, Any] = {
             k.replace("-", "_"): v
             for k, v in vars(args).items()
             if v is not MagicDefault
         }
 
+        cli_parsed_args = self.parse_dict_vars(
+            dict_vars=cli_args,
+        )
+
         # Parse environment variables (middle priority)
         env_vars = self.parse_env_vars()
 
         # Read default configuration file (lower priority)
-        default_config_file = self._read_toml_file(DEFAULT_CONFIG_FILE)
+        default_config_file = self._read_toml_file(self.default_config_file_path)
 
         # Merge all settings by priority
         merged_args = self.merge_settings(
             [
-                cli_args,
+                cli_parsed_args,
                 env_vars,
             ]
         )
@@ -524,29 +517,15 @@ class ConfigManager:
         else:
             merged_args = self.merge_settings([merged_args, default_config_file])
         # Create settings model from merged dictionary
-        self._settings = self._build_model_from_args(SettingsModel, merged_args)
+        self._settings = self._build_model_from_args(
+            CLIEnvSettingsModel, merged_args
+        ).to_settings_model()
         log.debug(f"Initialized settings: {self._settings.model_dump_json()}")
 
+        self._settings.validate_settings()
         # Update version default configuration if needed
         self._update_version_default_config()
         return self._settings
-
-    def create_settings_from_args(self, args: argparse.Namespace) -> SettingsModel:
-        """
-        Create SettingsModel instance from parsed command line arguments
-
-        Args:
-            args: Parsed command line arguments
-
-        Returns:
-            SettingsModel instance with values from command line args
-        """
-        args_dict = vars(args)
-
-        # Build the model directly without pre-building a field map
-        settings = self._build_model_from_args(SettingsModel, args_dict)
-        assert isinstance(settings, SettingsModel)
-        return settings
 
     def _build_model_from_args(
         self, model_class: type[BaseModel], args_dict: dict
@@ -561,40 +540,9 @@ class ConfigManager:
         Returns:
             Instance of the specified model class
         """
-        model_kwargs = {}
-
-        # Process all fields in the model
-        for field_name, field_detail in model_class.model_fields.items():
-            # Get the corresponding CLI argument name
-            arg_name = field_detail.alias or field_name
-            arg_name = (
-                arg_name.replace("_", "-").lower()
-                if arg_name not in args_dict
-                else arg_name
-            )
-
-            # If the argument was provided, add it to the kwargs
-            if arg_name in args_dict and args_dict[arg_name] is not None:
-                args = args_dict[arg_name]
-                if (
-                    isinstance(args, MagicDefault)
-                    or args == MagicDefault
-                    or args == "null"
-                    or args is None
-                ):
-                    # If the argument is a MagicDefault, skip it
-                    continue
-                model_kwargs[field_name] = args
-
-            # Handle nested models
-            if field_detail.default_factory is not None:
-                nested_model_class = field_detail.default_factory
-                model_kwargs[field_name] = self._build_model_from_args(
-                    nested_model_class, args_dict
-                )
 
         # Create and return the model instance
-        return model_class(**model_kwargs)
+        return model_class(**args_dict)
 
     @property
     def settings(self) -> SettingsModel:
