@@ -4,6 +4,7 @@ import argparse
 import ast
 import logging
 import os
+import threading
 import typing
 from inspect import getdoc
 from pathlib import Path
@@ -21,6 +22,7 @@ from pdf2zh.config.model import SettingsModel
 from pdf2zh.const import DEFAULT_CONFIG_DIR
 from pdf2zh.const import DEFAULT_CONFIG_FILE
 from pdf2zh.const import VERSION_DEFAULT_CONFIG_FILE
+from pdf2zh.const import WRITE_TEMP_CONFIG_FILE
 
 log = logging.getLogger(__name__)
 
@@ -124,7 +126,8 @@ class ConfigManager:
 
     _instance: ConfigManager | None = None
     _settings: SettingsModel | None = None
-    default_config_file_path = DEFAULT_CONFIG_FILE
+    _default_config_file_path = DEFAULT_CONFIG_FILE
+    _config_file_lock = threading.Lock()
 
     def __new__(cls) -> ConfigManager:
         if cls._instance is None:
@@ -145,10 +148,11 @@ class ConfigManager:
             Parsed TOML content as dictionary
         """
         try:
-            with file_path.open(encoding="utf-8") as f:
-                content = tomlkit.load(f)
-                # Convert "null" strings back to None
-                return self._process_toml_content(dict(content))
+            with self._config_file_lock:
+                with file_path.open(encoding="utf-8") as f:
+                    content = tomlkit.load(f)
+            # Convert "null" strings back to None
+            return self._process_toml_content(dict(content))
         except FileNotFoundError:
             log.debug(f"Config file not found: {file_path}")
             return {}
@@ -210,9 +214,9 @@ class ConfigManager:
                     toml_content.add(key, section)
                 else:
                     toml_content.add(key, value)
-
-            with file_path.open("w", encoding="utf-8") as f:
-                tomlkit.dump(content, f)
+            with self._config_file_lock:
+                with file_path.open("w", encoding="utf-8") as f:
+                    tomlkit.dump(content, f)
         except Exception as e:
             log.warning(f"Error writing config file {file_path}: {e}")
             raise
@@ -502,7 +506,7 @@ class ConfigManager:
         # Parse environment variables (middle priority)
         env_vars = self.parse_env_vars()
         # Read default configuration file (lower priority)
-        default_config_file = self._read_toml_file(self.default_config_file_path)
+        default_config_file = self._read_toml_file(self._default_config_file_path)
         # Merge all settings by priority
         merged_args = self.merge_settings(
             [
@@ -524,6 +528,12 @@ class ConfigManager:
         cli_settings = self._build_model_from_args(CLIEnvSettingsModel, merged_args)
         cli_settings.validate_settings()
         return cli_settings
+
+    def write_user_default_config_file(self, settings: CLIEnvSettingsModel):
+        # clear input file
+        settings.basic.input_files = []
+        self._write_toml_file(WRITE_TEMP_CONFIG_FILE, settings.model_dump(mode="json"))
+        WRITE_TEMP_CONFIG_FILE.replace(DEFAULT_CONFIG_FILE)
 
     def _build_model_from_args(
         self, model_class: type[BaseModel], args_dict: dict
