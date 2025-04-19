@@ -20,7 +20,7 @@ dependencies = [
     "ollama",
     "xinference-client",
     "deepl",
-    "openai",
+    "openai>=1.0.0",
     "azure-ai-translation-text<=1.0.1",
     "gradio",
     "huggingface_hub",
