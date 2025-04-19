@@ -45,7 +45,7 @@ page_map = {
 config_manager = ConfigManager()
 try:
     # Load configuration from files and environment variables
-    settings = config_manager.initialize_config()
+    settings = config_manager.initialize_cli_config()
     # Check if sensitive inputs should be disabled in GUI
     disable_sensitive_input = settings.basic.disable_gui_sensitive_input
 except Exception as e:
@@ -218,7 +218,6 @@ def _build_translate_settings(
     translate_settings.report_interval = 0.2
     translate_settings.translation.lang_in = source_lang
     translate_settings.translation.lang_out = target_lang
-    translate_settings.translation.pages = pages
     translate_settings.translation.output = str(output_dir)
     translate_settings.translation.qps = int(threads)
     translate_settings.translation.ignore_cache = ignore_cache
@@ -230,6 +229,7 @@ def _build_translate_settings(
         translate_settings.translation.rpc_doclayout = rpc_doclayout
 
     # Update PDF Settings
+    translate_settings.pdf.pages = pages
     translate_settings.pdf.no_mono = no_mono
     translate_settings.pdf.no_dual = no_dual
     translate_settings.pdf.dual_translate_first = dual_translate_first

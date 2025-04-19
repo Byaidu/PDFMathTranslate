@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 from pydantic import BaseModel
@@ -52,3 +54,6 @@ class CLIEnvSettingsModel(BaseModel):
 
     def validate_settings(self) -> None:
         self.to_settings_model().validate_settings()
+
+    def clone(self) -> CLIEnvSettingsModel:
+        return self.model_copy(deep=True)

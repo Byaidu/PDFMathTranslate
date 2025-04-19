@@ -483,6 +483,12 @@ class ConfigManager:
     def initialize_config(self) -> SettingsModel:
         """Initialize configuration from all sources"""
         # Parse CLI arguments (highest priority)
+        self._settings = self.initialize_cli_config().to_settings_model()
+        log.debug(f"Initialized settings: {self._settings.model_dump_json()}")
+
+        return self._settings
+
+    def initialize_cli_config(self) -> CLIEnvSettingsModel:
         parser, _ = build_args_parser()
         args = parser.parse_args()
         cli_args: dict[str, Any] = {
@@ -490,17 +496,13 @@ class ConfigManager:
             for k, v in vars(args).items()
             if v is not MagicDefault
         }
-
         cli_parsed_args = self.parse_dict_vars(
             dict_vars=cli_args,
         )
-
         # Parse environment variables (middle priority)
         env_vars = self.parse_env_vars()
-
         # Read default configuration file (lower priority)
         default_config_file = self._read_toml_file(self.default_config_file_path)
-
         # Merge all settings by priority
         merged_args = self.merge_settings(
             [
@@ -517,15 +519,11 @@ class ConfigManager:
         else:
             merged_args = self.merge_settings([merged_args, default_config_file])
         # Create settings model from merged dictionary
-        self._settings = self._build_model_from_args(
-            CLIEnvSettingsModel, merged_args
-        ).to_settings_model()
-        log.debug(f"Initialized settings: {self._settings.model_dump_json()}")
-
-        self._settings.validate_settings()
-        # Update version default configuration if needed
         self._update_version_default_config()
-        return self._settings
+
+        cli_settings = self._build_model_from_args(CLIEnvSettingsModel, merged_args)
+        cli_settings.validate_settings()
+        return cli_settings
 
     def _build_model_from_args(
         self, model_class: type[BaseModel], args_dict: dict

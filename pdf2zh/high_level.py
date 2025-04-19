@@ -418,7 +418,7 @@ def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfi
     babeldoc_config = BabelDOCConfig(
         input_file=file,
         font=None,
-        pages=settings.translation.pages,
+        pages=settings.pdf.pages,
         output_dir=settings.translation.output,
         doc_layout_model=None,
         translator=translator,

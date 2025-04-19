@@ -1,5 +1,4 @@
-import logging
-
+from pdf2zh.config.main import ConfigManager
 from pdf2zh.config.model import BasicSettings
 from pdf2zh.config.model import OpenAISettings
 from pdf2zh.config.model import PDFSettings
@@ -12,8 +11,6 @@ from pdf2zh.high_level import do_translate_file
 from pdf2zh.high_level import do_translate_file_async
 
 # from pdf2zh.high_level import translate, translate_stream
-
-log = logging.getLogger(__name__)
 
 __version__ = "2.0.0.rc0"
 __author__ = "Byaidu, awwaawwa"
@@ -32,4 +29,5 @@ __all__ = [
     "do_translate_file",
     "do_translate_async_stream",
     "create_babeldoc_config",
+    "ConfigManager",
 ]

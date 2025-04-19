@@ -39,11 +39,6 @@ dependencies = [
     "pydantic>=2.10.6",
 ]
 
-[project.optional-dependencies]
-argostranslate = [
-    "argostranslate"
-]
-
 [dependency-groups]
 dev = [
     "pre-commit",
@@ -61,7 +56,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-pdf2zh = "pdf2zh.pdf2zh:cli"
+pdf2zh = "pdf2zh.main:cli"
 
 [tool.flake8]
 ignore = ["E203", "E261", "E501", "W503", "E741"]
