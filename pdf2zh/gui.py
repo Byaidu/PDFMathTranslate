@@ -13,6 +13,7 @@ from gradio_pdf import PDF
 
 from pdf2zh import __version__
 from pdf2zh.config import ConfigManager
+from pdf2zh.config.cli_env_model import CLIEnvSettingsModel
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.high_level import TranslationError
 from pdf2zh.high_level import do_translate_async_stream
@@ -33,6 +34,8 @@ lang_map = {
     "Italian": "it",
 }
 
+rev_lang_map = {v: k for k, v in lang_map.items()}
+
 # The following variable associate strings with page ranges
 page_map = {
     "All": None,
@@ -50,15 +53,12 @@ try:
     disable_sensitive_input = settings.basic.disable_gui_sensitive_input
 except Exception as e:
     logger.warning(f"Could not load initial config: {e}")
-    settings = SettingsModel()
+    settings = CLIEnvSettingsModel()
     disable_sensitive_input = False
 
 # Define default values
-default_lang_from = (
-    settings.translation.lang_in
-    if settings.translation.lang_in != "auto"
-    else "English"
-)
+default_lang_from = rev_lang_map.get(settings.translation.lang_in, "English")
+
 default_lang_to = settings.translation.lang_out
 for display_name, code in lang_map.items():
     if code == default_lang_to:
@@ -145,7 +145,10 @@ def _prepare_input_file(
 
 
 def _build_translate_settings(
-    base_settings: SettingsModel, file_path: Path, output_dir: Path, ui_inputs: dict
+    base_settings: CLIEnvSettingsModel,
+    file_path: Path,
+    output_dir: Path,
+    ui_inputs: dict,
 ) -> SettingsModel:
     """
     This function builds translation settings from UI inputs.
@@ -161,6 +164,8 @@ def _build_translate_settings(
     """
     # Clone base settings to avoid modifying the original
     translate_settings = base_settings.clone()
+    original_output = translate_settings.translation.output
+    original_pages = translate_settings.pdf.pages
 
     # Extract UI values
     service = ui_inputs.get("service")
@@ -293,10 +298,13 @@ def _build_translate_settings(
     # Validate settings before proceeding
     try:
         translate_settings.validate_settings()
+        settings = translate_settings.to_settings_model()
+        translate_settings.translation.output = original_output
+        translate_settings.pdf.pages = original_pages
+        config_manager.write_user_default_config_file(settings=translate_settings)
+        return settings
     except ValueError as e:
         raise gr.Error(f"Invalid settings: {e}") from e
-
-    return translate_settings
 
 
 async def _run_translation_task(

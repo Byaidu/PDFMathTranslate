@@ -12,7 +12,6 @@ from functools import partial
 from logging.handlers import QueueHandler
 from pathlib import Path
 
-from babeldoc.docvision.table_detection.rapidocr import RapidOCRModel
 from babeldoc.high_level import async_translate as babeldoc_translate
 from babeldoc.main import create_progress_handler
 from babeldoc.translation_config import TranslationConfig as BabelDOCConfig
@@ -392,6 +391,8 @@ async def _translate_in_subprocess(
 
 
 def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfig:
+    if not isinstance(settings, SettingsModel):
+        raise ValueError(f"{type(settings)} is not SettingsModel")
     translator = get_translator(settings)
     if translator is None:
         raise ValueError("No translator found")
@@ -413,6 +414,8 @@ def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfi
 
     table_model = None
     if settings.pdf.translate_table_text:
+        from babeldoc.docvision.table_detection.rapidocr import RapidOCRModel
+
         table_model = RapidOCRModel()
 
     babeldoc_config = BabelDOCConfig(

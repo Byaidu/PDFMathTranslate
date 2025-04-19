@@ -54,7 +54,7 @@ class TranslationSettings(BaseModel):
         default=None,
         description="RPC service host address for document layout analysis",
     )
-    lang_in: str = Field(default="auto", description="Source language code")
+    lang_in: str = Field(default="en", description="Source language code")
     lang_out: str = Field(default="zh", description="Target language code")
     output: str | None = Field(
         default=None, description="Output directory for translated files"
