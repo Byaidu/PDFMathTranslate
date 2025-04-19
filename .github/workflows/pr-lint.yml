@@ -1,7 +1,9 @@
 name: Lint Code and Review Dog Report
 
-on: [push, pull_request]
-
+on: [pull_request]
+permissions:
+  contents: read
+  pull-requests: write
 jobs:
   ruff:
     name: runner / ruff
@@ -18,7 +20,7 @@ jobs:
         run: pip install ruff
         
       - name: Install reviewdog
-        uses: reviewdog/action-setup@v1
+        uses: reviewdog/action-setup@e04ffabe3898a0af8d0fb1af00c188831c4b5893 # v1.3.2
         with:
           reviewdog_version: latest
           
@@ -34,10 +36,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: AutoCorrect
-        uses: huacnlee/autocorrect-action@main
+        uses: huacnlee/autocorrect-action@ecfab7cbe52ead55514356c1322636fab42e060a # v2.5.4
       - name: Report ReviewDog
         if: failure()
-        uses: huacnlee/autocorrect-action@v2
+        uses: huacnlee/autocorrect-action@ecfab7cbe52ead55514356c1322636fab42e060a # v2.5.4
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
