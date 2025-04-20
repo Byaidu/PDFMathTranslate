@@ -53,6 +53,7 @@ noto_list = [
     "th",  # Thai
     "ur",  # Urdu
     "uk",  # Ukrainian
+    "pt",  # Portuguese (Brazil)
 ]
 
 
