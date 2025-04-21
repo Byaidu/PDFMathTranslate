@@ -32,6 +32,7 @@ lang_map = {
     "Russian": "ru",
     "Spanish": "es",
     "Italian": "it",
+    "Portuguese": "pt-BR",
 }
 
 rev_lang_map = {v: k for k, v in lang_map.items()}

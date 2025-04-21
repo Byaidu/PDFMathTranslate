@@ -30,7 +30,7 @@ class TranslationError(Exception):
 
     def __reduce__(self):
         """Support for pickling the exception when passing between processes."""
-        return (self.__class__, (str(self),))
+        return self.__class__, (str(self),)
 
 
 class BabeldocError(TranslationError):
@@ -42,7 +42,7 @@ class BabeldocError(TranslationError):
 
     def __reduce__(self):
         """Support for pickling the exception when passing between processes."""
-        return (self.__class__, (str(self), self.original_error))
+        return self.__class__, (str(self), self.original_error)
 
     def __str__(self):
         if self.original_error:
@@ -76,7 +76,7 @@ class IPCError(TranslationError):
 
     def __reduce__(self):
         """Support for pickling the exception when passing between processes."""
-        return (self.__class__, (str(self), self.details))
+        return self.__class__, (str(self), self.details)
 
     def __str__(self):
         if self.details:
@@ -93,7 +93,7 @@ class SubprocessCrashError(TranslationError):
 
     def __reduce__(self):
         """Support for pickling the exception when passing between processes."""
-        return (self.__class__, (str(self), self.exit_code))
+        return self.__class__, (str(self), self.exit_code)
 
     def __str__(self):
         if self.exit_code is not None:
