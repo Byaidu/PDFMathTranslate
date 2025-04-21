@@ -802,7 +802,7 @@ class DifyTranslator(BaseTranslator):
         response_data = response.json()
 
         # 解析响应
-        return response_data.get("answer", '')
+        return response_data.get("answer", "")
 
 
 class ArgosTranslator(BaseTranslator):
