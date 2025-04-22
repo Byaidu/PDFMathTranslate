@@ -12,6 +12,17 @@ from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_SETTING_TYPE
 
 log = logging.getLogger(__name__)
 
+# Very Important!
+# Only the following fields can be used for Field:
+# default
+# description
+# default_factory
+# alias
+# discriminator
+#
+# If you want to use other fields, please go to `pdf2zh/config/cli_env_model.py`
+# and add the corresponding forwarding statement at `__cli_env_settings_model_fields`!
+
 
 class WatermarkOutputMode(enum.Enum):
     """Watermark output mode for PDF files"""

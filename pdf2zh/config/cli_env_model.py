@@ -2,14 +2,10 @@ from __future__ import annotations
 
 import logging
 
-from pydantic import BaseModel
 from pydantic import Field
 from pydantic import create_model
 
-from pdf2zh.config.model import BasicSettings
-from pdf2zh.config.model import PDFSettings
 from pdf2zh.config.model import SettingsModel
-from pdf2zh.config.model import TranslationSettings
 from pdf2zh.config.translate_engine_model import _DEFAULT_TRANSLATION_ENGINE
 from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
 
@@ -39,25 +35,25 @@ __translation_flag_fields.update(
 
 __exclude_fields = list(__translation_flag_fields.keys())
 
-
-class CLIEnvBaseSettingsModel(BaseModel):
-    """Main settings class that combines all sub-settings"""
-
-    config_file: str | None = Field(
-        default=None, description="Path to the configuration file"
+__cli_env_settings_model_fields = {
+    k: (
+        v.annotation,
+        Field(
+            default=v.default,
+            description=v.description,
+            default_factory=v.default_factory,
+            alias=v.alias,
+            discriminator=v.discriminator,
+        ),
     )
-    report_interval: float = Field(
-        default=0.1, description="Progress report interval in seconds"
-    )
-    basic: BasicSettings = Field(default_factory=BasicSettings)
-    translation: TranslationSettings = Field(default_factory=TranslationSettings)
-    pdf: PDFSettings = Field(default_factory=PDFSettings)
-
+    for k, v in SettingsModel.model_fields.items()
+    if k != "translate_engine_settings"
+}
+__cli_env_settings_model_fields.update(__translation_flag_fields)
 
 CLIEnvSettingsModel = create_model(
     "CLIEnvSettingsModel",
-    __base__=CLIEnvBaseSettingsModel,
-    **__translation_flag_fields,
+    **__cli_env_settings_model_fields,
 )
 
 
