@@ -8,27 +8,6 @@ from pydantic import BaseModel
 from pydantic import Field
 
 
-@dataclass
-class TranslationEngineMetadata:
-    translate_engine_type: str
-    cli_flag_name: str
-    cli_detail_field_name: str | None
-    setting_model_type: type[BaseModel]
-
-    def __init__(
-        self,
-        setting_model_type: type[BaseModel],
-    ) -> None:
-        self.translate_engine_type = setting_model_type.model_fields[
-            "translate_engine_type"
-        ].default
-        self.cli_flag_name = self.translate_engine_type.lower()
-        self.cli_detail_field_name = self.cli_flag_name + "_detail"
-        self.setting_model_type = setting_model_type
-        if len(setting_model_type.model_fields) == 1:
-            self.cli_detail_field_name = None
-
-
 class OpenAISettings(BaseModel):
     """OpenAI API settings"""
 
@@ -80,6 +59,31 @@ _DEFAULT_TRANSLATION_ENGINE = BingSettings
 assert len(_DEFAULT_TRANSLATION_ENGINE.model_fields) == 1, (
     "Default translation engine cannot have detail settings"
 )
+
+# The following is magic code.
+# If you need to make changes, please contact the maintainer.
+
+
+@dataclass
+class TranslationEngineMetadata:
+    translate_engine_type: str
+    cli_flag_name: str
+    cli_detail_field_name: str | None
+    setting_model_type: type[BaseModel]
+
+    def __init__(
+        self,
+        setting_model_type: type[BaseModel],
+    ) -> None:
+        self.translate_engine_type = setting_model_type.model_fields[
+            "translate_engine_type"
+        ].default
+        self.cli_flag_name = self.translate_engine_type.lower()
+        self.cli_detail_field_name = self.cli_flag_name + "_detail"
+        self.setting_model_type = setting_model_type
+        if len(setting_model_type.model_fields) == 1:
+            self.cli_detail_field_name = None
+
 
 args = typing.get_args(TRANSLATION_ENGINE_SETTING_TYPE)
 
