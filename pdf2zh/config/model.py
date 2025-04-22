@@ -64,6 +64,9 @@ class GUISettings(BaseModel):
     disable_gui_sensitive_input: bool = Field(
         default=False, description="Disable GUI sensitive input"
     )
+    disable_config_auto_save: bool = Field(
+        default=False, description="Disable automatic saving of configuration"
+    )
 
 
 class TranslationSettings(BaseModel):
