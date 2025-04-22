@@ -1,10 +1,13 @@
 from pdf2zh.config.main import ConfigManager
 from pdf2zh.config.model import BasicSettings
-from pdf2zh.config.model import OpenAISettings
 from pdf2zh.config.model import PDFSettings
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.config.model import TranslationSettings
 from pdf2zh.config.model import WatermarkOutputMode
+from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
+from pdf2zh.config.translate_engine_model import BingSettings
+from pdf2zh.config.translate_engine_model import GoogleSettings
+from pdf2zh.config.translate_engine_model import OpenAISettings
 
 __all__ = [
     "ConfigManager",
@@ -12,6 +15,9 @@ __all__ = [
     "BasicSettings",
     "TranslationSettings",
     "PDFSettings",
-    "OpenAISettings",
     "WatermarkOutputMode",
+    "BingSettings",
+    "GoogleSettings",
+    "OpenAISettings",
+    "TRANSLATION_ENGINE_METADATA",
 ]

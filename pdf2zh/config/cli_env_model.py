@@ -4,19 +4,43 @@ import logging
 
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import create_model
 
 from pdf2zh.config.model import BasicSettings
-from pdf2zh.config.model import BingSettings
-from pdf2zh.config.model import GoogleSettings
-from pdf2zh.config.model import OpenAISettings
 from pdf2zh.config.model import PDFSettings
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.config.model import TranslationSettings
+from pdf2zh.config.translate_engine_model import _DEFAULT_TRANSLATION_ENGINE
+from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
 
 logger = logging.getLogger(__name__)
 
 
-class CLIEnvSettingsModel(BaseModel):
+__translation_flag_fields = {
+    x.cli_flag_name: (
+        bool,
+        Field(
+            default=False, description=f"Use {x.translate_engine_type} for translation"
+        ),
+    )
+    for x in TRANSLATION_ENGINE_METADATA
+}
+
+__translation_flag_fields.update(
+    {
+        x.cli_detail_field_name: (
+            x.setting_model_type,
+            Field(default_factory=x.setting_model_type),
+        )
+        for x in TRANSLATION_ENGINE_METADATA
+        if x.cli_detail_field_name
+    }
+)
+
+__exclude_fields = list(__translation_flag_fields.keys())
+
+
+class CLIEnvBaseSettingsModel(BaseModel):
     """Main settings class that combines all sub-settings"""
 
     config_file: str | None = Field(
@@ -29,31 +53,42 @@ class CLIEnvSettingsModel(BaseModel):
     translation: TranslationSettings = Field(default_factory=TranslationSettings)
     pdf: PDFSettings = Field(default_factory=PDFSettings)
 
-    openai_detail: OpenAISettings = Field(default_factory=OpenAISettings)
-    openai: bool = Field(default=False, description="Use OpenAI for translation")
-    google: bool = Field(default=False, description="Use Google for translation")
-    bing: bool = Field(default=False, description="Use Bing for translation")
 
-    def to_settings_model(self) -> SettingsModel:
-        if self.openai:
-            translate_engine_settings = OpenAISettings(
-                **self.openai_detail.model_dump()
-            )
-        elif self.google:
-            translate_engine_settings = GoogleSettings()
-        elif self.bing:
-            translate_engine_settings = BingSettings()
-        else:
-            logger.warning("No translation engine selected, using Bing")
-            translate_engine_settings = BingSettings()
+CLIEnvSettingsModel = create_model(
+    "CLIEnvSettingsModel",
+    __base__=CLIEnvBaseSettingsModel,
+    **__translation_flag_fields,
+)
 
-        return SettingsModel(
-            **self.model_dump(exclude={"openai_detail", "openai", "google", "bing"}),
-            translate_engine_settings=translate_engine_settings,
-        )
 
-    def validate_settings(self) -> None:
-        self.to_settings_model().validate_settings()
+def to_settings_model(self) -> SettingsModel:
+    for metadata in TRANSLATION_ENGINE_METADATA:
+        if getattr(self, metadata.cli_flag_name):
+            if metadata.cli_detail_field_name:
+                translate_engine_settings = metadata.setting_model_type(
+                    **getattr(self, metadata.cli_detail_field_name).model_dump()
+                )
+            else:
+                translate_engine_settings = metadata.setting_model_type()
+            break
+    else:
+        logger.warning("No translation engine selected, using Bing")
+        translate_engine_settings = _DEFAULT_TRANSLATION_ENGINE()
 
-    def clone(self) -> CLIEnvSettingsModel:
-        return self.model_copy(deep=True)
+    return SettingsModel(
+        **self.model_dump(exclude=__exclude_fields),
+        translate_engine_settings=translate_engine_settings,
+    )
+
+
+def validate_settings(self) -> None:
+    self.to_settings_model().validate_settings()
+
+
+def clone(self):
+    return self.model_copy(deep=True)
+
+
+CLIEnvSettingsModel.to_settings_model = to_settings_model
+CLIEnvSettingsModel.validate_settings = validate_settings
+CLIEnvSettingsModel.clone = clone

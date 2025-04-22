@@ -19,10 +19,13 @@ from pydantic import BaseModel
 
 from pdf2zh.config.cli_env_model import CLIEnvSettingsModel
 from pdf2zh.config.model import SettingsModel
+from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
 from pdf2zh.const import DEFAULT_CONFIG_DIR
 from pdf2zh.const import DEFAULT_CONFIG_FILE
 from pdf2zh.const import VERSION_DEFAULT_CONFIG_FILE
 from pdf2zh.const import WRITE_TEMP_CONFIG_FILE
+
+_translation_engine_flag_names = [x.cli_flag_name for x in TRANSLATION_ENGINE_METADATA]
 
 log = logging.getLogger(__name__)
 
@@ -477,10 +480,25 @@ class ConfigManager:
             Merged configuration dictionary
         """
         result = {}
+        enabled_engine = None
+        for config in config_dicts:
+            for engine_name in _translation_engine_flag_names:
+                if config.get(engine_name, False):
+                    enabled_engine = engine_name
+                    break
+            if enabled_engine:
+                break
+
         # Process from lowest to highest priority
         for config in reversed(config_dicts):
             # Deep merge config into result
             self._deep_merge(result, config)
+
+        if enabled_engine:
+            for engine_name in _translation_engine_flag_names:
+                if engine_name in result:
+                    result[engine_name] = False
+            result[enabled_engine] = True
 
         return result
 

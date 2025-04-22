@@ -4,10 +4,11 @@ import enum
 import logging
 import re
 from pathlib import Path
-from typing import Literal
 
 from pydantic import BaseModel
 from pydantic import Field
+
+from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_SETTING_TYPE
 
 log = logging.getLogger(__name__)
 
@@ -115,53 +116,6 @@ class PDFSettings(BaseModel):
     )
 
 
-class OpenAISettings(BaseModel):
-    """OpenAI API settings"""
-
-    translate_engine_type: Literal["openai"] = Field(default="openai")
-
-    openai_model: str = Field(default="gpt-4o-mini", description="OpenAI model to use")
-    openai_base_url: str | None = Field(
-        default=None, description="Base URL for OpenAI API"
-    )
-    openai_api_key: str | None = Field(
-        default=None, description="API key for OpenAI service"
-    )
-
-    def validate_settings(self) -> None:
-        if not self.openai_api_key:
-            raise ValueError("OpenAI API key is required")
-        if self.openai_base_url:
-            self.openai_base_url = re.sub(
-                "/chat/completions/?$", "", self.openai_base_url
-            )
-
-
-class BingSettings(BaseModel):
-    """Bing Translation settings"""
-
-    translate_engine_type: Literal["bing"] = Field(default="bing")
-
-    def validate_settings(self) -> None:
-        pass
-
-
-class GoogleSettings(BaseModel):
-    """Google Translation settings"""
-
-    translate_engine_type: Literal["google"] = Field(default="google")
-
-    def validate_settings(self) -> None:
-        pass
-
-
-AVAILABLE_TRANSLATE_ENGINE_SETTINGS = [
-    OpenAISettings,
-    BingSettings,
-    GoogleSettings,
-]
-
-
 class SettingsModel(BaseModel):
     """Main settings class that combines all sub-settings"""
 
@@ -175,8 +129,8 @@ class SettingsModel(BaseModel):
     translation: TranslationSettings = Field(default_factory=TranslationSettings)
     pdf: PDFSettings = Field(default_factory=PDFSettings)
 
-    translate_engine_settings: OpenAISettings | BingSettings | GoogleSettings | None = (
-        Field(description="Translation engine settings")
+    translate_engine_settings: TRANSLATION_ENGINE_SETTING_TYPE | None = Field(
+        description="Translation engine settings", discriminator="translate_engine_type"
     )
 
     def clone(self) -> SettingsModel:
