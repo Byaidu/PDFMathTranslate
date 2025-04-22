@@ -516,6 +516,14 @@ class ConfigManager:
 
         return self._settings
 
+    def test_config(self, args):
+        try:
+            self._build_model_from_args(CLIEnvSettingsModel, args)
+            return True
+        except Exception as e:
+            log.exception("Error in test_config:")
+            return False
+
     def initialize_cli_config(self) -> CLIEnvSettingsModel:
         parser, _ = build_args_parser()
         args = parser.parse_args()
@@ -531,6 +539,13 @@ class ConfigManager:
         env_vars = self.parse_env_vars()
         # Read default configuration file (lower priority)
         default_config_file = self._read_toml_file(self._default_config_file_path)
+
+        if not self.test_config(default_config_file):
+            default_config_file = {}
+            log.error(
+                f"Error in test_config: {self._default_config_file_path}, skip it"
+            )
+
         # Merge all settings by priority
         merged_args = self.merge_settings(
             [
@@ -541,6 +556,12 @@ class ConfigManager:
         config_from_file_dicts = []
         if "config_file" in merged_args:
             user_config = self._read_toml_file(Path(merged_args["config_file"]))
+            if not self.test_config(user_config):
+                log.error(
+                    f"Error in test_config: {merged_args['config_file']}, skip it"
+                )
+                user_config = {}
+
             config_from_file_dicts.append(copy.deepcopy(user_config))
             del merged_args["config_file"]
             merged_args = self.merge_settings(
