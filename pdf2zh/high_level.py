@@ -449,6 +449,7 @@ def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfi
         # 添加表格模型，仅在需要翻译表格时
         table_model=table_model,
         skip_scanned_detection=settings.pdf.skip_scanned_detection,
+        ocr_workaround=settings.pdf.ocr_workaround,
     )
     return babeldoc_config
 

@@ -125,6 +125,10 @@ class PDFSettings(BaseModel):
     skip_scanned_detection: bool = Field(
         default=False, description="Skip scanned detection"
     )
+    ocr_workaround: bool = Field(
+        default=False,
+        description="Force translated text to be black and add white background",
+    )
 
 
 class SettingsModel(BaseModel):
