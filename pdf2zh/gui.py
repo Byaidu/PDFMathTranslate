@@ -545,11 +545,18 @@ async def translate_file(
 
         # Wait for the translation to complete
         mono_path, dual_path = await task
-
+        if not mono_path.exists():
+            mono_path = None
+        else:
+            mono_path = mono_path.as_posix()
+        if not dual_path or not dual_path.exists():
+            dual_path = None
+        else:
+            dual_path = dual_path.as_posix()
         # Build success UI updates
         return (
             str(mono_path) if mono_path else None,  # Output mono file
-            str(mono_path) if mono_path else None,  # Preview
+            str(mono_path) if mono_path else dual_path,  # Preview
             str(dual_path) if dual_path else None,  # Output dual file
             gr.update(visible=bool(mono_path)),  # Show mono download if available
             gr.update(visible=bool(dual_path)),  # Show dual download if available
@@ -573,7 +580,7 @@ async def translate_file(
         raise
     except Exception as e:
         # Catch any other errors and wrap in gr.Error
-        logger.error(f"Error in translate_file: {e}", exc_info=True)
+        logger.exception(f"Error in translate_file: {e}")
         raise gr.Error(f"Translation failed: {e}") from e
     finally:
         # Clear task reference
@@ -624,7 +631,7 @@ tech_details_string = f"""
                     <summary>Technical details</summary>
                     - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
                     - BabelDOC: <a href="https://github.com/funstory-ai/BabelDOC">funstory-ai/BabelDOC</a><br>
-                    - GUI by: <a href="https://github.com/reycn">Rongxin</a><br>
+                    - GUI by: <a href="https://github.com/reycn">Rongxin</a> & <a href="https://github.com/hellofinch">hellofinch</a> & <a href="https://github.com/awwaawwa">awwaawwa</a><br>
                     - pdf2zh Version: {__version__} <br>
                     - BabelDOC Version: {babeldoc_version}
                 """
@@ -786,12 +793,13 @@ with gr.Blocks(
                 prompt = gr.Textbox(
                     label="Custom prompt for translation",
                     value="",
+                    visible=False,
                     interactive=True,
                     placeholder="Custom prompt for the translator",
                 )
 
                 threads = gr.Number(
-                    label="Threads (QPS)",
+                    label="RPS (Requests Per Second)",
                     value=settings.translation.qps or 4,
                     precision=0,
                     minimum=1,
@@ -809,6 +817,7 @@ with gr.Blocks(
                 rpc_doclayout = gr.Textbox(
                     label="RPC service for document layout analysis (optional)",
                     value=settings.translation.rpc_doclayout or "",
+                    visible=False,
                     interactive=True,
                     placeholder="http://host:port",
                 )
@@ -817,13 +826,13 @@ with gr.Blocks(
                 gr.Markdown("### PDF Options")
 
                 skip_clean = gr.Checkbox(
-                    label="Skip font subsetting (skip_clean)",
+                    label="Skip clean (maybe improve compatibility)",
                     value=settings.pdf.skip_clean,
                     interactive=True,
                 )
 
                 disable_rich_text_translate = gr.Checkbox(
-                    label="Disable rich text translation",
+                    label="Disable rich text translation (maybe improve compatibility)",
                     value=settings.pdf.disable_rich_text_translate,
                     interactive=True,
                 )
@@ -863,13 +872,13 @@ with gr.Blocks(
                 )
 
                 ocr_workaround = gr.Checkbox(
-                    label="OCR workaround (experimental)",
+                    label="OCR workaround (experimental, will auto enable Skip scanned detection in backend)",
                     value=settings.pdf.ocr_workaround,
                     interactive=True,
                 )
 
                 max_pages_per_part = gr.Number(
-                    label="Maximum pages per part (for split translation)",
+                    label="Maximum pages per part (for auto-split translation, 0 means no limit)",
                     value=settings.pdf.max_pages_per_part,
                     precision=0,
                     minimum=0,
@@ -877,14 +886,14 @@ with gr.Blocks(
                 )
 
                 formular_font_pattern = gr.Textbox(
-                    label="Font pattern to identify formula text (regex)",
+                    label="Font pattern to identify formula text (regex, not recommended to change)",
                     value=settings.pdf.formular_font_pattern or "",
                     interactive=True,
                     placeholder="e.g., CMMI|CMR",
                 )
 
                 formular_char_pattern = gr.Textbox(
-                    label="Character pattern to identify formula text (regex)",
+                    label="Character pattern to identify formula text (regex, not recommended to change)",
                     value=settings.pdf.formular_char_pattern or "",
                     interactive=True,
                     placeholder="e.g., [∫∬∭∮∯∰∇∆]",
