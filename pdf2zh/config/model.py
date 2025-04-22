@@ -51,6 +51,16 @@ class BasicSettings(BaseModel):
         default=None,
         description="Restore offline assets package from the specified file",
     )
+
+
+class GUISettings(BaseModel):
+    """GUI related settings"""
+
+    share: bool = Field(default=False, description="Enable sharing mode")
+    auth_file: str | None = Field(
+        default=None, description="Path to the authentication file"
+    )
+    enabled_services: str | None = Field(default=None, description="Enabled services")
     disable_gui_sensitive_input: bool = Field(
         default=False, description="Disable GUI sensitive input"
     )
@@ -143,7 +153,7 @@ class SettingsModel(BaseModel):
     basic: BasicSettings = Field(default_factory=BasicSettings)
     translation: TranslationSettings = Field(default_factory=TranslationSettings)
     pdf: PDFSettings = Field(default_factory=PDFSettings)
-
+    gui_settings: GUISettings = Field(default_factory=GUISettings)
     translate_engine_settings: TRANSLATION_ENGINE_SETTING_TYPE | None = Field(
         description="Translation engine settings", discriminator="translate_engine_type"
     )

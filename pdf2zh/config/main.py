@@ -133,6 +133,7 @@ class ConfigManager:
 
     _instance: ConfigManager | None = None
     _settings: SettingsModel | None = None
+    config_cli_settings: CLIEnvSettingsModel | None = None
     _default_config_file_path = DEFAULT_CONFIG_FILE
     _config_file_lock = threading.Lock()
 
@@ -536,8 +537,10 @@ class ConfigManager:
                 env_vars,
             ]
         )
+        config_from_file_dicts = []
         if "config_file" in merged_args:
             user_config = self._read_toml_file(Path(merged_args["config_file"]))
+            config_from_file_dicts.append(user_config)
             del merged_args["config_file"]
             merged_args = self.merge_settings(
                 [merged_args, user_config, default_config_file]
@@ -546,6 +549,12 @@ class ConfigManager:
             merged_args = self.merge_settings([merged_args, default_config_file])
         # Create settings model from merged dictionary
         self._update_version_default_config()
+        config_from_file_dicts.append(default_config_file)
+        config_from_file_args = self.merge_settings(config_from_file_dicts)
+
+        self.config_cli_settings = self._build_model_from_args(
+            CLIEnvSettingsModel, config_from_file_args
+        )
 
         cli_settings = self._build_model_from_args(CLIEnvSettingsModel, merged_args)
         cli_settings.validate_settings()

@@ -7,6 +7,19 @@ from typing import TypeAlias
 from pydantic import BaseModel
 from pydantic import Field
 
+# any field in SENSITIVE_FIELDS will be masked in GUI
+GUI_SENSITIVE_FIELDS = []
+# any field in GUI_PASSWORD_FIELDS will be masked in GUI and treated as password
+GUI_PASSWORD_FIELDS = []
+
+## Please add the translator configuration class below this location.
+
+# Please note that all translator configurations must be of string type,
+# otherwise the GUI will not function properly!
+#
+# You should implement validation of the translator configuration in validate_settings.
+# And complete type conversion (if any) in the corresponding implementation of the translator.
+
 
 class OpenAISettings(BaseModel):
     """OpenAI API settings"""
@@ -30,6 +43,10 @@ class OpenAISettings(BaseModel):
             )
 
 
+GUI_PASSWORD_FIELDS.append("openai_api_key")
+GUI_SENSITIVE_FIELDS.append("openai_base_url")
+
+
 class BingSettings(BaseModel):
     """Bing Translation settings"""
 
@@ -48,6 +65,8 @@ class GoogleSettings(BaseModel):
         pass
 
 
+## Please add the translator configuration class above this location.
+
 # 所有翻译引擎
 TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     OpenAISettings | GoogleSettings | BingSettings
@@ -63,6 +82,8 @@ assert len(_DEFAULT_TRANSLATION_ENGINE.model_fields) == 1, (
 # The following is magic code,
 # if you need to modify it,
 # please contact the maintainer!
+
+GUI_SENSITIVE_FIELDS.extend(GUI_PASSWORD_FIELDS)
 
 
 @dataclass

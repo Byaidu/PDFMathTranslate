@@ -15,11 +15,15 @@ from pdf2zh import __version__
 from pdf2zh.config import ConfigManager
 from pdf2zh.config.cli_env_model import CLIEnvSettingsModel
 from pdf2zh.config.model import SettingsModel
+from pdf2zh.config.translate_engine_model import GUI_PASSWORD_FIELDS
+from pdf2zh.config.translate_engine_model import GUI_SENSITIVE_FIELDS
+from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
+from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA_MAP
 from pdf2zh.high_level import TranslationError
 from pdf2zh.high_level import do_translate_async_stream
 
 logger = logging.getLogger(__name__)
-
+__gui_service_arg_names = []
 # The following variables associate strings with specific languages
 lang_map = {
     "Simplified Chinese": "zh",
@@ -51,7 +55,7 @@ try:
     # Load configuration from files and environment variables
     settings = config_manager.initialize_cli_config()
     # Check if sensitive inputs should be disabled in GUI
-    disable_sensitive_input = settings.basic.disable_gui_sensitive_input
+    disable_sensitive_input = settings.gui_settings.disable_gui_sensitive_input
 except Exception as e:
     logger.warning(f"Could not load initial config: {e}")
     settings = CLIEnvSettingsModel()
@@ -70,15 +74,16 @@ else:
 
 # Available translation services
 # This will eventually be dynamically determined based on available translators
-available_services = ["OpenAI"]
+available_services = [x.translate_engine_type for x in TRANSLATION_ENGINE_METADATA]
 
-# Map service names to translate implementation details (to be expanded)
-service_config_map = {
-    "OpenAI": {
-        "use_openai": True,
-        "sensitive_fields": ["openai_api_key", "openai_base_url"],
-    }
-}
+if settings.gui_settings.enabled_services:
+    enabled_services = set(settings.gui_settings.enabled_services.split(","))
+    available_services = [x for x in available_services if x in enabled_services]
+
+assert available_services, "No translation service is enabled"
+
+
+disable_gui_sensitive_input = settings.gui_settings.disable_gui_sensitive_input
 
 
 def download_with_limit(url: str, save_path: str, size_limit: int = None) -> str:
@@ -167,6 +172,7 @@ def _build_translate_settings(
     translate_settings = base_settings.clone()
     original_output = translate_settings.translation.output
     original_pages = translate_settings.pdf.pages
+    original_gui_settings = config_manager.config_cli_settings.gui_settings
 
     # Extract UI values
     service = ui_inputs.get("service")
@@ -272,24 +278,28 @@ def _build_translate_settings(
     if formular_char_pattern:
         translate_settings.pdf.formular_char_pattern = formular_char_pattern
 
-    # Set service-specific settings
-    if service == "OpenAI":
-        translate_settings.openai = True
-        # Only update sensitive fields if they're provided and not disabled
-        if not disable_sensitive_input:
-            openai_model = ui_inputs.get("openai_model")
-            openai_base_url = ui_inputs.get("openai_base_url")
-            openai_api_key = ui_inputs.get("openai_api_key")
+    assert service in TRANSLATION_ENGINE_METADATA_MAP, "UNKNOW TRANSLATION ENGINE!"
 
-            if openai_model:
-                translate_settings.openai_detail.openai_model = openai_model
-            if openai_base_url:
-                translate_settings.openai_detail.openai_base_url = openai_base_url
-            if openai_api_key and openai_api_key != "***":
-                translate_settings.openai_detail.openai_api_key = openai_api_key
-    else:
-        # Handle other services when implemented
-        pass
+    for metadata in TRANSLATION_ENGINE_METADATA:
+        cli_flag = metadata.cli_flag_name
+        setattr(translate_settings, cli_flag, False)
+
+    metadata = TRANSLATION_ENGINE_METADATA_MAP[service]
+    cli_flag = metadata.cli_flag_name
+    setattr(translate_settings, cli_flag, True)
+    if metadata.cli_detail_field_name:
+        detail_setting = getattr(translate_settings, metadata.cli_detail_field_name)
+        if metadata.setting_model_type:
+            for field_name in metadata.setting_model_type.model_fields:
+                if field_name == "translate_engine_type":
+                    continue
+                if disable_gui_sensitive_input:
+                    if field_name in GUI_PASSWORD_FIELDS:
+                        continue
+                    if field_name in GUI_SENSITIVE_FIELDS:
+                        continue
+                value = ui_inputs.get(field_name)
+                setattr(detail_setting, field_name, value)
 
     # Add custom prompt if provided
     if prompt:
@@ -302,6 +312,7 @@ def _build_translate_settings(
         settings = translate_settings.to_settings_model()
         translate_settings.translation.output = original_output
         translate_settings.pdf.pages = original_pages
+        translate_settings.gui_settings = original_gui_settings
         config_manager.write_user_default_config_file(settings=translate_settings)
         return settings
     except ValueError as e:
@@ -432,9 +443,7 @@ async def translate_file(
     formular_char_pattern,
     ignore_cache,
     state,
-    openai_model=None,
-    openai_base_url=None,
-    openai_api_key=None,
+    *translation_engine_arg_inputs,
     progress=None,
 ):
     """
@@ -511,11 +520,11 @@ async def translate_file(
         "formular_font_pattern": formular_font_pattern,
         "formular_char_pattern": formular_char_pattern,
         "ignore_cache": ignore_cache,
-        "openai_model": openai_model,
-        "openai_base_url": openai_base_url,
-        "openai_api_key": openai_api_key,
     }
-
+    for arg_name, arg_input in zip(
+        __gui_service_arg_names, translation_engine_arg_inputs, strict=False
+    ):
+        ui_inputs[arg_name] = arg_input
     try:
         # Step 1: Prepare input file
         file_path = _prepare_input_file(file_type, file_input, link_input, output_dir)
@@ -628,6 +637,9 @@ with gr.Blocks(
         "# [PDFMathTranslate @ GitHub](https://github.com/Byaidu/PDFMathTranslate)"
     )
 
+    translation_engine_arg_inputs = []
+    detail_text_inputs = []
+    detail_text_input_index_map = {}
     with gr.Row():
         with gr.Column(scale=1):
             gr.Markdown("## File")
@@ -650,11 +662,61 @@ with gr.Blocks(
             )
 
             gr.Markdown("## Translation Options")
-            service = gr.Dropdown(
-                label="Service",
-                choices=available_services,
-                value=available_services[0] if available_services else None,
-            )
+            detail_index = 0
+            with gr.Group() as translation_engine_settings:
+                service = gr.Dropdown(
+                    label="Service",
+                    choices=available_services,
+                    value=available_services[0],
+                )
+                __gui_service_arg_names = []
+                for service_name in available_services:
+                    metadata = TRANSLATION_ENGINE_METADATA_MAP[service_name]
+                    if not metadata.cli_detail_field_name:
+                        # no detail field, no need to show
+                        continue
+                    detail_settings = getattr(settings, metadata.cli_detail_field_name)
+                    # OpenAI specific settings (initially visible if OpenAI is default)
+                    with gr.Group(
+                        visible=(service.value == metadata.translate_engine_type)
+                    ) as service_detail:
+                        detail_text_input_index_map[metadata.translate_engine_type] = []
+
+                        for (
+                            field_name,
+                            field,
+                        ) in metadata.setting_model_type.model_fields.items():
+                            if disable_gui_sensitive_input:
+                                if field_name in GUI_SENSITIVE_FIELDS:
+                                    continue
+                                if field_name in GUI_PASSWORD_FIELDS:
+                                    continue
+                            if field.default_factory:
+                                continue
+
+                            if field_name == "translate_engine_type":
+                                continue
+                            value = getattr(detail_settings, field_name)
+                            if field_name in GUI_PASSWORD_FIELDS:
+                                field_input = gr.Textbox(
+                                    label=field.description,
+                                    value=value,
+                                    interactive=True,
+                                    type="password",
+                                )
+                            else:
+                                field_input = gr.Textbox(
+                                    label=field.description,
+                                    value=value,
+                                    interactive=True,
+                                )
+                            detail_text_input_index_map[
+                                metadata.translate_engine_type
+                            ].append(detail_index)
+                            detail_index += 1
+                            detail_text_inputs.append(field_input)
+                            __gui_service_arg_names.append(field_name)
+                            translation_engine_arg_inputs.append(field_input)
 
             with gr.Row():
                 lang_from = gr.Dropdown(
@@ -714,33 +776,6 @@ with gr.Blocks(
                 if settings.pdf.watermark_output_mode.value == "watermarked"
                 else "No Watermark",
             )
-
-            # OpenAI specific settings (initially visible if OpenAI is default)
-            with gr.Group(visible=(service.value == "OpenAI")) as openai_settings:
-                openai_model = gr.Textbox(
-                    label="OpenAI Model",
-                    value=settings.openai_detail.openai_model,
-                    interactive=not disable_sensitive_input,
-                    visible=not disable_sensitive_input,
-                )
-                openai_base_url = gr.Textbox(
-                    label="OpenAI Base URL (optional)",
-                    value=settings.openai_detail.openai_base_url or "",
-                    interactive=not disable_sensitive_input,
-                    visible=not disable_sensitive_input,
-                )
-                display_key = ""
-                if disable_sensitive_input:
-                    display_key = "***"
-                elif settings.openai_detail.openai_api_key:
-                    display_key = settings.openai_detail.openai_api_key
-                openai_api_key = gr.Textbox(
-                    label="OpenAI API Key",
-                    type="password",
-                    value=display_key,
-                    interactive=not disable_sensitive_input,
-                    visible=not disable_sensitive_input,
-                )
 
             # Additional translation options
             with gr.Accordion("Advanced Options", open=False):
@@ -885,10 +920,17 @@ with gr.Blocks(
 
     def on_select_service(service_name):
         """Update service-specific settings visibility"""
-        # For now, we only have OpenAI
-        if service_name == "OpenAI":
-            return gr.update(visible=True)
-        return gr.update(visible=False)
+        logger.info(f"on_select_service: {service_name}")
+        if not detail_text_inputs:
+            return
+        detail_group_index = detail_text_input_index_map.get(service_name, [])
+        if len(detail_text_inputs) == 1:
+            return gr.update(visible=(0 in detail_group_index))
+        else:
+            return [
+                gr.update(visible=(i in detail_group_index))
+                for i in range(len(detail_text_inputs))
+            ]
 
     def on_enhance_compatibility_change(enhance_value):
         """Update skip_clean and disable_rich_text_translate when enhance_compatibility changes"""
@@ -932,7 +974,7 @@ with gr.Blocks(
     service.select(
         on_select_service,
         service,
-        openai_settings,
+        outputs=detail_text_inputs if len(detail_text_inputs) > 0 else None,
     )
 
     # Add event handler for enhance_compatibility
@@ -987,10 +1029,7 @@ with gr.Blocks(
             formular_char_pattern,
             ignore_cache,
             state,
-            # OpenAI specific settings
-            openai_model,
-            openai_base_url,
-            openai_api_key,
+            *translation_engine_arg_inputs,
         ],
         outputs=[
             output_file_mono,  # Mono PDF file
