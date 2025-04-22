@@ -112,7 +112,7 @@ def _translate_wrapper(
     logger_queue: multiprocessing.Queue,
 ):
     logger = logging.getLogger(__name__)
-
+    cancel_event = threading.Event()
     try:
         logging.getLogger("asyncio").setLevel(logging.WARNING)
         logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -130,6 +130,7 @@ def _translate_wrapper(
             try:
                 pipe_cancel_message_recv.recv()
                 logger.debug("Cancel signal received in subprocess")
+                cancel_event.set()
                 config.cancel_translation()
             except Exception as e:
                 logger.error(f"Error in cancel_recv_thread: {e}")
@@ -157,7 +158,8 @@ def _translate_wrapper(
             except Exception as e:
                 # Capture non-babeldoc errors during translation
                 tb_str = traceback.format_exc()
-                logger.error(f"Error in translate_wrapper_async: {e}\n{tb_str}")
+                if not cancel_event.is_set():
+                    logger.error(f"Error in translate_wrapper_async: {e}\n{tb_str}")
                 error = SubprocessError(
                     message=f"Error during translation process: {e}",
                     traceback_str=tb_str,
@@ -165,7 +167,8 @@ def _translate_wrapper(
                 try:
                     pipe_progress_send.send(error)
                 except Exception as pipe_err:
-                    logger.error(f"Failed to send error through pipe: {pipe_err}")
+                    if not cancel_event.is_set():
+                        logger.error(f"Failed to send error through pipe: {pipe_err}")
 
         # Run the async translation in the subprocess's event loop
         try:
@@ -173,14 +176,16 @@ def _translate_wrapper(
         except Exception as e:
             # Capture errors that might occur outside the async context
             tb_str = traceback.format_exc()
-            logger.error(f"Error running async translation: {e}\n{tb_str}")
+            if not cancel_event.is_set():
+                logger.error(f"Error running async translation: {e}\n{tb_str}")
             error = SubprocessError(
                 message=f"Failed to run translation process: {e}", traceback_str=tb_str
             )
             try:
                 pipe_progress_send.send(error)
             except Exception as pipe_err:
-                logger.error(f"Failed to send error through pipe: {pipe_err}")
+                if not cancel_event.is_set():
+                    logger.error(f"Failed to send error through pipe: {pipe_err}")
     except Exception as e:
         # Capture any errors during setup or initialization
         tb_str = traceback.format_exc()
@@ -192,7 +197,8 @@ def _translate_wrapper(
             )
             pipe_progress_send.send(error)
         except Exception as pipe_err:
-            logger.error(f"Failed to send error through pipe: {pipe_err}")
+            if not cancel_event.is_set():
+                logger.error(f"Failed to send error through pipe: {pipe_err}")
     finally:
         logger.debug("sub process send close")
         try:
@@ -200,7 +206,8 @@ def _translate_wrapper(
             pipe_progress_send.close()
             logger.debug("sub process close pipe progress send")
         except Exception as e:
-            logger.error(f"Error closing progress pipe: {e}")
+            if not cancel_event.is_set():
+                logger.error(f"Error closing progress pipe: {e}")
 
         try:
             logging.getLogger().removeHandler(queue_handler)
@@ -208,7 +215,8 @@ def _translate_wrapper(
             logger_queue.put(None)
             logger_queue.close()
         except Exception as e:
-            logger.error(f"Error closing logger queue: {e}")
+            if not cancel_event.is_set():
+                logger.error(f"Error closing logger queue: {e}")
 
 
 async def _translate_in_subprocess(
@@ -259,7 +267,8 @@ async def _translate_in_subprocess(
                 cb.error_callback(error)
                 break
             except Exception as e:
-                logger.error(f"Error receiving event: {e}")
+                if not cancel_event.is_set():
+                    logger.error(f"Error receiving event: {e}")
                 error = IPCError(f"IPC error: {e}", details=str(e))
                 cb.error_callback(error)
                 break
@@ -298,7 +307,7 @@ async def _translate_in_subprocess(
         ),
     )
     translate_process.start()
-
+    cancel_flag = False
     try:
         async for event in cb:
             # Check for errors before yielding events
@@ -308,7 +317,9 @@ async def _translate_in_subprocess(
                 break
             yield event.args[0]
     except asyncio.CancelledError:
+        cancel_flag = True
         logger.info("Process Translation cancelled")
+        raise
     except KeyboardInterrupt:
         logger.info("KeyboardInterrupt received in main process")
     finally:
@@ -373,21 +384,21 @@ async def _translate_in_subprocess(
             logger.debug(f"Failed to close logger_queue: {e}")
 
         logger.debug("translate process exit code: %s", translate_process.exitcode)
-
-        # Check if the process crashed but no error was captured through IPC
-        if translate_process.exitcode not in (0, None) and not cb.has_error():
-            error = SubprocessCrashError(
-                f"Translation subprocess crashed with exit code {translate_process.exitcode}",
-                exit_code=translate_process.exitcode,
-            )
-            # We need to raise the error as we're outside the async for loop now
-            raise error
-        elif cb.has_error():
-            # If we have a stored error but haven't raised it yet (exited the loop normally)
-            # re-raise it now
-            # Note: In most cases, this won't execute because the error would already have been
-            # raised by AsyncCallback.__anext__
-            raise cb.error
+        if not cancel_flag:
+            # Check if the process crashed but no error was captured through IPC
+            if translate_process.exitcode not in (0, None) and not cb.has_error():
+                error = SubprocessCrashError(
+                    f"Translation subprocess crashed with exit code {translate_process.exitcode}",
+                    exit_code=translate_process.exitcode,
+                )
+                # We need to raise the error as we're outside the async for loop now
+                raise error
+            elif cb.has_error():
+                # If we have a stored error but haven't raised it yet (exited the loop normally)
+                # re-raise it now
+                # Note: In most cases, this won't execute because the error would already have been
+                # raised by AsyncCallback.__anext__
+                raise cb.error
 
 
 def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfig:

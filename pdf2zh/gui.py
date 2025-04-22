@@ -558,6 +558,7 @@ async def translate_file(
             ),  # Show output title if any output
         )
     except asyncio.CancelledError:
+        gr.Info("Translation cancelled")
         # Return None for all outputs if cancelled
         return (
             None,
