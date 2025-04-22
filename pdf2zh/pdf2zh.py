@@ -191,6 +191,14 @@ def create_parser() -> argparse.ArgumentParser:
         help="Ignore cache and force retranslation.",
     )
 
+    parse_params.add_argument(
+        "--mcp", action="store_true", help="Launch pdf2zh MCP server in STDIO mode"
+    )
+
+    parse_params.add_argument(
+        "--sse", action="store_true", help="Launch pdf2zh MCP server in SSE mode"
+    )
+
     return parser
 
 
@@ -293,6 +301,20 @@ def main(args: Optional[List[str]] = None) -> int:
             parsed_args.prompt = Template(content)
         except Exception:
             raise ValueError("prompt error.")
+
+    if parsed_args.mcp:
+        logging.getLogger("mcp").setLevel(logging.ERROR)
+        from pdf2zh.mcp_server import create_mcp_app, create_starlette_app
+
+        mcp = create_mcp_app()
+        if parsed_args.sse:
+            import uvicorn
+
+            starlette_app = create_starlette_app(mcp._mcp_server)
+            uvicorn.run(starlette_app)
+            return 0
+        mcp.run()
+        return 0
 
     print(parsed_args)
     if parsed_args.babeldoc:

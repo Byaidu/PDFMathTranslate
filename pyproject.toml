@@ -34,7 +34,7 @@ dependencies = [
     "peewee>=3.17.8",
     "fontTools",
     "babeldoc>=0.1.22, <0.3.0",
-    "rich"
+    "rich",
 ]
 
 [project.optional-dependencies]
@@ -45,6 +45,9 @@ backend = [
 ]
 argostranslate = [
     "argostranslate"
+]
+mcp = [
+    "mcp>=1.6.0",
 ]
 
 [dependency-groups]

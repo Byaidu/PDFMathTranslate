@@ -32,14 +32,6 @@ from tenacity import wait_exponential
 
 logger = logging.getLogger(__name__)
 
-try:
-    import argostranslate.package
-    import argostranslate.translate
-except ImportError:
-    logger.warning(
-        "argos-translate is not installed, if you want to use argostranslate, please install it. If you don't use argostranslate translator, you can safely ignore this warning."
-    )
-
 
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
@@ -809,6 +801,14 @@ class ArgosTranslator(BaseTranslator):
     name = "argos"
 
     def __init__(self, lang_in, lang_out, model, ignore_cache=False, **kwargs):
+        try:
+            import argostranslate.package
+            import argostranslate.translate
+        except ImportError:
+            logger.warning(
+                "argos-translate is not installed, if you want to use argostranslate, please install it. If you don't use argostranslate translator, you can safely ignore this warning."
+            )
+            raise
         super().__init__(lang_in, lang_out, model, ignore_cache)
         lang_in = self.lang_map.get(lang_in.lower(), lang_in)
         lang_out = self.lang_map.get(lang_out.lower(), lang_out)
@@ -833,7 +833,11 @@ class ArgosTranslator(BaseTranslator):
 
     def translate(self, text: str, ignore_cache: bool = False):
         # Translate
-        installed_languages = argostranslate.translate.get_installed_languages()
+        import argotranslate.translate  # noqa: F401
+
+        installed_languages = (
+            argostranslate.translate.get_installed_languages()  # noqa: F821
+        )
         from_lang = list(filter(lambda x: x.code == self.lang_in, installed_languages))[
             0
         ]
