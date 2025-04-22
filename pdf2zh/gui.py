@@ -203,6 +203,7 @@ def _build_translate_settings(
     short_line_split_factor = ui_inputs.get("short_line_split_factor")
     translate_table_text = ui_inputs.get("translate_table_text")
     skip_scanned_detection = ui_inputs.get("skip_scanned_detection")
+    ocr_workaround = ui_inputs.get("ocr_workaround")
     max_pages_per_part = ui_inputs.get("max_pages_per_part")
     formular_font_pattern = ui_inputs.get("formular_font_pattern")
     formular_char_pattern = ui_inputs.get("formular_char_pattern")
@@ -262,7 +263,7 @@ def _build_translate_settings(
     translate_settings.pdf.disable_rich_text_translate = disable_rich_text_translate
     translate_settings.pdf.enhance_compatibility = enhance_compatibility
     translate_settings.pdf.split_short_lines = split_short_lines
-
+    translate_settings.pdf.ocr_workaround = ocr_workaround
     if short_line_split_factor is not None:
         translate_settings.pdf.short_line_split_factor = float(short_line_split_factor)
 
@@ -443,6 +444,7 @@ async def translate_file(
     formular_char_pattern,
     ignore_cache,
     state,
+    ocr_workaround,
     *translation_engine_arg_inputs,
     progress=None,
 ):
@@ -520,6 +522,7 @@ async def translate_file(
         "formular_font_pattern": formular_font_pattern,
         "formular_char_pattern": formular_char_pattern,
         "ignore_cache": ignore_cache,
+        "ocr_workaround": ocr_workaround,
     }
     for arg_name, arg_input in zip(
         __gui_service_arg_names, translation_engine_arg_inputs, strict=False
@@ -858,6 +861,12 @@ with gr.Blocks(
                     interactive=True,
                 )
 
+                ocr_workaround = gr.Checkbox(
+                    label="OCR workaround (experimental)",
+                    value=settings.pdf.ocr_workaround,
+                    interactive=True,
+                )
+
                 max_pages_per_part = gr.Number(
                     label="Maximum pages per part (for split translation)",
                     value=settings.pdf.max_pages_per_part,
@@ -1029,6 +1038,7 @@ with gr.Blocks(
             formular_char_pattern,
             ignore_cache,
             state,
+            ocr_workaround,
             *translation_engine_arg_inputs,
         ],
         outputs=[
