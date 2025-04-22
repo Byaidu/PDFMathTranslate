@@ -3,10 +3,10 @@ from pathlib import Path
 import pytest
 from pdf2zh.config.cli_env_model import CLIEnvSettingsModel
 from pdf2zh.config.model import BasicSettings
-from pdf2zh.config.model import OpenAISettings
 from pdf2zh.config.model import PDFSettings
 from pdf2zh.config.model import TranslationSettings
 from pdf2zh.config.model import WatermarkOutputMode
+from pdf2zh.config.translate_engine_model import OpenAISettings
 from pydantic import ValidationError
 
 
@@ -64,7 +64,7 @@ class TestTranslationSettings:
         """Test default values of TranslationSettings"""
         settings = TranslationSettings()
         assert settings.min_text_length == 5
-        assert settings.lang_in == "auto"
+        assert settings.lang_in == "en"
         assert settings.lang_out == "zh"
         assert settings.output is None
         assert settings.qps == 4

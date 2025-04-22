@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 import logging
 import os
 import threading
@@ -540,7 +541,7 @@ class ConfigManager:
         config_from_file_dicts = []
         if "config_file" in merged_args:
             user_config = self._read_toml_file(Path(merged_args["config_file"]))
-            config_from_file_dicts.append(user_config)
+            config_from_file_dicts.append(copy.deepcopy(user_config))
             del merged_args["config_file"]
             merged_args = self.merge_settings(
                 [merged_args, user_config, default_config_file]
@@ -549,7 +550,7 @@ class ConfigManager:
             merged_args = self.merge_settings([merged_args, default_config_file])
         # Create settings model from merged dictionary
         self._update_version_default_config()
-        config_from_file_dicts.append(default_config_file)
+        config_from_file_dicts.append(copy.deepcopy(default_config_file))
         config_from_file_args = self.merge_settings(config_from_file_dicts)
 
         self.config_cli_settings = self._build_model_from_args(
