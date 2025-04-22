@@ -60,8 +60,9 @@ assert len(_DEFAULT_TRANSLATION_ENGINE.model_fields) == 1, (
     "Default translation engine cannot have detail settings"
 )
 
-# The following is magic code.
-# If you need to make changes, please contact the maintainer.
+# The following is magic code,
+# if you need to modify it,
+# please contact the maintainer!
 
 
 @dataclass

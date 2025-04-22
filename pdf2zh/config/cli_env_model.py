@@ -11,6 +11,9 @@ from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
 
 logger = logging.getLogger(__name__)
 
+# The following is magic code,
+# if you need to modify it,
+# please contact the maintainer!
 
 __translation_flag_fields = {
     x.cli_flag_name: (
@@ -34,6 +37,9 @@ __translation_flag_fields.update(
 )
 
 __exclude_fields = list(__translation_flag_fields.keys())
+
+# If you want to use more field parameters in `pdf2zh/config/model.py`
+# please add the corresponding forwarding here!
 
 __cli_env_settings_model_fields = {
     k: (

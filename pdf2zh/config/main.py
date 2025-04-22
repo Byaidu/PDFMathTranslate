@@ -25,6 +25,10 @@ from pdf2zh.const import DEFAULT_CONFIG_FILE
 from pdf2zh.const import VERSION_DEFAULT_CONFIG_FILE
 from pdf2zh.const import WRITE_TEMP_CONFIG_FILE
 
+# The following is magic code,
+# if you need to modify it,
+# please contact the maintainer!
+
 _translation_engine_flag_names = [x.cli_flag_name for x in TRANSLATION_ENGINE_METADATA]
 
 log = logging.getLogger(__name__)
