@@ -22,5 +22,6 @@ __all__ = [
     "GoogleSettings",
     "OpenAISettings",
     "DeepLSettings",
-    "DeepSeekSettingsTRANSLATION_ENGINE_METADATA",
+    "DeepSeekSettings",
+    "TRANSLATION_ENGINE_METADATA",
 ]
