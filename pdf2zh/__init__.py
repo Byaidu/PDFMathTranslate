@@ -3,6 +3,7 @@ from pdf2zh.config import BingSettings
 from pdf2zh.config import DeepLSettings
 from pdf2zh.config import DeepLXSettings
 from pdf2zh.config import DeepSeekSettings
+from pdf2zh.config import GeminiSettings
 from pdf2zh.config import GoogleSettings
 from pdf2zh.config import ModelScopeSettings
 from pdf2zh.config import OllamaSettings
@@ -46,6 +47,7 @@ __all__ = [
     "ZhipuSettings",
     "SiliconSettings",
     "TencentSettings",
+    "GeminiSettings",
     "PDFSettings",
     "TranslationSettings",
     "WatermarkOutputMode",

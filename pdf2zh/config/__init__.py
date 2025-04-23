@@ -10,6 +10,7 @@ from pdf2zh.config.translate_engine_model import BingSettings
 from pdf2zh.config.translate_engine_model import DeepLSettings
 from pdf2zh.config.translate_engine_model import DeepLXSettings
 from pdf2zh.config.translate_engine_model import DeepSeekSettings
+from pdf2zh.config.translate_engine_model import GeminiSettings
 from pdf2zh.config.translate_engine_model import GoogleSettings
 from pdf2zh.config.translate_engine_model import ModelScopeSettings
 from pdf2zh.config.translate_engine_model import OllamaSettings
@@ -38,6 +39,7 @@ __all__ = [
     "ZhipuSettings",
     "SiliconSettings",
     "TencentSettings",
+    "GeminiSettings",
     "DeepSeekSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]

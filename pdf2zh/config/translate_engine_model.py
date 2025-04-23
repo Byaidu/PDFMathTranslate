@@ -284,6 +284,33 @@ GUI_PASSWORD_FIELDS.append("tencentcloud_secret_id")
 GUI_PASSWORD_FIELDS.append("tencentcloud_secret_key")
 
 
+class GeminiSettings(BaseModel):
+    """Gemini API settings"""
+
+    translate_engine_type: Literal["Gemini"] = Field(default="Gemini")
+
+    gemini_model: str = Field(
+        default="gemini-1.5-flash", description="Gemini model to use"
+    )
+    gemini_api_key: str | None = Field(
+        default=None, description="API key for Gemini service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.gemini_api_key:
+            raise ValueError("Gemini API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.gemini_model,
+            openai_api_key=self.gemini_api_key,
+            openai_base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("gemini_api_key")
+
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
@@ -301,6 +328,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | ZhipuSettings
     | SiliconSettings
     | TencentSettings
+    | GeminiSettings
 )
 
 # 默认翻译引擎
