@@ -198,7 +198,11 @@ class SettingsModel(BaseModel):
 
         self.translate_engine_settings.validate_settings()
         if hasattr(self.translate_engine_settings, "transform"):
+            from_type = self.translate_engine_settings.translate_engine_type
             self.translate_engine_settings = self.translate_engine_settings.transform()
+            to_type = self.translate_engine_settings.translate_engine_type
+            log.info(f"Transformed translate_engine_settings: {from_type} -> {to_type}")
+            self.translate_engine_settings.validate_settings()
 
         # Validate files
         for file in self.basic.input_files:
