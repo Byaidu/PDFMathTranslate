@@ -259,6 +259,31 @@ class SiliconSettings(BaseModel):
 
 GUI_PASSWORD_FIELDS.append("silicon_api_key")
 
+
+class TencentSettings(BaseModel):
+    """Tencent Mechine Translation settings"""
+
+    translate_engine_type: Literal["Tencent Mechine Translation"] = Field(
+        default="Tencent Mechine Translation"
+    )
+    tencentcloud_secret_id: str | None = Field(
+        default=None, description="Tencent Mechine Translation secret ID"
+    )
+    tencentcloud_secret_key: str | None = Field(
+        default=None, description="Tencent Mechine Translation secret Key"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.tencentcloud_secret_id:
+            raise ValueError("Tencent Mechine Translation ID is required")
+        if not self.tencentcloud_secret_key:
+            raise ValueError("Tencent Mechine Translation Key is required")
+
+
+GUI_PASSWORD_FIELDS.append("tencentcloud_secret_id")
+GUI_PASSWORD_FIELDS.append("tencentcloud_secret_key")
+
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
@@ -275,6 +300,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | ModelScopeSettings
     | ZhipuSettings
     | SiliconSettings
+    | TencentSettings
 )
 
 # 默认翻译引擎

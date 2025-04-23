@@ -15,6 +15,7 @@ from pdf2zh.config.translate_engine_model import ModelScopeSettings
 from pdf2zh.config.translate_engine_model import OllamaSettings
 from pdf2zh.config.translate_engine_model import OpenAISettings
 from pdf2zh.config.translate_engine_model import SiliconSettings
+from pdf2zh.config.translate_engine_model import TencentSettings
 from pdf2zh.config.translate_engine_model import XinferenceSettings
 from pdf2zh.config.translate_engine_model import ZhipuSettings
 
@@ -36,6 +37,7 @@ __all__ = [
     "ModelScopeSettings",
     "ZhipuSettings",
     "SiliconSettings",
+    "TencentSettings",
     "DeepSeekSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]
