@@ -1101,7 +1101,10 @@ def parse_user_passwd(file_path: list) -> tuple[list, str]:
 
 
 def setup_gui(
-    share: bool = False, auth_file: list | None = None, server_port=7860, inbrowser: bool=True
+    share: bool = False,
+    auth_file: list | None = None,
+    server_port=7860,
+    inbrowser: bool = True,
 ) -> None:
     """
     This function sets up the GUI for the application.
