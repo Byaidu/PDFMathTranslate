@@ -316,6 +316,7 @@ def _build_translate_settings(
         translate_settings.gui_settings = original_gui_settings
         if not settings.gui_settings.disable_config_auto_save:
             config_manager.write_user_default_config_file(settings=translate_settings)
+        settings.validate_settings()
         return settings
     except ValueError as e:
         raise gr.Error(f"Invalid settings: {e}") from e

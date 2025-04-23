@@ -55,6 +55,7 @@ class BingSettings(BaseModel):
     def validate_settings(self) -> None:
         pass
 
+
 class GoogleSettings(BaseModel):
     """Google Translation settings"""
 
@@ -63,25 +64,58 @@ class GoogleSettings(BaseModel):
     def validate_settings(self) -> None:
         pass
 
+
 class DeepLSettings(BaseModel):
     """Bing Translation settings"""
 
     translate_engine_type: Literal["DeepL"] = Field(default="DeepL")
-    deepl_auth_key:str | None = Field(
-        default=None, description="DeepL auth key"
-    )
+    deepl_auth_key: str | None = Field(default=None, description="DeepL auth key")
 
     def validate_settings(self) -> None:
         if not self.deepl_auth_key:
             raise ValueError("DeepL Auth key is required")
+
+
 GUI_PASSWORD_FIELDS.append("deepl_auth_key")
+
+# for openai compatibility translator
+# You only need to add the corresponding configuration class
+# and return the OpenAISettings instance using the transform method.
+
+
+class DeepSeekSettings(BaseModel):
+    """OpenAI API settings"""
+
+    translate_engine_type: Literal["DeepSeek"] = Field(default="DeepSeek")
+
+    deepseek_model: str = Field(
+        default="deepseek-chat", description="DeepSeek model to use"
+    )
+    deepseek_api_key: str | None = Field(
+        default=None, description="API key for DeepSeek service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.deepseek_api_key:
+            raise ValueError("DeepSeek API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            translate_engine_type="OpenAI",
+            openai_model=self.deepseek_model,
+            openai_api_key=self.deepseek_api_key,
+            openai_base_url="https://api.deepseek.com/v1",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("deepseek_api_key")
 
 
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
 TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
-    OpenAISettings | GoogleSettings | BingSettings | DeepLSettings
+    OpenAISettings | GoogleSettings | BingSettings | DeepLSettings | DeepSeekSettings
 )
 
 # 默认翻译引擎

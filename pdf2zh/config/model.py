@@ -197,6 +197,8 @@ class SettingsModel(BaseModel):
             raise ValueError("Must provide a translation service")
 
         self.translate_engine_settings.validate_settings()
+        if hasattr(self.translate_engine_settings, "transform"):
+            self.translate_engine_settings = self.translate_engine_settings.transform()
 
         # Validate files
         for file in self.basic.input_files:
