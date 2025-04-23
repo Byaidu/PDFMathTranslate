@@ -158,6 +158,28 @@ class XinferenceSettings(BaseModel):
             raise ValueError("Xinference host is required")
 
 
+class AzureOpenAISettings(BaseModel):
+    """AzureOpenAI API settings"""
+
+    translate_engine_type: Literal["AzureOpenAI"] = Field(default="AzureOpenAI")
+
+    azure_openai_model: str = Field(
+        default="gpt-4o-mini", description="AzureOpenAI model to use"
+    )
+    azure_openai_base_url: str | None = Field(
+        default=None, description="Base URL for AzureOpenAI API"
+    )
+    azure_openai_api_key: str | None = Field(
+        default=None, description="API key for AzureOpenAI service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.azure_openai_api_key:
+            raise ValueError("AzureOpenAI API key is required")
+
+
+GUI_PASSWORD_FIELDS.append("azure_openai_api_key")
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
@@ -170,6 +192,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | DeepLXSettings
     | OllamaSettings
     | XinferenceSettings
+    | AzureOpenAISettings
 )
 
 # 默认翻译引擎

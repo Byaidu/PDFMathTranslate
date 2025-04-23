@@ -5,6 +5,7 @@ from pdf2zh.config.model import SettingsModel
 from pdf2zh.config.model import TranslationSettings
 from pdf2zh.config.model import WatermarkOutputMode
 from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
+from pdf2zh.config.translate_engine_model import AzureOpenAISettings
 from pdf2zh.config.translate_engine_model import BingSettings
 from pdf2zh.config.translate_engine_model import DeepLSettings
 from pdf2zh.config.translate_engine_model import DeepLXSettings
@@ -28,6 +29,7 @@ __all__ = [
     "DeepLXSettings",
     "OllamaSettings",
     "XinferenceSettings",
+    "AzureOpenAISettings",
     "DeepSeekSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]

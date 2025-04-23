@@ -1,3 +1,4 @@
+from pdf2zh.config import AzureOpenAISettings
 from pdf2zh.config import BingSettings
 from pdf2zh.config import DeepLSettings
 from pdf2zh.config import DeepLXSettings
@@ -36,6 +37,7 @@ __all__ = [
     "DeepSeekSettings",
     "OllamaSettings",
     "XinferenceSettings",
+    "AzureOpenAISettings",
     "PDFSettings",
     "TranslationSettings",
     "WatermarkOutputMode",
