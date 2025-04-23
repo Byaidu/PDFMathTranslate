@@ -689,10 +689,9 @@ with gr.Blocks(
                         # no detail field, no need to show
                         continue
                     detail_settings = getattr(settings, metadata.cli_detail_field_name)
+                    visible = service.value == metadata.translate_engine_type
                     # OpenAI specific settings (initially visible if OpenAI is default)
-                    with gr.Group(
-                        visible=(service.value == metadata.translate_engine_type)
-                    ) as service_detail:
+                    with gr.Group(visible=True) as service_detail:
                         detail_text_input_index_map[metadata.translate_engine_type] = []
 
                         for (
@@ -716,12 +715,14 @@ with gr.Blocks(
                                     value=value,
                                     interactive=True,
                                     type="password",
+                                    visible=visible,
                                 )
                             else:
                                 field_input = gr.Textbox(
                                     label=field.description,
                                     value=value,
                                     interactive=True,
+                                    visible=visible,
                                 )
                             detail_text_input_index_map[
                                 metadata.translate_engine_type
@@ -1102,7 +1103,7 @@ def parse_user_passwd(file_path: list) -> tuple[list, str]:
 
 
 def setup_gui(
-    share: bool = False, auth_file: list | None = None, server_port=7860, inbrowser = True
+    share: bool = False, auth_file: list | None = None, server_port=7860, inbrowser=True
 ) -> None:
     """
     This function sets up the GUI for the application.
@@ -1192,4 +1193,4 @@ def setup_gui(
 # For auto-reloading while developing
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING)
-    setup_gui(inbrowser = False)
+    setup_gui(inbrowser=False)
