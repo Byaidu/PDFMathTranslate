@@ -19,6 +19,7 @@ from pdf2zh.config.translate_engine_model import SiliconSettings
 from pdf2zh.config.translate_engine_model import TencentSettings
 from pdf2zh.config.translate_engine_model import XinferenceSettings
 from pdf2zh.config.translate_engine_model import ZhipuSettings
+from pdf2zh.config.translate_engine_model import AzureSettings
 
 __all__ = [
     "ConfigManager",
@@ -40,6 +41,7 @@ __all__ = [
     "SiliconSettings",
     "TencentSettings",
     "GeminiSettings",
+    "AzureSettings",
     "DeepSeekSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]
