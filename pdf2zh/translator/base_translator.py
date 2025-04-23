@@ -2,6 +2,7 @@ import contextlib
 import logging
 from abc import ABC
 from abc import abstractmethod
+import re
 
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.translator.base_rate_limiter import BaseRateLimiter
@@ -117,6 +118,14 @@ class BaseTranslator(ABC):
             f"Text: {text}. ",
         )
         raise NotImplementedError
+
+    def _remove_cot_content(self,content: str) -> str:
+        """Remove text content with the thought chain from the chat response
+
+        :param content: Non-streaming text content
+        :return: Text without a thought chain
+        """
+        return re.sub(r"^<think>.+?</think>", "", content, count=1, flags=re.DOTALL)
 
     def __str__(self):
         return f"{self.name} {self.lang_in} {self.lang_out} {self.model}"
