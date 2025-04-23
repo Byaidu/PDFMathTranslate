@@ -74,8 +74,6 @@ class DeepLSettings(BaseModel):
     def validate_settings(self) -> None:
         if not self.deepl_auth_key:
             raise ValueError("DeepL Auth key is required")
-
-
 GUI_PASSWORD_FIELDS.append("deepl_auth_key")
 
 # for openai compatibility translator
@@ -84,7 +82,7 @@ GUI_PASSWORD_FIELDS.append("deepl_auth_key")
 
 
 class DeepSeekSettings(BaseModel):
-    """OpenAI API settings"""
+    """DeepSeek settings"""
 
     translate_engine_type: Literal["DeepSeek"] = Field(default="DeepSeek")
 
@@ -106,15 +104,26 @@ class DeepSeekSettings(BaseModel):
             openai_base_url="https://api.deepseek.com/v1",
         )
 
-
 GUI_PASSWORD_FIELDS.append("deepseek_api_key")
+
+class DeepLXSettings(BaseModel):
+    """Bing Translation settings"""
+
+    translate_engine_type: Literal["DeepLX"] = Field(default="DeepLX")
+    deeplx_access_token: str | None = Field(default=None, description="DeepLX access token")
+    deeplx_endpoint: str | None = Field(default=None, description="DeepLX endpoint")
+    
+    def validate_settings(self) -> None:
+        if not self.deeplx_endpoint:
+            raise ValueError("DeepL Auth key is required")
+GUI_PASSWORD_FIELDS.append("deeplx_access_token")
 
 
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
 TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
-    OpenAISettings | GoogleSettings | BingSettings | DeepLSettings | DeepSeekSettings
+    OpenAISettings | GoogleSettings | BingSettings | DeepLSettings | DeepSeekSettings | DeepLXSettings
 )
 
 # 默认翻译引擎

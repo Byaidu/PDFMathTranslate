@@ -1,5 +1,6 @@
 from pdf2zh.config import BingSettings
 from pdf2zh.config import DeepLSettings
+from pdf2zh.config import DeepLXSettings
 from pdf2zh.config import DeepSeekSettings
 from pdf2zh.config import GoogleSettings
 from pdf2zh.config import OpenAISettings
@@ -29,6 +30,7 @@ __all__ = [
     "BingSettings",
     "GoogleSettings",
     "DeepLSettings",
+    "DeepLXSettings",
     "DeepSeekSettings",
     "PDFSettings",
     "TranslationSettings",
