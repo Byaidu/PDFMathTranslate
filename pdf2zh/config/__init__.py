@@ -8,6 +8,8 @@ from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
 from pdf2zh.config.translate_engine_model import BingSettings
 from pdf2zh.config.translate_engine_model import GoogleSettings
 from pdf2zh.config.translate_engine_model import OpenAISettings
+from pdf2zh.config.translate_engine_model import DeepLSettings
+
 
 __all__ = [
     "ConfigManager",
@@ -19,5 +21,6 @@ __all__ = [
     "BingSettings",
     "GoogleSettings",
     "OpenAISettings",
+    "DeepLSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]

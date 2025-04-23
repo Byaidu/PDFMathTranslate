@@ -55,7 +55,6 @@ class BingSettings(BaseModel):
     def validate_settings(self) -> None:
         pass
 
-
 class GoogleSettings(BaseModel):
     """Google Translation settings"""
 
@@ -64,12 +63,25 @@ class GoogleSettings(BaseModel):
     def validate_settings(self) -> None:
         pass
 
+class DeepLSettings(BaseModel):
+    """Bing Translation settings"""
+
+    translate_engine_type: Literal["DeepL"] = Field(default="DeepL")
+    deepl_auth_key:str | None = Field(
+        default=None, description="DeepL auth key"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.deepl_auth_key:
+            raise ValueError("DeepL Auth key is required")
+GUI_PASSWORD_FIELDS.append("deepl_auth_key")
+
 
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
 TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
-    OpenAISettings | GoogleSettings | BingSettings
+    OpenAISettings | GoogleSettings | BingSettings | DeepLSettings
 )
 
 # 默认翻译引擎
