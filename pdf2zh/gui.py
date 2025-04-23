@@ -686,7 +686,6 @@ with gr.Blocks(
                 __gui_service_arg_names = []
                 for service_name in available_services:
                     metadata = TRANSLATION_ENGINE_METADATA_MAP[service_name]
-                    logger.warning(f"metadata: {metadata}")
                     if not metadata.cli_detail_field_name:
                         # no detail field, no need to show
                         continue
@@ -944,9 +943,6 @@ with gr.Blocks(
 
     def on_select_service(service_name):
         """Update service-specific settings visibility"""
-        logger.warning(f"on_select_service: {service_name}")
-        logger.warning(f"detail_text_inputs: {detail_text_inputs}")
-        logger.warning(f"detail_text_input_index_map: {detail_text_input_index_map}")
         if not detail_text_inputs:
             return
         detail_group_index = detail_text_input_index_map.get(service_name, [])
@@ -1105,7 +1101,7 @@ def parse_user_passwd(file_path: list) -> tuple[list, str]:
 
 
 def setup_gui(
-    share: bool = False, auth_file: list | None = None, server_port=7860, inbrowser=True
+    share: bool = False, auth_file: list | None = None, server_port=7860, inbrowser: bool=True
 ) -> None:
     """
     This function sets up the GUI for the application.
