@@ -3,6 +3,7 @@ from pdf2zh.config import DeepLSettings
 from pdf2zh.config import DeepLXSettings
 from pdf2zh.config import DeepSeekSettings
 from pdf2zh.config import GoogleSettings
+from pdf2zh.config import OllamaSettings
 from pdf2zh.config import OpenAISettings
 from pdf2zh.config.main import ConfigManager
 from pdf2zh.config.model import BasicSettings
@@ -32,6 +33,7 @@ __all__ = [
     "DeepLSettings",
     "DeepLXSettings",
     "DeepSeekSettings",
+    "OllamaSettings",
     "PDFSettings",
     "TranslationSettings",
     "WatermarkOutputMode",

@@ -127,6 +127,22 @@ class DeepLXSettings(BaseModel):
 GUI_PASSWORD_FIELDS.append("deeplx_access_token")
 
 
+class OllamaSettings(BaseModel):
+    """Ollama API settings"""
+
+    translate_engine_type: Literal["Ollama"] = Field(default="Ollama")
+
+    ollama_model: str = Field(default="gemma2", description="Ollama model to use")
+    ollama_host: str | None = Field(default=None, description="Ollama host")
+    num_predict: int | 2000 = Field(
+        default=2000, description="The max number of token to predict."
+    )
+
+    def validate_settings(self) -> None:
+        if not self.ollama_host:
+            raise ValueError("Ollama host is required")
+
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
@@ -137,6 +153,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | DeepLSettings
     | DeepSeekSettings
     | DeepLXSettings
+    | OllamaSettings
 )
 
 # 默认翻译引擎
