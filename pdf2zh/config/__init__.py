@@ -16,6 +16,7 @@ from pdf2zh.config.translate_engine_model import DifySettings
 from pdf2zh.config.translate_engine_model import GeminiSettings
 from pdf2zh.config.translate_engine_model import GoogleSettings
 from pdf2zh.config.translate_engine_model import GrokSettings
+from pdf2zh.config.translate_engine_model import GroqSettings
 from pdf2zh.config.translate_engine_model import ModelScopeSettings
 from pdf2zh.config.translate_engine_model import OllamaSettings
 from pdf2zh.config.translate_engine_model import OpenAISettings
@@ -48,6 +49,7 @@ __all__ = [
     "AnythingLLMSettings",
     "DifySettings",
     "GrokSettings",
+    "GroqSettings",
     "DeepSeekSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]

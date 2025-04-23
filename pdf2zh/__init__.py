@@ -9,6 +9,7 @@ from pdf2zh.config import DifySettings
 from pdf2zh.config import GeminiSettings
 from pdf2zh.config import GoogleSettings
 from pdf2zh.config import GrokSettings
+from pdf2zh.config import GroqSettings
 from pdf2zh.config import ModelScopeSettings
 from pdf2zh.config import OllamaSettings
 from pdf2zh.config import OpenAISettings
@@ -56,6 +57,7 @@ __all__ = [
     "AnythingLLMSettings",
     "DifySettings",
     "GrokSettings",
+    "GroqSettings",
     "PDFSettings",
     "TranslationSettings",
     "WatermarkOutputMode",

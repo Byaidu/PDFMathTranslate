@@ -384,6 +384,29 @@ class GrokSettings(BaseModel):
 
 GUI_PASSWORD_FIELDS.append("grok_api_key")
 
+class GroqSettings(BaseModel):
+    """Groq API settings"""
+
+    translate_engine_type: Literal["Groq"] = Field(default="Groq")
+
+    groq_model: str = Field(default="llama-3-3-70b-versatile", description="Groq model to use")
+    groq_api_key: str | None = Field(
+        default=None, description="API key for Groq service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.groq_api_key:
+            raise ValueError("Groq API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.groq_model,
+            openai_api_key=self.groq_api_key,
+            openai_base_url="https://api.groq.com/openai/v1",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("groq_api_key")
 
 ## Please add the translator configuration class above this location.
 
@@ -407,6 +430,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | AnythingLLMSettings
     | DifySettings
     | GrokSettings
+    | GroqSettings
 )
 
 # 默认翻译引擎
