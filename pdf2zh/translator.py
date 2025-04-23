@@ -853,8 +853,8 @@ class GrokTranslator(OpenAITranslator):
     # https://docs.x.ai/docs/overview#getting-started
     name = "grok"
     envs = {
-        "GORK_API_KEY": None,
-        "GORK_MODEL": "grok-2-1212",
+        "GROK_API_KEY": None,
+        "GROK_MODEL": "grok-2-1212",
     }
     CustomPrompt = True
 
@@ -863,9 +863,9 @@ class GrokTranslator(OpenAITranslator):
     ):
         self.set_envs(envs)
         base_url = "https://api.x.ai/v1"
-        api_key = self.envs["GORK_API_KEY"]
+        api_key = self.envs["GROK_API_KEY"]
         if not model:
-            model = self.envs["GORK_MODEL"]
+            model = self.envs["GROK_MODEL"]
         super().__init__(
             lang_in,
             lang_out,
