@@ -143,6 +143,21 @@ class OllamaSettings(BaseModel):
             raise ValueError("Ollama host is required")
 
 
+class XinferenceSettings(BaseModel):
+    """Xinference API settings"""
+
+    translate_engine_type: Literal["Xinference"] = Field(default="Xinference")
+
+    xinference_model: str = Field(
+        default="gemma-2-it", description="Xinference model to use"
+    )
+    xinference_host: str | None = Field(default=None, description="Xinference host")
+
+    def validate_settings(self) -> None:
+        if not self.xinference_host:
+            raise ValueError("Xinference host is required")
+
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
@@ -154,6 +169,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | DeepSeekSettings
     | DeepLXSettings
     | OllamaSettings
+    | XinferenceSettings
 )
 
 # 默认翻译引擎
