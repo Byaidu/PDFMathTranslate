@@ -7,6 +7,7 @@ from pdf2zh.config import GoogleSettings
 from pdf2zh.config import ModelScopeSettings
 from pdf2zh.config import OllamaSettings
 from pdf2zh.config import OpenAISettings
+from pdf2zh.config import SiliconSettings
 from pdf2zh.config import XinferenceSettings
 from pdf2zh.config import ZhipuSettings
 from pdf2zh.config.main import ConfigManager
@@ -42,6 +43,7 @@ __all__ = [
     "AzureOpenAISettings",
     "ModelScopeSettings",
     "ZhipuSettings",
+    "SiliconSettings",
     "PDFSettings",
     "TranslationSettings",
     "WatermarkOutputMode",

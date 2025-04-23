@@ -232,6 +232,33 @@ class ZhipuSettings(BaseModel):
 
 GUI_PASSWORD_FIELDS.append("zhipu_api_key")
 
+
+class SiliconSettings(BaseModel):
+    """Silicon API settings"""
+
+    translate_engine_type: Literal["Silicon"] = Field(default="Silicon")
+
+    silicon_model: str = Field(
+        default="Qwen/Qwen2.5-7B-Instruct", description="Silicon model to use"
+    )
+    silicon_api_key: str | None = Field(
+        default=None, description="API key for Silicon service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.silicon_api_key:
+            raise ValueError("Silicon API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.silicon_model,
+            openai_api_key=self.silicon_api_key,
+            openai_base_url="https://api.siliconflow.cn/v1",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("silicon_api_key")
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
@@ -247,6 +274,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | AzureOpenAISettings
     | ModelScopeSettings
     | ZhipuSettings
+    | SiliconSettings
 )
 
 # 默认翻译引擎
