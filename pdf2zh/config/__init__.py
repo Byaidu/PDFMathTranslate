@@ -20,6 +20,7 @@ from pdf2zh.config.translate_engine_model import GroqSettings
 from pdf2zh.config.translate_engine_model import ModelScopeSettings
 from pdf2zh.config.translate_engine_model import OllamaSettings
 from pdf2zh.config.translate_engine_model import OpenAISettings
+from pdf2zh.config.translate_engine_model import QwenMtSettings
 from pdf2zh.config.translate_engine_model import SiliconSettings
 from pdf2zh.config.translate_engine_model import TencentSettings
 from pdf2zh.config.translate_engine_model import XinferenceSettings
@@ -50,6 +51,7 @@ __all__ = [
     "DifySettings",
     "GrokSettings",
     "GroqSettings",
+    "QwenMtSettings",
     "DeepSeekSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]

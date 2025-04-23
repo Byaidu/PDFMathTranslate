@@ -384,12 +384,15 @@ class GrokSettings(BaseModel):
 
 GUI_PASSWORD_FIELDS.append("grok_api_key")
 
+
 class GroqSettings(BaseModel):
     """Groq API settings"""
 
     translate_engine_type: Literal["Groq"] = Field(default="Groq")
 
-    groq_model: str = Field(default="llama-3-3-70b-versatile", description="Groq model to use")
+    groq_model: str = Field(
+        default="llama-3-3-70b-versatile", description="Groq model to use"
+    )
     groq_api_key: str | None = Field(
         default=None, description="API key for Groq service"
     )
@@ -407,6 +410,35 @@ class GroqSettings(BaseModel):
 
 
 GUI_PASSWORD_FIELDS.append("groq_api_key")
+
+
+class QwenMtSettings(BaseModel):
+    """QwenMt API settings"""
+
+    translate_engine_type: Literal["QwenMt"] = Field(default="QwenMt")
+
+    qwenmt_model: str = Field(
+        default="qwen-mt-turbo", description="QwenMt model to use"
+    )
+    qwenmt_base_url: str | None = Field(
+        default="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        description="Base URL for QwenMt API",
+    )
+    qwenmt_api_key: str | None = Field(
+        default=None, description="API key for QwenMt service"
+    )
+    ali_domains: str | None = Field(
+        default="This sentence is extracted from a scientific paper. When translating, please pay close attention to the use of specialized troubleshooting terminologies and adhere to scientific sentence structures to maintain the technical rigor and precision of the original text.",
+        description="ALI_DOMAIN for QwenMt service",
+    )
+
+    def validate_settings(self) -> None:
+        if not self.qwenmt_api_key:
+            raise ValueError("OpenAI API key is required")
+
+
+GUI_PASSWORD_FIELDS.append("qwenmt_api_key")
+
 
 ## Please add the translator configuration class above this location.
 
@@ -431,6 +463,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | DifySettings
     | GrokSettings
     | GroqSettings
+    | QwenMtSettings
 )
 
 # 默认翻译引擎

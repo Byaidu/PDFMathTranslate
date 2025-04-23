@@ -13,6 +13,7 @@ from pdf2zh.config import GroqSettings
 from pdf2zh.config import ModelScopeSettings
 from pdf2zh.config import OllamaSettings
 from pdf2zh.config import OpenAISettings
+from pdf2zh.config import QwenMtSettings
 from pdf2zh.config import SiliconSettings
 from pdf2zh.config import TencentSettings
 from pdf2zh.config import XinferenceSettings
@@ -58,6 +59,7 @@ __all__ = [
     "DifySettings",
     "GrokSettings",
     "GroqSettings",
+    "QwenMtSettings",
     "PDFSettings",
     "TranslationSettings",
     "WatermarkOutputMode",
