@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class XinferenceTranslator(BaseTranslator):
-    # https://github.com/ollama/ollama
     name = "xinference"
 
     def __init__(
