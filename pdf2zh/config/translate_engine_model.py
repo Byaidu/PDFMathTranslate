@@ -101,7 +101,6 @@ class DeepSeekSettings(BaseModel):
 
     def transform(self) -> OpenAISettings:
         return OpenAISettings(
-            translate_engine_type="OpenAI",
             openai_model=self.deepseek_model,
             openai_api_key=self.deepseek_api_key,
             openai_base_url="https://api.deepseek.com/v1",
