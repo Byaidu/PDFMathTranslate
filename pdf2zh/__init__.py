@@ -4,10 +4,11 @@ from pdf2zh.config import DeepLSettings
 from pdf2zh.config import DeepLXSettings
 from pdf2zh.config import DeepSeekSettings
 from pdf2zh.config import GoogleSettings
+from pdf2zh.config import ModelScopeSettings
 from pdf2zh.config import OllamaSettings
 from pdf2zh.config import OpenAISettings
 from pdf2zh.config import XinferenceSettings
-from pdf2zh.config import ModelScopeSettings
+from pdf2zh.config import ZhipuSettings
 from pdf2zh.config.main import ConfigManager
 from pdf2zh.config.model import BasicSettings
 from pdf2zh.config.model import PDFSettings
@@ -40,6 +41,7 @@ __all__ = [
     "XinferenceSettings",
     "AzureOpenAISettings",
     "ModelScopeSettings",
+    "ZhipuSettings",
     "PDFSettings",
     "TranslationSettings",
     "WatermarkOutputMode",

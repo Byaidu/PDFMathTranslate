@@ -180,6 +180,7 @@ class AzureOpenAISettings(BaseModel):
 
 GUI_PASSWORD_FIELDS.append("azure_openai_api_key")
 
+
 class ModelScopeSettings(BaseModel):
     """ModelScope API settings"""
 
@@ -187,9 +188,6 @@ class ModelScopeSettings(BaseModel):
 
     modelscope_model: str = Field(
         default="Qwen/Qwen2.5-32B-Instruct", description="ModelScope model to use"
-    )
-    modelscope_base_url: str | None = Field(
-        default="https://api-inference.modelscope.cn/v1", description="Base URL for ModelScope API"
     )
     modelscope_api_key: str | None = Field(
         default=None, description="API key for ModelScope service"
@@ -199,8 +197,40 @@ class ModelScopeSettings(BaseModel):
         if not self.modelscope_api_key:
             raise ValueError("ModelScope API key is required")
 
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.modelscope_model,
+            openai_api_key=self.modelscope_api_key,
+            openai_base_url="https://api-inference.modelscope.cn/v1",
+        )
+
 
 GUI_PASSWORD_FIELDS.append("modelscope_api_key")
+
+
+class ZhipuSettings(BaseModel):
+    """Zhipu API settings"""
+
+    translate_engine_type: Literal["Zhipu"] = Field(default="Zhipu")
+
+    zhipu_model: str = Field(default="glm-4-flash", description="Zhipu model to use")
+    zhipu_api_key: str | None = Field(
+        default=None, description="API key for Zhipu service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.zhipu_api_key:
+            raise ValueError("Zhipu API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.zhipu_model,
+            openai_api_key=self.zhipu_api_key,
+            openai_base_url="https://open.bigmodel.cn/api/paas/v4",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("zhipu_api_key")
 
 ## Please add the translator configuration class above this location.
 
@@ -216,6 +246,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | XinferenceSettings
     | AzureOpenAISettings
     | ModelScopeSettings
+    | ZhipuSettings
 )
 
 # 默认翻译引擎
