@@ -134,7 +134,7 @@ class OllamaSettings(BaseModel):
 
     ollama_model: str = Field(default="gemma2", description="Ollama model to use")
     ollama_host: str | None = Field(default=None, description="Ollama host")
-    num_predict: int | 2000 = Field(
+    num_predict: int | None = Field(
         default=2000, description="The max number of token to predict."
     )
 
@@ -180,6 +180,28 @@ class AzureOpenAISettings(BaseModel):
 
 GUI_PASSWORD_FIELDS.append("azure_openai_api_key")
 
+class ModelScopeSettings(BaseModel):
+    """ModelScope API settings"""
+
+    translate_engine_type: Literal["ModelScope"] = Field(default="ModelScope")
+
+    modelscope_model: str = Field(
+        default="Qwen/Qwen2.5-32B-Instruct", description="ModelScope model to use"
+    )
+    modelscope_base_url: str | None = Field(
+        default="https://api-inference.modelscope.cn/v1", description="Base URL for ModelScope API"
+    )
+    modelscope_api_key: str | None = Field(
+        default=None, description="API key for ModelScope service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.modelscope_api_key:
+            raise ValueError("ModelScope API key is required")
+
+
+GUI_PASSWORD_FIELDS.append("modelscope_api_key")
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
@@ -193,6 +215,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | OllamaSettings
     | XinferenceSettings
     | AzureOpenAISettings
+    | ModelScopeSettings
 )
 
 # 默认翻译引擎

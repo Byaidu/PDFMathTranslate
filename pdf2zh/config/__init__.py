@@ -14,6 +14,7 @@ from pdf2zh.config.translate_engine_model import GoogleSettings
 from pdf2zh.config.translate_engine_model import OllamaSettings
 from pdf2zh.config.translate_engine_model import OpenAISettings
 from pdf2zh.config.translate_engine_model import XinferenceSettings
+from pdf2zh.config.translate_engine_model import ModelScopeSettings
 
 __all__ = [
     "ConfigManager",
@@ -30,6 +31,7 @@ __all__ = [
     "OllamaSettings",
     "XinferenceSettings",
     "AzureOpenAISettings",
+    "ModelScopeSettings",
     "DeepSeekSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]
