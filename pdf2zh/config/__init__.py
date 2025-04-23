@@ -21,6 +21,7 @@ from pdf2zh.config.translate_engine_model import SiliconSettings
 from pdf2zh.config.translate_engine_model import TencentSettings
 from pdf2zh.config.translate_engine_model import XinferenceSettings
 from pdf2zh.config.translate_engine_model import ZhipuSettings
+from pdf2zh.config.translate_engine_model import DifySettings
 
 __all__ = [
     "ConfigManager",
@@ -44,6 +45,7 @@ __all__ = [
     "GeminiSettings",
     "AzureSettings",
     "AnythingLLMSettings",
+    "DifySettings",
     "DeepSeekSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]

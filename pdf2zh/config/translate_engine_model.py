@@ -344,6 +344,22 @@ class AnythingLLMSettings(BaseModel):
 
 GUI_PASSWORD_FIELDS.append("anythingllm_apikey")
 
+class DifySettings(BaseModel):
+    """Dify settings"""
+
+    translate_engine_type: Literal["Dify"] = Field(default="Dify")
+    dify_url: str | None = Field(default=None, description="Dify url")
+    dify_apikey: str | None = Field(
+        default=None, description="Dify API Key"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.dify_apikey:
+            raise ValueError("Dify API Key is required")
+
+
+GUI_PASSWORD_FIELDS.append("dify_apikey")
+
 
 ## Please add the translator configuration class above this location.
 
@@ -365,6 +381,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | GeminiSettings
     | AzureSettings
     | AnythingLLMSettings
+    | DifySettings
 )
 
 # 默认翻译引擎
