@@ -310,18 +310,15 @@ class GeminiSettings(BaseModel):
 
 GUI_PASSWORD_FIELDS.append("gemini_api_key")
 
+
 class AzureSettings(BaseModel):
     """Azure Translation settings"""
 
-    translate_engine_type: Literal["Azure"] = Field(
-        default="Azure"
-    )
+    translate_engine_type: Literal["Azure"] = Field(default="Azure")
     azure_endpoint: str | None = Field(
         default="https://api.translator.azure.cn", description="Azure endpoint"
     )
-    azure_api_key: str | None = Field(
-        default=None, description="Azure API Key"
-    )
+    azure_api_key: str | None = Field(default=None, description="Azure API Key")
 
     def validate_settings(self) -> None:
         if not self.azure_api_key:
@@ -329,6 +326,25 @@ class AzureSettings(BaseModel):
 
 
 GUI_PASSWORD_FIELDS.append("azure_api_key")
+
+
+class AnythingLLMSettings(BaseModel):
+    """AnythingLLM settings"""
+
+    translate_engine_type: Literal["AnythingLLM"] = Field(default="AnythingLLM")
+    anythingllm_url: str | None = Field(default=None, description="AnythingLLM url")
+    anythingllm_apikey: str | None = Field(
+        default=None, description="AnythingLLM API Key"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.anythingllm_apikey:
+            raise ValueError("AnythingLLM API Key is required")
+
+
+GUI_PASSWORD_FIELDS.append("anythingllm_apikey")
+
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
@@ -348,6 +364,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | TencentSettings
     | GeminiSettings
     | AzureSettings
+    | AnythingLLMSettings
 )
 
 # 默认翻译引擎

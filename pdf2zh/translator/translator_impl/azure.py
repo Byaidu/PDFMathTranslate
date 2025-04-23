@@ -21,7 +21,6 @@ class AzureTranslator(BaseTranslator):
         self.client = TextTranslationClient(
             endpoint=endpoint, credential=credential, region="chinaeast2"
         )
-        
 
     def do_translate(self, text, rate_limit_params: dict = None):
         response = self.client.translate(

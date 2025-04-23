@@ -1,4 +1,6 @@
+from pdf2zh.config import AnythingLLMSettings
 from pdf2zh.config import AzureOpenAISettings
+from pdf2zh.config import AzureSettings
 from pdf2zh.config import BingSettings
 from pdf2zh.config import DeepLSettings
 from pdf2zh.config import DeepLXSettings
@@ -12,7 +14,6 @@ from pdf2zh.config import SiliconSettings
 from pdf2zh.config import TencentSettings
 from pdf2zh.config import XinferenceSettings
 from pdf2zh.config import ZhipuSettings
-from pdf2zh.config import AzureSettings
 from pdf2zh.config.main import ConfigManager
 from pdf2zh.config.model import BasicSettings
 from pdf2zh.config.model import PDFSettings
@@ -50,6 +51,7 @@ __all__ = [
     "TencentSettings",
     "GeminiSettings",
     "AzureSettings",
+    "AnythingLLMSettings",
     "PDFSettings",
     "TranslationSettings",
     "WatermarkOutputMode",

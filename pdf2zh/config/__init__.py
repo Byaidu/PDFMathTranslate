@@ -5,7 +5,9 @@ from pdf2zh.config.model import SettingsModel
 from pdf2zh.config.model import TranslationSettings
 from pdf2zh.config.model import WatermarkOutputMode
 from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
+from pdf2zh.config.translate_engine_model import AnythingLLMSettings
 from pdf2zh.config.translate_engine_model import AzureOpenAISettings
+from pdf2zh.config.translate_engine_model import AzureSettings
 from pdf2zh.config.translate_engine_model import BingSettings
 from pdf2zh.config.translate_engine_model import DeepLSettings
 from pdf2zh.config.translate_engine_model import DeepLXSettings
@@ -19,7 +21,6 @@ from pdf2zh.config.translate_engine_model import SiliconSettings
 from pdf2zh.config.translate_engine_model import TencentSettings
 from pdf2zh.config.translate_engine_model import XinferenceSettings
 from pdf2zh.config.translate_engine_model import ZhipuSettings
-from pdf2zh.config.translate_engine_model import AzureSettings
 
 __all__ = [
     "ConfigManager",
@@ -42,6 +43,7 @@ __all__ = [
     "TencentSettings",
     "GeminiSettings",
     "AzureSettings",
+    "AnythingLLMSettings",
     "DeepSeekSettings",
     "TRANSLATION_ENGINE_METADATA",
 ]
