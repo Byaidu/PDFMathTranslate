@@ -1,5 +1,3 @@
-import re
-
 import deepl
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.translator.base_rate_limiter import BaseRateLimiter
@@ -17,11 +15,12 @@ class DeepLTranslator(BaseTranslator):
         rate_limiter: BaseRateLimiter,
     ):
         super().__init__(settings, rate_limiter)
-        self.client = deepl.Translator(settings.translate_engine_settings.deepl_auth_key)
+        self.client = deepl.Translator(
+            settings.translate_engine_settings.deepl_auth_key
+        )
 
     def do_translate(self, text, rate_limit_params: dict = None):
         response = self.client.translate_text(
             text, target_lang=self.lang_out, source_lang=self.lang_in
         )
         return response.text
-

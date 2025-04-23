@@ -6,10 +6,10 @@ from pdf2zh.config.model import TranslationSettings
 from pdf2zh.config.model import WatermarkOutputMode
 from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
 from pdf2zh.config.translate_engine_model import BingSettings
+from pdf2zh.config.translate_engine_model import DeepLSettings
+from pdf2zh.config.translate_engine_model import DeepSeekSettings
 from pdf2zh.config.translate_engine_model import GoogleSettings
 from pdf2zh.config.translate_engine_model import OpenAISettings
-from pdf2zh.config.translate_engine_model import DeepLSettings
-
 
 __all__ = [
     "ConfigManager",
@@ -22,5 +22,5 @@ __all__ = [
     "GoogleSettings",
     "OpenAISettings",
     "DeepLSettings",
-    "TRANSLATION_ENGINE_METADATA",
+    "DeepSeekSettingsTRANSLATION_ENGINE_METADATA",
 ]
