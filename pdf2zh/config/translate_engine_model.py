@@ -344,14 +344,13 @@ class AnythingLLMSettings(BaseModel):
 
 GUI_PASSWORD_FIELDS.append("anythingllm_apikey")
 
+
 class DifySettings(BaseModel):
     """Dify settings"""
 
     translate_engine_type: Literal["Dify"] = Field(default="Dify")
     dify_url: str | None = Field(default=None, description="Dify url")
-    dify_apikey: str | None = Field(
-        default=None, description="Dify API Key"
-    )
+    dify_apikey: str | None = Field(default=None, description="Dify API Key")
 
     def validate_settings(self) -> None:
         if not self.dify_apikey:
@@ -359,6 +358,31 @@ class DifySettings(BaseModel):
 
 
 GUI_PASSWORD_FIELDS.append("dify_apikey")
+
+
+class GrokSettings(BaseModel):
+    """Grok API settings"""
+
+    translate_engine_type: Literal["Grok"] = Field(default="Grok")
+
+    grok_model: str = Field(default="grok-2-1212", description="Grok model to use")
+    grok_api_key: str | None = Field(
+        default=None, description="API key for Grok service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.grok_api_key:
+            raise ValueError("Grok API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.grok_model,
+            openai_api_key=self.grok_api_key,
+            openai_base_url="https://api.x.ai/v1",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("grok_api_key")
 
 
 ## Please add the translator configuration class above this location.
@@ -382,6 +406,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | AzureSettings
     | AnythingLLMSettings
     | DifySettings
+    | GrokSettings
 )
 
 # 默认翻译引擎
