@@ -31,6 +31,7 @@ class OpenAITranslator(BaseTranslator):
             host=settings.translate_engine_settings.ollama_host,
         )
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
+        self.add_cache_impact_parameters("num_predict", self.options["num_predict"])
         self.model = settings.translate_engine_settings.ollama_model
         self.add_cache_impact_parameters("model", self.model)
         self.add_cache_impact_parameters("prompt", self.prompt(""))
