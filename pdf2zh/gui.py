@@ -468,9 +468,7 @@ async def translate_file(
         - skip_clean: Whether to skip subsetting fonts
         - ignore_cache: Whether to ignore the translation cache
         - state: The state of the translation process
-        - openai_model: The OpenAI model to use
-        - openai_base_url: The base URL for OpenAI API
-        - openai_api_key: The OpenAI API key
+        - translation_engine_arg_inputs: The translator engine args
         - progress: The progress bar
 
     Returns:
