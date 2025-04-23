@@ -471,7 +471,7 @@ async def do_translate_async_stream(
     if isinstance(file, str):
         file = Path(file)
 
-    if settings.basic.input_files:
+    if settings.basic.input_files and len(settings.basic.input_files):
         logger.warning(
             "settings.basic.input_files is for cli & config, "
             "pdf2zh.highlevel.do_translate_async_stream will ignore this field "

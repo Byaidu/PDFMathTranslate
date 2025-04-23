@@ -341,6 +341,7 @@ async def _run_translation_task(
     dual_path = None
 
     try:
+        settings.basic.input_files = set()
         async for event in do_translate_async_stream(settings, file_path):
             if event["type"] in (
                 "progress_start",
@@ -1193,5 +1194,16 @@ def setup_gui(
 
 # For auto-reloading while developing
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.WARNING)
+    from rich.logging import RichHandler
+
+    # disable httpx, openai, httpcore, http11 logs
+    logging.getLogger("httpx").setLevel("CRITICAL")
+    logging.getLogger("httpx").propagate = False
+    logging.getLogger("openai").setLevel("CRITICAL")
+    logging.getLogger("openai").propagate = False
+    logging.getLogger("httpcore").setLevel("CRITICAL")
+    logging.getLogger("httpcore").propagate = False
+    logging.getLogger("http11").setLevel("CRITICAL")
+    logging.getLogger("http11").propagate = False
+    logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
     setup_gui(inbrowser=False)
