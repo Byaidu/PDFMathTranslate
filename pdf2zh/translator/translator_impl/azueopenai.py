@@ -13,9 +13,8 @@ from tenacity import wait_exponential
 logger = logging.getLogger(__name__)
 
 
-class OpenAITranslator(BaseTranslator):
-    # https://github.com/openai/openai-python
-    name = "openai"
+class AzureOpenAITranslator(BaseTranslator):
+    name = "azure-openai"
 
     def __init__(
         self,
@@ -24,12 +23,14 @@ class OpenAITranslator(BaseTranslator):
     ):
         super().__init__(settings, rate_limiter)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        self.client = openai.OpenAI(
-            base_url=settings.translate_engine_settings.openai_base_url,
-            api_key=settings.translate_engine_settings.openai_api_key,
+        self.client = openai.AzureOpenAI(
+            azure_endpoint=settings.translate_engine_settings.azure_openai_base_url,
+            azure_deployment=settings.translate_engine_settings.azure_openai_model,
+            api_version="2024-06-01",
+            api_key=settings.translate_engine_settings.azure_openai_api_key,
         )
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
-        self.model = settings.translate_engine_settings.openai_model
+        self.model = settings.translate_engine_settings.azure_openai_model
         self.add_cache_impact_parameters("model", self.model)
         self.add_cache_impact_parameters("prompt", self.prompt(""))
         self.token_count = AtomicInteger()

@@ -316,6 +316,7 @@ def _build_translate_settings(
         translate_settings.gui_settings = original_gui_settings
         if not settings.gui_settings.disable_config_auto_save:
             config_manager.write_user_default_config_file(settings=translate_settings)
+        settings.validate_settings()
         return settings
     except ValueError as e:
         raise gr.Error(f"Invalid settings: {e}") from e
@@ -340,6 +341,7 @@ async def _run_translation_task(
     dual_path = None
 
     try:
+        settings.basic.input_files = set()
         async for event in do_translate_async_stream(settings, file_path):
             if event["type"] in (
                 "progress_start",
@@ -466,9 +468,7 @@ async def translate_file(
         - skip_clean: Whether to skip subsetting fonts
         - ignore_cache: Whether to ignore the translation cache
         - state: The state of the translation process
-        - openai_model: The OpenAI model to use
-        - openai_base_url: The base URL for OpenAI API
-        - openai_api_key: The OpenAI API key
+        - translation_engine_arg_inputs: The translator engine args
         - progress: The progress bar
 
     Returns:
@@ -688,10 +688,9 @@ with gr.Blocks(
                         # no detail field, no need to show
                         continue
                     detail_settings = getattr(settings, metadata.cli_detail_field_name)
+                    visible = service.value == metadata.translate_engine_type
                     # OpenAI specific settings (initially visible if OpenAI is default)
-                    with gr.Group(
-                        visible=(service.value == metadata.translate_engine_type)
-                    ) as service_detail:
+                    with gr.Group(visible=True) as service_detail:
                         detail_text_input_index_map[metadata.translate_engine_type] = []
 
                         for (
@@ -715,12 +714,14 @@ with gr.Blocks(
                                     value=value,
                                     interactive=True,
                                     type="password",
+                                    visible=visible,
                                 )
                             else:
                                 field_input = gr.Textbox(
                                     label=field.description,
                                     value=value,
                                     interactive=True,
+                                    visible=visible,
                                 )
                             detail_text_input_index_map[
                                 metadata.translate_engine_type
@@ -940,7 +941,6 @@ with gr.Blocks(
 
     def on_select_service(service_name):
         """Update service-specific settings visibility"""
-        logger.info(f"on_select_service: {service_name}")
         if not detail_text_inputs:
             return
         detail_group_index = detail_text_input_index_map.get(service_name, [])
@@ -1099,7 +1099,10 @@ def parse_user_passwd(file_path: list) -> tuple[list, str]:
 
 
 def setup_gui(
-    share: bool = False, auth_file: list | None = None, server_port=7860
+    share: bool = False,
+    auth_file: list | None = None,
+    server_port=7860,
+    inbrowser: bool = True,
 ) -> None:
     """
     This function sets up the GUI for the application.
@@ -1124,7 +1127,7 @@ def setup_gui(
             demo.launch(
                 server_name="0.0.0.0",
                 debug=True,
-                inbrowser=True,
+                inbrowser=inbrowser,
                 share=share,
                 server_port=server_port,
             )
@@ -1136,7 +1139,7 @@ def setup_gui(
                 demo.launch(
                     server_name="127.0.0.1",
                     debug=True,
-                    inbrowser=True,
+                    inbrowser=inbrowser,
                     share=share,
                     server_port=server_port,
                 )
@@ -1145,14 +1148,14 @@ def setup_gui(
                     "Error launching GUI using 127.0.0.1.\nThis may be caused by global mode of proxy software."
                 )
                 demo.launch(
-                    debug=True, inbrowser=True, share=True, server_port=server_port
+                    debug=True, inbrowser=inbrowser, share=True, server_port=server_port
                 )
     else:
         try:
             demo.launch(
                 server_name="0.0.0.0",
                 debug=True,
-                inbrowser=True,
+                inbrowser=inbrowser,
                 share=share,
                 auth=user_list,
                 auth_message=html,
@@ -1166,7 +1169,7 @@ def setup_gui(
                 demo.launch(
                     server_name="127.0.0.1",
                     debug=True,
-                    inbrowser=True,
+                    inbrowser=inbrowser,
                     share=share,
                     auth=user_list,
                     auth_message=html,
@@ -1178,7 +1181,7 @@ def setup_gui(
                 )
                 demo.launch(
                     debug=True,
-                    inbrowser=True,
+                    inbrowser=inbrowser,
                     share=True,
                     auth=user_list,
                     auth_message=html,
@@ -1188,5 +1191,16 @@ def setup_gui(
 
 # For auto-reloading while developing
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    setup_gui()
+    from rich.logging import RichHandler
+
+    # disable httpx, openai, httpcore, http11 logs
+    logging.getLogger("httpx").setLevel("CRITICAL")
+    logging.getLogger("httpx").propagate = False
+    logging.getLogger("openai").setLevel("CRITICAL")
+    logging.getLogger("openai").propagate = False
+    logging.getLogger("httpcore").setLevel("CRITICAL")
+    logging.getLogger("httpcore").propagate = False
+    logging.getLogger("http11").setLevel("CRITICAL")
+    logging.getLogger("http11").propagate = False
+    logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
+    setup_gui(inbrowser=False)
