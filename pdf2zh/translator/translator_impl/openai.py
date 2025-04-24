@@ -54,7 +54,9 @@ class OpenAITranslator(BaseTranslator):
         self.token_count.inc(response.usage.total_tokens)
         self.prompt_token_count.inc(response.usage.prompt_tokens)
         self.completion_token_count.inc(response.usage.completion_tokens)
-        return response.choices[0].message.content.strip()
+        message = response.choices[0].message.content.strip()
+        message = self._remove_cot_content(message)
+        return message
 
     def prompt(self, text):
         return [
@@ -90,4 +92,6 @@ class OpenAITranslator(BaseTranslator):
         self.token_count.inc(response.usage.total_tokens)
         self.prompt_token_count.inc(response.usage.prompt_tokens)
         self.completion_token_count.inc(response.usage.completion_tokens)
-        return response.choices[0].message.content.strip()
+        message = response.choices[0].message.content.strip()
+        message = self._remove_cot_content(message)
+        return message

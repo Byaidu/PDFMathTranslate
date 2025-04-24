@@ -86,7 +86,9 @@ class QwenMtTranslator(BaseTranslator):
             messages=[{"role": "user", "content": self.prompt(text)}],
             extra_body={"translation_options": translation_options},
         )
-        return response.choices[0].message.content.strip()
+        message = response.choices[0].message.content.strip()
+        message = self._remove_cot_content(message)
+        return message
 
     @retry(
         retry=retry_if_exception_type(openai.RateLimitError),
@@ -120,4 +122,6 @@ class QwenMtTranslator(BaseTranslator):
         self.token_count.inc(response.usage.total_tokens)
         self.prompt_token_count.inc(response.usage.prompt_tokens)
         self.completion_token_count.inc(response.usage.completion_tokens)
-        return response.choices[0].message.content.strip()
+        message = response.choices[0].message.content.strip()
+        message = self._remove_cot_content(message)
+        return message
