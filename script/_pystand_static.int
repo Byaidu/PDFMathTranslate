@@ -1,5 +1,5 @@
 import sys
-import pdf2zh.pdf2zh
+import pdf2zh.main
 import os
 import babeldoc.assets.assets
 import pathlib
@@ -20,8 +20,8 @@ for file in files:
         babeldoc.assets.assets.restore_offline_assets_package(pathlib.Path(os.path.dirname(__file__)))
 
 try:
-    code = asyncio.run(pdf2zh.pdf2zh.main())
-    print(f"pdf2zh.pdf2zh.main() return code: {code}")
+    code = asyncio.run(pdf2zh.main.main())
+    print(f"pdf2zh.main.main() return code: {code}")
     if WAIT_FOR_INPUT:
         input("Press Enter to continue...")
     sys.exit(code)
