@@ -213,6 +213,7 @@ jobs:
 
           Write-Host "==== 在 venv 环境中安装项目依赖 ===="
           uv pip install .
+          uv pip install "babeldoc[dml]"
 
           Write-Host "==== 复制 venv/Lib/site-packages 到 build/ ===="
           Copy-Item -Path "./dep_build/venv/Lib/site-packages" -Destination "./build/site-packages" -Recurse -Force
