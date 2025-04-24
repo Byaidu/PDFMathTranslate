@@ -2,19 +2,20 @@
 
 import asyncio
 import io
+import logging
 import os
 import re
 import sys
 import tempfile
-import logging
 from asyncio import CancelledError
 from pathlib import Path
 from string import Template
-from typing import Any, BinaryIO, List, Optional, Dict
+from typing import Any, BinaryIO, Dict, List, Optional
 
 import numpy as np
 import requests
 import tqdm
+from babeldoc.assets.assets import get_font_and_metadata
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfexceptions import PDFValueError
 from pdfminer.pdfinterp import PDFResourceManager
@@ -22,12 +23,10 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 from pymupdf import Document, Font
 
+from pdf2zh.config import ConfigManager
 from pdf2zh.converter import TranslateConverter
 from pdf2zh.doclayout import OnnxModel
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
-
-from pdf2zh.config import ConfigManager
-from babeldoc.assets.assets import get_font_and_metadata
 
 NOTO_NAME = "noto"
 
@@ -85,6 +84,7 @@ def translate_patch(
     envs: Dict = None,
     prompt: Template = None,
     ignore_cache: bool = False,
+    progress_bar: tqdm.tqdm = None,
     **kwarg: Any,
 ) -> None:
     rsrcmgr = PDFResourceManager()
@@ -115,15 +115,21 @@ def translate_patch(
 
     parser = PDFParser(inf)
     doc = PDFDocument(parser)
-    with tqdm.tqdm(total=total_pages) as progress:
+
+    should_close_pbar = False
+    if progress_bar is None:
+        progress_bar = tqdm.tqdm(total=total_pages)
+        should_close_pbar = True
+
+    try:
         for pageno, page in enumerate(PDFPage.create_pages(doc)):
             if cancellation_event and cancellation_event.is_set():
                 raise CancelledError("task cancelled")
             if pages and (pageno not in pages):
                 continue
-            progress.update()
+            progress_bar.update(1)
             if callback:
-                callback(progress)
+                callback(progress_bar)
             page.pageno = pageno
             pix = doc_zh[page.pageno].get_pixmap()
             image = np.fromstring(pix.samples, np.uint8).reshape(
@@ -161,6 +167,9 @@ def translate_patch(
             doc_zh.update_stream(page.page_xref, b"")
             doc_zh[page.pageno].set_contents(page.page_xref)
             interpreter.process_page(page)
+    finally:
+        if should_close_pbar:
+            progress_bar.close()
 
     device.close()
     return obj_patch
@@ -182,6 +191,7 @@ def translate_stream(
     prompt: Template = None,
     skip_subset_fonts: bool = False,
     ignore_cache: bool = False,
+    chunk_size: int = 20,  # Process this many pages at a time
     **kwarg: Any,
 ):
     font_list = [("tiro", None)]
@@ -191,62 +201,153 @@ def translate_stream(
     noto = Font(noto_name, font_path)
     font_list.append((noto_name, font_path))
 
+    # Open the original document
     doc_en = Document(stream=stream)
-    stream = io.BytesIO()
-    doc_en.save(stream)
-    doc_zh = Document(stream=stream)
-    page_count = doc_zh.page_count
-    # font_list = [("GoNotoKurrent-Regular.ttf", font_path), ("tiro", None)]
-    font_id = {}
-    for page in doc_zh:
-        for font in font_list:
-            font_id[font[0]] = page.insert_font(font[0], font[1])
-    xreflen = doc_zh.xref_length()
-    for xref in range(1, xreflen):
-        for label in ["Resources/", ""]:  # 可能是基于 xobj 的 res
-            try:  # xref 读写可能出错
-                font_res = doc_zh.xref_get_key(xref, f"{label}Font")
-                target_key_prefix = f"{label}Font/"
-                if font_res[0] == "xref":
-                    resource_xref_id = re.search("(\\d+) 0 R", font_res[1]).group(1)
-                    xref = int(resource_xref_id)
-                    font_res = ("dict", doc_zh.xref_object(xref))
-                    target_key_prefix = ""
+    page_count = doc_en.page_count
 
-                if font_res[0] == "dict":
-                    for font in font_list:
-                        target_key = f"{target_key_prefix}{font[0]}"
-                        font_exist = doc_zh.xref_get_key(xref, target_key)
-                        if font_exist[0] == "null":
-                            doc_zh.xref_set_key(
-                                xref,
-                                target_key,
-                                f"{font_id[font[0]]} 0 R",
-                            )
-            except Exception:
-                pass
+    # Create temporary stream for working copy
+    temp_stream = io.BytesIO()
+    doc_en.save(temp_stream)
 
-    fp = io.BytesIO()
+    # Create output documents
+    doc_zh_final = Document()
+    doc_en_final = Document()
 
-    doc_zh.save(fp)
-    obj_patch: dict = translate_patch(fp, **locals())
+    # Process document in chunks to reduce memory usage
+    if pages:
+        # When specific pages are requested
+        page_chunks = [
+            pages[i : i + chunk_size] for i in range(0, len(pages), chunk_size)
+        ]
+        total_pages = len(pages)
+    else:
+        # When processing all pages
+        all_pages = list(range(page_count))
+        page_chunks = [
+            all_pages[i : i + chunk_size] for i in range(0, len(all_pages), chunk_size)
+        ]
+        total_pages = page_count
 
-    for obj_id, ops_new in obj_patch.items():
-        # ops_old=doc_en.xref_stream(obj_id)
-        # print(obj_id)
-        # print(ops_old)
-        # print(ops_new.encode())
-        doc_zh.update_stream(obj_id, ops_new.encode())
+    # Create a single progress bar for the entire process
+    with tqdm.tqdm(total=total_pages, desc="Translating PDF") as progress_bar:
+        for chunk_idx, chunk_pages in enumerate(page_chunks):
+            if cancellation_event and cancellation_event.is_set():
+                raise CancelledError("task cancelled")
 
-    doc_en.insert_file(doc_zh)
-    for id in range(page_count):
-        doc_en.move_page(page_count + id, id * 2 + 1)
+            # Reset the stream position and create a new document for this chunk
+            temp_stream.seek(0)
+            doc_zh = Document(stream=temp_stream)
+
+            # Set up fonts for this document chunk
+            font_id = {}
+            for page in doc_zh:
+                for font in font_list:
+                    font_id[font[0]] = page.insert_font(font[0], font[1])
+
+            # Apply fonts to resources
+            xreflen = doc_zh.xref_length()
+            for xref in range(1, xreflen):
+                for label in ["Resources/", ""]:  # 可能是基于 xobj 的 res
+                    try:  # xref 读写可能出错
+                        font_res = doc_zh.xref_get_key(xref, f"{label}Font")
+                        target_key_prefix = f"{label}Font/"
+                        if font_res[0] == "xref":
+                            resource_xref_id = re.search(
+                                "(\\d+) 0 R", font_res[1]
+                            ).group(1)
+                            xref = int(resource_xref_id)
+                            font_res = ("dict", doc_zh.xref_object(xref))
+                            target_key_prefix = ""
+
+                        if font_res[0] == "dict":
+                            for font in font_list:
+                                target_key = f"{target_key_prefix}{font[0]}"
+                                font_exist = doc_zh.xref_get_key(xref, target_key)
+                                if font_exist[0] == "null":
+                                    doc_zh.xref_set_key(
+                                        xref,
+                                        target_key,
+                                        f"{font_id[font[0]]} 0 R",
+                                    )
+                    except Exception:
+                        pass
+
+            # Create buffer for processing
+            fp = io.BytesIO()
+            doc_zh.save(fp)
+
+            # Only process the current chunk of pages
+            chunk_local_pages = [
+                p % page_count for p in chunk_pages
+            ]  # Normalize page numbers
+            obj_patch: dict = translate_patch(
+                fp,
+                pages=chunk_local_pages,
+                doc_zh=doc_zh,
+                lang_in=lang_in,
+                lang_out=lang_out,
+                service=service,
+                thread=thread,
+                vfont=vfont,
+                vchar=vchar,
+                noto_name=noto_name,
+                noto=noto,
+                callback=callback,
+                cancellation_event=cancellation_event,
+                model=model,
+                envs=envs,
+                prompt=prompt,
+                ignore_cache=ignore_cache,
+                progress_bar=progress_bar,
+                **kwarg,
+            )
+
+            # Apply patches to the current chunk
+            for obj_id, ops_new in obj_patch.items():
+                doc_zh.update_stream(obj_id, ops_new.encode())
+
+            # Subset fonts for the current chunk if requested
+            if not skip_subset_fonts:
+                doc_zh.subset_fonts(fallback=True)
+
+            # Extract processed pages from doc_zh and add to final document
+            for page_idx in chunk_pages:
+                if 0 <= page_idx < page_count:
+                    # Add original page to final document
+                    doc_en_final.insert_pdf(
+                        doc_en, from_page=page_idx, to_page=page_idx
+                    )
+
+                    # Add translated page to final document
+                    doc_zh_final.insert_pdf(
+                        doc_zh, from_page=page_idx, to_page=page_idx
+                    )
+
+            # Free memory for this chunk
+            doc_zh = None
+
+    # Merge translated pages into the dual-language document
+    doc_dual = Document()
+
+    # First add all original pages
+    doc_dual.insert_pdf(doc_en_final)
+
+    # Then insert translated pages between original pages
+    for i in range(doc_en_final.page_count):
+        # Insert translated page after each original page
+        doc_dual.insert_pdf(doc_zh_final, from_page=i, to_page=i)
+        # Move the translated page to position after original page
+        doc_dual.move_page(doc_dual.page_count - 1, 2 * i + 1)
+
+    # Final subset of fonts if needed
     if not skip_subset_fonts:
-        doc_zh.subset_fonts(fallback=True)
-        doc_en.subset_fonts(fallback=True)
+        doc_zh_final.subset_fonts(fallback=True)
+        doc_dual.subset_fonts(fallback=True)
+
+    # Return both mono and dual documents
     return (
-        doc_zh.write(deflate=True, garbage=3, use_objstms=1),
-        doc_en.write(deflate=True, garbage=3, use_objstms=1),
+        doc_zh_final.write(deflate=True, garbage=3, use_objstms=1),
+        doc_dual.write(deflate=True, garbage=3, use_objstms=1),
     )
 
 
@@ -377,7 +478,7 @@ def translate(
             ):
                 file_path.unlink(missing_ok=True)
                 logger.debug(f"Cleaned temp file: {file_path}")
-        except Exception as e:
+        except Exception:
             logger.warning(f"Failed to clean temp file {file_path}", exc_info=True)
 
         s_mono, s_dual = translate_stream(

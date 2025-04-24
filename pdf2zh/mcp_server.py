@@ -1,16 +1,17 @@
+import contextlib
+import io
+import os
+from pathlib import Path
+
 from mcp.server import Server
-from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.fastmcp import Context, FastMCP
 from mcp.server.sse import SseServerTransport
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.routing import Mount, Route
+
 from pdf2zh import translate_stream
 from pdf2zh.doclayout import ModelInstance
-from pathlib import Path
-
-import contextlib
-import io
-import os
 
 
 def create_mcp_app() -> FastMCP:

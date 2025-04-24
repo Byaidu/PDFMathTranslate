@@ -7,6 +7,7 @@ import unicodedata
 from copy import copy
 from string import Template
 from typing import cast
+
 import deepl
 import ollama
 import openai
@@ -14,6 +15,12 @@ import requests
 import xinference_client
 from azure.ai.translation.text import TextTranslationClient
 from azure.core.credentials import AzureKeyCredential
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 from tencentcloud.common import credential
 from tencentcloud.tmt.v20180321.models import (
     TextTranslateRequest,
@@ -23,12 +30,6 @@ from tencentcloud.tmt.v20180321.tmt_client import TmtClient
 
 from pdf2zh.cache import TranslationCache
 from pdf2zh.config import ConfigManager
-
-
-from tenacity import retry, retry_if_exception_type
-from tenacity import stop_after_attempt
-from tenacity import wait_exponential
-
 
 logger = logging.getLogger(__name__)
 

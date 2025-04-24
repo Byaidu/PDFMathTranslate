@@ -7,20 +7,20 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from string import Template
 from typing import List, Optional
 
-from pdf2zh import __version__, log
-from pdf2zh.high_level import translate, download_remote_fonts
-from pdf2zh.doclayout import OnnxModel, ModelInstance
-import os
-
-from pdf2zh.config import ConfigManager
-from babeldoc.translation_config import TranslationConfig as YadtConfig
 from babeldoc.high_level import async_translate as yadt_translate
 from babeldoc.high_level import init as yadt_init
 from babeldoc.main import create_progress_handler
+from babeldoc.translation_config import TranslationConfig as YadtConfig
+
+from pdf2zh import __version__, log
+from pdf2zh.config import ConfigManager
+from pdf2zh.doclayout import ModelInstance, OnnxModel
+from pdf2zh.high_level import download_remote_fonts, translate
 
 logger = logging.getLogger(__name__)
 
@@ -361,28 +361,28 @@ def yadt_main(parsed_args) -> int:
             raise ValueError("prompt error.")
 
     from pdf2zh.translator import (
+        AnythingLLMTranslator,
+        ArgosTranslator,
         AzureOpenAITranslator,
-        GoogleTranslator,
+        AzureTranslator,
         BingTranslator,
         DeepLTranslator,
         DeepLXTranslator,
-        OllamaTranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
+        DeepseekTranslator,
         DifyTranslator,
-        AnythingLLMTranslator,
-        XinferenceTranslator,
-        ArgosTranslator,
+        GeminiTranslator,
+        GoogleTranslator,
         GrokTranslator,
         GroqTranslator,
-        DeepseekTranslator,
+        ModelScopeTranslator,
+        OllamaTranslator,
         OpenAIlikedTranslator,
+        OpenAITranslator,
         QwenMtTranslator,
+        SiliconTranslator,
+        TencentTranslator,
+        XinferenceTranslator,
+        ZhipuTranslator,
     )
 
     for translator in [

@@ -1,9 +1,8 @@
 import abc
-import os.path
+import ast
 
 import cv2
 import numpy as np
-import ast
 from babeldoc.assets.assets import get_doclayout_onnx_model_path
 
 try:
@@ -16,10 +15,6 @@ except ImportError as e:
             "Download it at https://aka.ms/vs/17/release/vc_redist.x64.exe"
         ) from e
     raise
-
-from huggingface_hub import hf_hub_download
-
-from pdf2zh.config import ConfigManager
 
 
 class DocLayoutModel(abc.ABC):

@@ -1,50 +1,50 @@
 import asyncio
 import cgi
+import logging
 import os
 import shutil
+import typing as T
 import uuid
 from asyncio import CancelledError
 from pathlib import Path
-import typing as T
+from string import Template
 
 import gradio as gr
 import requests
 import tqdm
+from babeldoc import __version__ as babeldoc_version
+from babeldoc.docvision.doclayout import OnnxModel
 from gradio_pdf import PDF
-from string import Template
-import logging
 
 from pdf2zh import __version__
-from pdf2zh.high_level import translate
-from pdf2zh.doclayout import ModelInstance
 from pdf2zh.config import ConfigManager
+from pdf2zh.doclayout import ModelInstance
+from pdf2zh.high_level import translate
 from pdf2zh.translator import (
     AnythingLLMTranslator,
+    ArgosTranslator,
     AzureOpenAITranslator,
     AzureTranslator,
     BaseTranslator,
     BingTranslator,
     DeepLTranslator,
     DeepLXTranslator,
+    DeepseekTranslator,
     DifyTranslator,
-    ArgosTranslator,
     GeminiTranslator,
     GoogleTranslator,
+    GrokTranslator,
+    GroqTranslator,
     ModelScopeTranslator,
     OllamaTranslator,
+    OpenAIlikedTranslator,
     OpenAITranslator,
+    QwenMtTranslator,
     SiliconTranslator,
     TencentTranslator,
     XinferenceTranslator,
     ZhipuTranslator,
-    GrokTranslator,
-    GroqTranslator,
-    DeepseekTranslator,
-    OpenAIlikedTranslator,
-    QwenMtTranslator,
 )
-from babeldoc.docvision.doclayout import OnnxModel
-from babeldoc import __version__ as babeldoc_version
 
 logger = logging.getLogger(__name__)
 
@@ -396,6 +396,7 @@ def babeldoc_translate_file(**kwargs):
     else:
         raise ValueError("Unsupported translation service")
     import asyncio
+
     from babeldoc.main import create_progress_handler
 
     for file in kwargs["files"]:

@@ -1,8 +1,8 @@
+import copy
 import json
+import os
 from pathlib import Path
 from threading import RLock  # 改成 RLock
-import os
-import copy
 
 
 class ConfigManager:
