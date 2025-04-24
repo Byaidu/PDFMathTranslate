@@ -47,4 +47,4 @@ class DifyTranslator(BaseTranslator):
         response.raise_for_status()
         data = response.json()
 
-        return data.get("data", {}).get("outputs", {}).get("text", [])
+        return data.get("answer", "")
