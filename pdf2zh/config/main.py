@@ -34,6 +34,9 @@ _translation_engine_flag_names = [x.cli_flag_name for x in TRANSLATION_ENGINE_ME
 
 log = logging.getLogger(__name__)
 
+_no_duplicate_field_name = set()
+_no_duplicate_field_name.add("translate_engine_type")
+
 
 class MagicDefault:
     pass
@@ -61,7 +64,7 @@ def build_args_parser(
         settings_model = CLIEnvSettingsModel
 
     for field_name, field_detail in settings_model.model_fields.items():
-        if field_name in field_name2type:
+        if field_name not in _no_duplicate_field_name and field_name in field_name2type:
             log.critical(f"duplicate field name: {field_name}")
             raise ValueError(f"duplicate field name: {field_name}")
         field_name2type[field_name] = field_detail.annotation
@@ -329,7 +332,10 @@ class ConfigManager:
 
         dict_vars = {k.replace("-", "_").upper(): v for k, v in dict_vars.items()}
         for field_name, field_detail in settings_model.model_fields.items():
-            if field_name in dedup_field_name:
+            if (
+                field_name not in _no_duplicate_field_name
+                and field_name in dedup_field_name
+            ):
                 log.critical(f"duplicate field name: {field_name}")
                 raise ValueError(f"duplicate field name: {field_name}")
             dedup_field_name.add(field_name)
@@ -584,7 +590,7 @@ class ConfigManager:
 
     def write_user_default_config_file(self, settings: CLIEnvSettingsModel):
         # clear input file
-        settings.basic.input_files = []
+        settings.basic.input_files = set()
         self._write_toml_file(WRITE_TEMP_CONFIG_FILE, settings.model_dump(mode="json"))
         WRITE_TEMP_CONFIG_FILE.replace(DEFAULT_CONFIG_FILE)
 

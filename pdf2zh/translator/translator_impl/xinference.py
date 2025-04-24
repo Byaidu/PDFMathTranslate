@@ -1,7 +1,6 @@
 import logging
 
-import openai
-from babeldoc.document_il.utils.atomic_integer import AtomicInteger
+import xinference_client
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.translator.base_rate_limiter import BaseRateLimiter
 from pdf2zh.translator.base_translator import BaseTranslator
@@ -9,13 +8,13 @@ from tenacity import retry
 from tenacity import retry_if_exception_type
 from tenacity import stop_after_attempt
 from tenacity import wait_exponential
+from xinference_client import RESTfulClient as Client
 
 logger = logging.getLogger(__name__)
 
 
-class OpenAITranslator(BaseTranslator):
-    # https://github.com/openai/openai-python
-    name = "openai"
+class XinferenceTranslator(BaseTranslator):
+    name = "xinference"
 
     def __init__(
         self,
@@ -23,21 +22,19 @@ class OpenAITranslator(BaseTranslator):
         rate_limiter: BaseRateLimiter,
     ):
         super().__init__(settings, rate_limiter)
-        self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
-        self.client = openai.OpenAI(
-            base_url=settings.translate_engine_settings.openai_base_url,
-            api_key=settings.translate_engine_settings.openai_api_key,
+        self.options = {
+            "temperature": 0,
+        }  # 随机采样可能会打断公式标记
+        self.client = Client(
+            host=settings.translate_engine_settings.xinference_host,
         )
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
-        self.model = settings.translate_engine_settings.openai_model
+        self.model = settings.translate_engine_settings.xinference_model
         self.add_cache_impact_parameters("model", self.model)
         self.add_cache_impact_parameters("prompt", self.prompt(""))
-        self.token_count = AtomicInteger()
-        self.prompt_token_count = AtomicInteger()
-        self.completion_token_count = AtomicInteger()
 
     @retry(
-        retry=retry_if_exception_type(openai.RateLimitError),
+        retry=retry_if_exception_type(xinference_client.RuntimeError),
         stop=stop_after_attempt(100),
         wait=wait_exponential(multiplier=1, min=1, max=15),
         before_sleep=lambda retry_state: logger.warning(
@@ -46,17 +43,22 @@ class OpenAITranslator(BaseTranslator):
         ),
     )
     def do_translate(self, text, rate_limit_params: dict = None) -> str:
-        response = self.client.chat.completions.create(
-            model=self.model,
-            **self.options,
-            messages=self.prompt(text),
-        )
-        self.token_count.inc(response.usage.total_tokens)
-        self.prompt_token_count.inc(response.usage.prompt_tokens)
-        self.completion_token_count.inc(response.usage.completion_tokens)
-        message = response.choices[0].message.content.strip()
-        message = self._remove_cot_content(message)
-        return message
+        for model in self.model.split(";"):
+            try:
+                xf_model = self.client.get_model(model)
+                xf_prompt = self.prompt(text)
+                response = xf_model.chat(
+                    generate_config=self.options,
+                    messages=xf_prompt,
+                )
+
+                response = response["choices"][0]["message"]["content"].replace(
+                    "<end_of_turn>", ""
+                )
+                return response.strip()
+            except Exception as e:
+                logger.error(e)
+        raise Exception("All models failed")
 
     def prompt(self, text):
         return [
@@ -67,7 +69,7 @@ class OpenAITranslator(BaseTranslator):
         ]
 
     @retry(
-        retry=retry_if_exception_type(openai.RateLimitError),
+        retry=retry_if_exception_type(xinference_client.RuntimeError),
         stop=stop_after_attempt(100),
         wait=wait_exponential(multiplier=1, min=1, max=15),
         before_sleep=lambda retry_state: logger.warning(
@@ -76,22 +78,24 @@ class OpenAITranslator(BaseTranslator):
         ),
     )
     def do_llm_translate(self, text, rate_limit_params: dict = None):
-        if text is None:
-            return None
+        for model in self.model.split(";"):
+            try:
+                xf_model = self.client.get_model(model)
+                xf_prompt = [
+                    {
+                        "role": "user",
+                        "content": text,
+                    },
+                ]
+                response = xf_model.chat(
+                    generate_config=self.options,
+                    messages=xf_prompt,
+                )
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            **self.options,
-            messages=[
-                {
-                    "role": "user",
-                    "content": text,
-                },
-            ],
-        )
-        self.token_count.inc(response.usage.total_tokens)
-        self.prompt_token_count.inc(response.usage.prompt_tokens)
-        self.completion_token_count.inc(response.usage.completion_tokens)
-        message = response.choices[0].message.content.strip()
-        message = self._remove_cot_content(message)
-        return message
+                response = response["choices"][0]["message"]["content"].replace(
+                    "<end_of_turn>", ""
+                )
+                return response.strip()
+            except Exception as e:
+                logger.error(e)
+        raise Exception("All models failed")

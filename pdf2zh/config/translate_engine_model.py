@@ -65,11 +65,405 @@ class GoogleSettings(BaseModel):
         pass
 
 
+class DeepLSettings(BaseModel):
+    """Bing Translation settings"""
+
+    translate_engine_type: Literal["DeepL"] = Field(default="DeepL")
+    deepl_auth_key: str | None = Field(default=None, description="DeepL auth key")
+
+    def validate_settings(self) -> None:
+        if not self.deepl_auth_key:
+            raise ValueError("DeepL Auth key is required")
+
+
+GUI_PASSWORD_FIELDS.append("deepl_auth_key")
+
+# for openai compatibility translator
+# You only need to add the corresponding configuration class
+# and return the OpenAISettings instance using the transform method.
+
+
+class DeepSeekSettings(BaseModel):
+    """DeepSeek settings"""
+
+    translate_engine_type: Literal["DeepSeek"] = Field(default="DeepSeek")
+
+    deepseek_model: str = Field(
+        default="deepseek-chat", description="DeepSeek model to use"
+    )
+    deepseek_api_key: str | None = Field(
+        default=None, description="API key for DeepSeek service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.deepseek_api_key:
+            raise ValueError("DeepSeek API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.deepseek_model,
+            openai_api_key=self.deepseek_api_key,
+            openai_base_url="https://api.deepseek.com/v1",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("deepseek_api_key")
+
+
+class DeepLXSettings(BaseModel):
+    """Bing Translation settings"""
+
+    translate_engine_type: Literal["DeepLX"] = Field(default="DeepLX")
+    deeplx_access_token: str | None = Field(
+        default=None, description="DeepLX access token"
+    )
+    deeplx_endpoint: str | None = Field(default=None, description="DeepLX endpoint")
+
+    def validate_settings(self) -> None:
+        if not self.deeplx_endpoint:
+            raise ValueError("DeepL Auth key is required")
+
+
+GUI_PASSWORD_FIELDS.append("deeplx_access_token")
+
+
+class OllamaSettings(BaseModel):
+    """Ollama API settings"""
+
+    translate_engine_type: Literal["Ollama"] = Field(default="Ollama")
+
+    ollama_model: str = Field(default="gemma2", description="Ollama model to use")
+    ollama_host: str | None = Field(default=None, description="Ollama host")
+    num_predict: int | None = Field(
+        default=2000, description="The max number of token to predict."
+    )
+
+    def validate_settings(self) -> None:
+        if not self.ollama_host:
+            raise ValueError("Ollama host is required")
+
+
+class XinferenceSettings(BaseModel):
+    """Xinference API settings"""
+
+    translate_engine_type: Literal["Xinference"] = Field(default="Xinference")
+
+    xinference_model: str = Field(
+        default="gemma-2-it", description="Xinference model to use"
+    )
+    xinference_host: str | None = Field(default=None, description="Xinference host")
+
+    def validate_settings(self) -> None:
+        if not self.xinference_host:
+            raise ValueError("Xinference host is required")
+
+
+class AzureOpenAISettings(BaseModel):
+    """AzureOpenAI API settings"""
+
+    translate_engine_type: Literal["AzureOpenAI"] = Field(default="AzureOpenAI")
+
+    azure_openai_model: str = Field(
+        default="gpt-4o-mini", description="AzureOpenAI model to use"
+    )
+    azure_openai_base_url: str | None = Field(
+        default=None, description="Base URL for AzureOpenAI API"
+    )
+    azure_openai_api_key: str | None = Field(
+        default=None, description="API key for AzureOpenAI service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.azure_openai_api_key:
+            raise ValueError("AzureOpenAI API key is required")
+
+
+GUI_PASSWORD_FIELDS.append("azure_openai_api_key")
+
+
+class ModelScopeSettings(BaseModel):
+    """ModelScope API settings"""
+
+    translate_engine_type: Literal["ModelScope"] = Field(default="ModelScope")
+
+    modelscope_model: str = Field(
+        default="Qwen/Qwen2.5-32B-Instruct", description="ModelScope model to use"
+    )
+    modelscope_api_key: str | None = Field(
+        default=None, description="API key for ModelScope service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.modelscope_api_key:
+            raise ValueError("ModelScope API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.modelscope_model,
+            openai_api_key=self.modelscope_api_key,
+            openai_base_url="https://api-inference.modelscope.cn/v1",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("modelscope_api_key")
+
+
+class ZhipuSettings(BaseModel):
+    """Zhipu API settings"""
+
+    translate_engine_type: Literal["Zhipu"] = Field(default="Zhipu")
+
+    zhipu_model: str = Field(default="glm-4-flash", description="Zhipu model to use")
+    zhipu_api_key: str | None = Field(
+        default=None, description="API key for Zhipu service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.zhipu_api_key:
+            raise ValueError("Zhipu API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.zhipu_model,
+            openai_api_key=self.zhipu_api_key,
+            openai_base_url="https://open.bigmodel.cn/api/paas/v4",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("zhipu_api_key")
+
+
+class SiliconSettings(BaseModel):
+    """Silicon API settings"""
+
+    translate_engine_type: Literal["Silicon"] = Field(default="Silicon")
+
+    silicon_model: str = Field(
+        default="Qwen/Qwen2.5-7B-Instruct", description="Silicon model to use"
+    )
+    silicon_api_key: str | None = Field(
+        default=None, description="API key for Silicon service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.silicon_api_key:
+            raise ValueError("Silicon API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.silicon_model,
+            openai_api_key=self.silicon_api_key,
+            openai_base_url="https://api.siliconflow.cn/v1",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("silicon_api_key")
+
+
+class TencentSettings(BaseModel):
+    """Tencent Mechine Translation settings"""
+
+    translate_engine_type: Literal["Tencent Mechine Translation"] = Field(
+        default="Tencent Mechine Translation"
+    )
+    tencentcloud_secret_id: str | None = Field(
+        default=None, description="Tencent Mechine Translation secret ID"
+    )
+    tencentcloud_secret_key: str | None = Field(
+        default=None, description="Tencent Mechine Translation secret Key"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.tencentcloud_secret_id:
+            raise ValueError("Tencent Mechine Translation ID is required")
+        if not self.tencentcloud_secret_key:
+            raise ValueError("Tencent Mechine Translation Key is required")
+
+
+GUI_PASSWORD_FIELDS.append("tencentcloud_secret_id")
+GUI_PASSWORD_FIELDS.append("tencentcloud_secret_key")
+
+
+class GeminiSettings(BaseModel):
+    """Gemini API settings"""
+
+    translate_engine_type: Literal["Gemini"] = Field(default="Gemini")
+
+    gemini_model: str = Field(
+        default="gemini-1.5-flash", description="Gemini model to use"
+    )
+    gemini_api_key: str | None = Field(
+        default=None, description="API key for Gemini service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.gemini_api_key:
+            raise ValueError("Gemini API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.gemini_model,
+            openai_api_key=self.gemini_api_key,
+            openai_base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("gemini_api_key")
+
+
+class AzureSettings(BaseModel):
+    """Azure Translation settings"""
+
+    translate_engine_type: Literal["Azure"] = Field(default="Azure")
+    azure_endpoint: str | None = Field(
+        default="https://api.translator.azure.cn", description="Azure endpoint"
+    )
+    azure_api_key: str | None = Field(default=None, description="Azure API Key")
+
+    def validate_settings(self) -> None:
+        if not self.azure_api_key:
+            raise ValueError("Tencent Mechine Translation ID is required")
+
+
+GUI_PASSWORD_FIELDS.append("azure_api_key")
+
+
+class AnythingLLMSettings(BaseModel):
+    """AnythingLLM settings"""
+
+    translate_engine_type: Literal["AnythingLLM"] = Field(default="AnythingLLM")
+    anythingllm_url: str | None = Field(default=None, description="AnythingLLM url")
+    anythingllm_apikey: str | None = Field(
+        default=None, description="AnythingLLM API Key"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.anythingllm_apikey:
+            raise ValueError("AnythingLLM API Key is required")
+
+
+GUI_PASSWORD_FIELDS.append("anythingllm_apikey")
+
+
+class DifySettings(BaseModel):
+    """Dify settings"""
+
+    translate_engine_type: Literal["Dify"] = Field(default="Dify")
+    dify_url: str | None = Field(default=None, description="Dify url")
+    dify_apikey: str | None = Field(default=None, description="Dify API Key")
+
+    def validate_settings(self) -> None:
+        if not self.dify_apikey:
+            raise ValueError("Dify API Key is required")
+
+
+GUI_PASSWORD_FIELDS.append("dify_apikey")
+
+
+class GrokSettings(BaseModel):
+    """Grok API settings"""
+
+    translate_engine_type: Literal["Grok"] = Field(default="Grok")
+
+    grok_model: str = Field(default="grok-2-1212", description="Grok model to use")
+    grok_api_key: str | None = Field(
+        default=None, description="API key for Grok service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.grok_api_key:
+            raise ValueError("Grok API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.grok_model,
+            openai_api_key=self.grok_api_key,
+            openai_base_url="https://api.x.ai/v1",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("grok_api_key")
+
+
+class GroqSettings(BaseModel):
+    """Groq API settings"""
+
+    translate_engine_type: Literal["Groq"] = Field(default="Groq")
+
+    groq_model: str = Field(
+        default="llama-3-3-70b-versatile", description="Groq model to use"
+    )
+    groq_api_key: str | None = Field(
+        default=None, description="API key for Groq service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.groq_api_key:
+            raise ValueError("Groq API key is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.groq_model,
+            openai_api_key=self.groq_api_key,
+            openai_base_url="https://api.groq.com/openai/v1",
+        )
+
+
+GUI_PASSWORD_FIELDS.append("groq_api_key")
+
+
+class QwenMtSettings(BaseModel):
+    """QwenMt API settings"""
+
+    translate_engine_type: Literal["QwenMt"] = Field(default="QwenMt")
+
+    qwenmt_model: str = Field(
+        default="qwen-mt-turbo", description="QwenMt model to use"
+    )
+    qwenmt_base_url: str | None = Field(
+        default="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        description="Base URL for QwenMt API",
+    )
+    qwenmt_api_key: str | None = Field(
+        default=None, description="API key for QwenMt service"
+    )
+    ali_domains: str | None = Field(
+        default="This sentence is extracted from a scientific paper. When translating, please pay close attention to the use of specialized troubleshooting terminologies and adhere to scientific sentence structures to maintain the technical rigor and precision of the original text.",
+        description="ALI_DOMAIN for QwenMt service",
+    )
+
+    def validate_settings(self) -> None:
+        if not self.qwenmt_api_key:
+            raise ValueError("OpenAI API key is required")
+
+
+GUI_PASSWORD_FIELDS.append("qwenmt_api_key")
+
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
 TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
-    OpenAISettings | GoogleSettings | BingSettings
+    OpenAISettings
+    | GoogleSettings
+    | BingSettings
+    | DeepLSettings
+    | DeepSeekSettings
+    | DeepLXSettings
+    | OllamaSettings
+    | XinferenceSettings
+    | AzureOpenAISettings
+    | ModelScopeSettings
+    | ZhipuSettings
+    | SiliconSettings
+    | TencentSettings
+    | GeminiSettings
+    | AzureSettings
+    | AnythingLLMSettings
+    | DifySettings
+    | GrokSettings
+    | GroqSettings
+    | QwenMtSettings
 )
 
 # 默认翻译引擎
