@@ -82,9 +82,9 @@ class AsyncCallback:
             result = await asyncio.wait_for(self.queue.get(), self.timeout)
         else:
             result = await self.queue.get()
-        if result.args[0] == self.MAGIC_MESSAGE_FINISHED:
+        if result.args and result.args[0] == self.MAGIC_MESSAGE_FINISHED:
             raise StopAsyncIteration
-        if result.args[0] == self.MAGIC_MESSAGE_ERROR:
+        if result.args and result.args[0] == self.MAGIC_MESSAGE_ERROR:
             # We've processed all regular events up to the error
             # Now raise the stored error
             if self.error:
