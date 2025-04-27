@@ -15,7 +15,7 @@ ENV PYTHONUNBUFFERED=1
 # ADD "https://github.com/timelic/source-han-serif/releases/download/main/SourceHanSerifKR-Regular.ttf" /app/
 
 RUN apt-get update && \
-     apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxext6 libsm6 libxrender1 && \
+     apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxext6 libsm6 libxrender1 build-essential && \
      rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml .
