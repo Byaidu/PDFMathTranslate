@@ -470,7 +470,7 @@ class AzureOpenAITranslator(BaseTranslator):
         "AZURE_OPENAI_BASE_URL": None,  # e.g. "https://xxx.openai.azure.com"
         "AZURE_OPENAI_API_KEY": None,
         "AZURE_OPENAI_MODEL": "gpt-4o-mini",
-        "AZURE_API_VERSION": "2024-06-01",  # default api version
+        "AZURE_OPENAI_API_VERSION": "2024-06-01",  # default api version
     }
     CustomPrompt = True
 
@@ -489,7 +489,7 @@ class AzureOpenAITranslator(BaseTranslator):
         base_url = self.envs["AZURE_OPENAI_BASE_URL"]
         if not model:
             model = self.envs["AZURE_OPENAI_MODEL"]
-        api_version = self.envs.get("AZURE_API_VERSION", "2024-06-01")
+        api_version = self.envs.get("AZURE_OPENAI_API_VERSION", "2024-06-01")
         if api_key is None:
             api_key = self.envs["AZURE_OPENAI_API_KEY"]
         super().__init__(lang_in, lang_out, model, ignore_cache)
