@@ -172,6 +172,9 @@ class AzureOpenAISettings(BaseModel):
     azure_openai_api_key: str | None = Field(
         default=None, description="API key for AzureOpenAI service"
     )
+    azure_openai_api_version: str = Field(
+        default="2024-06-01", description="API version for AzureOpenAI service"
+    )
 
     def validate_settings(self) -> None:
         if not self.azure_openai_api_key:

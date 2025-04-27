@@ -26,7 +26,7 @@ class AzureOpenAITranslator(BaseTranslator):
         self.client = openai.AzureOpenAI(
             azure_endpoint=settings.translate_engine_settings.azure_openai_base_url,
             azure_deployment=settings.translate_engine_settings.azure_openai_model,
-            api_version="2024-06-01",
+            api_version=settings.translate_engine_settings.azure_openai_api_version,
             api_key=settings.translate_engine_settings.azure_openai_api_key,
         )
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
