@@ -470,6 +470,7 @@ class AzureOpenAITranslator(BaseTranslator):
         "AZURE_OPENAI_BASE_URL": None,  # e.g. "https://xxx.openai.azure.com"
         "AZURE_OPENAI_API_KEY": None,
         "AZURE_OPENAI_MODEL": "gpt-4o-mini",
+        "AZURE_OPENAI_API_VERSION": "2024-06-01",  # default api version
     }
     CustomPrompt = True
 
@@ -488,12 +489,15 @@ class AzureOpenAITranslator(BaseTranslator):
         base_url = self.envs["AZURE_OPENAI_BASE_URL"]
         if not model:
             model = self.envs["AZURE_OPENAI_MODEL"]
+        api_version = self.envs.get("AZURE_OPENAI_API_VERSION", "2024-06-01")
+        if api_key is None:
+            api_key = self.envs["AZURE_OPENAI_API_KEY"]
         super().__init__(lang_in, lang_out, model, ignore_cache)
         self.options = {"temperature": 0}
         self.client = openai.AzureOpenAI(
             azure_endpoint=base_url,
             azure_deployment=model,
-            api_version="2024-06-01",
+            api_version=api_version,
             api_key=api_key,
         )
         self.prompttext = prompt
