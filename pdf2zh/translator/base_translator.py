@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class BaseTranslator(ABC):
     # Due to cache limitations, name should be within 20 characters.
     # cache.py: translate_engine = CharField(max_length=20)
+    """translator的基类，所有的translator的实现都需要继承"""
+
     name = "base"
     lang_map = {}
 
@@ -22,6 +24,12 @@ class BaseTranslator(ABC):
         settings: SettingsModel,
         rate_limiter: BaseRateLimiter,
     ):
+        """
+        translator class initialization
+        :param settings: runtime setting and configuration
+        :param rate_limiter: LLM request rate control
+        :return: None
+        """
         self.ignore_cache = settings.translation.ignore_cache
         lang_in = self.lang_map.get(
             settings.translation.lang_in.lower(), settings.translation.lang_in
@@ -128,13 +136,44 @@ class BaseTranslator(ABC):
         return re.sub(r"^<think>.+?</think>", "", content, count=1, flags=re.DOTALL)
 
     def __str__(self):
+        """
+        get translator's info
+        """
         return f"{self.name} {self.lang_in} {self.lang_out} {self.model}"
 
     def get_formular_placeholder(self, placeholder_id: int):
+        """
+        get formular placeholder
+        LLM translator use placeholder to skip the formular char
+        :param placeholder_id: placeholder id
+        :return formated placeholder
+        """
         return "{{v" + str(placeholder_id) + "}}"
 
     def get_rich_text_left_placeholder(self, placeholder_id: int):
+        """
+        get rich text placeholder
+        :param placeholder_id: placeholder id
+        :return the start label of rich text
+        """
         return f"<style id='{placeholder_id}'>"
 
     def get_rich_text_right_placeholder(self, placeholder_id: int):
+        """
+        get rich text placeholder
+        :return the end label of rich text
+        """
         return "</style>"
+
+    def prompt(self, text):
+        """
+        concatent the prompt
+        :param text: input text
+        :return: the whole prompt for LLM translator
+        """
+        return [
+            {
+                "role": "user",
+                "content": f"You are a professional,authentic machine translation engine.\n\n;; Treat next line as plain text input and translate it into {self.lang_out}, output translation ONLY. If translation is unnecessary (e.g. proper nouns, codes, {'{{1}}, etc. '}), return the original text. NO explanations. NO notes. Input:\n\n{text}",
+            },
+        ]

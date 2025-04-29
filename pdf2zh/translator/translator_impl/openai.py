@@ -58,14 +58,6 @@ class OpenAITranslator(BaseTranslator):
         message = self._remove_cot_content(message)
         return message
 
-    def prompt(self, text):
-        return [
-            {
-                "role": "user",
-                "content": f"You are a professional,authentic machine translation engine.\n\n;; Treat next line as plain text input and translate it into {self.lang_out}, output translation ONLY. If translation is unnecessary (e.g. proper nouns, codes, {'{{1}}, etc. '}), return the original text. NO explanations. NO notes. Input:\n\n{text}",
-            },
-        ]
-
     @retry(
         retry=retry_if_exception_type(openai.RateLimitError),
         stop=stop_after_attempt(100),
