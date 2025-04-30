@@ -1,17 +1,16 @@
 FROM python:3.12
+############################
+## Hugging Face Optimized ##
+############################
 
 WORKDIR /app
 
-COPY . .
-
-EXPOSE 7860
-
 ENV PYTHONUNBUFFERED=1
 
-RUN apt-get update && apt-get install -y libgl1
+RUN apt-get update && apt-get install -y libgl1 \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install .
-
+RUN pip install pdf2zh
 RUN mkdir -p /data
 RUN chmod 777 /data
 RUN mkdir -p /app
@@ -20,5 +19,13 @@ RUN mkdir -p /.cache
 RUN chmod 777 /.cache
 RUN mkdir -p ./gradio_files
 RUN chmod 777 ./gradio_files
+RUN mkdir -p /.config
+RUN chmod 777 /.config
+RUN mkdir -p /.config/PDFMathTranslate
+RUN chmod 777 /.config/PDFMathTranslate
 
-CMD ["pdf2zh", "-i"]
+
+# write several lines to the file /.config/PDFMathTranslate/config.json
+RUN echo '{ "USE_MODELSCOPE": "0", "PDF2ZH_LANG_FROM": "English", "PDF2ZH_LANG_TO": "Simplified Chinese", "NOTO_FONT_PATH": "/app/SourceHanSerifCN-Regular.ttf", "translators":[]}' > /.config/PDFMathTranslate/config.json
+RUN chmod 777 /.config/PDFMathTranslate/config.json
+CMD ["pdf2zh", "-i", "--config", "/.config/PDFMathTranslate/config.json"]
