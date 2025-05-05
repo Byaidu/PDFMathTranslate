@@ -13,7 +13,7 @@ from tenacity import wait_exponential
 logger = logging.getLogger(__name__)
 
 
-class OpenAITranslator(BaseTranslator):
+class OllamaTranslator(BaseTranslator):
     # https://github.com/ollama/ollama
     name = "ollama"
 
@@ -59,7 +59,7 @@ class OpenAITranslator(BaseTranslator):
         self.token_count.inc(response.prompt_eval_count + response.eval_count)
         self.prompt_token_count.inc(response.prompt_eval_count)
         self.completion_token_count.inc(response.eval_count)
-        message = response.choices[0].message.content.strip()
+        message = response.message.content.strip()
         message = self._remove_cot_content(message)
         return message
 
@@ -89,7 +89,7 @@ class OpenAITranslator(BaseTranslator):
 
         response = self.client.chat(
             model=self.model,
-            **self.options,
+            options=self.options,
             messages=[
                 {
                     "role": "user",
@@ -100,6 +100,6 @@ class OpenAITranslator(BaseTranslator):
         self.token_count.inc(response.prompt_eval_count + response.eval_count)
         self.prompt_token_count.inc(response.prompt_eval_count)
         self.completion_token_count.inc(response.eval_count)
-        message = response.choices[0].message.content.strip()
+        message = response.message.content.strip()
         message = self._remove_cot_content(message)
         return message
