@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class BaseTranslator(ABC):
     # Due to cache limitations, name should be within 20 characters.
     # cache.py: translate_engine = CharField(max_length=20)
-    """translator的基类，所有的translator的实现都需要继承"""
+    """translator 的基类，所有的 translator 的实现都需要继承"""
 
     name = "base"
     lang_map = {}
