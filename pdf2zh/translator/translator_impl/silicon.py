@@ -13,8 +13,9 @@ from tenacity import wait_exponential
 logger = logging.getLogger(__name__)
 
 
-class QwenMtTranslator(BaseTranslator):
-    name = "qwen-mt"
+class SiliconTranslator(BaseTranslator):
+    # https://github.com/openai/openai-python
+    name = "silicon"
 
     def __init__(
         self,
@@ -24,38 +25,19 @@ class QwenMtTranslator(BaseTranslator):
         super().__init__(settings, rate_limiter)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = openai.OpenAI(
-            base_url=settings.translate_engine_settings.qwenmt_base_url,
-            api_key=settings.translate_engine_settings.qwenmt_api_key,
+            base_url=settings.translate_engine_settings.openai_base_url,
+            api_key=settings.translate_engine_settings.openai_api_key,
         )
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
-        self.model = settings.translate_engine_settings.qwenmt_model
-        self.ali_domain = settings.translate_engine_settings.ali_domains
+        self.model = settings.translate_engine_settings.openai_model
+        self.enable_thinking = (
+            settings.translate_engine_settings.silicon_enable_thinking
+        )
         self.add_cache_impact_parameters("model", self.model)
         self.add_cache_impact_parameters("prompt", self.prompt(""))
         self.token_count = AtomicInteger()
         self.prompt_token_count = AtomicInteger()
         self.completion_token_count = AtomicInteger()
-
-    def lang_mapping(self, input_lang: str) -> str:
-        """
-        Mapping the language code to the language code that Aliyun Qwen-Mt model supports.
-        Since all existings languagues codes used in gui.py are able to be mapped, the original
-        languague code will not be checked.
-        """
-        langdict = {
-            "zh": "Chinese",
-            "zh-TW": "Chinese",
-            "en": "English",
-            "fr": "French",
-            "de": "German",
-            "ja": "Japanese",
-            "ko": "Korean",
-            "ru": "Russian",
-            "es": "Spanish",
-            "it": "Italian",
-        }
-
-        return langdict[input_lang]
 
     @retry(
         retry=retry_if_exception_type(openai.RateLimitError),
@@ -66,18 +48,16 @@ class QwenMtTranslator(BaseTranslator):
             f"(Attempt {retry_state.attempt_number}/100)"
         ),
     )
-    def do_translate(self, text, rate_limit_params: dict = None):
-        translation_options = {
-            "source_lang": self.lang_mapping(self.lang_in),
-            "target_lang": self.lang_mapping(self.lang_out),
-            "domains": self.ali_domain,
-        }
+    def do_translate(self, text, rate_limit_params: dict = None) -> str:
         response = self.client.chat.completions.create(
             model=self.model,
             **self.options,
-            messages=[{"role": "user", "content": self.prompt(text)}],
-            extra_body={"translation_options": translation_options},
+            messages=self.prompt(text),
+            extra_body={"enable_thinking": self.enable_thinking},
         )
+        self.token_count.inc(response.usage.total_tokens)
+        self.prompt_token_count.inc(response.usage.prompt_tokens)
+        self.completion_token_count.inc(response.usage.completion_tokens)
         message = response.choices[0].message.content.strip()
         message = self._remove_cot_content(message)
         return message
@@ -95,11 +75,6 @@ class QwenMtTranslator(BaseTranslator):
         if text is None:
             return None
 
-        translation_options = {
-            "source_lang": self.lang_mapping(self.lang_in),
-            "target_lang": self.lang_mapping(self.lang_out),
-            "domains": self.ali_domain,
-        }
         response = self.client.chat.completions.create(
             model=self.model,
             **self.options,
@@ -109,7 +84,7 @@ class QwenMtTranslator(BaseTranslator):
                     "content": text,
                 },
             ],
-            extra_body={"translation_options": translation_options},
+            extra_body={"enable_thinking": self.enable_thinking},
         )
         self.token_count.inc(response.usage.total_tokens)
         self.prompt_token_count.inc(response.usage.prompt_tokens)

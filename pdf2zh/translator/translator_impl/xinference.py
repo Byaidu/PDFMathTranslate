@@ -60,14 +60,6 @@ class XinferenceTranslator(BaseTranslator):
                 logger.error(e)
         raise Exception("All models failed")
 
-    def prompt(self, text):
-        return [
-            {
-                "role": "user",
-                "content": f"You are a professional,authentic machine translation engine.\n\n;; Treat next line as plain text input and translate it into {self.lang_out}, output translation ONLY. If translation is unnecessary (e.g. proper nouns, codes, {'{{1}}, etc. '}), return the original text. NO explanations. NO notes. Input:\n\n{text}",
-            },
-        ]
-
     @retry(
         retry=retry_if_exception_type(xinference_client.RuntimeError),
         stop=stop_after_attempt(100),
