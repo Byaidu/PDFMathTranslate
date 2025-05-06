@@ -27,7 +27,8 @@ __gui_service_arg_names = []
 # The following variables associate strings with specific languages
 lang_map = {
     "Simplified Chinese": "zh-CN",
-    "Traditional Chinese": "zh-TW",
+    "Traditional Chinese（Hong Kong）": "zh-HK",
+    "Traditional Chinese（Taiwan）": "zh-TW",
     "English": "en",
     "French": "fr",
     "German": "de",
