@@ -23,15 +23,10 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: |
-        examples:
+      placeholder: |
           - **OS**: Ubuntu 24.10
           - **Python**: 3.12.0
           - **pdf2zh**: 1.9.0
-      value: |
-          - OS:
-          - Python:
-          - pdf2zh:
       render: markdown
     validations:
       required: false
