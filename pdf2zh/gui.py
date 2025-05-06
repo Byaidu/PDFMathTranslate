@@ -2,6 +2,7 @@ import asyncio
 import cgi
 import logging
 import shutil
+import typing
 import uuid
 from pathlib import Path
 from string import Template
@@ -415,6 +416,19 @@ def _build_translate_settings(
                     if field_name in GUI_SENSITIVE_FIELDS:
                         continue
                 value = ui_inputs.get(field_name)
+                type_hint = detail_setting.model_fields[field_name].annotation
+                original_type = typing.get_origin(type_hint)
+                type_args = typing.get_args(type_hint)
+                if type_hint is str or str in type_args:
+                    pass
+                elif type_hint is int or int in type_args:
+                    value = int(value)
+                elif type_hint is bool or bool in type_args:
+                    value = bool(value)
+                else:
+                    raise Exception(
+                        f"Unsupported type {type_hint} for field {field_name} in gui translation engine settings"
+                    )
                 setattr(detail_setting, field_name, value)
 
     # Add custom prompt if provided
@@ -824,21 +838,41 @@ with gr.Blocks(
 
                             if field_name == "translate_engine_type":
                                 continue
+                            type_hint = field.annotation
+                            original_type = typing.get_origin(type_hint)
+                            type_args = typing.get_args(type_hint)
                             value = getattr(detail_settings, field_name)
-                            if field_name in GUI_PASSWORD_FIELDS:
-                                field_input = gr.Textbox(
+                            if (
+                                type_hint is str
+                                or str in type_args
+                                or type_hint is int
+                                or int in type_args
+                            ):
+                                if field_name in GUI_PASSWORD_FIELDS:
+                                    field_input = gr.Textbox(
+                                        label=field.description,
+                                        value=value,
+                                        interactive=True,
+                                        type="password",
+                                        visible=visible,
+                                    )
+                                else:
+                                    field_input = gr.Textbox(
+                                        label=field.description,
+                                        value=value,
+                                        interactive=True,
+                                        visible=visible,
+                                    )
+                            elif type_hint is bool or bool in type_args:
+                                field_input = gr.Checkbox(
                                     label=field.description,
                                     value=value,
                                     interactive=True,
-                                    type="password",
                                     visible=visible,
                                 )
                             else:
-                                field_input = gr.Textbox(
-                                    label=field.description,
-                                    value=value,
-                                    interactive=True,
-                                    visible=visible,
+                                raise Exception(
+                                    f"Unsupported type {type_hint} for field {field_name} in gui translation engine settings"
                                 )
                             detail_text_input_index_map[
                                 metadata.translate_engine_type

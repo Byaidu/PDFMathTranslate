@@ -25,11 +25,11 @@ class SiliconTranslator(BaseTranslator):
         super().__init__(settings, rate_limiter)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = openai.OpenAI(
-            base_url=settings.translate_engine_settings.openai_base_url,
-            api_key=settings.translate_engine_settings.openai_api_key,
+            base_url=settings.translate_engine_settings.silicon_base_url,
+            api_key=settings.translate_engine_settings.silicon_api_key,
         )
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
-        self.model = settings.translate_engine_settings.openai_model
+        self.model = settings.translate_engine_settings.silicon_model
         self.enable_thinking = (
             settings.translate_engine_settings.silicon_enable_thinking
         )
