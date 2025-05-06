@@ -243,23 +243,22 @@ class SiliconSettings(BaseModel):
 
     translate_engine_type: Literal["Silicon"] = Field(default="Silicon")
 
+    silicon_base_url: str | None = Field(
+        default="https://api.siliconflow.cn/v1", description="Base URL for Silicon API"
+    )
     silicon_model: str = Field(
         default="Qwen/Qwen2.5-7B-Instruct", description="Silicon model to use"
     )
     silicon_api_key: str | None = Field(
         default=None, description="API key for Silicon service"
     )
+    silicon_enable_thinking: bool | None = Field(
+        default=False, description="Enable thinking for Silicon service"
+    )
 
     def validate_settings(self) -> None:
         if not self.silicon_api_key:
             raise ValueError("Silicon API key is required")
-
-    def transform(self) -> OpenAISettings:
-        return OpenAISettings(
-            openai_model=self.silicon_model,
-            openai_api_key=self.silicon_api_key,
-            openai_base_url="https://api.siliconflow.cn/v1",
-        )
 
 
 GUI_PASSWORD_FIELDS.append("silicon_api_key")
