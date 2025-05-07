@@ -37,6 +37,7 @@ dependencies = [
     "rich",
     "pydantic-settings>=2.8.1",
     "pydantic>=2.10.6",
+    "httpx>=0.28.1",
 ]
 
 [dependency-groups]

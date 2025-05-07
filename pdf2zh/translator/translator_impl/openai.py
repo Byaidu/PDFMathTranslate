@@ -1,5 +1,6 @@
 import logging
 
+import httpx
 import openai
 from babeldoc.document_il.utils.atomic_integer import AtomicInteger
 from pdf2zh.config.model import SettingsModel
@@ -27,6 +28,11 @@ class OpenAITranslator(BaseTranslator):
         self.client = openai.OpenAI(
             base_url=settings.translate_engine_settings.openai_base_url,
             api_key=settings.translate_engine_settings.openai_api_key,
+            http_client=httpx.Client(
+                limits=httpx.Limits(
+                    max_connections=None, max_keepalive_connections=None
+                )
+            ),
         )
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
         self.model = settings.translate_engine_settings.openai_model
