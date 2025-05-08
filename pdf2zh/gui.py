@@ -350,6 +350,9 @@ def _build_translate_settings(
     formular_font_pattern = ui_inputs.get("formular_font_pattern")
     formular_char_pattern = ui_inputs.get("formular_char_pattern")
 
+    # New input for custom_system_prompt
+    custom_system_prompt_input = ui_inputs.get("custom_system_prompt_input")
+
     # Map UI language selections to language codes
     source_lang = lang_map.get(lang_from, "auto")
     target_lang = lang_map.get(lang_to, "zh")
@@ -461,6 +464,13 @@ def _build_translate_settings(
     if prompt:
         # This might need adjustment based on how prompt is handled in the new system
         translate_settings.custom_prompt = Template(prompt)
+
+    # Add custom system prompt if provided
+    custom_system_prompt_value = ui_inputs.get("custom_system_prompt_input")
+    if custom_system_prompt_value:
+        translate_settings.translation.custom_system_prompt = custom_system_prompt_value
+    else:
+        translate_settings.translation.custom_system_prompt = None
 
     # Validate settings before proceeding
     try:
@@ -592,6 +602,8 @@ async def translate_file(
     threads,
     min_text_length,
     rpc_doclayout,
+    # New input for custom_system_prompt
+    custom_system_prompt_input,
     skip_clean,
     disable_rich_text_translate,
     enhance_compatibility,
@@ -669,6 +681,7 @@ async def translate_file(
         "threads": threads,
         "min_text_length": min_text_length,
         "rpc_doclayout": rpc_doclayout,
+        "custom_system_prompt_input": custom_system_prompt_input,
         "skip_clean": skip_clean,
         "disable_rich_text_translate": disable_rich_text_translate,
         "enhance_compatibility": enhance_compatibility,
@@ -985,6 +998,14 @@ with gr.Blocks(
                     interactive=True,
                 )
 
+                # New Textbox for custom_system_prompt
+                custom_system_prompt_input = gr.Textbox(
+                    label="Custom System Prompt",
+                    value=settings.translation.custom_system_prompt or "",
+                    interactive=True,
+                    placeholder="e.g. /no_think You are a professional, authentic machine translation engine.",
+                )
+
                 min_text_length = gr.Number(
                     label="Minimum text length to translate",
                     value=settings.translation.min_text_length,
@@ -1214,6 +1235,7 @@ with gr.Blocks(
             threads,
             min_text_length,
             rpc_doclayout,
+            custom_system_prompt_input,
             skip_clean,
             disable_rich_text_translate,
             enhance_compatibility,
