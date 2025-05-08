@@ -2,7 +2,6 @@ import asyncio
 import cgi
 import os
 import shutil
-from tracemalloc import Snapshot
 import uuid
 from asyncio import CancelledError
 from pathlib import Path
@@ -44,9 +43,10 @@ from pdf2zh.translator import (
     OpenAIlikedTranslator,
     QwenMtTranslator,
 )
+from babeldoc.docvision.doclayout import OnnxModel
+from babeldoc import __version__ as babeldoc_version
 
 logger = logging.getLogger(__name__)
-from babeldoc.docvision.doclayout import OnnxModel
 
 BABELDOC_MODEL = OnnxModel.load_available()
 # The following variables associate strings with translators
@@ -125,7 +125,7 @@ if isinstance(enabled_services, list):
         if str(k).lower().strip() in enabled_services_names
     ]
     if len(enabled_services) == 0:
-        raise RuntimeError(f"No services available.")
+        raise RuntimeError("No services available.")
     enabled_services = default_services + enabled_services
 else:
     enabled_services = list(service_map.keys())
@@ -141,10 +141,8 @@ def verify_recaptcha(response):
     This function verifies the reCAPTCHA response.
     """
     recaptcha_url = "https://www.google.com/recaptcha/api/siteverify"
-    print("reCAPTCHA", server_key, response)
     data = {"secret": server_key, "response": response}
     result = requests.post(recaptcha_url, data=data).json()
-    print("reCAPTCHA", result.get("success"))
     return result.get("success")
 
 
@@ -210,6 +208,7 @@ def translate_file(
     threads,
     skip_subset_fonts,
     ignore_cache,
+    vfont,
     use_babeldoc,
     recaptcha_response,
     state,
@@ -325,6 +324,7 @@ def translate_file(
         "prompt": Template(prompt) if prompt else None,
         "skip_subset_fonts": skip_subset_fonts,
         "ignore_cache": ignore_cache,
+        "vfont": vfont,  # 添加自定义公式字体正则表达式
         "model": ModelInstance.value,
     }
 
@@ -358,41 +358,6 @@ def babeldoc_translate_file(**kwargs):
     babeldoc_init()
     from babeldoc.high_level import async_translate as babeldoc_translate
     from babeldoc.translation_config import TranslationConfig as YadtConfig
-
-    if kwargs["prompt"]:
-        prompt = kwargs["prompt"]
-    else:
-        prompt = None
-
-    from pdf2zh.translator import (
-        AzureOpenAITranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
-        DeepLXTranslator,
-        OllamaTranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
-        AnythingLLMTranslator,
-        XinferenceTranslator,
-        ArgosTranslator,
-        GrokTranslator,
-        GroqTranslator,
-        DeepseekTranslator,
-        OpenAIlikedTranslator,
-        QwenMtTranslator,
-    )
 
     for translator in [
         GoogleTranslator,
@@ -543,8 +508,6 @@ demo_recaptcha = """
     </script>
     """
 
-from babeldoc import __version__ as babeldoc_version
-
 tech_details_string = f"""
                     <summary>Technical details</summary>
                     - GitHub: <a href="https://github.com/Byaidu/PDFMathTranslate">Byaidu/PDFMathTranslate</a><br>
@@ -637,6 +600,11 @@ with gr.Blocks(
                 ignore_cache = gr.Checkbox(
                     label="Ignore cache", interactive=True, value=False
                 )
+                vfont = gr.Textbox(
+                    label="Custom formula font regex (vfont)",
+                    interactive=True,
+                    value=ConfigManager.get("PDF2ZH_VFONT", ""),
+                )
                 prompt = gr.Textbox(
                     label="Custom Prompt for llm", interactive=True, visible=False
                 )
@@ -686,6 +654,10 @@ with gr.Blocks(
                 else:
                     return gr.update(visible=False)
 
+            def on_vfont_change(value):
+                ConfigManager.set("PDF2ZH_VFONT", value)
+                return value
+
             output_title = gr.Markdown("## Translated", visible=False)
             output_file_mono = gr.File(
                 label="Download Translation (Mono)", visible=False
@@ -709,6 +681,7 @@ with gr.Blocks(
                 service,
                 envs,
             )
+            vfont.change(on_vfont_change, inputs=vfont, outputs=None)
             file_type.select(
                 on_select_filetype,
                 file_type,
@@ -773,6 +746,7 @@ with gr.Blocks(
             threads,
             skip_subset_fonts,
             ignore_cache,
+            vfont,
             use_babeldoc,
             recaptcha_response,
             state,

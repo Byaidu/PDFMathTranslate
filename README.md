@@ -221,42 +221,41 @@ Execute the translation command in the command line to generate the translated d
 
 In the following table, we list all advanced options for reference:
 
-| Option         | Function                                                                                                      | Example                                        |
-| -------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| files          | Local files                                                                                                   | `pdf2zh ~/local.pdf`                           |
-| links          | Online files                                                                                                  | `pdf2zh http://arxiv.org/paper.pdf`            |
-| `-i`           | [Enter GUI](#gui)                                                                                             | `pdf2zh -i`                                    |
-| `-p`           | [Partial document translation](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#partial) | `pdf2zh example.pdf -p 1`                      |
-| `-li`          | [Source language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -li en`                    |
-| `-lo`          | [Target language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -lo zh`                    |
-| `-s`           | [Translation service](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services)         | `pdf2zh example.pdf -s deepl`                  |
-| `-t`           | [Multi-threads](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#threads)                | `pdf2zh example.pdf -t 1`                      |
-| `-o`           | Output dir                                                                                                    | `pdf2zh example.pdf -o output`                 |
-| `-f`, `-c`     | [Exceptions](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                | `pdf2zh example.pdf -f "(MS.*)"`               |
-| `-cp`          | Compatibility Mode                                                                                            | `pdf2zh example.pdf --compatible`              |
-| `--skip-subset-fonts` | [Skip font subset](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#font-subset)  | `pdf2zh example.pdf --skip-subset-fonts`       |
-| `--ignore-cache` | [Ignore translate cache](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cache)       | `pdf2zh example.pdf --ignore-cache`            |
-| `--share`      | Public link                                                                                                   | `pdf2zh -i --share`                            |
-| `--authorized` | [Authorization](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#auth)                   | `pdf2zh -i --authorized users.txt [auth.html]` |
-| `--prompt`     | [Custom Prompt](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                 | `pdf2zh --prompt [prompt.txt]`                 |
-| `--onnx`       | [Use Custom DocLayout-YOLO ONNX model]                                                                        | `pdf2zh --onnx [onnx/model/path]`              |
-| `--serverport` | [Use Custom WebUI port]                                                                                       | `pdf2zh --serverport 7860`                     |
-| `--dir`        | [batch translate]                                                                                             | `pdf2zh --dir /path/to/translate/`             |
-| `--config`     | [configuration file](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig)             | `pdf2zh --config /path/to/config/config.json`  |
-| `--serverport` | [custom gradio server port]                                                                                   | `pdf2zh --serverport 7860`                     |
-|`--babeldoc`| Use Experimental backend [BabelDOC](https://funstory-ai.github.io/BabelDOC/) to translate |`pdf2zh --babeldoc` -s openai example.pdf|
+| Option                | Function                                                                                                      | Example                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| files                 | Local files                                                                                                   | `pdf2zh ~/local.pdf`                           |
+| links                 | Online files                                                                                                  | `pdf2zh http://arxiv.org/paper.pdf`            |
+| `-i`                  | [Enter GUI](#gui)                                                                                             | `pdf2zh -i`                                    |
+| `-p`                  | [Partial document translation](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#partial) | `pdf2zh example.pdf -p 1`                      |
+| `-li`                 | [Source language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -li en`                    |
+| `-lo`                 | [Target language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -lo zh`                    |
+| `-s`                  | [Translation service](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services)         | `pdf2zh example.pdf -s deepl`                  |
+| `-t`                  | [Multi-threads](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#threads)                | `pdf2zh example.pdf -t 1`                      |
+| `-o`                  | Output dir                                                                                                    | `pdf2zh example.pdf -o output`                 |
+| `-f`, `-c`            | [Exceptions](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                | `pdf2zh example.pdf -f "(MS.*)"`               |
+| `-cp`                 | Compatibility Mode                                                                                            | `pdf2zh example.pdf --compatible`              |
+| `--skip-subset-fonts` | [Skip font subset](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#font-subset)         | `pdf2zh example.pdf --skip-subset-fonts`       |
+| `--ignore-cache`      | [Ignore translate cache](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cache)         | `pdf2zh example.pdf --ignore-cache`            |
+| `--share`             | Public link                                                                                                   | `pdf2zh -i --share`                            |
+| `--authorized`        | [Authorization](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#auth)                   | `pdf2zh -i --authorized users.txt [auth.html]` |
+| `--prompt`            | [Custom Prompt](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                 | `pdf2zh --prompt [prompt.txt]`                 |
+| `--onnx`              | [Use Custom DocLayout-YOLO ONNX model]                                                                        | `pdf2zh --onnx [onnx/model/path]`              |
+| `--serverport`        | [Use Custom WebUI port]                                                                                       | `pdf2zh --serverport 7860`                     |
+| `--dir`               | [batch translate]                                                                                             | `pdf2zh --dir /path/to/translate/`             |
+| `--config`            | [configuration file](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig)             | `pdf2zh --config /path/to/config/config.json`  |
+| `--serverport`        | [custom gradio server port]                                                                                   | `pdf2zh --serverport 7860`                     |
+| `--babeldoc`          | Use Experimental backend [BabelDOC](https://funstory-ai.github.io/BabelDOC/) to translate                     | `pdf2zh --babeldoc` -s openai example.pdf      |
+| `--mcp`               | Enable MCP STDIO mode                                                                                         | `pdf2zh --mcp`                                 |
+| `--sse`               | Enable MCP SSE mode                                                                                           | `pdf2zh --mcp --sse`                           |
 
 For detailed explanations, please refer to our document about [Advanced Usage](./docs/ADVANCED.md) for a full list of each option.
 
 <h2 id="downstream">Secondary Development (APIs)</h2>
 
-The current pdf2zh API is temporarily deprecated. The API will be provided again after [pdf2zh 2.0](https://github.com/Byaidu/PDFMathTranslate/issues/586) is released. For users who need programmatic access, please use the `babeldoc.high_level.async_translate` function of [BabelDOC](https://github.com/funstory-ai/BabelDOC).
-
-This API being temporarily deprecated means: the relevant code will not be removed for now, but no technical support will be provided, and no bug fixes will be made.
-<!-- For downstream applications, please refer to our document about [API Details](./docs/APIS.md) for futher information about:
+For downstream applications, please refer to our document about [API Details](./docs/APIS.md) for futher information about:
 
 - [Python API](./docs/APIS.md#api-python), how to use the program in other Python programs
-- [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed -->
+- [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed
 
 <h2 id="todo">TODOs</h2>
 
