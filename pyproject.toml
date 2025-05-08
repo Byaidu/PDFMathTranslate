@@ -1,6 +1,6 @@
 [project]
 name = "pdf2zh"
-version = "1.9.6"
+version = "1.9.7"
 description = "Latex PDF Translator"
 authors = [{ name = "Byaidu", email = "byaidux@gmail.com" }]
 license = "AGPL-3.0"
@@ -28,7 +28,7 @@ dependencies = [
     "onnxruntime",
     "opencv-python-headless",
     "tencentcloud-sdk-python-tmt",
-    "pdfminer.six>=20240706",
+    "pdfminer-six==20250416",
     "gradio_pdf>=0.0.21",
     "pikepdf",
     "peewee>=3.17.8",
@@ -74,7 +74,7 @@ max-line-length = 88
 
 
 [bumpver]
-current_version = "1.9.6"
+current_version = "1.9.7"
 version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 
 [bumpver.file_patterns]
