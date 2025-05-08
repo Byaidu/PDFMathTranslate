@@ -461,6 +461,7 @@ def create_babeldoc_config(settings: SettingsModel, file: Path) -> BabelDOCConfi
         table_model=table_model,
         skip_scanned_detection=settings.pdf.skip_scanned_detection,
         ocr_workaround=settings.pdf.ocr_workaround,
+        custom_system_prompt=settings.translation.custom_system_prompt,
     )
     return babeldoc_config
 
