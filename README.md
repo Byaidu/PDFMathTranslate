@@ -155,6 +155,8 @@ For docker deployment on cloud service:
   <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Koyeb" height="26"></a>
 <a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
   <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="26"></a>
+<a href="https://template.sealos.io/deploy?templateName=pdf2zh">
+  <img src="https://sealos.io/Deploy-on-Sealos.svg" alt="Deploy on Sealos" height="26"></a>
 <a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
   <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
 </div>
