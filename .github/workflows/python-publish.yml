@@ -330,7 +330,7 @@ jobs:
           sparse-checkout: babeldoc/assets/embedding_assets_metadata.py
       - name: Cached Assets
         id: cache-assets
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.cache/babeldoc
           key: test-1-babeldoc-assets-${{ hashFiles('babeldoctemp1234567/babeldoc/assets/embedding_assets_metadata.py') }}
