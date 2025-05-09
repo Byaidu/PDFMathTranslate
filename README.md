@@ -45,6 +45,16 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 
 <h2 id="updates">Updates</h2>
 
+- [May 9, 2025] pdf2zh 2.0 Preview Version [#586](https://github.com/Byaidu/PDFMathTranslate/issues/586): The Windows ZIP file and Docker image are now available.
+
+> [!CAUTION]
+>
+> The current maintainer of this project is developing pdf2zh v2.0-rc at [aw/pdf2zh v2-rc](https://github.com/awwaawwa/PDFMathTranslate/tree/v2-rc).
+>
+> pdf2zh v1.x has been deprecated and is no longer being developed or maintained. **Community PRs are not currently accepted, nor will they be merged.**
+>
+> v2.0-rc can now accept some small PRs. Please discuss with the maintainer [@awwaawwa](https://github.com/awwaawwa) in the [main repository issue](https://github.com/Byaidu/PDFMathTranslate/issues) before submitting a PR to [aw/pdf2zh v2-rc](https://github.com/awwaawwa/PDFMathTranslate/tree/v2-rc)~
+
 - [Mar. 3, 2025] Experimental support for the new backend [BabelDOC](https://github.com/funstory-ai/BabelDOC) WebUI added as an experimental option (by [@awwaawwa](https://github.com/awwaawwa))
 - [Feb. 22 2025] Better release CI and well-packaged windows-amd64 exe (by [@awwaawwa](https://github.com/awwaawwa))
 - [Dec. 24 2024] The translator now supports local models on [Xinference](https://github.com/xorbitsai/inference) _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
