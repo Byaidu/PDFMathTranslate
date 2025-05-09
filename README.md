@@ -51,8 +51,6 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 >
 > The current maintainer of this project is developing pdf2zh v2.0-rc at [aw/pdf2zh v2-rc](https://github.com/awwaawwa/PDFMathTranslate/tree/v2-rc).
 >
-> pdf2zh v1.x has been deprecated and is no longer being developed or maintained. **Community PRs are not currently accepted, nor will they be merged.**
->
 > v2.0-rc can now accept some small PRs. Please discuss with the maintainer [@awwaawwa](https://github.com/awwaawwa) in the [main repository issue](https://github.com/Byaidu/PDFMathTranslate/issues) before submitting a PR to [aw/pdf2zh v2-rc](https://github.com/awwaawwa/PDFMathTranslate/tree/v2-rc)~
 
 - [Mar. 3, 2025] Experimental support for the new backend [BabelDOC](https://github.com/funstory-ai/BabelDOC) WebUI added as an experimental option (by [@awwaawwa](https://github.com/awwaawwa))
@@ -89,6 +87,7 @@ For different use cases, we provide distinct methods to use our program:
   <summary>1. UV install</summary>
 
 1. Python installed (3.10 <= version <= 3.12)
+
 2. Install our package:
 
    ```bash
@@ -115,7 +114,9 @@ For different use cases, we provide distinct methods to use our program:
 
 <details>
   <summary>3. Graphic user interface</summary>
+
 1. Python installed (3.10 <= version <= 3.12)
+
 2. Install our package:
 
 ```bash
