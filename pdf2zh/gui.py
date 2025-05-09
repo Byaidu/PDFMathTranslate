@@ -289,6 +289,9 @@ def translate_file(
     _envs = {}
     for i, env in enumerate(translator.envs.items()):
         _envs[env[0]] = envs[i]
+    # Special handling for AzureOpenAI: include API version if provided
+    if service == "AzureOpenAI" and len(envs) >= 3 and envs[2]:
+        _envs["AZURE_OPENAI_API_VERSION"] = envs[2]
     for k, v in _envs.items():
         if str(k).upper().endswith("API_KEY") and str(v) == "***":
             # Load Real API_KEYs from local configure file
@@ -559,7 +562,8 @@ with gr.Blocks(
                 value=enabled_services[0],
             )
             envs = []
-            for i in range(3):
+            # Increase to 4 to allow for AzureOpenAI version as a separate input
+            for i in range(4):
                 envs.append(
                     gr.Textbox(
                         visible=False,
@@ -618,6 +622,7 @@ with gr.Blocks(
                 _envs = []
                 for i in range(4):
                     _envs.append(gr.update(visible=False, value=""))
+                # Show default envs for the selected translator
                 for i, env in enumerate(translator.envs.items()):
                     label = env[0]
                     value = ConfigManager.get_env_by_translatername(
@@ -638,6 +643,16 @@ with gr.Blocks(
                         visible=visible,
                         label=label,
                         value=value,
+                    )
+                # Special handling for AzureOpenAI: show the API version field as a textbox
+                if service == "AzureOpenAI":
+                    # Use the 4th env slot for API version
+                    _envs[2] = gr.update(
+                        visible=True,
+                        label="AZURE_OPENAI_API_VERSION",
+                        value=ConfigManager.get_env_by_translatername(
+                            translator, "AZURE_OPENAI_API_VERSION", "2023-05-15"
+                        ),
                     )
                 _envs[-1] = gr.update(visible=translator.CustomPrompt)
                 return _envs
