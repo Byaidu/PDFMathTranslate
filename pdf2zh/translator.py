@@ -971,6 +971,30 @@ class OpenAIlikedTranslator(OpenAITranslator):
         )
         self.prompttext = prompt
 
+    def do_translate(self, text) -> str:
+        # Always use stream=True for OpenAI-liked translators
+        response = self.client.chat.completions.create(
+            model=self.model,
+            stream=True,
+            **self.options,
+            messages=self.prompt(text, self.prompttext),
+        )
+        # response is a generator if stream=True, need to collect content
+        content = ""
+        try:
+            for chunk in response:
+                if hasattr(chunk, "choices") and chunk.choices:
+                    delta = chunk.choices[0].delta
+                    if hasattr(delta, "content") and delta.content:
+                        content += delta.content
+        except Exception as e:
+            # fallback for non-generator responses or error
+            if hasattr(response, "choices") and response.choices:
+                content = response.choices[0].message.content.strip()
+            else:
+                raise e
+        return content.strip()
+
 
 class QwenMtTranslator(OpenAITranslator):
     """
