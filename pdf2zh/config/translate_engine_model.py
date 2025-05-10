@@ -444,6 +444,42 @@ class QwenMtSettings(BaseModel):
 GUI_PASSWORD_FIELDS.append("qwenmt_api_key")
 
 
+class OpenAICompatibleSettings(BaseModel):
+    """OpenAICompatible settings"""
+
+    translate_engine_type: Literal["OpenAICompatible"] = Field(
+        default="OpenAICompatible"
+    )
+
+    openai_compatible_model: str = Field(
+        default="gpt-4o-mini", description="OpenAI Compatible model to use"
+    )
+    openai_compatible_base_url: str | None = Field(
+        default=None, description="Base URL for OpenAI Compatible service"
+    )
+    openai_compatible_api_key: str | None = Field(
+        default=None, description="API key for OpenAI Compatible service"
+    )
+
+    def validate_settings(self) -> None:
+        if not self.openai_compatible_api_key:
+            raise ValueError("OpenAI Compatible API key is required")
+        if not self.openai_compatible_base_url:
+            raise ValueError("OpenAI Compatible base URL is required")
+        if not self.openai_compatible_model:
+            raise ValueError("OpenAI Compatible model is required")
+
+    def transform(self) -> OpenAISettings:
+        return OpenAISettings(
+            openai_model=self.openai_compatible_model,
+            openai_api_key=self.openai_compatible_api_key,
+            openai_base_url=self.openai_compatible_base_url,
+        )
+
+
+GUI_PASSWORD_FIELDS.append("openai_compatible_api_key")
+
+
 ## Please add the translator configuration class above this location.
 
 # 所有翻译引擎
@@ -468,6 +504,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | GrokSettings
     | GroqSettings
     | QwenMtSettings
+    | OpenAICompatibleSettings
 )
 
 # 默认翻译引擎
