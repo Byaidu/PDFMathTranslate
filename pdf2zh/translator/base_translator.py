@@ -146,24 +146,27 @@ class BaseTranslator(ABC):
         get formular placeholder
         LLM translator use placeholder to skip the formular char
         :param placeholder_id: placeholder id
-        :return formated placeholder
+        :return formated placeholder and regex placeholder
         """
-        return "{{v" + str(placeholder_id) + "}}"
+        return "{v" + str(placeholder_id) + "}", f"{{\\s*v\\s*{placeholder_id}\\s*}}"
 
     def get_rich_text_left_placeholder(self, placeholder_id: int):
         """
         get rich text placeholder
         :param placeholder_id: placeholder id
-        :return the start label of rich text
+        :return the start label of rich text and regex start label
         """
-        return f"<style id='{placeholder_id}'>"
+        return (
+            f"<style id='{placeholder_id}'>",
+            f"<\\s*style\\s*id\\s*=\\s*'\\s*{placeholder_id}\\s*'\\s*>",
+        )
 
     def get_rich_text_right_placeholder(self, placeholder_id: int):
         """
         get rich text placeholder
-        :return the end label of rich text
+        :return the end label of rich text and regex end label
         """
-        return "</style>"
+        return "</style>", r"<\s*\/\s*style\s*>"
 
     def prompt(self, text):
         """
