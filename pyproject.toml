@@ -33,7 +33,7 @@ dependencies = [
     "gradio_pdf>=0.0.21",
     "peewee>=3.17.8",
     "fontTools",
-    "babeldoc>=0.3.39, <0.4.0",
+    "babeldoc>=0.3.42, <0.4.0",
     "rich",
     "pydantic-settings>=2.8.1",
     "pydantic>=2.10.6",
