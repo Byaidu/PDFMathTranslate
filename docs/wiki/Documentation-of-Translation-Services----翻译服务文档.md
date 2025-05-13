@@ -1,0 +1,8 @@
+* [Google Translate](https://cloud.google.com/translate/docs)
+* [DeepL](https://developers.deepl.com/docs/api-reference/translate)
+* [DeepLX](https://github.com/OwO-Network/DeepLX)
+* [OpenAI](https://platform.openai.com/docs/api-reference/introduction)
+* [Ollama](https://github.com/ollama/ollama/blob/main/docs/api.md)
+* [Azure](https://learn.microsoft.com/en-us/azure/ai-services/translator/)
+* [Zhipu](https://bigmodel.cn/)
+* [DeepSeek](https://api-docs.deepseek.com/)
