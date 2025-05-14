@@ -479,6 +479,7 @@ def _build_translate_settings(
         translate_settings.translation.output = original_output
         translate_settings.pdf.pages = original_pages
         translate_settings.gui_settings = original_gui_settings
+        translate_settings.basic.gui = False
         if not settings.gui_settings.disable_config_auto_save:
             config_manager.write_user_default_config_file(settings=translate_settings)
         settings.validate_settings()
