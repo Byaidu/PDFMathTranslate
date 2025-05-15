@@ -1,7 +1,5 @@
 <div align="center">
 
-English | [简体中文](docs/README_zh-CN.md) | [繁體中文](docs/README_zh-TW.md) | [日本語](docs/README_ja-JP.md) | [한국어](docs/README_ko-KR.md)
-
 <img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>
 
 <h2 id="title">PDFMathTranslate</h2>
@@ -105,8 +103,10 @@ For different use cases, we provide distinct methods to use our program:
 
 <details>
   <summary>3. Graphic user interface</summary>
-1. Python installed (3.10 <= version <= 3.12)
-2. Install our package:
+
+  1. Python installed (3.10 <= version <= 3.12)
+
+  2. Install our package:
 
 ```bash
 pip install pdf2zh
@@ -211,7 +211,7 @@ For PowerShell user:
 $env:HF_ENDPOINT = https://hf-mirror.com
 ```
 
-If the solution does not work to you / you encountered other issues, please refer to [frequently asked questions](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98).
+If the solution does not work to you / you encountered other issues, please refer to [frequently asked questions](./docs/FAQ---常见问题.md).
 
 <h2 id="usage">Advanced Options</h2>
 
@@ -263,6 +263,10 @@ This API being temporarily deprecated means: the relevant code will not be remov
 - [Python API](./docs/APIS.md#api-python), how to use the program in other Python programs
 - [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed -->
 
+<h2 id="langcode">Language Code</h2>
+
+If you don't know what code to use to translate to the language you need, check out [this documentation](./docs/Language-Codes----语言代码.md)
+
 <h2 id="todo">TODOs</h2>
 
 - [ ] Parse layout with DocLayNet based models, [PaddleX](https://github.com/PaddlePaddle/PaddleX/blob/17cc27ac3842e7880ca4aad92358d3ef8555429a/paddlex/repo_apis/PaddleDetection_api/object_det/official_categories.py#L81), [PaperMage](https://github.com/allenai/papermage/blob/9cd4bb48cbedab45d0f7a455711438f1632abebe/README.md?plain=1#L102), [SAM2](https://github.com/facebookresearch/sam2)
@@ -304,6 +308,10 @@ This API being temporarily deprecated means: the relevant code will not be remov
 - [Asynchronize](https://github.com/multimeric/Asynchronize/tree/master?tab=readme-ov-file)
 
 - [Rich logging with multiprocessing](https://github.com/SebastianGrans/Rich-multiprocess-logging/tree/main)
+
+<h2 id="conduct">Before submit your code</h2>
+
+We welcome the active participation of contributors to make pdf2zh better. Before you are ready to submit your code, please refer to our [Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guide](./docs/Contribution-Guide---贡献指南.md).
 
 <h2 id="contrib">Contributors</h2>
 
