@@ -93,6 +93,7 @@ markdown_extensions:
   - github-callouts
   - markdown_include.include
   - def_list
+  - admonition
 
   # Python Markdown Extensions
   - pymdownx.highlight:
@@ -103,6 +104,7 @@ markdown_extensions:
   - pymdownx.blocks.caption
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.details
   - pymdownx.tasklist:
       custom_checkbox: true
 
@@ -113,12 +115,22 @@ not_in_nav: |
 # Page tree
 nav:
   - Home: index.md
-  - FAQ: FAQ---常见问题.md
-  - Advanced Usage: ADVANCED.md
+  - Getting Started: 
+    - Getting Start: getting-started/getting-started.md
+    - Method:
+      - Windows EXE: getting-started/INSTALLATION_winexe.md
+      - Docker: getting-started/INSTALLATION_docker.md
+      - uv: getting-started/INSTALLATION_uv.md
+      - GUI: getting-started/INSTALLATION_gui.md
+      - Zotero Plugin: getting-started/INSTALLATION_zotero-plugin.md
+      - Commandline: getting-started/INSTALLATION_commandline.md
+  - Advanced: 
+    - Advanced Usage: advanced/ADVANCED.md
+    - GUI: advanced/README_GUI.md
+    - Language-Code: advanced/Language-Codes.md
+    - Documentation-of-Translation-Services: advanced/Documentation-of-Translation-Services.md
   - API: APIS.md
-  - Document:
-    - GUI: README_GUI.md
-    - Language-Code: Language-Codes----语言代码.md
-    - Documentation-of-Translation-Services: Documentation-of-Translation-Services----翻译服务文档.md
-    - Contribution-Guide: Contribution-Guide---贡献指南.md
-    - Contributor Covenant Code of Conduct: CODE_OF_CONDUCT.md
+  - FAQ: FAQ.md
+  - Community:
+    - Contributor Covenant Code of Conduct: community/CODE_OF_CONDUCT.md
+    - Contribution-Guide: community/Contribution-Guide.md

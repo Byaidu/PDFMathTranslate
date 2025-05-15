@@ -75,116 +75,26 @@ For different use cases, we provide distinct methods to use our program:
 
 <details open>
   <summary>1. UV install</summary>
-
-1. Python installed (3.10 <= version <= 3.12)
-2. Install our package:
-
-   ```bash
-   pip install uv
-   uv tool install --python 3.12 pdf2zh
-   ```
-
-3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
-
-   ```bash
-   pdf2zh document.pdf
-   ```
-
 </details>
 
 <details>
   <summary>2. Windows exe</summary>
-
-1. Download pdf2zh-version-win64.zip from [release page](https://github.com/Byaidu/PDFMathTranslate/releases)
-
-2. Unzip and double-click `pdf2zh.exe` to run.
-
 </details>
 
 <details>
   <summary>3. Graphic user interface</summary>
-
-  1. Python installed (3.10 <= version <= 3.12)
-
-  2. Install our package:
-
-```bash
-pip install pdf2zh
-```
-
-3. Start using in browser:
-
-   ```bash
-   pdf2zh -i
-   ```
-
-4. If your browswer has not been started automatically, goto
-
-   ```bash
-   http://localhost:7860/
-   ```
-
-   <img src="./docs/images/gui.gif" width="500"/>
-
-See [documentation for GUI](./docs/README_GUI.md) for more details.
-
 </details>
 
 <details>
   <summary>4. Docker</summary>
-
-1. Pull and run:
-
-   ```bash
-   docker pull byaidu/pdf2zh
-   docker run -d -p 7860:7860 byaidu/pdf2zh
-   ```
-
-2. Open in browser:
-
-   ```
-   http://localhost:7860/
-   ```
-
-For docker deployment on cloud service:
-
-<div>
-<a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
-  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" height="26"></a>
-<a href="https://render.com/deploy">
-  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Koyeb" height="26"></a>
-<a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
-  <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="26"></a>
-<a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
-  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
-</div>
-
 </details>
 
 <details>
   <summary>5. Zotero Plugin</summary>
-
-
-See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
-
 </details>
 
 <details>
   <summary>6. Commandline</summary>
-
-1. Python installed (3.10 <= version <= 3.12)
-2. Install our package:
-
-   ```bash
-   pip install pdf2zh
-   ```
-
-3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
-
-   ```bash
-   pdf2zh document.pdf
-   ```
-
 </details>
 
 > [!TIP]
