@@ -113,12 +113,12 @@ not_in_nav: |
 # Page tree
 nav:
   - Home: index.md
-  - Wiki:
-    - Home: wiki/Home.md
-    - Contribution-Guide: wiki/Contribution-Guide---贡献指南.md
-    - Documentation-of-Translation-Services: wiki/Documentation-of-Translation-Services----翻译服务文档.md
-    - FAQ: wiki/FAQ---常见问题.md
-    - Language-Code: wiki/Language-Codes----语言代码.md
-  - Advanced: ADVANCED.md
+  - FAQ: FAQ---常见问题.md
+  - Advanced Usage: ADVANCED.md
   - API: APIS.md
-  - Contributor Covenant Code of Conduct: CODE_OF_CONDUCT.md
+  - Document:
+    - GUI: README_GUI.md
+    - Language-Code: Language-Codes----语言代码.md
+    - Documentation-of-Translation-Services: Documentation-of-Translation-Services----翻译服务文档.md
+    - Contribution-Guide: Contribution-Guide---贡献指南.md
+    - Contributor Covenant Code of Conduct: CODE_OF_CONDUCT.md
