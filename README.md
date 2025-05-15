@@ -71,41 +71,7 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 ### Methods
 
-For different use cases, we provide distinct methods to use our program:
-
-<details open>
-  <summary>1. UV install</summary>
-</details>
-
-<details>
-  <summary>2. Windows exe</summary>
-</details>
-
-<details>
-  <summary>3. Graphic user interface</summary>
-</details>
-
-<details>
-  <summary>4. Docker</summary>
-</details>
-
-<details>
-  <summary>5. Zotero Plugin</summary>
-</details>
-
-<details>
-  <summary>6. Commandline</summary>
-</details>
-
-> [!TIP]
->
-> - If you're using Windows and cannot open the file after downloading, please install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) and try again.
->
-> - If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
-> ```bash
-> docker pull ghcr.io/byaidu/pdfmathtranslate
-> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
-> ```
+For different use cases, we provide distinct methods to use our program. Check out [this page](./docs/getting-started/getting-started.md) for more information.
 
 ### Unable to install?
 
