@@ -135,8 +135,9 @@ pip install pdf2zh
 1. 拉取并运行：
 
    ```bash
-   docker pull byaidu/pdf2zh
-   docker run -d -p 7860:7860 byaidu/pdf2zh
+   git clone https://github.com/Byaidu/PDFMathTranslate
+   cd PDFMathTranslate
+   docker compose up -d
    ```
 
 2. 在浏览器中打开：

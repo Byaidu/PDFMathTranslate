@@ -133,8 +133,9 @@ set HF_ENDPOINT=https://hf-mirror.com
 1. 拉取 Docker 映像檔並執行：
 
    ```bash
-   docker pull byaidu/pdf2zh
-   docker run -d -p 7860:7860 byaidu/pdf2zh
+   git clone https://github.com/Byaidu/PDFMathTranslate
+   cd PDFMathTranslate
+   docker compose up -d
    ```
 
 2. 透過瀏覽器開啟：

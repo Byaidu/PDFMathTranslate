@@ -136,8 +136,9 @@ Python環境を事前にインストールする必要はありません
 1. プルして実行します：
 
     ```bash
-    docker pull byaidu/pdf2zh
-    docker run -d -p 7860:7860 byaidu/pdf2zh
+   git clone https://github.com/Byaidu/PDFMathTranslate
+   cd PDFMathTranslate
+   docker compose up -d
     ```
 
 2. ブラウザで開きます：
