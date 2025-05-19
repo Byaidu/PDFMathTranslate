@@ -1,4 +1,8 @@
-## Google
+[**Advanced**](https://github.com/Byaidu/PDFMathTranslate) > **Language Code** _(current)_
+
+---
+
+#### Google
 
 Source <https://developers.google.com/admin-sdk/directory/v1/languages?hl=zh-cn>, organized by GPT-4o.
 
@@ -62,7 +66,7 @@ Source <https://developers.google.com/admin-sdk/directory/v1/languages?hl=zh-cn>
 | 威尔士语 | Welsh | `cy` |
 
 
-## DeepL
+#### DeepL
 Source <https://developers.deepl.com/docs/resources/supported-languages>, organized by GPT-4o.
 
 | Label in Chinese | Label | `Language Code`| Supports |

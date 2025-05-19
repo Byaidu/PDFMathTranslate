@@ -1,3 +1,7 @@
+[**Getting Started**](./getting-started.md) > **Installation** > **Docker** _(current)_
+
+---
+
 ### Install PDFMathTranslate via docker
 
 #### What is docker?
@@ -20,7 +24,11 @@
 
 !!! note
 
-    If you encounter any issues during use WebUI, please refer to [this webpage](./USAGE_webui.md).
+    If you encounter any issues during use WebUI, please refer to [Usage --> WebUI](./USAGE_webui.md).
+
+!!! note
+
+    If you encounter any issues during use command line, please refer to [Usage --> Command Line](./USAGE_commandline.md).
 
 #### For docker deployment on cloud service:
 

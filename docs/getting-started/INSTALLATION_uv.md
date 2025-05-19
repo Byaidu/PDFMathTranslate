@@ -1,8 +1,14 @@
+[**Getting Started**](./getting-started.md) > **Installation** > **uv** _(current)_
+
+---
+
 ### Install PDFMathTranslate via uv
 
 #### What is uv?
 
 [uv](https://docs.astral.sh/uv/) is an extremely fast Python package and project manager, written in Rust.
+
+---
 
 #### Installation
 
@@ -14,20 +20,12 @@
     pip install uv
     uv tool install --python 3.12 pdf2zh
     ```
-
-After installation, please refer to [this page](./USAGE_commandline.md) to review the command line usage instructions.
-
-### Use WebUI
-
-After completing the step #2 of the installation mentioned above, enter this command in the terminal to open the WebUI:
-
-```bash
-pdf2zh -i
-```
-After about 30s to a minute enter this command, a webpage will open in your default browser. 
-<br>
-If it does not happen, you can try to manually access `http://localhost:7860/`.
+After installation, you can start translation via the **command line** or **WebUI**.
 
 !!! note
 
-    If you encounter any issues during use WebUI, please refer to [this webpage](./USAGE_webui.md).
+    If you encounter any issues during use WebUI, please refer to [Usage --> WebUI](./USAGE_webui.md).
+
+!!! note
+
+    If you encounter any issues during use command line, please refer to [Usage --> Command Line](./USAGE_commandline.md).

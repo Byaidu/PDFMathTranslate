@@ -120,18 +120,18 @@ nav:
   - Getting Started: 
     - Getting Start: getting-started/getting-started.md
     - Installation:
-      - Windows EXE: getting-started/INSTALLATION_winexe.md
-      - Docker: getting-started/INSTALLATION_docker.md
-      - UV: getting-started/INSTALLATION_uv.md
+      - Windows EXE: getting-started/INSTALLATION_winexe.md  
+      - Docker: getting-started/INSTALLATION_docker.md       
+      - UV: getting-started/INSTALLATION_uv.md               
     - Usage:
       - Command Line: getting-started/USAGE_commandline.md
       - WebUI: getting-started/USAGE_webui.md
       - Zotero Plugin: getting-started/USAGE_zotero-plugin.md
   - Advanced: 
-    - Advanced Usage: advanced/ADVANCED.md
-    - GUI: advanced/README_GUI.md
-    - Language-Code: advanced/Language-Codes.md
-    - Documentation-of-Translation-Services: advanced/Documentation-of-Translation-Services.md
+    - Advanced: advanced/advanced.md
+    - Advanced Usage: advanced/ADVANCED_usage.md
+    - Language Code: advanced/Language-Codes.md
+    - Documentation of Translation Services: advanced/Documentation-of-Translation-Services.md
   - API: APIS.md
   - FAQ: FAQ.md
   - Community:

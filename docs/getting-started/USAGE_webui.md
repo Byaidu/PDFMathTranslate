@@ -1,3 +1,7 @@
+[**Getting Started**](./getting-started.md) > **Installation** > **WebUI** _(current)_
+
+---
+
 ### Use PDFMathTranslate via Webui
 
 #### How to open the WebUI page:

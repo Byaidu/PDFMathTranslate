@@ -1,3 +1,7 @@
+[**Getting Started**](./getting-started.md) > **Installation** > **Windows EXE** _(current)_
+
+---
+
 ### Install PDFMathTranslate via .exe file
 
 1. Download `pdf2zh-version-win64.zip` from [release page](https://github.com/Byaidu/PDFMathTranslate/releases). 
