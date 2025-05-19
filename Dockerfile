@@ -25,4 +25,13 @@ COPY . .
 
 RUN uv pip install --system --no-cache . && uv pip install --system --no-cache -U "babeldoc<0.3.0" "pymupdf<1.25.3" "pdfminer-six==20250416" && babeldoc --version && babeldoc --warmup
 
+# Create a non-root user for running the application
+RUN groupadd -r appuser && useradd -r -g appuser -s /bin/bash -d /app appuser
+
+# Set correct ownership of application files
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user for all subsequent operations
+USER appuser
+
 CMD ["pdf2zh", "-i"]
