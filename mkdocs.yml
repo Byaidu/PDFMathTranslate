@@ -132,7 +132,7 @@ nav:
     - Advanced Usage: advanced/ADVANCED_usage.md
     - Language Code: advanced/Language-Codes.md
     - Documentation of Translation Services: advanced/Documentation-of-Translation-Services.md
-  - API: APIS.md
+  # - API: APIS.md
   - FAQ: FAQ.md
   - Community:
     - Contributor Covenant Code of Conduct: community/CODE_OF_CONDUCT.md
