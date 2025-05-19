@@ -61,7 +61,7 @@ theme:
         name: Switch to system preference
   font:
     text: Roboto
-    code: Roboto Mono
+    code: Red Hat Mono
   favicon: images/logo_photo.svg
   logo: images/logo_photo.svg
 
@@ -107,6 +107,8 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.tasklist:
       custom_checkbox: true
+  - pymdownx.tabbed:
+      alternate_style: true
 
 not_in_nav: |
   /tutorials/**/*.md
@@ -117,13 +119,14 @@ nav:
   - Home: index.md
   - Getting Started: 
     - Getting Start: getting-started/getting-started.md
-    - Method:
+    - Installation:
       - Windows EXE: getting-started/INSTALLATION_winexe.md
       - Docker: getting-started/INSTALLATION_docker.md
-      - uv: getting-started/INSTALLATION_uv.md
-      - GUI: getting-started/INSTALLATION_gui.md
-      - Zotero Plugin: getting-started/INSTALLATION_zotero-plugin.md
-      - Commandline: getting-started/INSTALLATION_commandline.md
+      - UV: getting-started/INSTALLATION_uv.md
+    - Usage:
+      - Command Line: getting-started/USAGE_commandline.md
+      - WebUI: getting-started/USAGE_webui.md
+      - Zotero Plugin: getting-started/USAGE_zotero-plugin.md
   - Advanced: 
     - Advanced Usage: advanced/ADVANCED.md
     - GUI: advanced/README_GUI.md

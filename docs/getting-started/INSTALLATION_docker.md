@@ -1,20 +1,28 @@
-### Use PDFMathTranslate via docker
+### Install PDFMathTranslate via docker
 
+#### What is docker?
+
+[Docker](https://docs.docker.com/get-started/docker-overview/) is an open platform for developing, shipping, and running applications. Docker enables you to separate your applications from your infrastructure so you can deliver software quickly. With Docker, you can manage your infrastructure in the same ways you manage your applications. By taking advantage of Docker's methodologies for shipping, testing, and deploying code, you can significantly reduce the delay between writing code and running it in production.
+
+#### Installation
 
 1. Pull and run:
 
-   ```bash
-   docker pull byaidu/pdf2zh
-   docker run -d -p 7860:7860 byaidu/pdf2zh
-   ```
+    ```bash
+    docker pull byaidu/pdf2zh
+    docker run -d -p 7860:7860 byaidu/pdf2zh
+    ```
 
-2. Open in browser:
+2. Enter this URL in your default browser to open the WebUI page:
+    ```
+    http://localhost:7860/
+    ```
 
-   ```
-   http://localhost:7860/
-   ```
+!!! note
 
-For docker deployment on cloud service:
+    If you encounter any issues during use WebUI, please refer to [this webpage](./USAGE_webui.md).
+
+#### For docker deployment on cloud service:
 
 <div>
 <a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">

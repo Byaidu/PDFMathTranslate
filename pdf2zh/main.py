@@ -79,7 +79,10 @@ async def main() -> int:
     if settings.basic.gui:
         from pdf2zh.gui import setup_gui
 
-        setup_gui()
+        if settings.gui_settings.auth_file:
+            setup_gui(auth_file=settings.gui_settings.auth_file)
+        else:
+            setup_gui()
         return 0
 
     assert len(settings.basic.input_files) >= 1, "At least one input file is required"

@@ -2,11 +2,14 @@
 
 PDFMathTranslate is a powerful PDF translation tool. You can install and start using this tool in various ways.
 
-### Methods
+### Installation
 
-1. [Using Windows exe](./INSTALLATION_winexe.md) <small>Recommand for Windows</small>
-2. [Using Docker](./INSTALLATION_docker.md) <small>Recommand for Linux</small>
-3. [Using uv (a Python package manager)](./INSTALLATION_uv.md) <small>Recommand for macOS</small>
-4. [Using GUI](./INSTALLATION_gui.md)
-5. [Using Zotero Plugin](./INSTALLATION_zotero-plugin.md)
-6. [Using Commandline](./INSTALLATION_commandline.md)
+1. [Windows EXE](./INSTALLATION_winexe.md) <small>Recommand for Windows</small>
+2. [Docker](./INSTALLATION_docker.md) <small>Recommand for Linux</small>
+3. [uv (a Python package manager)](./INSTALLATION_uv.md) <small>Recommand for macOS</small>
+
+### Usage
+
+1. [Using WebUI](./USAGE_webui.md)
+2. [Using Zotero Plugin](./USAGE_zotero-plugin.md)
+3. [Using Commandline](./USAGE_commandline.md)

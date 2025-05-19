@@ -71,7 +71,7 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 ### Methods
 
-For different use cases, we provide distinct methods to use our program. Check out [this page](./docs/getting-started/getting-started.md) for more information.
+For different use cases, we provide distinct methods to use our program. Check out [this page](./getting-started/getting-started.md) for more information.
 
 ### Unable to install?
 

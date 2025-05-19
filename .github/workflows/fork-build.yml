@@ -9,7 +9,7 @@ env:
   REGISTRY: ghcr.io
   REPO_LOWER: ${{ github.repository_owner }}/${{ github.event.repository.name }}
   GHCR_REPO: ghcr.io/${{ github.repository }}
-  WIN_EXE_PYTHON_VERSION: 3.12.9
+  WIN_EXE_PYTHON_VERSION: 3.13.3
 jobs:
   check-repository:
     name: Check if running in main repository

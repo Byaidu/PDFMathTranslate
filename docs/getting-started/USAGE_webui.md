@@ -1,12 +1,28 @@
-# Interact with GUI
+### Use PDFMathTranslate via Webui
 
-This subfolder provides the GUI mode of `pdf2zh`.
+#### How to open the WebUI page:
 
-## Usage
+There are several methods to open the WebUI interface. If you are using **Windows**, please refer to [this article](./INSTALLATION_winexe.md);
 
-1. Run `pdf2zh -i`
+1. Python installed (3.10 <= version <= 3.12)
 
-2. Drop the PDF file into the window and click `Translate`.
+2. Install our package:
+
+3. Start using in browser:
+
+    ```bash
+    pdf2zh -i
+    ```
+
+4. If your browswer has not been started automatically, goto
+
+    ```bash
+    http://localhost:7860/
+    ```
+
+    Drop the PDF file into the window and click `Translate`.
+
+<img src="./images/gui.gif" width="500"/>
 
 ### Environment Variables
 
