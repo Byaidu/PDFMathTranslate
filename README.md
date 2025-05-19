@@ -147,8 +147,9 @@ See [documentation for GUI](./docs/README_GUI.md) for more details.
 1. Pull and run:
 
    ```bash
-   docker pull byaidu/pdf2zh
-   docker run -d -p 7860:7860 byaidu/pdf2zh
+   git clone https://github.com/Byaidu/PDFMathTranslate
+   cd PDFMathTranslate
+   docker compose up -d
    ```
 
 2. Open in browser:
