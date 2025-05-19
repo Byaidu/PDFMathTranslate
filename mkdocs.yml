@@ -126,7 +126,7 @@ nav:
     - Usage:
       - Command Line: getting-started/USAGE_commandline.md
       - WebUI: getting-started/USAGE_webui.md
-      - Zotero Plugin: getting-started/USAGE_zotero-plugin.md
+      - Zotero Plugin: https://github.com/guaguastandup/zotero-pdf2zh
   - Advanced: 
     - Advanced: advanced/advanced.md
     - Advanced Usage: advanced/ADVANCED_usage.md
