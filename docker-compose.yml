@@ -1,0 +1,8 @@
+services:
+  pdf2zh: 
+    image: byaidu/pdf2zh 
+    ports:
+      - "127.0.0.1:17860:7860" # Default to prevent external access since http is not secure, pls use nginx or caddy to provide this service via https when exposing to the internet
+    restart: unless-stopped 
+    volumes:
+      - ./config.json:/root/.config/PDFMathTranslate/config.json # Prevent config loss
