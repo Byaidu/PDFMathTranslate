@@ -1,6 +1,7 @@
 import re
 import typing
 from dataclasses import dataclass
+from types import NoneType
 from typing import Literal
 from typing import TypeAlias
 
@@ -119,23 +120,6 @@ class DeepSeekSettings(BaseModel):
 GUI_PASSWORD_FIELDS.append("deepseek_api_key")
 
 
-class DeepLXSettings(BaseModel):
-    """Bing Translation settings"""
-
-    translate_engine_type: Literal["DeepLX"] = Field(default="DeepLX")
-    deeplx_access_token: str | None = Field(
-        default=None, description="DeepLX access token"
-    )
-    deeplx_endpoint: str | None = Field(default=None, description="DeepLX endpoint")
-
-    def validate_settings(self) -> None:
-        if not self.deeplx_endpoint:
-            raise ValueError("DeepL Auth key is required")
-
-
-GUI_PASSWORD_FIELDS.append("deeplx_access_token")
-
-
 class OllamaSettings(BaseModel):
     """Ollama API settings"""
 
@@ -247,37 +231,38 @@ class ZhipuSettings(BaseModel):
 GUI_PASSWORD_FIELDS.append("zhipu_api_key")
 
 
-class SiliconSettings(BaseModel):
-    """Silicon API settings"""
+class SiliconFlowSettings(BaseModel):
+    """SiliconFlow API settings"""
 
-    translate_engine_type: Literal["Silicon"] = Field(default="Silicon")
+    translate_engine_type: Literal["SiliconFlow"] = Field(default="SiliconFlow")
 
-    silicon_base_url: str | None = Field(
-        default="https://api.siliconflow.cn/v1", description="Base URL for Silicon API"
+    siliconflow_base_url: str | None = Field(
+        default="https://api.siliconflow.cn/v1",
+        description="Base URL for SiliconFlow API",
     )
-    silicon_model: str = Field(
-        default="Qwen/Qwen2.5-7B-Instruct", description="Silicon model to use"
+    siliconflow_model: str = Field(
+        default="Qwen/Qwen2.5-7B-Instruct", description="SiliconFlow model to use"
     )
-    silicon_api_key: str | None = Field(
-        default=None, description="API key for Silicon service"
+    siliconflow_api_key: str | None = Field(
+        default=None, description="API key for SiliconFlow service"
     )
-    silicon_enable_thinking: bool | None = Field(
-        default=False, description="Enable thinking for Silicon service"
+    siliconflow_enable_thinking: bool | None = Field(
+        default=False, description="Enable thinking for SiliconFlow service"
     )
 
     def validate_settings(self) -> None:
-        if not self.silicon_api_key:
-            raise ValueError("Silicon API key is required")
+        if not self.siliconflow_api_key:
+            raise ValueError("SiliconFlow API key is required")
 
 
-GUI_PASSWORD_FIELDS.append("silicon_api_key")
+GUI_PASSWORD_FIELDS.append("siliconflow_api_key")
 
 
 class TencentSettings(BaseModel):
     """Tencent Mechine Translation settings"""
 
-    translate_engine_type: Literal["Tencent Mechine Translation"] = Field(
-        default="Tencent Mechine Translation"
+    translate_engine_type: Literal["TencentMechineTranslation"] = Field(
+        default="TencentMechineTranslation"
     )
     tencentcloud_secret_id: str | None = Field(
         default=None, description="Tencent Mechine Translation secret ID"
@@ -498,13 +483,12 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | BingSettings
     | DeepLSettings
     | DeepSeekSettings
-    | DeepLXSettings
     | OllamaSettings
     | XinferenceSettings
     | AzureOpenAISettings
     | ModelScopeSettings
     | ZhipuSettings
-    | SiliconSettings
+    | SiliconFlowSettings
     | TencentSettings
     | GeminiSettings
     | AzureSettings
@@ -517,7 +501,7 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
 )
 
 # 不支持的翻译引擎
-NOT_SUPPORTED_TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = DeepLXSettings
+NOT_SUPPORTED_TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = NoneType
 
 # 默认翻译引擎
 _DEFAULT_TRANSLATION_ENGINE = BingSettings

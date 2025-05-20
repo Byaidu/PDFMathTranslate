@@ -13,9 +13,9 @@ from tenacity import wait_exponential
 logger = logging.getLogger(__name__)
 
 
-class SiliconTranslator(BaseTranslator):
+class SiliconFlowTranslator(BaseTranslator):
     # https://github.com/openai/openai-python
-    name = "silicon"
+    name = "siliconflow"
 
     def __init__(
         self,
@@ -25,13 +25,13 @@ class SiliconTranslator(BaseTranslator):
         super().__init__(settings, rate_limiter)
         self.options = {"temperature": 0}  # 随机采样可能会打断公式标记
         self.client = openai.OpenAI(
-            base_url=settings.translate_engine_settings.silicon_base_url,
-            api_key=settings.translate_engine_settings.silicon_api_key,
+            base_url=settings.translate_engine_settings.siliconflow_base_url,
+            api_key=settings.translate_engine_settings.siliconflow_api_key,
         )
         self.add_cache_impact_parameters("temperature", self.options["temperature"])
-        self.model = settings.translate_engine_settings.silicon_model
+        self.model = settings.translate_engine_settings.siliconflow_model
         self.enable_thinking = (
-            settings.translate_engine_settings.silicon_enable_thinking
+            settings.translate_engine_settings.siliconflow_enable_thinking
         )
         self.add_cache_impact_parameters("model", self.model)
         self.add_cache_impact_parameters("prompt", self.prompt(""))

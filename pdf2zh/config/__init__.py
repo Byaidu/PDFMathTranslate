@@ -10,7 +10,6 @@ from pdf2zh.config.translate_engine_model import AzureOpenAISettings
 from pdf2zh.config.translate_engine_model import AzureSettings
 from pdf2zh.config.translate_engine_model import BingSettings
 from pdf2zh.config.translate_engine_model import DeepLSettings
-from pdf2zh.config.translate_engine_model import DeepLXSettings
 from pdf2zh.config.translate_engine_model import DeepSeekSettings
 from pdf2zh.config.translate_engine_model import DifySettings
 from pdf2zh.config.translate_engine_model import GeminiSettings
@@ -21,7 +20,7 @@ from pdf2zh.config.translate_engine_model import ModelScopeSettings
 from pdf2zh.config.translate_engine_model import OllamaSettings
 from pdf2zh.config.translate_engine_model import OpenAISettings
 from pdf2zh.config.translate_engine_model import QwenMtSettings
-from pdf2zh.config.translate_engine_model import SiliconSettings
+from pdf2zh.config.translate_engine_model import SiliconFlowSettings
 from pdf2zh.config.translate_engine_model import TencentSettings
 from pdf2zh.config.translate_engine_model import XinferenceSettings
 from pdf2zh.config.translate_engine_model import ZhipuSettings
@@ -37,13 +36,12 @@ __all__ = [
     "GoogleSettings",
     "OpenAISettings",
     "DeepLSettings",
-    "DeepLXSettings",
     "OllamaSettings",
     "XinferenceSettings",
     "AzureOpenAISettings",
     "ModelScopeSettings",
     "ZhipuSettings",
-    "SiliconSettings",
+    "SiliconFlowSettings",
     "TencentSettings",
     "GeminiSettings",
     "AzureSettings",
