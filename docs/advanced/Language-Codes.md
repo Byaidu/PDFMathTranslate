@@ -1,4 +1,4 @@
-[**Advanced**](https://github.com/Byaidu/PDFMathTranslate) > **Language Code** _(current)_
+[**Advanced**](./introduction.md) > **Language Code** _(current)_
 
 ---
 

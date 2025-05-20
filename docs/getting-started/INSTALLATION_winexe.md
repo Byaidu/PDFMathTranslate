@@ -6,11 +6,11 @@
 
 1. Download `pdf2zh-<version>-with-assets-win64.zip` from [release page](https://github.com/Byaidu/PDFMathTranslate/releases). 
 
-??? tip "What is the difference between `pdf2zh-<version>-with-assets-win64.zip` and `pdf2zh-<version>-win64.zip`?"
+    ??? tip "What is the difference between `pdf2zh-<version>-with-assets-win64.zip` and `pdf2zh-<version>-win64.zip`?"
 
-    - If you are downloading and using PDFMathTranslate for the first time, it is recommended to download `pdf2zh-<version>-with-assets-win64.zip`.
-    - The `pdf2zh-<version>-with-assets-win64.zip` includes resource files (such as fonts and models) compared to `pdf2zh-<version>-win64.zip`.
-    - The version without assets will also dynamically download resources when running, but the download may fail due to network issues.
+        - If you are downloading and using PDFMathTranslate for the first time, it is recommended to download `pdf2zh-<version>-with-assets-win64.zip`.
+        - The `pdf2zh-<version>-with-assets-win64.zip` includes resource files (such as fonts and models) compared to `pdf2zh-<version>-win64.zip`.
+        - The version without assets will also dynamically download resources when running, but the download may fail due to network issues.
 
 2. Unzip `pdf2zh-<version>-with-assets-win64.zip` and navigate `pdf2zh` folder.
 <br>
@@ -26,8 +26,32 @@ It takes a while to decompress, please be patient.
 <br>
 If it does not open, you can try to manually access `http://localhost:7860/`.
 
+    !!! note
+
+        If you encounter any issues during use WebUI, please refer to [this webpage](./USAGE_webui.md).
+
 5. Enjoy!
 
-!!! note
+!!! tips "You can use the .exe file via command line"
 
-    If you encounter any issues during use WebUI, please refer to [this webpage](./USAGE_webui.md).
+    Use the .exe file through command line as follows:
+
+    1. Launch your terminal and navigate to the folder containing the .exe file:
+
+        ```bash
+        cd /path/pdf2zh/build
+        ```
+
+    2. Call the .exe file:
+
+        ```bash
+        ./pdf2zh.exe "document.pdf"
+        ```
+
+    You can use other command line parameters as normal:
+
+    ```bash
+    ./pdf2zh.exe "document.pdf" --lang-in en --lang-out ja
+    ```
+
+    If you need more information about command line usage, please refer to this article.
