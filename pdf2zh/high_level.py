@@ -54,12 +54,13 @@ class SubprocessError(TranslationError):
     """Error occurring in the translation subprocess outside of babeldoc."""
 
     def __init__(self, message, traceback_str=None):
+        self.raw_message = message
         super().__init__(message)
         self.traceback_str = traceback_str
 
     def __reduce__(self):
         """Support for pickling the exception when passing between processes."""
-        return (self.__class__, (str(self), self.traceback_str))
+        return (self.__class__, (self.raw_message, self.traceback_str))
 
     def __str__(self):
         if self.traceback_str:
@@ -509,7 +510,7 @@ async def do_translate_async_stream(
         # Create an error event to yield to client code
         error_event = {
             "type": "error",
-            "error": str(e),
+            "error": str(e) if not isinstance(e, SubprocessError) else e.raw_message,
             "error_type": e.__class__.__name__,
             "details": getattr(e, "original_error", "")
             or getattr(e, "traceback_str", "")

@@ -12,6 +12,15 @@ GUI_SENSITIVE_FIELDS = []
 # any field in GUI_PASSWORD_FIELDS will be masked in GUI and treated as password
 GUI_PASSWORD_FIELDS = []
 
+
+class TranslateEngineSettingError(Exception):
+    """Translate engine setting error"""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
 ## Please add the translator configuration class below this location.
 
 # Please note that all translator configurations must be of string type,
@@ -506,6 +515,9 @@ TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = (
     | QwenMtSettings
     | OpenAICompatibleSettings
 )
+
+# 不支持的翻译引擎
+NOT_SUPPORTED_TRANSLATION_ENGINE_SETTING_TYPE: TypeAlias = DeepLXSettings
 
 # 默认翻译引擎
 _DEFAULT_TRANSLATION_ENGINE = BingSettings
