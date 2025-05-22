@@ -4,20 +4,21 @@
 
 <h3 id="toc">Table of Contents</h3>
 
-- [Command Line Args](#cmd)
-- [Full / partial translation](#partial)
-- [Specify source and target languages](#language)
-- [Translate wih exceptions](#exceptions)
+- [Command Line Args](#command-line-args)
+- [Full / partial translation](#full--partial-translation)
+- [Specify source and target languages](#specify-source-and-target-languages)
+- [Translate wih exceptions](#translate-wih-exceptions)
 <!-- - [Multi-threads](#threads) -->
-- [Custom prompt](#prompt)
+- [Custom prompt](#custom-prompt)
 <!-- - [Authorization](#auth) -->
-- [Custom configuration](#cofig)
+- [Custom configuration](#custom-configuration)
 <!-- - [Fonts Subseting](#fonts-subset) -->
-- [Translation cache](#cache)
+- [Translation cache](#translation-cache)
 
 ---
 
-<h3 id="cmd">Command Line Args</h3>
+<!-- <h3 id="cmd">Command Line Args</h3> -->
+#### Command Line Args
 
 Execute the translation command in the command line to generate the translated document `example-mono.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service. More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
 
@@ -25,7 +26,7 @@ Execute the translation command in the command line to generate the translated d
 
 In the following table, we list all advanced options for reference:
 
-#### Args
+##### Args
 
 | Option                             | Function                                                                                         | Example                                                                                                                 |
 |------------------------------------|--------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
@@ -66,7 +67,7 @@ In the following table, we list all advanced options for reference:
 | `--skip-scanned-detection`         | Skip scanned detection                                                                           | `pdf2zh example.pdf --skip-scanned-detection`                                                                           |
 | `--ocr-workaround`                 | Force translated text to be black and add white background                                       | `pdf2zh example.pdf --ocr-workaround`                                                                                   |
 
-#### GUI Args
+##### GUI Args
 
 | Option                           | Function                                   | Example                                         |
 |----------------------------------|--------------------------------------------|-------------------------------------------------|
@@ -80,7 +81,7 @@ In the following table, we list all advanced options for reference:
 
 ---
 
-<h3 id="partial">Full / partial translation</h3>
+#### Full / partial translation
 
 - Entire document
 
@@ -98,7 +99,7 @@ In the following table, we list all advanced options for reference:
 
 ---
 
-<h3 id="language">Specify source and target languages</h3>
+#### Specify source and target languages
 
 See [Google Languages Codes](https://developers.google.com/admin-sdk/directory/v1/languages), [DeepL Languages Codes](https://developers.deepl.com/docs/resources/supported-languages)
 
@@ -110,7 +111,7 @@ pdf2zh example.pdf --lang-in en -lang-out ja
 
 ---
 
-<h3 id="exceptions">Translate wih exceptions</h3>
+#### Translate wih exceptions
 
 Use regex to specify formula fonts and characters that need to be preserved:
 
@@ -128,7 +129,7 @@ pdf2zh example.pdf --formular-font-pattern "(CM[^R]|MS.M|XY|MT|BL|RM|EU|LA|RS|LI
 
 ---
 
-<h3 id="prompt">Custom prompt</h3>
+#### Custom prompt
 
 <!-- Note: System prompt is currently not supported. See [this change](https://github.com/Byaidu/PDFMathTranslate/pull/637). -->
 
@@ -146,7 +147,7 @@ pdf2zh example.pdf --custom-system-prompt "prompt.txt"
 
 For example:
 
-```txt
+```txt title="prompt.txt" linenums="1"
 You are a professional, authentic machine translation engine. Only Output the translated text, do not include any other text.
 
 Translate the following markdown source text to ${lang_out}. Keep the formula notation {v*} unchanged. Output translation directly without any additional text.
@@ -168,54 +169,57 @@ In custom prompt file, there are three variables can be used.
 
 ---
 
-<h3 id="cofig">Custom configuration</h3>
+#### Custom configuration
 
-i. Import configuration file in command line
+There are multiple ways to modify and import the configuration file.
 
-Use `--config-file` to specify which file to configure the PDFMathTranslate:
+!!! note "Configuration File Hierarchy"
+
+    When modifying the same parameter using different methods, the software will apply changes according to the priority order below. 
+    <br>
+    Higher-ranked modifications will override lower-ranked ones.
+
+    `cli/gui > env > user config > default config`
+
+##### Modifying Configuration via Command Line Arguments
+
+For most cases, you can directly pass your desired settings through command line arguments. Please refer to [Command Line Args](#cmd) for more information.
+
+For example, if you want to enable a GUI window, you can use the following command:
 
 ```bash
-pdf2zh example.pdf --config-file config.json
+pdf2zh --gui
 ```
+
+#####　Modifying Configuration via Environment Variables
+
+You can replace the `--` in command line arguments with `PDF2ZH_`, connect parameters using `=`, and replace `-` with `_` as environment variables.
+
+For example, if you want to enable a GUI window, you can use the following command:
 
 ```bash
-pdf2zh --gui --config-file config.json
+PDF2ZH_GUI=TRUE pdf2zh
 ```
 
-example config.json
+#####　User-Specified Configuration File
 
-```json
-{
-    "USE_MODELSCOPE": "0",
-    "PDF2ZH_LANG_FROM": "English",
-    "PDF2ZH_LANG_TO": "Simplified Chinese",
-    "NOTO_FONT_PATH": "/app/SourceHanSerifCN-Regular.ttf",
-    "translators": [
-        {
-            "name": "deeplx",
-            "envs": {
-                "DEEPLX_ENDPOINT": "http://localhost:1188/translate/",
-                "DEEPLX_ACCESS_TOKEN": null
-            }
-        },
-        {
-            "name": "ollama",
-            "envs": {
-                "OLLAMA_HOST": "http://127.0.0.1:11434",
-                "OLLAMA_MODEL": "gemma2"
-            }
-        }
-    ]
-}
+You can specify a configuration file using the command line argument below:
+
+```bash
+pdf2zh --config-file '/path/config.toml'
 ```
 
-By default, the config file is saved in the `~/.config/PDFMathTranslate/config.json`. The program will start by reading the contents of config.json, and after that it will read the contents of the environment variables. When an environment variable is available, the contents of the environment variable are used first and the file is updated.
+If you are unsure about the config file format, please refer to the default configuration file described below.
+
+#####　Default Configuration File
+
+The default configuration file is located at `~/.config/pdf2zh`. Please do not modify the configuration files in the `default` directory. It is strongly recommended to refer to this configuration file's content and use method iii to implement your own configuration file.
 
 [⬆️ Back to top](#toc)
 
 ---
 
-<h3 id="font-subset">Fonts subsetting</h3>
+#### Fonts subsetting
 
 By default, PDFMathTranslate uses fonts subsetting to decrease sizes of output files. You can use `--skip-subset-fonts` option to disable fonts subsetting when encoutering compatibility issues.
 
@@ -227,7 +231,7 @@ pdf2zh example.pdf --skip-subset-fonts
 
 ---
 
-<h3 id="cache">Translation cache</h3>
+#### Translation cache
 
 PDFMathTranslate caches translated texts to increase speed and avoid unnecessary API calls for same contents. You can use `--ignore-cache` option to ignore translation cache and force retranslation.
 
@@ -239,7 +243,7 @@ pdf2zh example.pdf --ignore-cache
 
 ---
 
-<h3 id="public-services">Deployment as a public services</h3>
+#### Deployment as a public services
 
 PDFMathTranslate has added the features of **enabling partial services** and **hiding Backend information** in 
 the configuration file. You can enable these by setting `ENABLED_SERVICES` and `HIDDEN_GRADIO_DETAILS` in the 

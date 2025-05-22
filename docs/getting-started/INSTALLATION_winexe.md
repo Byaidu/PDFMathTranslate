@@ -32,7 +32,7 @@ If it does not open, you can try to manually access `http://localhost:7860/`.
 
 5. Enjoy!
 
-!!! tips "You can use the .exe file via command line"
+??? tips "You can use the .exe file via command line"
 
     Use the .exe file through command line as follows:
 
