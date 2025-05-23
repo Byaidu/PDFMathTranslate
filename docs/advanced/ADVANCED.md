@@ -179,9 +179,9 @@ There are multiple ways to modify and import the configuration file.
     <br>
     Higher-ranked modifications will override lower-ranked ones.
 
-    `cli/gui > env > user config > default config`
+    **cli/gui > env > user config file > default config file**
 
-##### Modifying Configuration via Command Line Arguments
+- Modifying Configuration via **Command Line Arguments**
 
 For most cases, you can directly pass your desired settings through command line arguments. Please refer to [Command Line Args](#cmd) for more information.
 
@@ -191,7 +191,7 @@ For example, if you want to enable a GUI window, you can use the following comma
 pdf2zh --gui
 ```
 
-#####　Modifying Configuration via Environment Variables
+- Modifying Configuration via **Environment Variables**
 
 You can replace the `--` in command line arguments with `PDF2ZH_`, connect parameters using `=`, and replace `-` with `_` as environment variables.
 
@@ -201,7 +201,7 @@ For example, if you want to enable a GUI window, you can use the following comma
 PDF2ZH_GUI=TRUE pdf2zh
 ```
 
-#####　User-Specified Configuration File
+- User-Specified **Configuration File**
 
 You can specify a configuration file using the command line argument below:
 
@@ -211,7 +211,7 @@ pdf2zh --config-file '/path/config.toml'
 
 If you are unsure about the config file format, please refer to the default configuration file described below.
 
-#####　Default Configuration File
+- **Default Configuration File**
 
 The default configuration file is located at `~/.config/pdf2zh`. Please do not modify the configuration files in the `default` directory. It is strongly recommended to refer to this configuration file's content and use method iii to implement your own configuration file.
 
