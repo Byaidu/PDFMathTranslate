@@ -129,7 +129,7 @@ pip install pdf2zh
    pdf2zh -i
    ```
 
-4. If your browswer has not been started automatically, goto
+4. If your browser has not been started automatically, goto
 
    ```bash
    http://localhost:7860/
@@ -265,7 +265,7 @@ For detailed explanations, please refer to our document about [Advanced Usage](.
 
 <h2 id="downstream">Secondary Development (APIs)</h2>
 
-For downstream applications, please refer to our document about [API Details](./docs/APIS.md) for futher information about:
+For downstream applications, please refer to our document about [API Details](./docs/APIS.md) for further information about:
 
 - [Python API](./docs/APIS.md#api-python), how to use the program in other Python programs
 - [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed
