@@ -4,7 +4,9 @@
 
 ### Install PDFMathTranslate via .exe file
 
+<br>
 1. Download `pdf2zh-<version>-with-assets-win64.zip` from [release page](https://github.com/Byaidu/PDFMathTranslate/releases). 
+</br>
 
 > [!TIP]
 > **What is the difference between `pdf2zh-<version>-with-assets-win64.zip` and `pdf2zh-<version>-win64.zip`?**
@@ -12,43 +14,51 @@
 > - The `pdf2zh-<version>-with-assets-win64.zip` includes resource files (such as fonts and models) compared to `pdf2zh-<version>-win64.zip`.
 > - The version without assets will also dynamically download resources when running, but the download may fail due to network issues.
 
+<br>
 2. Unzip `pdf2zh-<version>-with-assets-win64.zip` and navigate `pdf2zh` folder.
 <br>
 It takes a while to decompress, please be patient.
+</br>
 
+<br>
 3. Navigate `pdf2zh/build` folder, then Double-click `pdf2zh.exe`。
+</br>
 
 > [!TIP]
 > **Cannot run the .exe file**
 >
 > If you have some problems running pdf2zh.exe, please install `https://aka.ms/vs/17/release/vc_redist.x64.exe` and try again.
 
+<br>
 4. A terminal will pop up after double-clicking the exe file. After about half a minute to a minute, a webpage will open in your default browser. 
 <br>
 If it does not open, you can try to manually access `http://localhost:7860/`.
+</br>
 
 > [!NOTE]
 >
 > If you encounter any issues during use WebUI, please refer to [this webpage](./USAGE_webui.md).
 
+<br>
 5. Enjoy!
+</br>
 
 > [!TIP]
 > **You can use the .exe file via command line**
 >
 > Use the .exe file through command line as follows:
 >
-> 1. Launch your terminal and navigate to the folder containing the .exe file:
+> - Launch your terminal and navigate to the folder containing the .exe file:
 >
->    ```bash
->    cd /path/pdf2zh/build
->    ```
+> ```bash
+> cd /path/pdf2zh/build
+> ```
 >
-> 2. Call the .exe file:
+> - Call the .exe file:
 >
->    ```bash
->    ./pdf2zh.exe "document.pdf"
->    ```
+> ```bash
+> ./pdf2zh.exe "document.pdf"
+> ```
 >
 > You can use other command line parameters as normal:
 >
