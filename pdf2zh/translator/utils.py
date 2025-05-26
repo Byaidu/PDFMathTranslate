@@ -2,7 +2,11 @@ import importlib
 import logging
 
 from pdf2zh.config.model import SettingsModel
+from pdf2zh.config.translate_engine_model import (
+    NOT_SUPPORTED_TRANSLATION_ENGINE_SETTING_TYPE,
+)
 from pdf2zh.config.translate_engine_model import TRANSLATION_ENGINE_METADATA
+from pdf2zh.config.translate_engine_model import TranslateEngineSettingError
 from pdf2zh.translator.base_rate_limiter import BaseRateLimiter
 from pdf2zh.translator.base_translator import BaseTranslator
 from pdf2zh.translator.rate_limiter.qps_rate_limiter import QPSRateLimiter
@@ -20,6 +24,11 @@ def get_rate_limiter(settings: SettingsModel) -> BaseRateLimiter:
 def get_translator(settings: SettingsModel) -> BaseTranslator:
     rate_limiter = get_rate_limiter(settings=settings)
     translator_config = settings.translate_engine_settings
+
+    if isinstance(translator_config, NOT_SUPPORTED_TRANSLATION_ENGINE_SETTING_TYPE):
+        raise TranslateEngineSettingError(
+            f"{translator_config.translate_engine_type} is not supported, Please use other translator!"
+        )
 
     for metadata in TRANSLATION_ENGINE_METADATA:
         if isinstance(translator_config, metadata.setting_model_type):

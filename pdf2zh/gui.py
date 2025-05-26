@@ -535,10 +535,10 @@ async def _run_translation_task(
                 # Handle error event
                 error_msg = event.get("error", "Unknown error")
                 error_details = event.get("details", "")
-                error_str = f"{error_msg}" + (
-                    f": {error_details}" if error_details else ""
-                )
-                raise gr.Error(f"Translation error: {error_str}")
+                # error_str = f"{error_msg}" + (
+                #     f": {error_details}" if error_details else ""
+                # )
+                raise gr.Error(f"Translation error: {error_msg}")
     except asyncio.CancelledError:
         # Handle task cancellation - let translate_file handle the UI updates
         logger.info(
@@ -548,7 +548,11 @@ async def _run_translation_task(
     except TranslationError as e:
         # Handle structured translation errors
         logger.error(f"Translation error: {e}")
-        raise gr.Error(f"Translation error: {e}") from e
+        raise gr.Error(f"Translation error: {e.message}") from e
+    except gr.Error as e:
+        # Handle Gradio errors
+        logger.error(f"Gradio error: {e}")
+        raise
     except Exception as e:
         # Handle other exceptions
         logger.error(f"Error in _run_translation_task: {e}", exc_info=True)
