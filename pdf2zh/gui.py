@@ -37,6 +37,7 @@ lang_map = {
     "Russian": "ru",
     "Spanish": "es",
     "Portuguese": "pt",
+    "Brazilian Portuguese": "pt-BR",
     "French": "fr",
     "Malay": "ms",
     "Indonesian": "id",
