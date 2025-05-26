@@ -259,7 +259,7 @@ class SettingsModel(BaseModel):
                 "short_line_split_factor must be greater than or equal to 0.1"
             )
 
-        if self.pdf.max_pages_per_part < 50:
+        if self.pdf.max_pages_per_part and self.pdf.max_pages_per_part < 50:
             raise ValueError("max_pages_per_part must be greater than or equal to 50")
 
     def parse_pages(self) -> list[tuple[int, int]] | None:
