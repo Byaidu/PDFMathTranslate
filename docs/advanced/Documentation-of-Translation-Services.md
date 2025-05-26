@@ -1,8 +1,9 @@
 [**Advanced**](./introduction.md) > **Documentation of Translation Services** _(current)_
 
-!!! warning "This article's content may be outdated"
-
-    The content of this article may not be compatible with the upcoming pdf2zh 2.0 version. This warning message will be removed once the article's content aligns with the new version.
+> [!WARNING]
+> This article's content may be outdated
+>
+> The content of this article may not be compatible with the upcoming pdf2zh 2.0 version. This warning message will be removed once the article's content aligns with the new version.
 
 ---
 

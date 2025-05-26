@@ -22,10 +22,8 @@
     ```
 After installation, you can start translation via the **command line** or **WebUI**.
 
-!!! note
+> [!NOTE]
+> If you encounter any issues during use WebUI, please refer to [Usage --> WebUI](./USAGE_webui.md).
 
-    If you encounter any issues during use WebUI, please refer to [Usage --> WebUI](./USAGE_webui.md).
-
-!!! note
-
-    If you encounter any issues during use command line, please refer to [Usage --> Command Line](./USAGE_commandline.md).
+> [!NOTE]
+> If you encounter any issues during use command line, please refer to [Usage --> Command Line](./USAGE_commandline.md).

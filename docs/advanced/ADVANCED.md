@@ -173,13 +173,14 @@ In custom prompt file, there are three variables can be used.
 
 There are multiple ways to modify and import the configuration file.
 
-!!! note "Configuration File Hierarchy"
-
-    When modifying the same parameter using different methods, the software will apply changes according to the priority order below. 
-    <br>
-    Higher-ranked modifications will override lower-ranked ones.
-
-    **cli/gui > env > user config file > default config file**
+> [!NOTE]
+> **Configuration File Hierarchy**
+>
+> When modifying the same parameter using different methods, the software will apply changes according to the priority order below. 
+> <br>
+> Higher-ranked modifications will override lower-ranked ones.
+>
+> **cli/gui > env > user config file > default config file**
 
 - Modifying Configuration via **Command Line Arguments**
 

@@ -22,13 +22,11 @@
     http://localhost:7860/
     ```
 
-!!! note
+> [!NOTE]
+> If you encounter any issues during use WebUI, please refer to [Usage --> WebUI](./USAGE_webui.md).
 
-    If you encounter any issues during use WebUI, please refer to [Usage --> WebUI](./USAGE_webui.md).
-
-!!! note
-
-    If you encounter any issues during use command line, please refer to [Usage --> Command Line](./USAGE_commandline.md).
+> [!NOTE]
+> If you encounter any issues during use command line, please refer to [Usage --> Command Line](./USAGE_commandline.md).
 
 #### For docker deployment on cloud service:
 
