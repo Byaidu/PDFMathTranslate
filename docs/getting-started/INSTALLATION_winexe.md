@@ -6,7 +6,6 @@
 
 <br>
 1. Download `pdf2zh-<version>-with-assets-win64.zip` from [release page](https://github.com/Byaidu/PDFMathTranslate/releases). 
-</br>
 
 > [!TIP]
 > **What is the difference between `pdf2zh-<version>-with-assets-win64.zip` and `pdf2zh-<version>-win64.zip`?**
@@ -18,11 +17,9 @@
 2. Unzip `pdf2zh-<version>-with-assets-win64.zip` and navigate `pdf2zh` folder.
 <br>
 It takes a while to decompress, please be patient.
-</br>
 
 <br>
 3. Navigate `pdf2zh/build` folder, then Double-click `pdf2zh.exe`。
-</br>
 
 > [!TIP]
 > **Cannot run the .exe file**
@@ -33,7 +30,6 @@ It takes a while to decompress, please be patient.
 4. A terminal will pop up after double-clicking the exe file. After about half a minute to a minute, a webpage will open in your default browser. 
 <br>
 If it does not open, you can try to manually access `http://localhost:7860/`.
-</br>
 
 > [!NOTE]
 >
@@ -41,7 +37,6 @@ If it does not open, you can try to manually access `http://localhost:7860/`.
 
 <br>
 5. Enjoy!
-</br>
 
 > [!TIP]
 > **You can use the .exe file via command line**
