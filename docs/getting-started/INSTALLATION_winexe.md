@@ -4,7 +4,6 @@
 
 ### Install PDFMathTranslate via .exe file
 
-<br>
 1. Download `pdf2zh-<version>-with-assets-win64.zip` from [release page](https://github.com/Byaidu/PDFMathTranslate/releases). 
 
 > [!TIP]
@@ -14,30 +13,32 @@
 > - The `pdf2zh-<version>-with-assets-win64.zip` includes resource files (such as fonts and models) compared to `pdf2zh-<version>-win64.zip`.
 > - The version without assets will also dynamically download resources when running, but the download may fail due to network issues.
 
-<br>
-2. Unzip `pdf2zh-<version>-with-assets-win64.zip` and navigate `pdf2zh` folder.
-<br>
-It takes a while to decompress, please be patient.
+<p>
+2. Unzip `pdf2zh-<version>-with-assets-win64.zip` and navigate `pdf2zh` folder. It takes a while to decompress, please be patient.
+</p>
 
-<br>
+<p>
 3. Navigate `pdf2zh/build` folder, then Double-click `pdf2zh.exe`。
+</p>
 
 > [!TIP]
 > **Cannot run the .exe file**
 >
 > If you have some problems running pdf2zh.exe, please install `https://aka.ms/vs/17/release/vc_redist.x64.exe` and try again.
 
-<br>
-4. A terminal will pop up after double-clicking the exe file. After about half a minute to a minute, a webpage will open in your default browser. 
-<br>
+<p>
+4. A terminal will pop up after double-clicking the exe file. After about half a minute to a minute, a webpage will open in your default browser.
+</p>
+
 If it does not open, you can try to manually access `http://localhost:7860/`.
 
 > [!NOTE]
 >
 > If you encounter any issues during use WebUI, please refer to [this webpage](./USAGE_webui.md).
 
-<br>
+<p>
 5. Enjoy!
+</p>
 
 > [!TIP]
 > **You can use the .exe file via command line**
