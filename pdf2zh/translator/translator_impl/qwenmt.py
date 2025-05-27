@@ -5,6 +5,7 @@ from babeldoc.document_il.utils.atomic_integer import AtomicInteger
 from pdf2zh.config.model import SettingsModel
 from pdf2zh.translator.base_rate_limiter import BaseRateLimiter
 from pdf2zh.translator.base_translator import BaseTranslator
+from tenacity import before_sleep_log
 from tenacity import retry
 from tenacity import retry_if_exception_type
 from tenacity import stop_after_attempt
@@ -61,10 +62,7 @@ class QwenMtTranslator(BaseTranslator):
         retry=retry_if_exception_type(openai.RateLimitError),
         stop=stop_after_attempt(100),
         wait=wait_exponential(multiplier=1, min=1, max=15),
-        before_sleep=lambda retry_state: logger.warning(
-            f"RateLimitError, retrying in {retry_state.next_action.sleep} seconds... "
-            f"(Attempt {retry_state.attempt_number}/100)"
-        ),
+        before_sleep=before_sleep_log(logger, logging.WARNING),
     )
     def do_translate(self, text, rate_limit_params: dict = None):
         translation_options = {
@@ -86,10 +84,7 @@ class QwenMtTranslator(BaseTranslator):
         retry=retry_if_exception_type(openai.RateLimitError),
         stop=stop_after_attempt(100),
         wait=wait_exponential(multiplier=1, min=1, max=15),
-        before_sleep=lambda retry_state: logger.warning(
-            f"RateLimitError, retrying in {retry_state.next_action.sleep} seconds... "
-            f"(Attempt {retry_state.attempt_number}/100)"
-        ),
+        before_sleep=before_sleep_log(logger, logging.WARNING),
     )
     def do_llm_translate(self, text, rate_limit_params: dict = None):
         if text is None:
