@@ -110,7 +110,7 @@ This API being temporarily deprecated means: the relevant code will not be remov
 
 <h2 id="langcode">Language Code</h2>
 
-If you don't know what code to use to translate to the language you need, check out [this documentation](./docs/Language-Codes----语言代码.md)
+If you don't know what code to use to translate to the language you need, check out [this documentation](./docs/advanced/Language-Codes.md)
 
 <h2 id="todo">TODOs</h2>
 
