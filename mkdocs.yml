@@ -10,6 +10,7 @@ repo_url: https://github.com/awwaawwa/PDFMathTranslate
 edit_uri: edit/main/docs/
 
 # Configuration
+use_directory_urls: false
 theme:
   name: material
   features:
