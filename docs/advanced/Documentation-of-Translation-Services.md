@@ -1,11 +1,23 @@
 [**Advanced**](./introduction.md) > **Documentation of Translation Services** _(current)_
 
-> [!WARNING]
-> This article's content may be outdated
->
-> The content of this article may not be compatible with the upcoming pdf2zh 2.0 version. This warning message will be removed once the article's content aligns with the new version.
+---
+
+### Viewing Available Translate Services via Command Line
+
+You can confirm the available translate services and their usage by printing the help message in the command line.
+
+```bash
+pdf2zh -h
+```
+
+At the end of the help message, you can view detailed information about the different translation services.
 
 ---
+
+> [!CAUTION]
+> The following content was prepared for version 1.x of pdf2zh and has not yet been updated for version 2.x. Therefore, the information may be **outdated**.
+>
+> This warning message will be removed once the article's content aligns with the new version.
 
 * [Google Translate](https://cloud.google.com/translate/docs)
 * [DeepL](https://developers.deepl.com/docs/api-reference/translate)

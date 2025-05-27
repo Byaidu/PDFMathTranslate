@@ -83,17 +83,39 @@ In the following table, we list all advanced options for reference:
 
 #### Full / partial translation
 
-- Entire document
+Use the `--pages` parameter to translate a portion of a document.
 
-  ```bash
-  pdf2zh example.pdf
-  ```
+- If the page numbers are consecutive, you can write it like this:
 
-- Part of the document
+```bash
+pdf2zh example.pdf --pages 1-3
+```
 
-  ```bash
-  pdf2zh example.pdf --part 1-3,5
-  ```
+```bash
+pdf2zh example.pdf --pages 25-
+```
+
+> [!TIP]
+> `25-` includes all pages after page 25. If your document has 100 pages, this is equivalent to `25-100`.
+> 
+> Similarly, `-25` includes all pages before page 25, which is equivalent to `1-25`.
+
+- If the pages are not consecutive, you can use a comma `,` to separate them.
+
+For example, if you want to translate the first and third pages, you can use the following command:
+
+```bash
+pdf2zh example.pdf --pages "1,3"
+```
+
+- If the pages include both consecutive and non-consecutive ranges, you can also connect them with a comma, like this:
+
+```bash
+pdf2zh example.pdf --pages "1,3,10-20,25-"
+```
+
+This command will translate the first page, the third page, pages 10-20, and all pages from 25 to the end.
+
 
 [⬆️ Back to top](#toc)
 
@@ -133,37 +155,11 @@ pdf2zh example.pdf --formular-font-pattern "(CM[^R]|MS.M|XY|MT|BL|RM|EU|LA|RS|LI
 
 <!-- Note: System prompt is currently not supported. See [this change](https://github.com/Byaidu/PDFMathTranslate/pull/637). -->
 
-Custom system prompt for translation. It is mainly used to add the '/no_think' instruction of Qwen 3 in the pormpt.
+Custom system prompt for translation. It is mainly used to add the '/no_think' instruction of Qwen 3 in the prompt.
 
 ```bash
 pdf2zh example.pdf --custom-system-prompt "/no_think You are a professional, authentic machine translation engine"
 ```
-
-Or write your system prompt in a .txt file and import it using the command below:
-
-```bash
-pdf2zh example.pdf --custom-system-prompt "prompt.txt"
-```
-
-For example:
-
-```txt title="prompt.txt" linenums="1"
-You are a professional, authentic machine translation engine. Only Output the translated text, do not include any other text.
-
-Translate the following markdown source text to ${lang_out}. Keep the formula notation {v*} unchanged. Output translation directly without any additional text.
-
-Source Text: ${text}
-
-Translated Text:
-```
-
-In custom prompt file, there are three variables can be used.
-
-| **Variable** | **Description**       |
-|--------------|-----------------------|
-| `lang_in`    | Input language        |
-| `lang_out`   | Output language       |
-| `text`       | Text to be translated |
 
 [⬆️ Back to top](#toc)
 
@@ -194,6 +190,7 @@ pdf2zh --gui
 
 - Modifying Configuration via **Environment Variables**
 
+<!-- fix -->
 You can replace the `--` in command line arguments with `PDF2ZH_`, connect parameters using `=`, and replace `-` with `_` as environment variables.
 
 For example, if you want to enable a GUI window, you can use the following command:
@@ -214,21 +211,32 @@ If you are unsure about the config file format, please refer to the default conf
 
 - **Default Configuration File**
 
-The default configuration file is located at `~/.config/pdf2zh`. Please do not modify the configuration files in the `default` directory. It is strongly recommended to refer to this configuration file's content and use method iii to implement your own configuration file.
+The default configuration file is located at `~/.config/pdf2zh`. 
+Please do not modify the configuration files in the `default` directory. 
+It is strongly recommended to refer to this configuration file's content and use **User-Specified Configuration File** to implement your own configuration file.
 
 [⬆️ Back to top](#toc)
 
 ---
 
-#### Fonts subsetting
+#### Skip clean
 
-By default, PDFMathTranslate uses fonts subsetting to decrease sizes of output files. You can use `--skip-subset-fonts` option to disable fonts subsetting when encoutering compatibility issues.
+When this parameter is set to True, the PDF cleaning step will be skipped, which can improve compatibility and avoid some font processing issues.
+
+Usage:
 
 ```bash
-pdf2zh example.pdf --skip-subset-fonts
+pdf2zh example.pdf --skip-clean
 ```
 
-[⬆️ Back to top](#toc)
+Or using environment variables:
+
+```bash
+PDF2ZH_SKIP_CLEAN=TRUE pdf2zh example.pdf
+```
+
+> [!TIP]
+> When `--enhance-compatibility` is enabled, Skip clean is automatically enabled.
 
 ---
 
@@ -246,44 +254,22 @@ pdf2zh example.pdf --ignore-cache
 
 #### Deployment as a public services
 
-PDFMathTranslate has added the features of **enabling partial services** and **hiding Backend information** in 
-the configuration file. You can enable these by setting `ENABLED_SERVICES` and `HIDDEN_GRADIO_DETAILS` in the 
-configuration file. Among them:
+When deploying a pdf2zh GUI on public services, you should modify the configuration file as described below.
 
-- `ENABLED_SERVICES` allows you to choose to enable only certain options, limiting the number of available services.
-- `HIDDEN_GRADIO_DETAILS` will hide the real API_KEY on the web, preventing users from obtaining server-side keys.
+> [!TIP]
+> - When deploying publicly, both `disable_gui_sensitive_input` and `disable_config_auto_save` should be enabled.
+> - Separate different available services with *English commas* `,`.
 
 A usable configuration is as follows:
 
-```json
-{
-    "USE_MODELSCOPE": "0",
-    "translators": [
-        {
-            "name": "grok",
-            "envs": {
-                "GORK_API_KEY": null,
-                "GORK_MODEL": "grok-2-1212"
-            }
-        },
-        {
-            "name": "openai",
-            "envs": {
-                "OPENAI_BASE_URL": "https://api.openai.com/v1",
-                "OPENAI_API_KEY": "sk-xxxx",
-                "OPENAI_MODEL": "gpt-4o-mini"
-            }
-        }
-    ],
-    "ENABLED_SERVICES": [
-        "OpenAI",
-        "Grok"
-    ],
-    "HIDDEN_GRADIO_DETAILS": true,
-    "PDF2ZH_LANG_FROM": "English",
-    "PDF2ZH_LANG_TO": "Simplified Chinese",
-    "NOTO_FONT_PATH": "/app/SourceHanSerifCN-Regular.ttf"
-}
+```toml title="config.toml"
+[basic]
+gui = true
+
+[gui_settings]
+enabled_services = "Bing,OpenAI"
+disable_gui_sensitive_input = true
+disable_config_auto_save = true
 ```
 
 [⬆️ Back to top](#toc)

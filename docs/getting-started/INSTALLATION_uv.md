@@ -4,9 +4,11 @@
 
 ### Install PDFMathTranslate via uv
 
-#### What is uv?
+#### What is uv? How to install it?
 
-[uv](https://docs.astral.sh/uv/) is an extremely fast Python package and project manager, written in Rust.
+uv is an extremely fast Python package and project manager, written in Rust.
+<br>
+To install uv on your computer, please refer to [this article](https://docs.astral.sh/uv/getting-started/installation/).
 
 ---
 

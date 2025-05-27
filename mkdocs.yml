@@ -117,6 +117,7 @@ not_in_nav: |
 # Page tree
 nav:
   - Home: index.md
+  - Supported Languages: supported_languages.md
   - Getting Started: 
     - Getting Start: getting-started/getting-started.md
     - Installation:
@@ -126,7 +127,7 @@ nav:
     - Usage:
       - Command Line: getting-started/USAGE_commandline.md
       - WebUI: getting-started/USAGE_webui.md
-      - Zotero Plugin: https://github.com/guaguastandup/zotero-pdf2zh
+      - guaguastandup/zotero-pdf2zh: https://github.com/guaguastandup/zotero-pdf2zh
   - Advanced: 
     # - Introduction: advanced/introduction.md
     - Advanced: advanced/advanced.md
