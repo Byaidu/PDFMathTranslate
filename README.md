@@ -70,6 +70,10 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 <h2 id="install">Installation and Usage</h2>
 
+> [!NOTE]
+>
+> When 2.0 was just merged, some CI issues haven't been fixed yet, please be patient.
+
 ### Installation
 
 1. [**Windows EXE**](./getting-started/INSTALLATION_winexe.md) <small>Recommand for Windows</small>
