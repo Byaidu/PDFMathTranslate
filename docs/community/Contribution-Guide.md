@@ -2,12 +2,9 @@
 
 > [!CAUTION]
 >
-> 当前本项目维护者正在 [aw/pdf2zh v2-rc](https://github.com/awwaawwa/PDFMathTranslate/tree/v2-rc) 开发 pdf2zh v2.0-rc。
+> 当前本项目维护者正在研究文档自动国际化，故不接受任何与文档国际化/文档翻译相关的PR！
 >
-> pdf2zh v1.x 已弃用并停止开发&维护。当前不接受社区PR，也不会合并社区PR。
->
-> v2.0-rc已可以接受一些小PR了。请先在 [主仓库issue](https://github.com/Byaidu/PDFMathTranslate/issues) 中与维护者 [@awwaawwa](https://github.com/awwaawwa) 讨论后再给 [aw/pdf2zh v2-rc](https://github.com/awwaawwa/PDFMathTranslate/tree/v2-rc) 发 PR～
-
+> 请勿提交与文档国际化/文档翻译相关的PR！
 
 感谢您对本项目的兴趣！在您开始贡献之前，请花一些时间阅读以下指南，确保您的贡献能够顺利被接受。
 
