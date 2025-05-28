@@ -1,0 +1,142 @@
+# Project information
+site_name: PDFMathTranslate
+site_url: https://pdf2zh.com/
+site_author: awwaawwa
+site_description: PDF scientific paper translation and bilingual comparison.
+
+# Repository
+repo_name: awwaawwa/PDFMathTranslate
+repo_url: https://github.com/awwaawwa/PDFMathTranslate
+edit_uri: edit/main/docs/
+
+# Configuration
+use_directory_urls: false
+theme:
+  name: material
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    # - content.footnote.tooltips
+    # - content.tabs.link
+    - content.tooltips
+    # - header.autohide
+    # - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    # - navigation.instant
+    # - navigation.instant.prefetch
+    # - navigation.instant.progress
+    # - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    # - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    # - toc.integrate
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  font:
+    text: Roboto
+    code: Red Hat Mono
+  favicon: images/logo_photo.svg
+  logo: images/logo_photo.svg
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - minify:
+      minify_html: true
+  - git-authors
+  - git-revision-date-localized:
+      enable_creation_date: true
+
+# Additional configuration
+extra:
+  status:
+    new: Recently added
+    deprecated: Deprecated
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/awwaawwa/PDFMathTranslate
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/pdf2zh/
+
+# Extensions
+markdown_extensions:
+
+  # Python Markdown
+  - github-callouts
+  - markdown_include.include
+  - def_list
+  - admonition
+
+  # Python Markdown Extensions
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.blocks.caption
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tabbed:
+      alternate_style: true
+
+not_in_nav: |
+  /tutorials/**/*.md
+
+
+# Page tree
+nav:
+  - Home: index.md
+  - Getting Started: 
+    - Getting Start: getting-started/getting-started.md
+    - Installation:
+      - Windows EXE: getting-started/INSTALLATION_winexe.md  
+      - Docker: getting-started/INSTALLATION_docker.md       
+      - UV: getting-started/INSTALLATION_uv.md               
+    - Usage:
+      - Command Line: getting-started/USAGE_commandline.md
+      - WebUI: getting-started/USAGE_webui.md
+      - guaguastandup/zotero-pdf2zh: https://github.com/guaguastandup/zotero-pdf2zh
+  - Advanced: 
+    # - Introduction: advanced/introduction.md
+    - Advanced: advanced/advanced.md
+    # - Args: advanced/args.md
+    - Language Code: advanced/Language-Codes.md
+    - Documentation of Translation Services: advanced/Documentation-of-Translation-Services.md
+  # - API: APIS.md
+  - Supported Languages: supported_languages.md
+  - FAQ: FAQ.md
+  - Community:
+    - Contributor Covenant Code of Conduct: community/CODE_OF_CONDUCT.md
+    - Contribution-Guide: community/Contribution-Guide.md

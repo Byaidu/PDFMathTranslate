@@ -220,8 +220,8 @@ else:
 available_services = [x.translate_engine_type for x in TRANSLATION_ENGINE_METADATA]
 
 if settings.gui_settings.enabled_services:
-    enabled_services = set(settings.gui_settings.enabled_services.split(","))
-    available_services = [x for x in available_services if x in enabled_services]
+    enabled_services = set(x.lower() for x in settings.gui_settings.enabled_services.split(","))
+    available_services = [x for x in available_services if x.lower() in enabled_services]
 
 assert available_services, "No translation service is enabled"
 
