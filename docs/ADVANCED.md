@@ -316,3 +316,41 @@ A usable configuration is as follows:
 ```
 
 [⬆️ Back to top](#toc)
+
+
+---
+
+<h3 id="mcp">MCP</h3>
+
+PDFMathTranslate can run as MCP server. To use this, you need to run `uv pip install pdf2zh`, and config `claude_desktop_config.json`, an example config is as follows:
+
+``` json
+{
+    "mcpServers": {
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "/path/to/Document"
+            ]
+        },
+        "translate_pdf": {
+            "command": "uv",
+            "args": [
+                "run",
+                "pdf2zh",
+                "--mcp"
+            ]
+        }
+    }
+}
+```
+
+[filesystem](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) is a reuqired mcp server to find pdf file, and `translate_pdf` is our mcp server.
+
+To test if the mcp server works, you can open claude desktop and tell
+
+```
+find the `test.pdf` in my Document folder and translate it to Chinese
+```
