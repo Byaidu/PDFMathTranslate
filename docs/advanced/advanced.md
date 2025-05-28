@@ -5,15 +5,14 @@
 <h3 id="toc">Table of Contents</h3>
 
 - [Command Line Args](#command-line-args)
-- [Full / partial translation](#full--partial-translation)
+- [Partial translation](#partial-translation)
 - [Specify source and target languages](#specify-source-and-target-languages)
 - [Translate wih exceptions](#translate-wih-exceptions)
-<!-- - [Multi-threads](#threads) -->
 - [Custom prompt](#custom-prompt)
-<!-- - [Authorization](#auth) -->
 - [Custom configuration](#custom-configuration)
-<!-- - [Fonts Subseting](#fonts-subset) -->
+- [Skip Clean](#skip-clean)
 - [Translation cache](#translation-cache)
+- [Deployment as a public services](#deployment-as-a-public-services)
 
 ---
 
@@ -81,7 +80,7 @@ In the following table, we list all advanced options for reference:
 
 ---
 
-#### Full / partial translation
+#### Partial translation
 
 Use the `--pages` parameter to translate a portion of a document.
 
@@ -173,7 +172,7 @@ There are multiple ways to modify and import the configuration file.
 > **Configuration File Hierarchy**
 >
 > When modifying the same parameter using different methods, the software will apply changes according to the priority order below. 
-> <br>
+>
 > Higher-ranked modifications will override lower-ranked ones.
 >
 > **cli/gui > env > user config file > default config file**

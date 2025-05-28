@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>
+<img src="./images/banner.png" width="320px"  alt="PDF2ZH"/>
 
 <h2 id="title">PDFMathTranslate</h2>
 
@@ -53,7 +53,7 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 <h2 id="preview">Preview</h2>
 
 <div align="center">
-<img src="./docs/images/preview.gif" width="80%"/>
+<img src="./images/preview.gif" width="80%"/>
 </div>
 
 <h2 id="demo">Online Service 🌟</h2>
@@ -110,7 +110,7 @@ This API being temporarily deprecated means: the relevant code will not be remov
 
 <h2 id="langcode">Language Code</h2>
 
-If you don't know what code to use to translate to the language you need, check out [this documentation](./docs/advanced/Language-Codes.md)
+If you don't know what code to use to translate to the language you need, check out [this documentation](./advanced/Language-Codes.md)
 
 <h2 id="todo">TODOs</h2>
 
