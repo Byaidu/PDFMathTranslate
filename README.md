@@ -1,8 +1,6 @@
 <div align="center">
 
-English | [简体中文](docs/README_zh-CN.md) | [繁體中文](docs/README_zh-TW.md) | [日本語](docs/README_ja-JP.md) | [한국어](docs/README_ko-KR.md)
-
-<img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>
+<img src="./docs/images/banner.png" width="320px"  alt="banner"/>
 
 <h2 id="title">PDFMathTranslate</h2>
 
@@ -46,14 +44,6 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 
 <h2 id="updates">Updates</h2>
 
-- [May 9, 2025] pdf2zh 2.0 Preview Version [#586](https://github.com/Byaidu/PDFMathTranslate/issues/586): The Windows ZIP file and Docker image are now available.
-
-> [!CAUTION]
->
-> The current maintainer of this project is developing pdf2zh v2.0-rc at [aw/pdf2zh v2-rc](https://github.com/awwaawwa/PDFMathTranslate/tree/v2-rc).
->
-> v2.0-rc can now accept some small PRs. Please discuss with the maintainer [@awwaawwa](https://github.com/awwaawwa) in the [main repository issue](https://github.com/Byaidu/PDFMathTranslate/issues) before submitting a PR to [aw/pdf2zh v2-rc](https://github.com/awwaawwa/PDFMathTranslate/tree/v2-rc)~
-
 - [Mar. 3, 2025] Experimental support for the new backend [BabelDOC](https://github.com/funstory-ai/BabelDOC) WebUI added as an experimental option (by [@awwaawwa](https://github.com/awwaawwa))
 - [Feb. 22 2025] Better release CI and well-packaged windows-amd64 exe (by [@awwaawwa](https://github.com/awwaawwa))
 - [Dec. 24 2024] The translator now supports local models on [Xinference](https://github.com/xorbitsai/inference) _(by [@imClumsyPanda](https://github.com/imClumsyPanda))_
@@ -64,7 +54,7 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 <h2 id="preview">Preview</h2>
 
 <div align="center">
-<img src="./docs/images/preview.gif" width="80%"/>
+<img src="./docs/images/preview.gif" width="80%"  alt="preview"/>
 </div>
 
 <h2 id="demo">Online Service 🌟</h2>
@@ -80,197 +70,47 @@ Note that the computing resources of the demo are limited, so please avoid abusi
 
 <h2 id="install">Installation and Usage</h2>
 
-### Methods
-
-For different use cases, we provide distinct methods to use our program:
-
-<details open>
-  <summary>1. UV install</summary>
-
-1. Python installed (3.10 <= version <= 3.12)
-
-2. Install our package:
-
-   ```bash
-   pip install uv
-   uv tool install --python 3.12 pdf2zh
-   ```
-
-3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
-
-   ```bash
-   pdf2zh document.pdf
-   ```
-
-</details>
-
-<details>
-  <summary>2. Windows exe</summary>
-
-1. Download pdf2zh-version-win64.zip from [release page](https://github.com/Byaidu/PDFMathTranslate/releases)
-
-2. Unzip and double-click `pdf2zh.exe` to run.
-
-</details>
-
-<details>
-  <summary>3. Graphic user interface</summary>
-
-1. Python installed (3.10 <= version <= 3.12)
-
-2. Install our package:
-
-```bash
-pip install pdf2zh
-```
-
-3. Start using in browser:
-
-   ```bash
-   pdf2zh -i
-   ```
-
-4. If your browser has not been started automatically, goto
-
-   ```bash
-   http://localhost:7860/
-   ```
-
-   <img src="./docs/images/gui.gif" width="500"/>
-
-See [documentation for GUI](./docs/README_GUI.md) for more details.
-
-</details>
-
-<details>
-  <summary>4. Docker</summary>
-
-1. Pull and run:
-
-   ```bash
-   docker pull byaidu/pdf2zh
-   docker run -d -p 7860:7860 byaidu/pdf2zh
-   ```
-
-2. Open in browser:
-
-   ```
-   http://localhost:7860/
-   ```
-
-For docker deployment on cloud service:
-
-<div>
-<a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
-  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy" height="26"></a>
-<a href="https://render.com/deploy">
-  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Koyeb" height="26"></a>
-<a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
-  <img src="https://zeabur.com/button.svg" alt="Deploy on Zeabur" height="26"></a>
-<a href="https://template.sealos.io/deploy?templateName=pdf2zh">
-  <img src="https://sealos.io/Deploy-on-Sealos.svg" alt="Deploy on Sealos" height="26"></a>
-<a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
-  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb" height="26"></a>
-</div>
-
-</details>
-
-<details>
-  <summary>5. Zotero Plugin</summary>
-
-
-See [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh) for more details.
-
-</details>
-
-<details>
-  <summary>6. Commandline</summary>
-
-1. Python installed (3.10 <= version <= 3.12)
-2. Install our package:
-
-   ```bash
-   pip install pdf2zh
-   ```
-
-3. Execute translation, files generated in [current working directory](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
-
-   ```bash
-   pdf2zh document.pdf
-   ```
-
-</details>
-
-> [!TIP]
+> [!NOTE]
 >
-> - If you're using Windows and cannot open the file after downloading, please install [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) and try again.
->
-> - If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
-> ```bash
-> docker pull ghcr.io/byaidu/pdfmathtranslate
-> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
-> ```
+> When 2.0 was just merged, some CI issues haven't been fixed yet, please be patient.
 
-### Unable to install?
+### Installation
 
-The present program needs an AI model(`wybxc/DocLayout-YOLO-DocStructBench-onnx`) before working and some users are not able to download due to network issues. If you have a problem with downloading this model, we provide a workaround using the following environment variable:
+1. [**Windows EXE**](./getting-started/INSTALLATION_winexe.md) <small>Recommand for Windows</small>
+2. [**Docker**](./getting-started/INSTALLATION_docker.md) <small>Recommand for Linux</small>
+3. [**uv** (a Python package manager)](./getting-started/INSTALLATION_uv.md) <small>Recommand for macOS</small>
 
-```shell
-set HF_ENDPOINT=https://hf-mirror.com
-```
+---
 
-For PowerShell user:
+### Usage
 
-```shell
-$env:HF_ENDPOINT = https://hf-mirror.com
-```
+1. [Using **WebUI**](./getting-started/USAGE_webui.md)
+2. [Using **Zotero Plugin**](https://github.com/guaguastandup/zotero-pdf2zh) (Third party programm)
+3. [Using **Commandline**](./getting-started/USAGE_commandline.md)
 
-If the solution does not work to you / you encountered other issues, please refer to [frequently asked questions](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98).
+For different use cases, we provide distinct methods to use our program. Check out [this page](./getting-started/getting-started.md) for more information.
 
 <h2 id="usage">Advanced Options</h2>
 
-Execute the translation command in the command line to generate the translated document `example-mono.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service. More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
-
-<img src="./docs/images/cmd.explained.png" width="580px"  alt="cmd"/>
-
-In the following table, we list all advanced options for reference:
-
-| Option                | Function                                                                                                      | Example                                        |
-| --------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| files                 | Local files                                                                                                   | `pdf2zh ~/local.pdf`                           |
-| links                 | Online files                                                                                                  | `pdf2zh http://arxiv.org/paper.pdf`            |
-| `-i`                  | [Enter GUI](#gui)                                                                                             | `pdf2zh -i`                                    |
-| `-p`                  | [Partial document translation](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#partial) | `pdf2zh example.pdf -p 1`                      |
-| `-li`                 | [Source language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -li en`                    |
-| `-lo`                 | [Target language](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)            | `pdf2zh example.pdf -lo zh`                    |
-| `-s`                  | [Translation service](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services)         | `pdf2zh example.pdf -s deepl`                  |
-| `-t`                  | [Multi-threads](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#threads)                | `pdf2zh example.pdf -t 1`                      |
-| `-o`                  | Output dir                                                                                                    | `pdf2zh example.pdf -o output`                 |
-| `-f`, `-c`            | [Exceptions](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                | `pdf2zh example.pdf -f "(MS.*)"`               |
-| `-cp`                 | Compatibility Mode                                                                                            | `pdf2zh example.pdf --compatible`              |
-| `--skip-subset-fonts` | [Skip font subset](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#font-subset)         | `pdf2zh example.pdf --skip-subset-fonts`       |
-| `--ignore-cache`      | [Ignore translate cache](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cache)         | `pdf2zh example.pdf --ignore-cache`            |
-| `--share`             | Public link                                                                                                   | `pdf2zh -i --share`                            |
-| `--authorized`        | [Authorization](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#auth)                   | `pdf2zh -i --authorized users.txt [auth.html]` |
-| `--prompt`            | [Custom Prompt](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                 | `pdf2zh --prompt [prompt.txt]`                 |
-| `--onnx`              | [Use Custom DocLayout-YOLO ONNX model]                                                                        | `pdf2zh --onnx [onnx/model/path]`              |
-| `--serverport`        | [Use Custom WebUI port]                                                                                       | `pdf2zh --serverport 7860`                     |
-| `--dir`               | [batch translate]                                                                                             | `pdf2zh --dir /path/to/translate/`             |
-| `--config`            | [configuration file](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig)             | `pdf2zh --config /path/to/config/config.json`  |
-| `--serverport`        | [custom gradio server port]                                                                                   | `pdf2zh --serverport 7860`                     |
-| `--babeldoc`          | Use Experimental backend [BabelDOC](https://funstory-ai.github.io/BabelDOC/) to translate                     | `pdf2zh --babeldoc` -s openai example.pdf      |
-| `--mcp`               | Enable MCP STDIO mode                                                                                         | `pdf2zh --mcp`                                 |
-| `--sse`               | Enable MCP SSE mode                                                                                           | `pdf2zh --mcp --sse`                           |
-
-For detailed explanations, please refer to our document about [Advanced Usage](./docs/ADVANCED.md) for a full list of each option.
+For detailed explanations, please refer to our document about [Advanced Usage](./docs/advanced/advanced.md) for a full list of each option.
 
 <h2 id="downstream">Secondary Development (APIs)</h2>
 
-For downstream applications, please refer to our document about [API Details](./docs/APIS.md) for further information about:
+> [!NOTE]
+>
+> Currently, no relevant documentation is provided. It will be supplemented later. Please wait patiently.
+
+
+<!-- For downstream applications, please refer to our document about [API Details](./docs/APIS.md) for futher information about:
 
 - [Python API](./docs/APIS.md#api-python), how to use the program in other Python programs
-- [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed
+- [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed -->
 
+<h2 id="langcode">Language Code</h2>
+
+If you don't know what code to use to translate to the language you need, check out [this documentation](./advanced/Language-Codes.md)
+
+<!-- 
 <h2 id="todo">TODOs</h2>
 
 - [ ] Parse layout with DocLayNet based models, [PaddleX](https://github.com/PaddlePaddle/PaddleX/blob/17cc27ac3842e7880ca4aad92358d3ef8555429a/paddlex/repo_apis/PaddleDetection_api/object_det/official_categories.py#L81), [PaperMage](https://github.com/allenai/papermage/blob/9cd4bb48cbedab45d0f7a455711438f1632abebe/README.md?plain=1#L102), [SAM2](https://github.com/facebookresearch/sam2)
@@ -285,7 +125,7 @@ For downstream applications, please refer to our document about [API Details](./
 
 - [ ] Support non-PDF/A files
 
-- [ ] Plugins of [Zotero](https://github.com/zotero/zotero) and [Obsidian](https://github.com/obsidianmd/obsidian-releases)
+- [ ] Plugins of [Zotero](https://github.com/zotero/zotero) and [Obsidian](https://github.com/obsidianmd/obsidian-releases) -->
 
 <h2 id="acknowledgement">Acknowledgements</h2>
 
@@ -308,6 +148,14 @@ For downstream applications, please refer to our document about [API Details](./
 - Document standard: [PDF Explained](https://zxyle.github.io/PDF-Explained/), [PDF Cheat Sheets](https://pdfa.org/resource/pdf-cheat-sheets/)
 
 - Multilingual Font: [Go Noto Universal](https://github.com/satbyy/go-noto-universal)
+
+- [Asynchronize](https://github.com/multimeric/Asynchronize/tree/master?tab=readme-ov-file)
+
+- [Rich logging with multiprocessing](https://github.com/SebastianGrans/Rich-multiprocess-logging/tree/main)
+
+<h2 id="conduct">Before submit your code</h2>
+
+We welcome the active participation of contributors to make pdf2zh better. Before you are ready to submit your code, please refer to our [Code of Conduct](./docs/CODE_OF_CONDUCT.md) and [Contribution Guide](./docs/Contribution-Guide---贡献指南.md).
 
 <h2 id="contrib">Contributors</h2>
 

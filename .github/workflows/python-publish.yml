@@ -16,7 +16,7 @@ env:
   REPO_LOWER: ${{ github.repository_owner }}/${{ github.event.repository.name }}
   GHCR_REPO: ghcr.io/${{ github.repository }}
   DOCKERHUB_REPO: byaidu/pdf2zh
-  WIN_EXE_PYTHON_VERSION: "3.12.9"
+  WIN_EXE_PYTHON_VERSION: "3.13.3"
 
 jobs:
   check-repository:
@@ -48,10 +48,10 @@ jobs:
           fetch-depth: 2
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup uv with Python 3.12
+      - name: Setup uv with Python 3.13
         uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           enable-cache: true
           cache-dependency-glob: "pyproject.toml"
 
@@ -183,10 +183,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup uv with Python 3.12
+      - name: Setup uv with Python 3.13
         uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           enable-cache: true
           cache-dependency-glob: "pyproject.toml"
 

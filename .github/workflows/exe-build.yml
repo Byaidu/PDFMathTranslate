@@ -10,7 +10,7 @@ on:
   # push:
     # debug purpose
 env:
-  WIN_EXE_PYTHON_VERSION: 3.12.9
+  WIN_EXE_PYTHON_VERSION: 3.13.3
 jobs:
   build-win64-exe:
     runs-on: windows-latest

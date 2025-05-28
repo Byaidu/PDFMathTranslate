@@ -1,11 +1,17 @@
 [project]
 name = "pdf2zh"
-version = "1.9.9"
+version = "2.0.0.rc0"
 description = "Latex PDF Translator"
-authors = [{ name = "Byaidu", email = "byaidux@gmail.com" }]
+authors = [
+    { name = "Byaidu", email = "byaidux@gmail.com" },
+    { name = "awwaawwa", email = "aw@funstory.ai" }
+]
+maintainers = [
+    { name = "awwaawwa", email = "aw@funstory.ai" }
+]
 license = "AGPL-3.0"
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<3.14"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -23,41 +29,34 @@ dependencies = [
     "openai>=1.0.0",
     "azure-ai-translation-text<=1.0.1",
     "gradio",
-    "huggingface_hub",
-    "onnx",
-    "onnxruntime",
-    "opencv-python-headless",
     "tencentcloud-sdk-python-tmt",
-    "pdfminer-six==20250416",
     "gradio_pdf>=0.0.21",
-    "pikepdf",
     "peewee>=3.17.8",
     "fontTools",
-    "babeldoc>=0.1.22, <0.3.0",
+    "babeldoc>=0.3.42, <0.4.0",
     "rich",
-]
-
-[project.optional-dependencies]
-backend = [
-    "flask",
-    "celery",
-    "redis"
-]
-argostranslate = [
-    "argostranslate"
-]
-mcp = [
-    "mcp>=1.6.0",
+    "pydantic-settings>=2.8.1",
+    "pydantic>=2.10.6",
+    "httpx>=0.28.1",
+    "sse-starlette>=2.3.3",
+    "fastapi>=0.115.12",
+    "uvicorn>=0.34.2",
+    "legacy-cgi; python_version >= '3.13'",
 ]
 
 [dependency-groups]
 dev = [
-    "black",
-    "flake8",
     "pre-commit",
     "pytest",
     "build",
     "bumpver>=2024.1130",
+    "ruff>=0.9.2",
+    "markdown-callouts>=0.4.0",
+    "markdown-include>=0.8.1",
+    "mkdocs-git-authors-plugin>=0.9.5",
+    "mkdocs-git-committers-plugin>=0.2.3",
+    "mkdocs-git-revision-date-localized-plugin>=1.4.5",
+    "mkdocs-material[recommended]>=9.6.4",
 ]
 
 [project.urls]
@@ -68,7 +67,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-pdf2zh = "pdf2zh.pdf2zh:main"
+pdf2zh = "pdf2zh.main:cli"
 
 [tool.flake8]
 ignore = ["E203", "E261", "E501", "W503", "E741"]
@@ -77,7 +76,7 @@ max-line-length = 88
 
 
 [bumpver]
-current_version = "1.9.9"
+current_version = "2.0.0.rc0"
 version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 
 [bumpver.file_patterns]
@@ -88,3 +87,70 @@ version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 "pdf2zh/__init__.py" = [
     '__version__ = "{version}"'
 ]
+"pdf2zh/const.py" = [
+    '__version__ = "{version}"'
+]
+
+
+[tool.ruff]
+src = ["babeldoc"]
+target-version = "py310"
+show-fixes = true
+
+[tool.ruff.format]
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
+
+[tool.ruff.lint]
+ignore = [
+    "E203",   # 冒号前的空格
+    "E261",   # 注释前至少两个空格
+    "E501",   # 行太长
+    "E741",   # 变量名歧义
+    "F841",   # 未使用的变量
+    "C901",   # 太复杂的函数
+    "S101",   # use assert
+    "SIM",    # flake8-simplify
+    "ARG002", # unused argument
+    "S110",   # `try`-`except`-`pass` detected, consider logging the exception
+    "B024",   # abstract class without abstract methods
+    "S112",   # `try`-`except`-`continue` detected, consider logging the exception
+    "COM812", # missing-trailing-comma
+
+]
+select = [
+    "E",   # pycodestyle 错误
+    "F",   # Pyflakes
+    "N",   # PEP8 命名
+    "B",   # flake8-bugbear
+    "I",   # isort
+    "C",   # mccabe
+    "UP",  # pyupgrade
+    "S",   # flake8-bandit
+    "A",   # flake8-builtins
+    "COM", # flake8-commas
+    "ARG", # flake8-unused-arguments
+    "PTH", # 使用 pathlib
+]
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.lint.flake8-annotations]
+suppress-none-returning = true
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# 设置一些规则的特定配置
+[tool.ruff.lint.mccabe]
+max-complexity = 10 # 函数圈复杂度阈值
+
+[tool.ruff.lint.per-file-ignores]
+"pdf2zh/gui.py" = ["S104"] # 忽略命名规范
+"tests/*" = ["S101"]            # 在测试文件中允许 assert
+"**/__init__.py" = ["F401"]     # 允许未使用的导入
+"docs/*" = ["A001"]

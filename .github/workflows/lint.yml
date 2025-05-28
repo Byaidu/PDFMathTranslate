@@ -1,0 +1,17 @@
+name: Lint Code
+permissions:
+  contents: read
+  pull-requests: write
+on: [push]
+
+jobs:
+  lint:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ruff
+        uses: astral-sh/ruff-action@v3
+      - name: AutoCorrect
+        uses: huacnlee/autocorrect-action@main

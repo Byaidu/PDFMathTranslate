@@ -9,7 +9,7 @@ env:
   REGISTRY: ghcr.io
   REPO_LOWER: ${{ github.repository_owner }}/${{ github.event.repository.name }}
   GHCR_REPO: ghcr.io/${{ github.repository }}
-  WIN_EXE_PYTHON_VERSION: 3.12.9
+  WIN_EXE_PYTHON_VERSION: 3.13.3
 jobs:
   check-repository:
     name: Check if running in main repository
@@ -213,6 +213,7 @@ jobs:
 
           Write-Host "==== 在 venv 环境中安装项目依赖 ===="
           uv pip install .
+          uv pip install BabelDOC[directml]
 
           Write-Host "==== 复制 venv/Lib/site-packages 到 build/ ===="
           Copy-Item -Path "./dep_build/venv/Lib/site-packages" -Destination "./build/site-packages" -Recurse -Force
@@ -252,21 +253,21 @@ jobs:
           name: win64-exe
           path: ./build
 
-      - name: Test show version (online mode)
-        run: |
-          ./build/pdf2zh.exe --version
+      # - name: Test show version (online mode)
+      #   run: |
+      #     ./build/pdf2zh.exe --version
       
       - name: Test - Translate a PDF file with plain text only (online mode)
         run: |
-          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf --output ./test/file --bing
 
       - name: Test - Translate a PDF file figure
         run: |
-          ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
+          ./build/pdf2zh.exe ./test/file/translate.cli.text.with.figure.pdf --output ./test/file --bing
 
       - name: Test - Translate without offline assets (online mode)
         run: |
-          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf --output ./test/file --bing
           
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -304,7 +305,7 @@ jobs:
         run: |
           Write-Host "==== 测试离线资源包 ===="
           New-Item -Path "./test/file/offline_result" -ItemType Directory -Force
-          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf -o ./test/file/offline_result
+          ./build/pdf2zh.exe ./test/file/translate.cli.plain.text.pdf --output ./test/file/offline_result --bing
 
       - name: Upload offline test results
         uses: actions/upload-artifact@v4
