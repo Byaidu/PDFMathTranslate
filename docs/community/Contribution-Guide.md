@@ -81,26 +81,19 @@
 
 ## 添加翻译接口
 
-1. **代码实现**
-   - 在 `translator.py` 文件中基于 `BaseTranslator` 或 `OpenAITranslator` 添加新的类。
-
-2. **功能更新**
-   - 更新 `gui.py` 和 `converter.py` 中的翻译服务列表。
-
-3. **文档更新**
-   - 更新多语言版本的 `README.md` 文件中的翻译服务列表。
+1. 在 `pdf2zh/config/translate_engine_model.py` 文件中添加新的翻译器配置类。
+2. 在 `pdf2zh/config/translate_engine_model.py` 文件中添加新的翻译器配置类实例到 `TRANSLATION_ENGINE_SETTING_TYPE` 类型别名中。
+3. 在 `pdf2zh/translator/translator_impl` 文件夹中添加新的翻译器实现类。
 
 ## 项目结构
 
-- **backend.py**: 提供 HTTP API。
-- **cache.py**: 提供翻译缓存。
-- **converter.py**: 解析并翻译文档，并对翻译结果进行排版。
-- **doclayout.py**: 提供 `doclayout` 模型。
+- **config 文件夹**: 配置系统。
+- **translator 文件夹**: 翻译器相关实现。
 - **gui.py**: 提供 GUI 界面。
-- **high_level.py**: 对文档进行预处理和后处理。
-- **pdf2zh.py**: 提供命令行工具。
-- **pdfinterp.py**: 解析指令流。
-- **translator.py**: 提供翻译接口。
+- **const.py**: 一些常量。
+- **main.py**: 提供命令行工具。
+- **high_level.py**: 基于 BabelDOC 封装出高级接口。
+- **http_api.py**: 提供 HTTP API（未开工）。
 
 ## 联系我们
 
