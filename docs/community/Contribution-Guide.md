@@ -37,7 +37,7 @@
 >
 > 如果您对源代码或相关事宜有任何疑问，请联系维护者 aw@funstory.ai。
 >
-> 从 1.9.3 版本开始，资源文件与 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 共享，相关资源下载代码放到了 BabelDOC 中。如果您想要添加新的资源文件，请联系 BabelDOC 维护者 aw@funstory.ai。
+> 2.0 版本资源文件与 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 共享，相关资源下载代码在 BabelDOC 中。如果您想要添加新的资源文件，请联系 BabelDOC 维护者 aw@funstory.ai。
 
 ## 基本要求
 
@@ -68,16 +68,6 @@
 8. **文档排版**
    - `README.md` 文件的排版请遵循 [中文文案排版指北](https://github.com/sparanoid/chinese-copywriting-guidelines)。
    - 确保英文和中文文档始终保持最新状态，其它语言文档为可选更新。
-
-> [!NOTE]
->
-> 当前正处于 pdf2zh 2.0 过渡期中：
->
-> 现有 PDF 翻译后端将逐渐弃用，之后本项目将主要负责解决 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 自部署 + 更多翻译器支持。详情参照 [pdf2zh 2.0 roadmap](https://github.com/Byaidu/PDFMathTranslate/issues/586)
-> 
-> 我们不接受针对现有 PDF 翻译后端的功能请求，如果您对 PDF 翻译有功能需求，请给 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 发 issue。
->
-> 同时，在过渡期间，维护负担较小的 PR 会被合并。对于诸如配置系统、http api 等较大的任务，维护者想自行完成。如果您对相关事宜有任何疑问，欢迎联系维护者 aw@funstory.ai。
 
 ## 添加翻译接口
 
