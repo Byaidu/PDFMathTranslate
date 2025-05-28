@@ -16,6 +16,8 @@ English | [简体中文](docs/README_zh-CN.md) | [繁體中文](docs/README_zh-T
     <img src="https://img.shields.io/docker/pulls/byaidu/pdf2zh"></a>
   <a href="https://gitcode.com/Byaidu/PDFMathTranslate/overview">
     <img src="https://gitcode.com/Byaidu/PDFMathTranslate/star/badge.svg"></a>
+  <a href="https://hellogithub.com/repository/8ec2cfd3ef744762bf531232fa32bc47">
+    <img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=8ec2cfd3ef744762bf531232fa32bc47&claim_uid=JQ0yfeBNjaTuqDU&theme=small" alt="Featured｜HelloGitHub"></a>
   <a href="https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker">
     <img src="https://img.shields.io/badge/%F0%9F%A4%97-Online%20Demo-FF9E0D"></a>
   <a href="https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate">
