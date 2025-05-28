@@ -118,7 +118,6 @@ not_in_nav: |
 # Page tree
 nav:
   - Home: index.md
-  - Supported Languages: supported_languages.md
   - Getting Started: 
     - Getting Start: getting-started/getting-started.md
     - Installation:
@@ -136,6 +135,7 @@ nav:
     - Language Code: advanced/Language-Codes.md
     - Documentation of Translation Services: advanced/Documentation-of-Translation-Services.md
   # - API: APIS.md
+  - Supported Languages: supported_languages.md
   - FAQ: FAQ.md
   - Community:
     - Contributor Covenant Code of Conduct: community/CODE_OF_CONDUCT.md

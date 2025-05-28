@@ -5,12 +5,14 @@
 <h3 id="toc">Table of Contents</h3>
 
 - [Command Line Args](#command-line-args)
+  - [Args](#args)
+  - [GUI Args](#gui-args)
 - [Partial translation](#partial-translation)
 - [Specify source and target languages](#specify-source-and-target-languages)
 - [Translate wih exceptions](#translate-wih-exceptions)
 - [Custom prompt](#custom-prompt)
 - [Custom configuration](#custom-configuration)
-- [Skip Clean](#skip-clean)
+- [Skip clean](#skip-clean)
 - [Translation cache](#translation-cache)
 - [Deployment as a public services](#deployment-as-a-public-services)
 
@@ -41,7 +43,7 @@ In the following table, we list all advanced options for reference:
 | `--warmup`                         | Only download and verify required assets then exit                                               | `pdf2zh example.pdf --warmup`                                                                                           |
 | `--generate-offline-assets`        | Generate offline assets package in the specified directory                                       | `pdf2zh example.pdf --generate-offline-assets /path`                                                                    |
 | `--restore-offline-assets`         | Restore offline assets package from the specified directory                                      | `pdf2zh example.pdf --restore-offline-assets /path`                                                                     |
-| `--pages`                          | Partial document translation                                                                     | `pdf2zh example.pdf -p 1`                                                                                               |
+| `--pages`                          | Partial document translation                                                                     | `pdf2zh example.pdf -pages 1,2,1-,-3,3-5`                                                                                               |
 | `--lang-in`                        | The code of source language                                                                      | `pdf2zh example.pdf -li en`                                                                                             |
 | `--lang-out`                       | The code of target language                                                                      | `pdf2zh example.pdf -lo zh`                                                                                             |
 | `--min-text-length`                | Minimum text length to translate                                                                 | `pdf2zh example.pdf --min-text-length 5`                                                                                |
@@ -157,7 +159,7 @@ pdf2zh example.pdf --formular-font-pattern "(CM[^R]|MS.M|XY|MT|BL|RM|EU|LA|RS|LI
 Custom system prompt for translation. It is mainly used to add the '/no_think' instruction of Qwen 3 in the prompt.
 
 ```bash
-pdf2zh example.pdf --custom-system-prompt "/no_think You are a professional, authentic machine translation engine"
+pdf2zh example.pdf --custom-system-prompt "/no_think You are a professional and reliable machine translation engine responsible for translating the input text into zh_CN.When translating, strictly follow the instructions below to ensure translation quality and preserve all formatting, tags, and placeholders:"
 ```
 
 [⬆️ Back to top](#toc)

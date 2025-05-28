@@ -26,7 +26,7 @@ After execute translation, files generated in **current working directory**.
 > **Where is my "Current Working Directory" ?**
 > Before entering a command in the terminal, you might see a pathname displayed in your terminal:
 > 
-> ```bash
+> ```powershell
 > PS C:\Users\XXX>
 > ```
 > 
