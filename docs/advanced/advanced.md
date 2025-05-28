@@ -24,28 +24,29 @@
 Execute the translation command in the command line to generate the translated document `example-mono.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service. More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
 
 <img src="./../images/cmd.explained.png" width="580px"  alt="cmd"/>
+<!-- TODO 把命令行图片换掉 主命令部分黑色不透明 参数部分75透 颜色参考 https://developer.apple.com/design/human-interface-guidelines/color#iOS-iPadOS-system-colors -->
 
 In the following table, we list all advanced options for reference:
 
 ##### Args
-
+<!-- TODO 把2.0版本不支持的短参数改掉 -->
 | Option                             | Function                                                                                         | Example                                                                                                                 |
 |------------------------------------|--------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | `files`                            | Local PDF file path                                                                              | `pdf2zh ~/local.pdf`                                                                                                    |
 | `links`                            | Online files                                                                                     | `pdf2zh http://arxiv.org/paper.pdf`                                                                                     |
-| `--output`                         | Output directory for files                                                                       | `pdf2zh example.pdf -o output`                                                                                          |
+| `--output`                         | Output directory for files                                                                       | `pdf2zh example.pdf --output /outputpath`                                                                               |
 | `--<Services>`                     | Use [**specific service**](./Documentation-of-Translation-Services.md) for translation           | `pdf2zh example.pdf --openai`<br>`pdf2zh example.pdf --deepseek`                                                        |
 | `--help`, `-h`                     | Show help message and exit                                                                       | `pdf2zh -h`                                                                                                             |
-| `--config-file`                    | Path to the configuration file                                                                   | `pdf2zh --config /path/to/config/config.json`                                                                           |
+| `--config-file`                    | Path to the configuration file                                                                   | `pdf2zh --config-file /path/to/config/config.toml`                                                                      |
 | `--report-interval`                | Progress report interval in seconds                                                              | `pdf2zh example.pdf --report-interval 5`                                                                                |
 | `--debug`                          | Use debug logging level                                                                          | `pdf2zh example.pdf --debug`                                                                                            |
 | `--gui`                            | Interact with GUI                                                                                | `pdf2zh --gui`                                                                                                          |
 | `--warmup`                         | Only download and verify required assets then exit                                               | `pdf2zh example.pdf --warmup`                                                                                           |
 | `--generate-offline-assets`        | Generate offline assets package in the specified directory                                       | `pdf2zh example.pdf --generate-offline-assets /path`                                                                    |
 | `--restore-offline-assets`         | Restore offline assets package from the specified directory                                      | `pdf2zh example.pdf --restore-offline-assets /path`                                                                     |
-| `--pages`                          | Partial document translation                                                                     | `pdf2zh example.pdf -pages 1,2,1-,-3,3-5`                                                                                               |
-| `--lang-in`                        | The code of source language                                                                      | `pdf2zh example.pdf -li en`                                                                                             |
-| `--lang-out`                       | The code of target language                                                                      | `pdf2zh example.pdf -lo zh`                                                                                             |
+| `--pages`                          | Partial document translation                                                                     | `pdf2zh example.pdf --pages 1,2,1-,-3,3-5`                                                                              |
+| `--lang-in`                        | The code of source language                                                                      | `pdf2zh example.pdf --lang-in en`                                                                                       |
+| `--lang-out`                       | The code of target language                                                                      | `pdf2zh example.pdf --lang-out zh`                                                                                      |
 | `--min-text-length`                | Minimum text length to translate                                                                 | `pdf2zh example.pdf --min-text-length 5`                                                                                |
 | `--rpc-doclayout`                  | RPC service host address for document layout analysis                                            |                                                                                                                         |
 | `--qps`                            | QPS limit for translation service                                                                | `pdf2zh example.pdf --qps 200`                                                                                          |
@@ -191,7 +192,7 @@ pdf2zh --gui
 
 - Modifying Configuration via **Environment Variables**
 
-<!-- fix -->
+<!-- TODO 放一个环境变量的示意图在这里 -->
 You can replace the `--` in command line arguments with `PDF2ZH_`, connect parameters using `=`, and replace `-` with `_` as environment variables.
 
 For example, if you want to enable a GUI window, you can use the following command:
