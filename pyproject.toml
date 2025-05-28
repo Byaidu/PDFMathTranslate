@@ -42,12 +42,6 @@ dependencies = [
     "fastapi>=0.115.12",
     "uvicorn>=0.34.2",
     "legacy-cgi; python_version >= '3.13'",
-    "markdown-callouts>=0.4.0",
-    "markdown-include>=0.8.1",
-    "mkdocs-git-authors-plugin>=0.9.5",
-    "mkdocs-git-committers-plugin>=0.2.3",
-    "mkdocs-git-revision-date-localized-plugin>=1.4.5",
-    "mkdocs-material[recommended]>=9.6.4",
 ]
 
 [dependency-groups]
@@ -57,6 +51,12 @@ dev = [
     "build",
     "bumpver>=2024.1130",
     "ruff>=0.9.2",
+    "markdown-callouts>=0.4.0",
+    "markdown-include>=0.8.1",
+    "mkdocs-git-authors-plugin>=0.9.5",
+    "mkdocs-git-committers-plugin>=0.2.3",
+    "mkdocs-git-revision-date-localized-plugin>=1.4.5",
+    "mkdocs-material[recommended]>=9.6.4",
 ]
 
 [project.urls]
