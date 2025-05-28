@@ -272,3 +272,6 @@ disable_config_auto_save = true
 ```
 
 [⬆️ Back to top](#toc)
+
+<div align="right">
+<h6><small>Some content on this page has been translated by GPT and may contain errors.</small></h6>

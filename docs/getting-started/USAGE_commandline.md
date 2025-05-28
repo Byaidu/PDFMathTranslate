@@ -54,3 +54,6 @@ After execute translation, files generated in **current working directory**.
 #### Advance Usage
 
 For detailed explanations of additional command line parameters, please refer to [advanced usage](./../advanced/ADVANCED_usage.md).
+
+<div align="right">
+<h6><small>Some content on this page has been translated by GPT and may contain errors.</small></h6>

@@ -54,3 +54,6 @@
 > ```
 >
 > If you need more information about command line usage, please refer to this article.
+
+<div align="right">
+<h6><small>Some content on this page has been translated by GPT and may contain errors.</small></h6>

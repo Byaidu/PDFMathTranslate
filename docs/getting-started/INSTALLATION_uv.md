@@ -29,3 +29,6 @@ After installation, you can start translation via the **command line** or **WebU
 
 > [!NOTE]
 > If you encounter any issues during use command line, please refer to [Usage --> Command Line](./USAGE_commandline.md).
+
+<div align="right">
+<h6><small>Some content on this page has been translated by GPT and may contain errors.</small></h6>
