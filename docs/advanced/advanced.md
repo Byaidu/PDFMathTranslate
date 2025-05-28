@@ -257,7 +257,7 @@ When deploying a pdf2zh GUI on public services, you should modify the configurat
 
 > [!TIP]
 > - When deploying publicly, both `disable_gui_sensitive_input` and `disable_config_auto_save` should be enabled.
-> - Separate different available services with *English commas* `,`.
+> - Separate different available services with *English commas* <kbd>,</kbd> .
 
 A usable configuration is as follows:
 
