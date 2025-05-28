@@ -23,7 +23,7 @@
 
 Execute the translation command in the command line to generate the translated document `example-mono.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service. More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
 
-<img src="./../images/cmd.explained.png" width="580px"  alt="cmd"/>
+<img src="./../images/cmd_light.png" width="580px"  alt="cmd"/>
 <!-- TODO 把命令行图片换掉 主命令部分黑色不透明 参数部分75透 颜色参考 https://developer.apple.com/design/human-interface-guidelines/color#iOS-iPadOS-system-colors -->
 
 In the following table, we list all advanced options for reference:
@@ -200,6 +200,8 @@ For example, if you want to enable a GUI window, you can use the following comma
 ```bash
 PDF2ZH_GUI=TRUE pdf2zh
 ```
+
+<img src="./../images/env_light.png" width="580px"  alt="env"/>
 
 - User-Specified **Configuration File**
 
