@@ -30,7 +30,7 @@ I want to use some of the features of the latest version, how do I update it?
 `pip install -U pdf2zh`
 
 
-## The following files do not exist: example.pdf / 以下文件不存在: example.pdf
+## The following files do not exist: example.pdf / 以下文件不存在：example.pdf
 - **Issue / 问题**:  
 When executing the program, users would have the following outputs: `The following files do not exist: example.pdf` if the document was not found.  
 当执行程序时，如果找不到文档，用户将会看到以下输出：`The following files do not exist: example.pdf`。

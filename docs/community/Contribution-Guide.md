@@ -2,11 +2,20 @@
 
 > [!CAUTION]
 >
-> 当前本项目维护者正在研究文档自动国际化，故不接受任何与文档国际化/文档翻译相关的PR！
+> 当前本项目维护者正在研究文档自动国际化，故不接受任何与文档国际化/文档翻译相关的 PR！
 >
-> 请勿提交与文档国际化/文档翻译相关的PR！
+> 请勿提交与文档国际化/文档翻译相关的 PR！
 
 感谢您对本项目的兴趣！在您开始贡献之前，请花一些时间阅读以下指南，确保您的贡献能够顺利被接受。
+
+## 不接受的贡献类型
+
+1. 文档国际化/文档翻译
+2. 与基础架构有关的贡献，如 HTTP API 等。
+3. 明确标出 No help needed 的 Issue。
+4. 其他维护者认为不合适的贡献。
+
+请勿提交与上述类型相关的 PR。
 
 ## 提交流程
 
@@ -24,7 +33,7 @@
 
 > [!TIP]
 >
-> 您无需等到完全开发完成再创建PR，可以尽早创建，方便我们查看您的实现并提供建议。
+> 您无需等到完全开发完成再创建 PR，可以尽早创建，方便我们查看您的实现并提供建议。
 >
 > 如果您对源代码或相关事宜有任何疑问，请联系维护者 aw@funstory.ai。
 >
@@ -64,11 +73,11 @@
 >
 > 当前正处于 pdf2zh 2.0 过渡期中：
 >
-> 现有 PDF 翻译后端将逐渐弃用，之后本项目将主要负责解决 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 自部署+更多翻译器支持。详情参照 [pdf2zh 2.0 roadmap](https://github.com/Byaidu/PDFMathTranslate/issues/586)
+> 现有 PDF 翻译后端将逐渐弃用，之后本项目将主要负责解决 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 自部署 + 更多翻译器支持。详情参照 [pdf2zh 2.0 roadmap](https://github.com/Byaidu/PDFMathTranslate/issues/586)
 > 
 > 我们不接受针对现有 PDF 翻译后端的功能请求，如果您对 PDF 翻译有功能需求，请给 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 发 issue。
 >
-> 同时，在过渡期间，维护负担较小的PR会被合并。对于诸如配置系统、http api等较大的任务，维护者想自行完成。如果您对相关事宜有任何疑问，欢迎联系维护者 aw@funstory.ai。
+> 同时，在过渡期间，维护负担较小的 PR 会被合并。对于诸如配置系统、http api 等较大的任务，维护者想自行完成。如果您对相关事宜有任何疑问，欢迎联系维护者 aw@funstory.ai。
 
 ## 添加翻译接口
 

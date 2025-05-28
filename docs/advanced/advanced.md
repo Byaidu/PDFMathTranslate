@@ -24,12 +24,12 @@
 Execute the translation command in the command line to generate the translated document `example-mono.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service. More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
 
 <img src="./../images/cmd_light.png" width="580px"  alt="cmd"/>
-<!-- TODO 把命令行图片换掉 主命令部分黑色不透明 参数部分75透 颜色参考 https://developer.apple.com/design/human-interface-guidelines/color#iOS-iPadOS-system-colors -->
+<!-- TODO 把命令行图片换掉 主命令部分黑色不透明 参数部分 75 透 颜色参考 https://developer.apple.com/design/human-interface-guidelines/color#iOS-iPadOS-system-colors -->
 
 In the following table, we list all advanced options for reference:
 
 ##### Args
-<!-- TODO 把2.0版本不支持的短参数改掉 -->
+<!-- TODO 把 2.0 版本不支持的短参数改掉 -->
 | Option                             | Function                                                                                         | Example                                                                                                                 |
 |------------------------------------|--------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | `files`                            | Local PDF file path                                                                              | `pdf2zh ~/local.pdf`                                                                                                    |
