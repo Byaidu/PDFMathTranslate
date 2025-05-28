@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/images/banner.png" width="320px"  alt="PDF2ZH"/>
+<img src="./docs/images/banner.png" width="320px"  alt="banner"/>
 
 <h2 id="title">PDFMathTranslate</h2>
 
@@ -53,7 +53,7 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 <h2 id="preview">Preview</h2>
 
 <div align="center">
-<img src="./docs/images/preview.gif" width="80%"/>
+<img src="./docs/images/preview.gif" width="80%"  alt="preview"/>
 </div>
 
 <h2 id="demo">Online Service 🌟</h2>
