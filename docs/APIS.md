@@ -1,5 +1,3 @@
-[**Documentation**](https://github.com/Byaidu/PDFMathTranslate) > **API Details** _(current)_
-
 <h2 id="toc">Table of Content</h2>
 The present project supports two types of APIs, All methods need the Redis;
 
