@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: pdf2zh
+    # Docker 빌드 사용
+    env: docker
+    region: frankfurt       # 원하는 리전
+    plan: free              # 필요 시 starter·standard로 변경
+    repo: https://github.com/yoonch9009/PDFMathTranslate
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    autoDeploy: true
+
+    # 컨테이너가 열어 두는 내부 포트
+    # 원본 Dockerfile에서 EXPOSE 7860
+    ports:
+      - port: 7860
+        protocol: http
+
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false          # Render 대시보드에서 값 입력
+      - key: DEEPL_KEY
+        sync: false
+      # 필요하다면 번역 옵션
+      - key: PDF2ZH_LOCALE
+        value: ko_KR
