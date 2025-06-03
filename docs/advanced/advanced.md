@@ -75,7 +75,7 @@ In the following table, we list all advanced options for reference:
 |----------------------------------|--------------------------------------------|-------------------------------------------------|
 | `--share`                        | Enable sharing mode                        | `pdf2zh --gui --share`                          |
 | `--auth-file`                    | Path to the authentication file            | `pdf2zh --gui --auth-file /path`                |
-| `--enabled-services`             | Enabled translation services               | `pdf2zh --gui --enabled-services "OpenAI"`      |
+| `--enabled-services`             | Enabled translation services               | `pdf2zh --gui --enabled-services "Bing,OpenAI"` |
 | `--disable-gui-sensitive-input`  | Disable GUI sensitive input                | `pdf2zh --gui --disable-gui-sensitive-input`    |
 | `--disable-config-auto-save`     | Disable automatic configuration saving     | `pdf2zh --gui --disable-config-auto-save`       |
 
