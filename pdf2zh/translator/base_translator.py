@@ -77,10 +77,13 @@ class BaseTranslator(ABC):
         """
         self.translate_call_count += 1
         if not (self.ignore_cache or ignore_cache):
-            cache = self.cache.get(text)
-            if cache is not None:
-                self.translate_cache_call_count += 1
-                return cache
+            try:
+                cache = self.cache.get(text)
+                if cache is not None:
+                    self.translate_cache_call_count += 1
+                    return cache
+            except Exception as e:
+                logger.debug(f"try get cache failed, ignore it: {e}")
         self.rate_limiter.wait(rate_limit_params)
         translation = self.do_translate(text)
         if not (self.ignore_cache or ignore_cache):
@@ -95,10 +98,13 @@ class BaseTranslator(ABC):
         """
         self.translate_call_count += 1
         if not (self.ignore_cache or ignore_cache):
-            cache = self.cache.get(text)
-            if cache is not None:
-                self.translate_cache_call_count += 1
-                return cache
+            try:
+                cache = self.cache.get(text)
+                if cache is not None:
+                    self.translate_cache_call_count += 1
+                    return cache
+            except Exception as e:
+                logger.debug(f"try get cache failed, ignore it: {e}")
         self.rate_limiter.wait(rate_limit_params)
         translation = self.do_llm_translate(text)
         if not (self.ignore_cache or ignore_cache):
