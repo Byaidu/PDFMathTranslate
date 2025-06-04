@@ -40,15 +40,6 @@ After execute translation, files generated in **current working directory**.
 > 
 > After executing this command, a pathname will be output. This pathname is the "**Current working directory**". The translated files will appear here.
 
-> [!WARNING]
-> 
-> - If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
-> 
-> ```bash
-> docker pull ghcr.io/byaidu/pdfmathtranslate
-> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
-> ```
-
 ---
 
 #### Advance Usage

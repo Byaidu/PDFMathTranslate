@@ -56,7 +56,7 @@
    - 如果引入了新的依赖，请及时更新 `pyproject.toml` 文件中的依赖列表。
 
 5. **文档更新**
-   - 如果添加了新的命令行选项，请同步更新多语言版本的 `README.md` 文件中的命令行选项列表。
+   - 如果添加了新的命令行选项，请同步更新对应文档。
 
 6. **提交信息**
    - 使用 [语义化提交信息](https://www.conventionalcommits.org/zh-hans/v1.0.0/)，例如：`feat(translator): add openai`。

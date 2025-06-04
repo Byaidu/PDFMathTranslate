@@ -17,6 +17,15 @@
     docker run -d -p 7860:7860 byaidu/pdf2zh
     ```
 
+> [!WARNING]
+> 
+> - If you cannot access Docker Hub, please try the image on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
+> 
+> ```bash
+> docker pull ghcr.io/byaidu/pdfmathtranslate
+> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
+> ```
+
 2. Enter this URL in your default browser to open the WebUI page:
     ```
     http://localhost:7860/
