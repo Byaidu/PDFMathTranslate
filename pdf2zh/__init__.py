@@ -3,6 +3,6 @@ from pdf2zh.high_level import translate, translate_stream
 
 log = logging.getLogger(__name__)
 
-__version__ = "1.9.9"
+__version__ = "1.9.10"
 __author__ = "Byaidu"
 __all__ = ["translate", "translate_stream"]

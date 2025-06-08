@@ -1,6 +1,6 @@
 [project]
 name = "pdf2zh"
-version = "1.9.9"
+version = "1.9.10"
 description = "Latex PDF Translator"
 authors = [{ name = "Byaidu", email = "byaidux@gmail.com" }]
 license = "AGPL-3.0"
@@ -77,7 +77,7 @@ max-line-length = 88
 
 
 [bumpver]
-current_version = "1.9.9"
+current_version = "1.9.10"
 version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 
 [bumpver.file_patterns]
