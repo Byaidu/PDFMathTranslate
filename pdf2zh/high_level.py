@@ -126,7 +126,7 @@ def translate_patch(
                 callback(progress)
             page.pageno = pageno
             pix = doc_zh[page.pageno].get_pixmap()
-            image = np.fromstring(pix.samples, np.uint8).reshape(
+            image = np.frombuffer(pix.samples, np.uint8).reshape(
                 pix.height, pix.width, 3
             )[:, :, ::-1]
             page_layout = model.predict(image, imgsz=int(pix.height / 32) * 32)[0]
