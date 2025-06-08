@@ -1,0 +1,49 @@
+# This is the final, recommended configuration.
+# It builds a single, self-contained image with all dependencies.
+
+services:
+  pdf2zh:
+    build:
+      context: .
+      # All the setup steps are now part of a one-time build process.
+      dockerfile_inline: |
+        FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+
+        WORKDIR /app
+
+        # 1. Install system-level dependencies FIRST.
+        # This is what solves the "libGL.so.1 not found" error.
+        RUN apt-get update && \
+            apt-get install --no-install-recommends -y libgl1 libglib2.0-0 libxext6 libsm6 libxrender1 && \
+            rm -rf /var/lib/apt/lists/*
+
+        # 2. Copy only the dependency file and install Python packages.
+        # This layer is cached and only re-runs if pyproject.toml changes.
+        COPY pyproject.toml .
+        RUN uv pip install --system --no-cache -r pyproject.toml
+
+        # 3. Copy the rest of your application code.
+        COPY . .
+
+        # 4. Install the local package and perform final updates/warmups.
+        RUN uv pip install --system --no-cache . && \
+            uv pip install --system --no-cache -U "babeldoc<0.3.0" "pymupdf<1.25.3" "pdfminer-six==20250416" && \
+            babeldoc --warmup
+
+    # The rest of the configuration is for RUNNING the built image.
+    ports:
+      - "7860:7860"
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      # The UV_LINK_MODE warning happens during build, so we can set it there if needed,
+      # but it's generally harmless.
+
+    command: ["pdf2zh", "-i"]
+
+    # Optional: Mount a volume for persistent data I/O if needed
+    # volumes:
+    #   - ./data:/app/data
+
+    stdin_open: true
+    tty: true
