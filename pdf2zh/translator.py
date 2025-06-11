@@ -287,6 +287,7 @@ class DeepLXTranslator(BaseTranslator):
                 "target_lang": self.lang_out,
                 "text": text,
             },
+            verify=False,  # noqa: S506
         )
         response.raise_for_status()
         return response.json()["data"]
