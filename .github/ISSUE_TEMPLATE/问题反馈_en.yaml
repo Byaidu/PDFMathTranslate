@@ -2,6 +2,10 @@ name: Bug Report
 description: Create a report to help us improve
 labels: ['bug']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 2.0 is released! new repo is [HERE](https://github.com/PDFMathTranslate/PDFMathTranslate-next)
   - type: checkboxes
     id: checks
     attributes:

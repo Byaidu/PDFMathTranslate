@@ -2,6 +2,10 @@ name: 上报 Bug
 description: 使用中文进行 Bug 报告
 labels: ['bug']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 2.0 is released! new repo is [HERE](https://github.com/PDFMathTranslate/PDFMathTranslate-next)
   - type: checkboxes
     id: checks
     attributes:
