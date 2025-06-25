@@ -11,6 +11,8 @@ body:
     attributes:
       label: 在提问之前...
       options:
+      - label: 我已经尝试了PDFMathTranslate-next,并在PDFMathTranslate-next提交了issue
+        required: true
       - label: 我已经搜索了现有的 issues
         required: true
       - label: 我在提问题之前至少花费了 5 分钟来思考和准备

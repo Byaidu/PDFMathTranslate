@@ -6,6 +6,13 @@ body:
     attributes:
       value: |
         ## 2.0 is released! new repo is [HERE](https://github.com/PDFMathTranslate/PDFMathTranslate-next)
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 在提问之前...
+      options:
+      - label: 我已经尝试了PDFMathTranslate-next,并在PDFMathTranslate-next提交了issue
+        required: true
   - type: textarea
     id: describe
     attributes:

@@ -11,6 +11,8 @@ body:
     attributes:
       label: Before you asking
       options:
+      - label: I have tried the PDFMathTranslate-next and give feedback in PDFMathTranslate-next
+        required: true
       - label: I have searched the existing issues
         required: true
       - label: I spend at least 5 minutes for thinking and preparing
