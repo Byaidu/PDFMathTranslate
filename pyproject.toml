@@ -1,6 +1,6 @@
 [project]
 name = "pdf2zh"
-version = "1.9.10"
+version = "1.9.11"
 description = "Latex PDF Translator"
 authors = [{ name = "Byaidu", email = "byaidux@gmail.com" }]
 license = "AGPL-3.0"
@@ -22,7 +22,8 @@ dependencies = [
     "deepl",
     "openai>=1.0.0",
     "azure-ai-translation-text<=1.0.1",
-    "gradio",
+    # 5.36 has a bug, webui starts with a white screen
+    "gradio<5.36",
     "huggingface_hub",
     "onnx",
     "onnxruntime",
@@ -77,7 +78,7 @@ max-line-length = 88
 
 
 [bumpver]
-current_version = "1.9.10"
+current_version = "1.9.11"
 version_pattern = "MAJOR.MINOR.PATCH[.PYTAGNUM]"
 
 [bumpver.file_patterns]
