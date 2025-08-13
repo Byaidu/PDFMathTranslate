@@ -1,3 +1,35 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="center">
+        <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=en">English</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=zh-CN">简体中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=zh-TW">繁體中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=ja">日本語</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=ko">한국어</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=hi">हिन्दी</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=th">ไทย</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=fr">Français</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=de">Deutsch</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=es">Español</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=it">Italiano</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=ru">Русский</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=pt">Português</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=nl">Nederlands</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=pl">Polski</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=ar">العربية</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=fa">فارسی</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=tr">Türkçe</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=vi">Tiếng Việt</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=id">Bahasa Indonesia</a>
+        | <a href="https://openaitx.github.io/view.html?user=Byaidu&project=PDFMathTranslate&lang=as">অসমীয়া</
+      </div>
+    </div>
+  </details>
+</div>
+
 <div align="center">
 
 English | [简体中文](docs/README_zh-CN.md) | [繁體中文](docs/README_zh-TW.md) | [日本語](docs/README_ja-JP.md) | [한국어](docs/README_ko-KR.md)
