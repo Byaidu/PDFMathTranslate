@@ -625,6 +625,35 @@ class SiliconTranslator(OpenAITranslator):
         self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
 
 
+class X302AITranslator(OpenAITranslator):
+    # https://doc.302.ai/
+    name = "302ai"
+    envs = {
+        "X302AI_API_KEY": None,
+        "X302AI_MODEL": "Gemma-7B",
+    }
+    CustomPrompt = True
+
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
+        self.set_envs(envs)
+        base_url = "https://api.302.ai/v1"
+        api_key = self.envs["X302AI_API_KEY"]
+        if not model:
+            model = self.envs["X302AI_MODEL"]
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
+        self.prompttext = prompt
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
+
+
 class GeminiTranslator(OpenAITranslator):
     # https://ai.google.dev/gemini-api/docs/openai
     name = "gemini"

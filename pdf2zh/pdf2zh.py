@@ -383,6 +383,7 @@ def yadt_main(parsed_args) -> int:
         DeepseekTranslator,
         OpenAIlikedTranslator,
         QwenMtTranslator,
+        X302AITranslator,
     )
 
     for translator in [
@@ -408,6 +409,7 @@ def yadt_main(parsed_args) -> int:
         DeepseekTranslator,
         OpenAIlikedTranslator,
         QwenMtTranslator,
+        X302AITranslator,
     ]:
         if service_name == translator.name:
             translator = translator(
