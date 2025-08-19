@@ -271,21 +271,11 @@ For downstream applications, please refer to our document about [API Details](./
 - [Python API](./docs/APIS.md#api-python), how to use the program in other Python programs
 - [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed
 
-<h2 id="todo">TODOs</h2>
+<h2 id="sponsors">Sponsors</h2>
 
-- [ ] Parse layout with DocLayNet based models, [PaddleX](https://github.com/PaddlePaddle/PaddleX/blob/17cc27ac3842e7880ca4aad92358d3ef8555429a/paddlex/repo_apis/PaddleDetection_api/object_det/official_categories.py#L81), [PaperMage](https://github.com/allenai/papermage/blob/9cd4bb48cbedab45d0f7a455711438f1632abebe/README.md?plain=1#L102), [SAM2](https://github.com/facebookresearch/sam2)
-
-- [ ] Fix page rotation, table of contents, format of lists
-
-- [ ] Fix pixel formula in old papers
-
-- [ ] Async retry except KeyboardInterrupt
-
-- [ ] Knuth–Plass algorithm for western languages
-
-- [ ] Support non-PDF/A files
-
-- [ ] Plugins of [Zotero](https://github.com/zotero/zotero) and [Obsidian](https://github.com/obsidianmd/obsidian-releases)
+<a href="https://share.302.ai/tqTWfD">
+  <img width="50%" alt="image" src="https://github.com/user-attachments/assets/9c81d851-9560-4189-991a-f8036b8e8fc1" />
+</a>
 
 <h2 id="acknowledgement">Acknowledgements</h2>
 
