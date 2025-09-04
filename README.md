@@ -271,12 +271,6 @@ For downstream applications, please refer to our document about [API Details](./
 - [Python API](./docs/APIS.md#api-python), how to use the program in other Python programs
 - [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed
 
-<h2 id="sponsors">Sponsors</h2>
-
-<a href="https://share.302.ai/tqTWfD">
-  <img width="50%" alt="image" src="https://github.com/user-attachments/assets/9c81d851-9560-4189-991a-f8036b8e8fc1" />
-</a>
-
 <h2 id="acknowledgement">Acknowledgements</h2>
 
 - [Immersive Translation](https://immersivetranslate.com) sponsors monthly Pro membership redemption codes for active contributors to this project, see details at: [CONTRIBUTOR_REWARD.md](https://github.com/funstory-ai/BabelDOC/blob/main/docs/CONTRIBUTOR_REWARD.md)
