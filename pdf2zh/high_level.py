@@ -53,6 +53,7 @@ noto_list = [
     "th",  # Thai
     "ur",  # Urdu
     "uk",  # Ukrainian
+    "fa",
 ]
 
 
@@ -411,6 +412,7 @@ def download_remote_fonts(lang: str):
             }.items()
             for la in langs
         },
+        "fa": "NotoNaskhArabic-Regular.ttf"
     }
     font_name = LANG_NAME_MAP.get(lang, "GoNotoKurrent-Regular.ttf")
 
