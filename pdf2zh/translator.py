@@ -1055,6 +1055,8 @@ class QwenMtTranslator(OpenAITranslator):
             "ru": "Russian",
             "es": "Spanish",
             "it": "Italian",
+            "fa": "Persian",
+
         }
 
         return langdict[input_lang]
