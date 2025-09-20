@@ -272,8 +272,57 @@ For downstream applications, please refer to our document about [API Details](./
 - [Python API](./docs/APIS.md#api-python), how to use the program in other Python programs
 - [HTTP API](./docs/APIS.md#api-http), how to communicate with a server with the program installed
 
+<h3 id="downstream">4.3 Differences between two major forks</h3>
+
+- [Byaidu/PDFMathTranslate](https://github.com/Byaidu/PDFMathTranslate): The present and the original project for stable release.
+
+- [PDFMathTranslate/PDFMathTranslate-next](https://github.com/PDFMathTranslate/PDFMathTranslate-next): A fork with web-ui and additional features. This fork handles a large number of marginal cases, improves PDF compatibility, and optimizes cross-column and cross-page semantic consistency, dynamic scaling, and dynamic scaling consistency, among many other translation quality improvements. However, this fork is intended solely for development and does not address compatibility issues and is not designed for community-contributions.
+
 <h2 id="information">5. Project Information</h2>
-<h3 id="acknowledgement">5.1 Acknowledgement</h3>
+<h3 id="citation">5.1 Citation</h3>
+
+This work has been accepted by the *Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations* (EMNLP 2025). 
+
+- Pre-print version: [PDFMathTranslate: Scientific Document Translation Preserving Layouts](https://arxiv.org/abs/2507.03009)
+
+  ```
+  @online{ouyang2025pdfmathtranslate,
+    title = {{{PDFMathTranslate}}: {{Scientific Document Translation Preserving Layouts}}},
+    shorttitle = {{{PDFMathTranslate}}},
+    author = {Ouyang, Rongxin and Chu, Chang and Xin, Zhikuang and Ma, Xiangyao},
+    date = {2025-07-08},
+    eprint = {2507.03009},
+    eprinttype = {arXiv},
+    eprintclass = {cs},
+    doi = {10.48550/arXiv.2507.03009},
+    url = {http://arxiv.org/abs/2507.03009},
+    urldate = {2025-08-27},
+    pubstate = {prepublished}
+  }
+  ```
+
+- The citation for the EMNLP proceedings will be provided upon release.
+<!-- ```
+@inproceedings{zheng-etal-2024-openresearcher,
+    title = "{O}pen{R}esearcher: Unleashing {AI} for Accelerated Scientific Research",
+    author = "Ouyang, Rongxin  and
+      Chu, Chang and
+      Xin, Zhikuang and
+      Ma, Xiangyao",
+    editor = "TBD",
+    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations",
+    month = nov,
+    year = "2025",
+    address = "Miami, Florida, USA",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/TBD/",
+    doi = "TBD",
+    pages = "TBD",
+    abstract = "Language barriers in scientific documents hinder the diffusion and development of science and technologies. However, prior efforts in translating such documents largely overlooked the information in layouts. To bridge the gap, we introduce PDFMathTranslate, the world’s first open-source software for translating scientific documents while preserving layouts. Leveraging the most recent advances in large language models and precise layout detection, we contribute to the community with key improvements in precision, flexibility, and efficiency. The work is open-sourced at https://github.com/byaidu/pdfmathtranslate with more than 222k downloads."
+}
+``` -->
+
+<h3 id="acknowledgement">5.2 Acknowledgement</h3>
 
 - [Immersive Translation](https://immersivetranslate.com) sponsors monthly Pro membership redemption codes for active contributors to this project, see details at: [CONTRIBUTOR_REWARD.md](https://github.com/funstory-ai/BabelDOC/blob/main/docs/CONTRIBUTOR_REWARD.md)
 
@@ -295,7 +344,7 @@ For downstream applications, please refer to our document about [API Details](./
 
 - Multilingual Font: [Go Noto Universal](https://github.com/satbyy/go-noto-universal)
 
-<h3 id="contrib">5.2 Contributors</h3>
+<h3 id="contrib">5.3 Contributors</h3>
 
 <a href="https://github.com/Byaidu/PDFMathTranslate/graphs/contributors">
   <img src="https://opencollective.com/PDFMathTranslate/contributors.svg?width=890&button=false" />
