@@ -53,7 +53,7 @@ jobs:
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Docker meta
         id: meta
@@ -158,7 +158,7 @@ jobs:
     if: needs.check-repository.outputs.is_main_repo != 'true'
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup uv with Python ${{ env.WIN_EXE_PYTHON_VERSION }}
         uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
@@ -244,7 +244,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
