@@ -1,4 +1,18 @@
 <div align="center">
+	<a href="https://go.warp.dev/PDFMathTranslate" target="_blank">
+		<sup>Special thanks to:</sup>
+		<br>
+		<img alt="Warp sponsorship" width="400" src="https://github.com/warpdotdev/brand-assets/blob/main/Github/Sponsor/Warp-Github-LG-02.png">
+		<br>
+		<h>Warp, built for coding with multiple AI agents</b>
+		<br>
+		<sup>Available for macOS, Linux and Windows</sup>
+	</a>
+</div>
+
+<br>
+
+<div align="center">
 
 English | [简体中文](docs/README_zh-CN.md) | [繁體中文](docs/README_zh-TW.md) | [日本語](docs/README_ja-JP.md) | [한국어](docs/README_ko-KR.md)
 
