@@ -95,9 +95,7 @@ class TestTranslator(unittest.TestCase):
         self.assertEqual(translator.translate("Hello {v0}"), "译文 {v0}")
         self.assertEqual(translator.translate("Hello {v0}"), "译文 {v0}")
         client.assert_called_once_with(raise_exception=True, timeout=20)
-        backend.translate.assert_awaited_once_with(
-            "Hello {v0}", src="en", dest="zh-CN"
-        )
+        backend.translate.assert_awaited_once_with("Hello {v0}", src="en", dest="zh-CN")
         client.return_value.__aexit__.assert_awaited_once()
 
     @mock.patch("pdf2zh.translator.GoogleTrans")
