@@ -15,7 +15,11 @@ def transport_security():
     (comma-separated, e.g. a tunnel's), and "*" turns the check off."""
     from mcp.server.transport_security import TransportSecuritySettings
 
-    hosts = [h.strip() for h in os.environ.get("PDF2ZH_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    hosts = [
+        h.strip()
+        for h in os.environ.get("PDF2ZH_ALLOWED_HOSTS", "").split(",")
+        if h.strip()
+    ]
     if "*" in hosts:
         return TransportSecuritySettings(enable_dns_rebinding_protection=False)
     hosts += ["127.0.0.1:*", "localhost:*"]
@@ -126,11 +130,17 @@ def create_http_app(mcp: FastMCP):
     if _accepts(mcp.streamable_http_app, "stateless_http"):
         kwargs["stateless_http"] = True
     app = mcp.streamable_http_app(**kwargs)
-    extra = [h.strip() for h in os.environ.get("PDF2ZH_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    extra = [
+        h.strip()
+        for h in os.environ.get("PDF2ZH_ALLOWED_HOSTS", "").split(",")
+        if h.strip()
+    ]
     hosts = ["localhost", r"127\.0\.0\.1"] + [re.escape(h) for h in extra if h != "*"]
     app.add_middleware(
         CORSMiddleware,
-        allow_origin_regex=".*" if "*" in extra else rf"https?://({'|'.join(hosts)})(:\d+)?",
+        allow_origin_regex=(
+            ".*" if "*" in extra else rf"https?://({'|'.join(hosts)})(:\d+)?"
+        ),
         allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
         allow_headers=["*"],
         expose_headers=["mcp-session-id", "mcp-protocol-version"],

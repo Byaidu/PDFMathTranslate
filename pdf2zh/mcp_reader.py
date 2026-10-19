@@ -51,11 +51,16 @@ class ReaderDocument(TypedDict):
 
 
 def cache_root() -> Path:
-    return Path(os.environ.get("PDF2ZH_READER_CACHE") or Path(tempfile.gettempdir()) / "pdf2zh-reader")
+    return Path(
+        os.environ.get("PDF2ZH_READER_CACHE")
+        or Path(tempfile.gettempdir()) / "pdf2zh-reader"
+    )
 
 
 def options_key(options: dict) -> str:
-    raw = json.dumps([options.get(k) for k in ("lang_in", "lang_out", "service", "kernel")])
+    raw = json.dumps(
+        [options.get(k) for k in ("lang_in", "lang_out", "service", "kernel")]
+    )
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
@@ -80,7 +85,11 @@ class PageTranslator:
     async def page(self, doc_id: str, options: dict, page: int) -> Path:
         key = options_key(options)
         job = next(
-            (j for j in self.pending if (j.doc_id, j.key, j.page) == (doc_id, key, page)),
+            (
+                j
+                for j in self.pending
+                if (j.doc_id, j.key, j.page) == (doc_id, key, page)
+            ),
             None,
         )
         if job is None:
@@ -130,7 +139,9 @@ class PageTranslator:
 class Reader:
     """Documents opened in the reader and their translated pages."""
 
-    def __init__(self, root: Optional[Path] = None, kernel_factory=None, batch: int = 4):
+    def __init__(
+        self, root: Optional[Path] = None, kernel_factory=None, batch: int = 4
+    ):
         self.root = root or cache_root()
         self.docs: dict[str, Path] = {}
         self.batch = batch
@@ -166,7 +177,12 @@ class Reader:
 
         with pymupdf.open(file) as doc:
             sizes = [[round(p.rect.width, 2), round(p.rect.height, 2)] for p in doc]
-        return {"doc_id": doc_id, "title": title, "page_count": len(sizes), "page_sizes": sizes}
+        return {
+            "doc_id": doc_id,
+            "title": title,
+            "page_count": len(sizes),
+            "page_sizes": sizes,
+        }
 
     def prefetch(self, doc_id: str, options: dict, page: int = 1) -> None:
         """Start translating `page` in the background, before the reader asks."""
@@ -187,7 +203,9 @@ class Reader:
 
     # ------------------------------------------------------------- pages
 
-    async def image(self, doc_id: str, page: int, width: int, translated: bool, options: dict) -> bytes:
+    async def image(
+        self, doc_id: str, page: int, width: int, translated: bool, options: dict
+    ) -> bytes:
         """One page as JPEG bytes, `width` pixels wide."""
         if translated:
             source = await self.translated_page(doc_id, page, options)
@@ -205,7 +223,9 @@ class Reader:
             return (await asyncio.shield(running))[page]
         return await self.translator.page(doc_id, options, page)
 
-    async def _translate(self, doc_id: str, options: dict, pages: list[int]) -> dict[int, Path]:
+    async def _translate(
+        self, doc_id: str, options: dict, pages: list[int]
+    ) -> dict[int, Path]:
         from pdf2zh.kernel.protocol import TranslateRequest
 
         key = options_key(options)
@@ -213,7 +233,9 @@ class Reader:
         if index:  # not the first run: read ahead
             pages = self._read_ahead(doc_id, key, index, pages)
         run = asyncio.get_running_loop().create_future()
-        run.add_done_callback(lambda f: f.cancelled() or f.exception())  # no "never retrieved"
+        run.add_done_callback(
+            lambda f: f.cancelled() or f.exception()
+        )  # no "never retrieved"
         for p in pages:
             self._running[(doc_id, key, p)] = run
         try:
@@ -227,7 +249,9 @@ class Reader:
             for p in pages:
                 self._running.pop((doc_id, key, p), None)
 
-    def _read_ahead(self, doc_id: str, key: str, index: dict, pages: list[int]) -> list[int]:
+    def _read_ahead(
+        self, doc_id: str, key: str, index: dict, pages: list[int]
+    ) -> list[int]:
         import pymupdf
 
         with pymupdf.open(self.path(doc_id)) as doc:
@@ -240,7 +264,9 @@ class Reader:
                 pages.append(p)
         return pages
 
-    async def _translate_pages(self, doc_id: str, options: dict, pages: list[int]) -> dict[int, Path]:
+    async def _translate_pages(
+        self, doc_id: str, options: dict, pages: list[int]
+    ) -> dict[int, Path]:
         from pdf2zh.kernel.protocol import TranslateRequest
 
         out = self._dir(doc_id, options) / f"run-{'-'.join(map(str, pages))}"
@@ -259,7 +285,9 @@ class Reader:
         # The kernel runs in a worker thread: BabelDOC does CPU-heavy work
         # inside its async API, which would otherwise stall page renders.
         with contextlib.redirect_stdout(sys.stderr):
-            results = await asyncio.to_thread(kernel.translate, request, lambda *a: None)
+            results = await asyncio.to_thread(
+                kernel.translate, request, lambda *a: None
+            )
         if not results or not results[0].mono_pdf:
             raise RuntimeError("translation produced no PDF")
         mono = Path(results[0].mono_pdf)
@@ -337,7 +365,12 @@ def register(mcp, reader: Optional[Reader] = None) -> Reader:
         language codes such as en, zh, ja; `service` is a translation service
         such as google, deepl or openai:gpt-4o-mini."""
         summary = await asyncio.to_thread(reader.open, file)
-        options = {"lang_in": lang_in, "lang_out": lang_out, "service": service, "kernel": kernel}
+        options = {
+            "lang_in": lang_in,
+            "lang_out": lang_out,
+            "service": service,
+            "kernel": kernel,
+        }
         reader.prefetch(summary["doc_id"], options)
         return {**summary, **options}
 
@@ -354,8 +387,19 @@ def register(mcp, reader: Optional[Reader] = None) -> Reader:
     ) -> list[types.ImageContent]:
         """One page of a document opened with open_pdf_reader, as a JPEG; with
         translated=true, the translated page (translated on first request)."""
-        options = {"lang_in": lang_in, "lang_out": lang_out, "service": service, "kernel": kernel}
+        options = {
+            "lang_in": lang_in,
+            "lang_out": lang_out,
+            "service": service,
+            "kernel": kernel,
+        }
         data = await reader.image(doc_id, page, width, translated, options)
-        return [types.ImageContent(type="image", data=base64.b64encode(data).decode(), mimeType="image/jpeg")]
+        return [
+            types.ImageContent(
+                type="image",
+                data=base64.b64encode(data).decode(),
+                mimeType="image/jpeg",
+            )
+        ]
 
     return reader

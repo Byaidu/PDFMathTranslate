@@ -111,7 +111,9 @@ class TestReader(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         self.pdf = make_pdf(self.tmp / "paper.pdf")
         self.kernel = FakeKernel()
-        self.reader = Reader(root=self.tmp / "cache", kernel_factory=lambda name: self.kernel)
+        self.reader = Reader(
+            root=self.tmp / "cache", kernel_factory=lambda name: self.kernel
+        )
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -121,7 +123,9 @@ class TestReader(unittest.TestCase):
         self.assertEqual(info["title"], "paper.pdf")
         self.assertEqual(info["page_count"], 3)
         self.assertEqual(info["page_sizes"][0], [300.0, 400.0])
-        self.assertTrue((self.tmp / "cache" / "documents" / f"{info['doc_id']}.pdf").is_file())
+        self.assertTrue(
+            (self.tmp / "cache" / "documents" / f"{info['doc_id']}.pdf").is_file()
+        )
 
     def test_open_rejects_non_pdf(self):
         other = self.tmp / "notes.txt"
@@ -139,7 +143,12 @@ class TestReader(unittest.TestCase):
 
     def test_translated_pages_are_cached(self):
         doc_id = self.reader.open(str(self.pdf))["doc_id"]
-        options = {"lang_in": "en", "lang_out": "zh", "service": "google", "kernel": "auto"}
+        options = {
+            "lang_in": "en",
+            "lang_out": "zh",
+            "service": "google",
+            "kernel": "auto",
+        }
         asyncio.run(self.reader.image(doc_id, 2, 600, True, options))
         self.assertEqual(len(self.kernel.requests), 1)
         self.assertEqual(self.kernel.requests[0].pages, [1])  # 0-based
@@ -156,7 +165,9 @@ class TestReader(unittest.TestCase):
         options = {"lang_out": "zh"}
 
         async def main():
-            await self.reader.translated_page(doc_id, 1, options)  # first run: just page 1
+            await self.reader.translated_page(
+                doc_id, 1, options
+            )  # first run: just page 1
             await self.reader.translated_page(doc_id, 2, options)  # pages 2-5
             await self.reader.translated_page(doc_id, 4, options)  # cached
 
@@ -217,9 +228,13 @@ class TestRegistration(unittest.TestCase):
 
         resources = {str(r.uri): r for r in asyncio.run(app.list_resources())}
         resource = resources[READER_URI]
-        self.assertEqual(resource.mime_type if hasattr(resource, "mime_type") else resource.mimeType,
-                         "text/html;profile=mcp-app")
-        self.assertIn("https://unpkg.com", resource.meta["ui"]["csp"]["resourceDomains"])
+        self.assertEqual(
+            resource.mime_type if hasattr(resource, "mime_type") else resource.mimeType,
+            "text/html;profile=mcp-app",
+        )
+        self.assertIn(
+            "https://unpkg.com", resource.meta["ui"]["csp"]["resourceDomains"]
+        )
 
 
 if __name__ == "__main__":
