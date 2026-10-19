@@ -9,7 +9,7 @@ Working starting points for building on pdf2zh. Each folder has its own README w
 | [`claude/`](claude/) | Claude Desktop, Claude Code, claude.ai | MCP: local STDIO, or the example server's `/mcp` |
 | [`chatgpt/`](chatgpt/) | ChatGPT | The example server's `/mcp` |
 | [`zotero/`](zotero/) | Zotero 7+ | Subprocess: `pdf2zh <file> --json` |
-| [`dsh/`](dsh/) | DeepSeek Harness | MCP over STDIO, as a dsh bundle |
+| [`dsh/`](dsh/) | DeepSeek Harness | Native dsh plugin; subprocess `pdf2zh <file> --json` |
 
 ## Which interface to use
 

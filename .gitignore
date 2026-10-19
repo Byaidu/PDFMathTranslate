@@ -176,3 +176,7 @@ cython_debug/
 uv.lock
 *.pdf
 *.docx
+
+# Node example plugins
+node_modules/
+package-lock.json

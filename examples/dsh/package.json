@@ -2,7 +2,24 @@
   "name": "dsh-pdf2zh",
   "version": "0.1.0",
   "description": "PDFMathTranslate for DeepSeek Harness: translate PDFs and keep formulas, figures and layout.",
-  "keywords": ["dsh-plugin", "pdf", "translation", "mcp"],
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "pdf",
+    "translation"
+  ],
   "homepage": "https://github.com/PDFMathTranslate/PDFMathTranslate",
   "repository": {
     "type": "git",
@@ -10,10 +27,18 @@
     "directory": "examples/dsh"
   },
   "license": "AGPL-3.0",
-  "files": ["cordis.patch.yml", "README.md"],
+  "peerDependencies": {
+    "@deepseek-ai/schemastery": "*"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
+  },
+  "scripts": {
+    "test": "node --test test.mjs"
+  },
+  "devDependencies": {
+    "@deepseek-ai/schemastery": "^3.18.4"
   }
 }
