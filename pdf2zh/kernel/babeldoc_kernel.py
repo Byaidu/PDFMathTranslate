@@ -7,6 +7,7 @@ import importlib.util
 import logging
 import os
 import re
+import threading
 from pathlib import Path
 from string import Template
 from typing import Any, Optional
@@ -18,6 +19,38 @@ logger = logging.getLogger(__name__)
 # pdf2zh translators whose client speaks the OpenAI chat API but which are
 # dedicated MT models rather than general LLMs.
 _NON_LLM_SERVICES = {"qwen-mt"}
+
+
+_layout_model = None
+_layout_lock = threading.Lock()
+
+
+def layout_model():
+    """BabelDOC's ONNX layout model, loaded once per process (takes seconds)."""
+    global _layout_model
+    with _layout_lock:
+        if _layout_model is None:
+            from babeldoc.docvision.doclayout import DocLayoutModel
+
+            _layout_model = DocLayoutModel.load_onnx()
+        return _layout_model
+
+
+def warm_up() -> None:
+    """Load BabelDOC and its layout model in a background thread, so that a
+    long-running server's first translation does not pay for it."""
+
+    def load():
+        try:
+            from babeldoc.format.pdf.high_level import init
+
+            init()
+            layout_model()
+        except Exception:  # the first translation will report it
+            logger.debug("BabelDOC warm-up failed", exc_info=True)
+
+    if importlib.util.find_spec("babeldoc") is not None:
+        threading.Thread(target=load, name="babeldoc-warm-up", daemon=True).start()
 
 
 def pages_to_babeldoc(pages: Optional[list[int] | str]) -> Optional[str]:
@@ -142,9 +175,10 @@ class BabelDOCKernel:
                 input_file=converted or file,
                 lang_in=request.lang_in,
                 lang_out=request.lang_out,
-                doc_layout_model=None,
+                doc_layout_model=layout_model(),
                 pages=pages_to_babeldoc(request.pages),
                 output_dir=request.output or None,
+                no_dual=request.no_dual,
                 debug=request.debug,
                 qps=request.thread,
                 formular_font_pattern=request.vfont or None,

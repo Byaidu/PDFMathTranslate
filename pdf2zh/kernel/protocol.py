@@ -28,6 +28,8 @@ class TranslateRequest:
     ignore_cache: bool = False
     compatible: bool = False
     ultrafast: bool = False
+    # Skip the bilingual (dual) PDF; only BabelDOC honours it.
+    no_dual: bool = False
 
     def __post_init__(self):
         if self.thread is None:

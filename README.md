@@ -179,7 +179,7 @@ Register pdf2zh in any MCP host. The host starts it on demand; nothing has to be
 }
 ```
 
-Tools: `translate_pdf(file, lang_in, lang_out, service, kernel, pages, output_dir)` and `list_kernels()`. Details in [MCP](./docs/ADVANCED.md#mcp).
+Tools: `translate_pdf(file, lang_in, lang_out, service, kernel, pages, output_dir)`, `list_kernels()` and `open_pdf_reader(file, ...)`. In hosts that support [MCP Apps](https://modelcontextprotocol.io/docs/extensions/apps) (Claude, ChatGPT), `open_pdf_reader` shows the PDF in the conversation and translates pages as you scroll. Details in [MCP](./docs/ADVANCED.md#mcp).
 
 <h3 id="examples">3.5 Build on pdf2zh</h3>
 

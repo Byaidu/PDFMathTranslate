@@ -227,6 +227,13 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     parse_params.add_argument(
+        "--http",
+        action="store_true",
+        help="With --mcp: serve MCP over Streamable HTTP at http://127.0.0.1:<port>/mcp "
+        "(port from --serverport, default 7862), for remote hosts such as ChatGPT.",
+    )
+
+    parse_params.add_argument(
         "--json",
         action="store_true",
         help="Print the result as one JSON object on stdout, for programs that "
@@ -384,9 +391,19 @@ def main(args: Optional[List[str]] = None) -> int:
 
     if parsed_args.mcp:
         logging.getLogger("mcp").setLevel(logging.ERROR)
-        from pdf2zh.mcp_server import create_mcp_app
+        from pdf2zh.mcp_server import create_http_app, create_mcp_app
 
-        mcp = create_mcp_app()
+        mcp = create_mcp_app(http=parsed_args.http)
+        from pdf2zh.kernel.babeldoc_kernel import warm_up
+
+        warm_up()
+        if parsed_args.http:
+            import uvicorn
+
+            port = int(parsed_args.serverport or 7862)
+            logger.info(f"MCP over HTTP: http://127.0.0.1:{port}/mcp")
+            uvicorn.run(create_http_app(mcp), host="127.0.0.1", port=port)
+            return 0
         if parsed_args.sse:
             import uvicorn
 

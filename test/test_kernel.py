@@ -293,6 +293,8 @@ class TestBabelDOCKernel(unittest.TestCase):
 
         self.assertEqual(BabelDOCKernel().version, version("babeldoc"))
 
+    LAYOUT_MODEL = object()
+
     def _run(self, events, **request_kwargs):
         # patch() can only replace attributes of modules that are imported.
         import babeldoc.format.pdf.high_level  # noqa: F401
@@ -313,6 +315,10 @@ class TestBabelDOCKernel(unittest.TestCase):
                 "babeldoc.format.pdf.translation_config.TranslationConfig", config_cls
             ),
             patch("pdf2zh.translator.create_translator") as create,
+            patch(
+                "pdf2zh.kernel.babeldoc_kernel.layout_model",
+                return_value=self.LAYOUT_MODEL,
+            ),
         ):
             create.return_value = MagicMock(
                 name="google", lang_in="en", lang_out="zh", model=None
@@ -349,7 +355,8 @@ class TestBabelDOCKernel(unittest.TestCase):
         self.assertEqual(kwargs["pages"], "1,2")
         self.assertEqual(kwargs["output_dir"], "/out")
         self.assertEqual(kwargs["qps"], 8)
-        self.assertIsNone(kwargs["doc_layout_model"])
+        self.assertIs(kwargs["doc_layout_model"], self.LAYOUT_MODEL)
+        self.assertFalse(kwargs["no_dual"])
         callback.assert_any_call(progress)
         self.assertEqual(results[0].mono_pdf, Path("/out/a.mono.pdf"))
         self.assertEqual(results[0].dual_pdf, Path("/out/a.dual.pdf"))

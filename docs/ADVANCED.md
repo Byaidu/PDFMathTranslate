@@ -447,7 +447,8 @@ Tools:
 
 - `translate_pdf(file, lang_in, lang_out, service="google", kernel="auto", pages=None, output_dir=None)`: `file` is an absolute path to a PDF/DOC/DOCX, `pages` a 1-based list such as `"1,3-5"`. Outputs are written next to the input unless `output_dir` is given; the tool returns their paths.
 - `list_kernels()`: installed kernels and their versions.
+- `open_pdf_reader(file, lang_out="zh", lang_in="en", service="google", kernel="auto")`: opens a PDF (an absolute path or an http(s) URL) in an interactive reader, for hosts that support [MCP Apps](https://modelcontextprotocol.io/docs/extensions/apps). The reader shows the original, the translation or both side by side, and translates pages as they scroll into view. It fetches pages through the app-only tool `get_pdf_page`, one JPEG per call; pages requested while a translation runs are translated together in the next run. Translated pages are cached in `$PDF2ZH_READER_CACHE` (default: `pdf2zh-reader` in the system temp directory). The reader page loads the MCP Apps SDK from unpkg.com.
 
-`pdf2zh --mcp --sse` serves the same tools over SSE instead.
+`pdf2zh --mcp --sse` serves the same tools over SSE instead. `pdf2zh --mcp --http` serves them over Streamable HTTP at `http://127.0.0.1:7862/mcp` (`--serverport` changes the port). Behind a tunnel or reverse proxy, list its host name in `PDF2ZH_ALLOWED_HOSTS` (comma separated); other hosts are rejected.
 
 [⬆️ Back to top](#toc)

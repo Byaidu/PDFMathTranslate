@@ -10,8 +10,35 @@ import io
 import os
 
 
-def create_mcp_app() -> FastMCP:
-    mcp = FastMCP("pdf2zh")
+def transport_security():
+    """Only localhost may call over HTTP; PDF2ZH_ALLOWED_HOSTS adds host names
+    (comma-separated, e.g. a tunnel's), and "*" turns the check off."""
+    from mcp.server.transport_security import TransportSecuritySettings
+
+    hosts = [h.strip() for h in os.environ.get("PDF2ZH_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    if "*" in hosts:
+        return TransportSecuritySettings(enable_dns_rebinding_protection=False)
+    hosts += ["127.0.0.1:*", "localhost:*"]
+    origins = [f"{scheme}://{h}" for h in hosts for scheme in ("http", "https")]
+    return TransportSecuritySettings(allowed_hosts=hosts, allowed_origins=origins)
+
+
+def _accepts(func, name: str) -> bool:
+    import inspect
+
+    return name in inspect.signature(func).parameters
+
+
+def create_mcp_app(http: bool = False) -> FastMCP:
+    # mcp 1.x takes HTTP settings in the constructor, 2.x in streamable_http_app.
+    # Stateless HTTP: no tool needs a session, and clients holding a session ID
+    # from before a server restart would otherwise get 404 on every call.
+    kwargs = {}
+    if http and _accepts(FastMCP.__init__, "transport_security"):
+        kwargs["transport_security"] = transport_security()
+    if http and _accepts(FastMCP.__init__, "stateless_http"):
+        kwargs["stateless_http"] = True
+    mcp = FastMCP("pdf2zh", **kwargs)
 
     @mcp.tool()
     async def translate_pdf(
@@ -77,7 +104,38 @@ def create_mcp_app() -> FastMCP:
                 lines.append(f"{name}: not installed ({INSTALL_HINTS[name]})")
         return "\n".join(lines)
 
+    from pdf2zh.mcp_reader import register as register_reader
+
+    register_reader(mcp)
     return mcp
+
+
+def create_http_app(mcp: FastMCP):
+    """Streamable HTTP app serving the MCP endpoint at /mcp.
+
+    Browser-based hosts call it cross-origin, so CORS is allowed for the same
+    origins the transport security accepts: localhost and PDF2ZH_ALLOWED_HOSTS.
+    """
+    import re
+
+    from starlette.middleware.cors import CORSMiddleware
+
+    kwargs = {}
+    if _accepts(mcp.streamable_http_app, "transport_security"):
+        kwargs["transport_security"] = transport_security()
+    if _accepts(mcp.streamable_http_app, "stateless_http"):
+        kwargs["stateless_http"] = True
+    app = mcp.streamable_http_app(**kwargs)
+    extra = [h.strip() for h in os.environ.get("PDF2ZH_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    hosts = ["localhost", r"127\.0\.0\.1"] + [re.escape(h) for h in extra if h != "*"]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=".*" if "*" in extra else rf"https?://({'|'.join(hosts)})(:\d+)?",
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+        expose_headers=["mcp-session-id", "mcp-protocol-version"],
+    )
+    return app
 
 
 def _ignore(*args, **kwargs) -> None:

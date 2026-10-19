@@ -16,6 +16,8 @@ Merge [`claude_desktop_config.json`](claude_desktop_config.json) into Claude Des
 
 Try: *"Translate ~/Downloads/paper.pdf into Chinese."*
 
+Or: *"Open ~/Downloads/paper.pdf in the pdf2zh reader."* Claude calls `open_pdf_reader`, which shows the PDF in the conversation (an [MCP App](https://modelcontextprotocol.io/docs/extensions/apps)). Pages are translated as you scroll; switch between the original, the translation and side by side, or open the reader full screen.
+
 ## Claude Code
 
 Quickest, one command:
@@ -47,4 +49,4 @@ Claude then has `translate_pdf_url`, which takes a PDF link and returns download
 
 ## Status
 
-The MCP server, its tools and the remote `/mcp` endpoint are tested with the MCP Python SDK (stdio and Streamable HTTP, mcp 1.21 and 2.3). The Claude Code plugin files follow the documented layout but have not been loaded in Claude Code, and the Claude Desktop and claude.ai steps have not been run against those apps.
+The reader (`open_pdf_reader`) is tested in the MCP Apps reference host (`basic-host` from `@modelcontextprotocol/ext-apps`) over Streamable HTTP. The MCP server, its tools and the remote `/mcp` endpoint are tested with the MCP Python SDK (stdio and Streamable HTTP, mcp 1.21 and 2.3). The Claude Code plugin files follow the documented layout but have not been loaded in Claude Code, and the Claude Desktop and claude.ai steps have not been run against those apps.

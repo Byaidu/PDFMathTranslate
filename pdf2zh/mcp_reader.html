@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<title>pdf2zh reader</title>
+<style>
+  :root { --bg: #fff; --text: #1d1d1f; --muted: #6b6b70; --border: #dcdcdf; --sheet: #f2f2f4; --accent: #2457d6; }
+  :root[data-theme="dark"] { --bg: #1f1f22; --text: #ececee; --muted: #9a9aa2; --border: #3a3a40; --sheet: #161618; --accent: #6b93ff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #app { display: flex; flex-direction: column; height: 640px; }
+  #app.fullscreen { height: 100vh; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  header .title { font-weight: 600; margin-right: 6px; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  header .spacer { flex: 1; }
+  header .status { color: var(--muted); }
+  button, select { font: inherit; color: inherit; background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  #pages { flex: 1; overflow: auto; background: var(--sheet); padding: 10px; }
+  .row { display: flex; gap: 8px; justify-content: center; margin: 0 auto 10px; }
+  .cell { position: relative; background: #fff; flex: 1; max-width: 900px; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+  .cell img { display: block; width: 100%; height: 100%; }
+  .cell .label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #888; font-size: 12px; }
+  .cell .label button { color: #888; }
+  .message { padding: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="title" id="title">pdf2zh</span>
+    <button data-mode="original"></button>
+    <button data-mode="translated"></button>
+    <button data-mode="split"></button>
+    <select id="lang"></select>
+    <span class="spacer"></span>
+    <span class="status" id="status"></span>
+    <button id="fullscreen" hidden></button>
+  </header>
+  <div id="pages"><div class="message" id="message"></div></div>
+</div>
+<script type="module">
+  import { App } from "https://unpkg.com/@modelcontextprotocol/ext-apps@2.0.3/app-with-deps";
+
+  const zh = /^zh/i.test(navigator.language || "");
+  const T = zh
+    ? { original: "原文", translated: "译文", split: "对照", fullscreen: "全屏", exit: "退出全屏",
+        waiting: "等待打开 PDF…", translating: "翻译中…", failed: "失败，点击重试", done: "已翻译" }
+    : { original: "Original", translated: "Translated", split: "Side by side", fullscreen: "Fullscreen",
+        exit: "Exit fullscreen", waiting: "Waiting for a PDF…", translating: "Translating…",
+        failed: "Failed, click to retry", done: "Translated" };
+  const LANGS = [["zh", "中文"], ["en", "English"], ["ja", "日本語"], ["ko", "한국어"],
+    ["fr", "Français"], ["de", "Deutsch"], ["es", "Español"], ["ru", "Русский"]];
+  const AHEAD = 2;
+
+  const $ = id => document.getElementById(id);
+  const state = { doc: null, mode: "split", lang: "zh", visible: new Set(), images: new Map(), inflight: new Map() };
+
+  for (const button of document.querySelectorAll("[data-mode]")) {
+    button.textContent = T[button.dataset.mode];
+    button.onclick = () => { state.mode = button.dataset.mode; layout(); };
+  }
+  for (const [code, label] of LANGS) $("lang").add(new Option(label, code));
+  $("lang").onchange = () => { state.lang = $("lang").value; layout(); };
+  $("message").textContent = T.waiting;
+
+  const app = new App({ name: "pdf2zh reader", version: "1.0.0" }, { availableDisplayModes: ["inline", "fullscreen"] });
+
+  function applyContext(ctx) {
+    if (!ctx) return;
+    if (ctx.theme) document.documentElement.dataset.theme = ctx.theme;
+    const full = ctx.displayMode === "fullscreen";
+    $("app").classList.toggle("fullscreen", full);
+    const canFull = (ctx.availableDisplayModes || []).includes("fullscreen");
+    $("fullscreen").hidden = !canFull;
+    $("fullscreen").textContent = full ? T.exit : T.fullscreen;
+    $("fullscreen").onclick = () => app.requestDisplayMode({ mode: full ? "inline" : "fullscreen" });
+  }
+  app.onhostcontextchanged = ctx => applyContext({ ...app.getHostContext(), ...ctx });
+
+  app.ontoolresult = (result) => {
+    let info = result.structuredContent;
+    if (info && !info.doc_id && info.result) info = info.result;
+    if (!info?.doc_id) {
+      const text = result.content?.find(c => c.type === "text")?.text;
+      try { info = JSON.parse(text); } catch { info = null; }
+    }
+    if (!info?.doc_id) {
+      $("message").textContent = result.content?.find(c => c.type === "text")?.text || "No PDF";
+      return;
+    }
+    state.doc = info;
+    state.lang = info.lang_out || state.lang;
+    $("lang").value = state.lang;
+    $("title").textContent = info.title;
+    $("title").title = info.title;
+    build();
+  };
+
+  // ---------------------------------------------------------------- pages
+
+  let observer;
+  function build() {
+    const box = $("pages");
+    box.replaceChildren();
+    observer?.disconnect();
+    observer = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        const n = Number(e.target.dataset.page);
+        e.isIntersecting ? state.visible.add(n) : state.visible.delete(n);
+      }
+      request();
+    }, { root: box, rootMargin: "300px 0px" });
+    state.doc.page_sizes.forEach(([w, h], i) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.dataset.page = i + 1;
+      for (const kind of ["original", "translated"]) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.kind = kind;
+        cell.style.aspectRatio = `${w} / ${h}`;
+        row.append(cell);
+      }
+      box.append(row);
+      observer.observe(row);
+    });
+    layout();
+  }
+
+  function layout() {
+    for (const button of document.querySelectorAll("[data-mode]")) {
+      button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode));
+    }
+    for (const cell of document.querySelectorAll(".cell")) {
+      const kind = cell.dataset.kind;
+      cell.hidden = state.mode !== "split" && state.mode !== kind;
+    }
+    for (const row of document.querySelectorAll(".row")) {
+      row.style.maxWidth = state.mode === "split" ? "1800px" : "900px";
+    }
+    for (const cell of document.querySelectorAll(".cell")) paint(cell);
+    request();
+  }
+
+  const key = (n, kind) => kind === "original" ? `o:${n}` : `t:${state.lang}:${n}`;
+
+  function wanted() {
+    if (!state.doc || state.visible.size === 0) return [];
+    const pages = [...state.visible].sort((a, b) => a - b);
+    const last = pages[pages.length - 1];
+    for (let p = last + 1; p <= Math.min(state.doc.page_count, last + AHEAD); p++) pages.push(p);
+    return pages;
+  }
+
+  function request() {
+    // Originals first: some hosts run the app's tool calls one at a time, and
+    // an original must not wait behind a translation.
+    const pages = wanted();
+    if (state.mode !== "translated") for (const n of pages) load(n, "original");
+    if (state.mode !== "original") for (const n of pages) load(n, "translated");
+    updateStatus();
+  }
+
+  async function load(n, kind) {
+    const k = key(n, kind);
+    if (state.images.has(k) || state.inflight.has(k)) return;
+    state.inflight.set(k, "loading");
+    paintPage(n);
+    const width = Math.min(1600, Math.round(($("pages").clientWidth / (state.mode === "split" ? 2 : 1)) * (devicePixelRatio || 1)));
+    try {
+      const result = await app.callServerTool({
+        name: "get_pdf_page",
+        arguments: {
+          doc_id: state.doc.doc_id, page: n, width, translated: kind === "translated",
+          lang_out: state.lang, lang_in: state.doc.lang_in, service: state.doc.service, kernel: state.doc.kernel,
+        },
+      });
+      const image = result.content?.find(c => c.type === "image");
+      if (result.isError || !image) throw new Error(result.content?.find(c => c.type === "text")?.text || "no image");
+      state.images.set(k, `data:${image.mimeType};base64,${image.data}`);
+      state.inflight.delete(k);
+    } catch (e) {
+      state.inflight.set(k, "failed");
+    }
+    paintPage(n);
+    updateStatus();
+  }
+
+  function paintPage(n) {
+    for (const cell of document.querySelectorAll(`.row[data-page="${n}"] .cell`)) paint(cell);
+  }
+
+  function paint(cell) {
+    const n = Number(cell.parentElement.dataset.page);
+    const k = key(n, cell.dataset.kind);
+    const src = state.images.get(k);
+    if (src) {
+      if (cell.querySelector("img")?.getAttribute("src") !== src) {
+        const img = new Image();
+        img.src = src;
+        img.alt = `${cell.dataset.kind} page ${n}`;
+        cell.replaceChildren(img);
+      }
+      return;
+    }
+    const status = state.inflight.get(k);
+    const label = document.createElement("div");
+    label.className = "label";
+    if (status === "failed") {
+      const retry = document.createElement("button");
+      retry.textContent = T.failed;
+      retry.onclick = () => { state.inflight.delete(k); load(n, cell.dataset.kind); };
+      label.append(retry);
+    } else if (status && cell.dataset.kind === "translated") {
+      label.textContent = T.translating;
+    }
+    cell.replaceChildren(label);
+  }
+
+  function updateStatus() {
+    if (!state.doc) return;
+    let done = 0;
+    for (let n = 1; n <= state.doc.page_count; n++) if (state.images.has(key(n, "translated"))) done++;
+    $("status").textContent = `${T.done} ${done}/${state.doc.page_count}`;
+  }
+
+  await app.connect();
+  applyContext(app.getHostContext());
+</script>
+</body>
+</html>
