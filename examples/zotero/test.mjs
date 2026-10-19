@@ -35,6 +35,24 @@ test("parseResult takes the last JSON result line", () => {
   assert.throws(() => PDF2ZH.parseResult("Traceback ..."), /no result/);
 });
 
+test("buildArgs passes reader page ranges before --json", () => {
+  const args = PDF2ZH.buildArgs("/p.pdf", "/out", { pages: "2,3" });
+  assert.deepEqual(args.slice(-3), ["--pages", "2,3", "--json"]);
+  assert.ok(!PDF2ZH.buildArgs("/p.pdf", "/out", {}).includes("--pages"));
+});
+
+test("wantedPages adds pages ahead of the viewport", () => {
+  assert.deepEqual(PDF2ZH.wantedPages([4, 3], 10, 2), [3, 4, 5, 6]);
+  assert.deepEqual(PDF2ZH.wantedPages([10], 10, 2), [10]);
+  assert.deepEqual(PDF2ZH.wantedPages([], 10, 2), []);
+});
+
+test("optionsKey is a safe directory name per option set", () => {
+  const key = PDF2ZH.optionsKey({ langIn: "en", langOut: "zh", service: "openai:gpt-4o/mini", kernel: "auto" });
+  assert.equal(key, "en--zh--openai_gpt-4o_mini--auto");
+  assert.notEqual(key, PDF2ZH.optionsKey({ langIn: "en", langOut: "ja", service: "google", kernel: "auto" }));
+});
+
 test("extraPath covers uv and Homebrew locations", () => {
   assert.ok(PDF2ZH.extraPath("/Users/me", false).includes("/Users/me/.local/bin"));
   assert.ok(PDF2ZH.extraPath("C:\\Users\\me", true)[0].endsWith("\\.local\\bin"));

@@ -8,7 +8,7 @@ Working starting points for building on pdf2zh. Each folder has its own README w
 | [`web/`](web/) | Browsers | The example server's REST API |
 | [`claude/`](claude/) | Claude Desktop, Claude Code, claude.ai | MCP: local STDIO, or the example server's `/mcp` |
 | [`chatgpt/`](chatgpt/) | ChatGPT | The example server's `/mcp` |
-| [`zotero/`](zotero/) | Zotero 7+ | Subprocess: `pdf2zh <file> --json` |
+| [`zotero/`](zotero/) | Zotero 7+ | Reader that translates as you scroll, and an item-menu command; subprocess `pdf2zh --json` |
 | [`dsh/`](dsh/) | DeepSeek Harness | Native dsh plugin: a PDF reader that translates as you scroll, and a tool; subprocess `pdf2zh --json` |
 
 ## Which interface to use

@@ -1,4 +1,5 @@
-/* Translate Zotero PDF attachments with pdf2zh.
+/* Translate Zotero PDF attachments with pdf2zh: whole files from the item
+ * menu, and page by page in the PDF reader (reader.js).
  *
  * pdf2zh runs as a subprocess with --json, which prints exactly one JSON line
  * on stdout ({"ok": true, "results": [{"mono": ..., "dual": ...}]}) and keeps
@@ -23,17 +24,35 @@ var PDF2ZH = {
     return parts;
   },
 
-  /** Arguments after the command for one translation. */
+  /** Arguments after the command for one translation; `options.pages` is "1,3-5". */
   buildArgs(file, outputDir, options) {
-    return [
+    const args = [
       file,
       "--lang-in", options.langIn || "en",
       "--lang-out", options.langOut || "zh",
       "--service", options.service || "google",
       "--kernel", options.kernel || "auto",
       "--output", outputDir,
-      "--json",
     ];
+    if (options.pages) args.push("--pages", options.pages);
+    args.push("--json");
+    return args;
+  },
+
+  /** Pages to translate in the reader: the visible ones, then `ahead` more. */
+  wantedPages(visible, total, ahead) {
+    if (visible.length === 0) return [];
+    const pages = [...visible].sort((a, b) => a - b);
+    const last = pages[pages.length - 1];
+    for (let p = last + 1; p <= Math.min(total, last + ahead); p++) pages.push(p);
+    return pages;
+  },
+
+  /** A directory-safe name for one set of translation options. */
+  optionsKey(options) {
+    return [options.langIn, options.langOut, options.service, options.kernel]
+      .map(v => String(v || "").replace(/[^A-Za-z0-9.-]+/g, "_"))
+      .join("--");
   },
 
   /** The result object from pdf2zh --json stdout. */

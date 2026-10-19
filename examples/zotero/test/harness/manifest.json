@@ -1,0 +1,14 @@
+{
+  "manifest_version": 2,
+  "name": "pdf2zh test harness",
+  "version": "0.1.0",
+  "description": "Drives the pdf2zh reader in a throwaway Zotero profile. Used by test/run-in-zotero.mjs only.",
+  "applications": {
+    "zotero": {
+      "id": "pdf2zh-harness@pdfmathtranslate.github.io",
+      "update_url": "https://example.invalid/updates.json",
+      "strict_min_version": "7.0",
+      "strict_max_version": "10.*"
+    }
+  }
+}

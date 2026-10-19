@@ -7,3 +7,5 @@ pref("extensions.pdf2zh.langOut", "zh");
 pref("extensions.pdf2zh.service", "google");
 // auto, babeldoc or legacy.
 pref("extensions.pdf2zh.kernel", "auto");
+// Reader: most pages translated by one pdf2zh run.
+pref("extensions.pdf2zh.readerBatch", 4);
