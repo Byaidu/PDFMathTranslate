@@ -1,16 +1,20 @@
 // dsh-pdf2zh: a native DeepSeek Harness plugin that translates PDFs with pdf2zh.
 //
-// It registers one tool, pdf2zh_translate, which runs `pdf2zh <file> --json`
-// as a subprocess. pdf2zh prints exactly one JSON line on stdout
-// ({"ok": true, "results": [{"mono": ..., "dual": ...}]}) and logs on stderr.
+// Host half (this file):
+// - the pdf2zh_translate tool, which runs `pdf2zh <file> --json` as a
+//   subprocess (pdf2zh prints one JSON result line on stdout, logs on stderr);
+// - the PDF reader's HTTP routes (viewer.js), which translate pages on demand.
+// Browser half (client.js): a PDF reader for dsh's right-sidebar document
+// preview that requests translated pages as they scroll into view.
 //
-// Plain ESM JavaScript, no build step. The only import beyond Node is
-// Schemastery, which dsh provides to plugins, for the settings form.
+// Plain JavaScript, no build step.
 
-import { spawn } from 'node:child_process'
-import { homedir } from 'node:os'
-import { delimiter, dirname, isAbsolute, join, resolve } from 'node:path'
+import { dirname, isAbsolute, resolve } from 'node:path'
 import Schema from '@deepseek-ai/schemastery'
+import { buildArgs, runPdf2zh } from './pdf2zh.js'
+import { createViewer } from './viewer.js'
+
+export { buildArgs, parseResult, runPdf2zh, searchPath, splitCommand } from './pdf2zh.js'
 
 export const name = 'pdf2zh'
 export const inject = ['tools']
@@ -26,101 +30,21 @@ export const Config = Schema.object({
     .description('Translation kernel.'),
   timeoutMs: Schema.natural().default(30 * 60 * 1000)
     .description('Give up on one translation after this many milliseconds.'),
+  viewerBatch: Schema.natural().min(1).default(4)
+    .description('PDF reader: most pages translated by one pdf2zh run.'),
+  viewerMaxMb: Schema.natural().min(1).default(200)
+    .description('PDF reader: largest document it accepts, in MB.'),
 })
-
-// ------------------------------------------------------------------ helpers
-
-/** Split a command line such as `uvx pdf2zh` or `"C:\My Tools\pdf2zh.exe"`. */
-export function splitCommand(line) {
-  const parts = []
-  const re = /"([^"]*)"|'([^']*)'|(\S+)/g
-  let m
-  while ((m = re.exec(line || ''))) parts.push(m[1] ?? m[2] ?? m[3])
-  return parts
-}
-
-/** Arguments for one translation, ending with --json. */
-export function buildArgs(file, outputDir, options) {
-  const args = [
-    file,
-    '--lang-in', options.langIn,
-    '--lang-out', options.langOut,
-    '--service', options.service,
-    '--kernel', options.kernel,
-    '--output', outputDir,
-  ]
-  if (options.pages) args.push('--pages', options.pages)
-  args.push('--json')
-  return args
-}
-
-/** The result object from pdf2zh --json stdout (the last JSON line). */
-export function parseResult(stdout) {
-  for (const line of String(stdout).trim().split(/\r?\n/).reverse()) {
-    if (!line.startsWith('{')) continue
-    try {
-      const result = JSON.parse(line)
-      if (typeof result.ok === 'boolean') return result
-    } catch {
-      // not the result line
-    }
-  }
-  throw new Error('pdf2zh printed no result; update pdf2zh to a version with --json')
-}
-
-/** PATH plus the places uv, pip and Homebrew install commands. Apps started
- * from the Dock do not inherit the shell's PATH. */
-export function searchPath(env = process.env, home = homedir(), platform = process.platform) {
-  const extra = platform === 'win32'
-    ? [join(home, '.local', 'bin'), join(home, 'AppData', 'Roaming', 'Python', 'Scripts')]
-    : [join(home, '.local', 'bin'), '/opt/homebrew/bin', '/usr/local/bin']
-  return [env.PATH, ...extra].filter(Boolean).join(delimiter)
-}
-
-/** Run pdf2zh and resolve with its parsed --json result. */
-export function runPdf2zh(command, args, { signal, timeoutMs, env = process.env } = {}) {
-  const [bin, ...prefix] = splitCommand(command)
-  if (!bin) return Promise.reject(new Error('pdf2zh command is empty'))
-  return new Promise((resolvePromise, reject) => {
-    const child = spawn(bin, [...prefix, ...args], {
-      env: { ...env, PATH: searchPath(env), PYTHONIOENCODING: 'utf-8' },
-      stdio: ['ignore', 'pipe', 'pipe'],
-      signal,
-      windowsHide: true,
-    })
-    // Our own timer: spawn's `timeout` option keeps running when the
-    // command fails to start.
-    const timer = timeoutMs ? setTimeout(() => child.kill(), timeoutMs) : undefined
-    let settled = false
-    const settle = (fn, value) => {
-      if (settled) return
-      settled = true
-      clearTimeout(timer)
-      fn(value)
-    }
-    let stdout = ''
-    let stderr = ''
-    child.stdout.setEncoding('utf8').on('data', (chunk) => { stdout += chunk })
-    child.stderr.setEncoding('utf8').on('data', (chunk) => { stderr = (stderr + chunk).slice(-20_000) })
-    child.on('error', (error) => {
-      settle(reject, error.code === 'ENOENT'
-        ? new Error(`Cannot find "${bin}". Install pdf2zh or set the plugin's command to its full path.`)
-        : error)
-    })
-    child.on('close', (code, killedBy) => {
-      try {
-        settle(resolvePromise, parseResult(stdout))
-      } catch {
-        const last = stderr.trim().split('\n').pop()
-        settle(reject, new Error(`pdf2zh exited with ${killedBy ?? code}${last ? `: ${last}` : ''}`))
-      }
-    })
-  })
-}
 
 // ------------------------------------------------------------------ plugin
 
 export function apply(ctx, config) {
+  // The reader's routes need dsh's web server, present in Web and Desktop.
+  ctx.inject(['webServer'], (ctx) => {
+    const handler = createViewer(config)
+    ctx.effect(() => ctx.webServer.register({ kind: 'prefix', path: '/pdf2zh', handler }))
+  })
+
   ctx.tools.register({
     name: 'pdf2zh_translate',
     description:

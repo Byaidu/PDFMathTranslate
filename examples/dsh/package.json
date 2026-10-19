@@ -1,16 +1,20 @@
 {
   "name": "dsh-pdf2zh",
   "version": "0.1.0",
-  "description": "PDFMathTranslate for DeepSeek Harness: translate PDFs and keep formulas, figures and layout.",
+  "description": "PDFMathTranslate for DeepSeek Harness: a PDF reader that translates pages as you scroll, plus a pdf2zh_translate tool.",
   "type": "module",
   "main": "index.js",
   "exports": {
     ".": "./index.js",
+    "./client": "./client.js",
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json"
   },
   "files": [
     "index.js",
+    "pdf2zh.js",
+    "viewer.js",
+    "client.js",
     "cordis.patch.yml",
     "README.md"
   ],
@@ -27,18 +31,28 @@
     "directory": "examples/dsh"
   },
   "license": "AGPL-3.0",
+  "scripts": {
+    "test": "node --test test.mjs test-viewer.mjs"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.4.299"
+  },
   "peerDependencies": {
     "@deepseek-ai/schemastery": "*"
+  },
+  "devDependencies": {
+    "@deepseek-ai/schemastery": "^3.18.4"
   },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-documentpreview"
+      ]
     }
-  },
-  "scripts": {
-    "test": "node --test test.mjs"
-  },
-  "devDependencies": {
-    "@deepseek-ai/schemastery": "^3.18.4"
   }
 }

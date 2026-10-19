@@ -1,4 +1,5 @@
-# dsh-pdf2zh: adds the pdf2zh_translate tool.
+# dsh-pdf2zh: a PDF reader that translates as you scroll, and the
+# pdf2zh_translate tool.
 #
 # Defaults suit most setups. To change them, override this row in your
 # profile's cordis.patch.yml (a later layer replaces the whole config):

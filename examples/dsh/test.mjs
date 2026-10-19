@@ -13,7 +13,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 /** Load the plugin into a stand-in ctx and return the registered tool. */
 function load(config = {}) {
   let tool
-  const ctx = { tools: { register: (t) => { tool = t } }, get: () => undefined }
+  const ctx = { tools: { register: (t) => { tool = t } }, get: () => undefined, inject: () => {} }
   plugin.apply(ctx, plugin.Config(config))
   return tool
 }
