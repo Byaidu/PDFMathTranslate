@@ -593,6 +593,9 @@ def translate(
             from pdf2zh.ultrafast import PerfTimer
 
             perf = PerfTimer()
+        # Temp copies this function creates (downloads, converted documents);
+        # only these may be deleted, never the caller's own file.
+        temp_inputs = []
         if type(file) is str and (
             file.startswith("http://") or file.startswith("https://")
         ):
@@ -606,6 +609,7 @@ def translate(
                         print(f"Writing the file: {file}...")
                         tmp_file.write(r.content)
                         file = tmp_file.name
+                        temp_inputs.append(file)
                 else:
                     r.raise_for_status()
             except Exception as e:
@@ -619,6 +623,7 @@ def translate(
             _converted_pdf = convert_to_pdf(file)
             filename = os.path.splitext(os.path.basename(file))[0]
             file = _converted_pdf
+            temp_inputs.append(file)
         else:
             filename = os.path.splitext(os.path.basename(file))[0]
 
@@ -639,16 +644,12 @@ def translate(
         if perf:
             perf.step("input_read")
 
-        temp_dir = Path(tempfile.gettempdir())
-        file_path = Path(file)
-        try:
-            if file_path.exists() and file_path.resolve().is_relative_to(
-                temp_dir.resolve()
-            ):
-                file_path.unlink(missing_ok=True)
-                logger.debug(f"Cleaned temp file: {file_path}")
-        except Exception:
-            logger.warning(f"Failed to clean temp file {file_path}", exc_info=True)
+        for temp_input in temp_inputs:
+            try:
+                Path(temp_input).unlink(missing_ok=True)
+                logger.debug(f"Cleaned temp file: {temp_input}")
+            except Exception:
+                logger.warning(f"Failed to clean temp file {temp_input}", exc_info=True)
 
         s_mono, s_dual = translate_stream(
             s_raw,

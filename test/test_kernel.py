@@ -116,6 +116,41 @@ class TestKernelRegistry(unittest.TestCase):
         self.assertIn("avail1", available)
         self.assertNotIn("unavail1", available)
 
+    def test_aliases_resolve_to_kernel_names(self):
+        from pdf2zh.kernel.registry import KernelRegistry
+
+        self.assertEqual(KernelRegistry.resolve("fast"), "legacy")
+        self.assertEqual(KernelRegistry.resolve("precise"), "babeldoc")
+        self.assertEqual(KernelRegistry.resolve("legacy"), "legacy")
+
+    def test_auto_prefers_babeldoc_then_legacy(self):
+        from pdf2zh.kernel.registry import KernelRegistry
+
+        babeldoc, legacy = MagicMock(), MagicMock()
+        babeldoc.name, legacy.name = "babeldoc", "legacy"
+        KernelRegistry._kernels = {"babeldoc": babeldoc, "legacy": legacy}
+
+        babeldoc.is_available.return_value = True
+        legacy.is_available.return_value = True
+        self.assertEqual(KernelRegistry.resolve("auto"), "babeldoc")
+
+        babeldoc.is_available.return_value = False
+        self.assertEqual(KernelRegistry.resolve("auto"), "legacy")
+
+        legacy.is_available.return_value = False
+        with self.assertRaises(RuntimeError):
+            KernelRegistry.resolve("auto")
+
+    def test_switch_unavailable_names_install_command(self):
+        from pdf2zh.kernel.registry import KernelRegistry
+
+        legacy = MagicMock()
+        legacy.name = "legacy"
+        legacy.is_available.return_value = False
+        KernelRegistry._kernels = {"legacy": legacy}
+        with self.assertRaisesRegex(RuntimeError, r"pdf2zh\[legacy\]"):
+            KernelRegistry.switch("fast")
+
 
 class TestLegacyKernelVersion(unittest.TestCase):
 
@@ -123,13 +158,14 @@ class TestLegacyKernelVersion(unittest.TestCase):
         from pdf2zh.kernel.legacy import LegacyKernel
 
         k = LegacyKernel()
-        self.assertEqual(k.name, "fast")
+        self.assertEqual(k.name, "legacy")
 
     def test_version(self):
+        from pdf2zh import __version__
         from pdf2zh.kernel.legacy import LegacyKernel
 
         k = LegacyKernel()
-        self.assertEqual(k.version, "1.9.12")
+        self.assertEqual(k.version, __version__)
 
     def test_is_available(self):
         from pdf2zh.kernel.legacy import LegacyKernel
@@ -138,208 +174,27 @@ class TestLegacyKernelVersion(unittest.TestCase):
         self.assertTrue(k.is_available())
 
 
-class TestPreciseKernelVersion(unittest.TestCase):
-
-    def test_name(self):
-        from pdf2zh.kernel.precise import PreciseKernel
-
-        k = PreciseKernel()
-        self.assertEqual(k.name, "precise")
-
-    def test_is_available_without_venv(self):
-        from pdf2zh.kernel.precise import PreciseKernel
-
-        k = PreciseKernel()
-        result = k.is_available()
-        self.assertIsInstance(result, bool)
-
-
-class TestV2Bridge(unittest.TestCase):
-    """Test v2 bridge v1 → v2 CLI args + env mapping."""
-
-    def test_cli_args_basic(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(
-            files=["test.pdf"],
-            lang_in="en",
-            lang_out="ja",
-            service="google",
-            thread=8,
-        )
-        args = request_to_cli_args(req)
-        self.assertIn("test.pdf", args)
-        self.assertIn("--lang-in", args)
-        self.assertIn("en", args)
-        self.assertIn("--lang-out", args)
-        self.assertIn("ja", args)
-        self.assertIn("--qps", args)
-        self.assertIn("8", args)
-        self.assertIn("--google", args)
-
-    def test_cli_args_pages(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["test.pdf"], pages=[0, 1, 4])
-        args = request_to_cli_args(req)
-        self.assertIn("--pages", args)
-        self.assertIn("0,1,4", args)
-
-    def test_cli_args_compatible(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["test.pdf"], compatible=True)
-        args = request_to_cli_args(req)
-        self.assertIn("--enhance-compatibility", args)
-
-    def test_cli_args_vfont_vchar(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["test.pdf"], vfont="Arial", vchar="[a-z]")
-        args = request_to_cli_args(req)
-        self.assertIn("--formular-font-pattern", args)
-        self.assertIn("Arial", args)
-        self.assertIn("--formular-char-pattern", args)
-        self.assertIn("[a-z]", args)
-
-    def test_cli_args_prompt(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["test.pdf"], prompt="Be formal")
-        args = request_to_cli_args(req)
-        self.assertIn("--custom-system-prompt", args)
-        self.assertIn("Be formal", args)
-
-    def test_cli_args_debug(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["test.pdf"], debug=True)
-        args = request_to_cli_args(req)
-        self.assertIn("--debug", args)
-
-    def test_cli_args_ignore_cache(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["test.pdf"], ignore_cache=True)
-        args = request_to_cli_args(req)
-        self.assertIn("--ignore-cache", args)
-
-    def test_cli_args_output(self):
-        from pathlib import Path
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["test.pdf"], output="/tmp/out")
-        args = request_to_cli_args(req)
-        self.assertIn("--output", args)
-        idx = args.index("--output")
-        self.assertEqual(args[idx + 1], str(Path("/tmp/out").resolve()))
-
-    def test_cli_args_service_model_split(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["test.pdf"], service="openai:gpt-4")
-        args = request_to_cli_args(req)
-        self.assertIn("--openai", args)
-
-    def test_service_name_mapping(self):
-        from pdf2zh.kernel.v2_bridge import SERVICE_NAME_MAP
-
-        # Verify key service mappings exist (values are CLI flags)
-        self.assertEqual(SERVICE_NAME_MAP["google"], "google")
-        self.assertEqual(SERVICE_NAME_MAP["openai"], "openai")
-        self.assertEqual(SERVICE_NAME_MAP["deepseek"], "deepseek")
-        self.assertEqual(SERVICE_NAME_MAP["bing"], "bing")
-        self.assertEqual(SERVICE_NAME_MAP["deepl"], "deepl")
-        self.assertEqual(SERVICE_NAME_MAP["ollama"], "ollama")
-        self.assertEqual(SERVICE_NAME_MAP["gemini"], "gemini")
-        self.assertEqual(SERVICE_NAME_MAP["tencent"], "tencent")
-
-    def test_request_to_env_maps_envs(self):
-        from pdf2zh.kernel.v2_bridge import request_to_env
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(
-            files=["test.pdf"],
-            service="openai",
-            envs={
-                "OPENAI_API_KEY": "sk-test123",
-                "OPENAI_BASE_URL": "https://custom.api",
-            },
-        )
-        env = request_to_env(req)
-        self.assertEqual(env["PDF2ZH_OPENAI_API_KEY"], "sk-test123")
-        self.assertEqual(env["PDF2ZH_OPENAI_BASE_URL"], "https://custom.api")
-
-    def test_request_to_env_service_model(self):
-        from pdf2zh.kernel.v2_bridge import request_to_env
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(
-            files=["test.pdf"],
-            service="deepseek:deepseek-reasoner",
-            envs={"DEEPSEEK_API_KEY": "ds-key"},
-        )
-        env = request_to_env(req)
-        self.assertEqual(env["PDF2ZH_DEEPSEEK_API_KEY"], "ds-key")
-        self.assertEqual(env["PDF2ZH_DEEPSEEK_MODEL"], "deepseek-reasoner")
-
-
 class TestKernelInit(unittest.TestCase):
 
-    def test_fast_registered(self):
+    def test_both_kernels_registered(self):
         from pdf2zh.kernel import KernelRegistry
 
-        kernel = KernelRegistry.get("fast")
-        self.assertEqual(kernel.name, "fast")
+        self.assertEqual(KernelRegistry.get("legacy").name, "legacy")
+        self.assertEqual(KernelRegistry.get("babeldoc").name, "babeldoc")
 
-    def test_precise_registered(self):
+    def test_old_mode_names_still_work(self):
         from pdf2zh.kernel import KernelRegistry
 
-        kernel = KernelRegistry.get("precise")
-        self.assertEqual(kernel.name, "precise")
+        self.assertEqual(KernelRegistry.get("fast").name, "legacy")
+        self.assertEqual(KernelRegistry.get("precise").name, "babeldoc")
 
-    def test_fast_in_available(self):
-        from pdf2zh.kernel import KernelRegistry
+    def test_package_exports_unified_api(self):
+        import pdf2zh
 
-        self.assertIn("fast", KernelRegistry.available())
-
-
-class TestKernelVersions(unittest.TestCase):
-    """Verify version information for both kernels."""
-
-    def test_legacy_version_matches_package(self):
-        from pdf2zh import __version__
-        from pdf2zh.kernel.legacy import LegacyKernel
-
-        k = LegacyKernel()
-        self.assertEqual(k.version, __version__)
-
-    def test_experimental_version_is_string(self):
-        from pdf2zh.kernel.precise import PreciseKernel
-
-        k = PreciseKernel()
-        version = k.version
-        self.assertIsInstance(version, str)
-        self.assertTrue(len(version) > 0)
-
-    def test_experimental_version_semver_when_available(self):
-        """When venv exists, version should be a proper semver."""
-        import re
-        from pdf2zh.kernel.precise import PreciseKernel
-
-        k = PreciseKernel()
-        if not k.is_available():
-            self.skipTest("pdf2zh_next venv not available")
-        self.assertRegex(k.version, r"^\d+\.\d+\.\d+")
+        self.assertIn("babeldoc", pdf2zh.available_kernels())
+        self.assertEqual(pdf2zh.get_kernel("babeldoc").name, "babeldoc")
+        request = pdf2zh.TranslateRequest(files=["a.pdf"])
+        self.assertEqual(request.files, ["a.pdf"])
 
 
 class TestLegacyKernelTranslation(unittest.TestCase):
@@ -422,281 +277,249 @@ class TestLegacyKernelTranslation(unittest.TestCase):
         self.assertEqual(call_kwargs["prompt"].template, "Be formal")
 
 
-class TestPreciseKernelTranslation(unittest.TestCase):
-    """Test PreciseKernel.translate() with mocked subprocess."""
+class TestBabelDOCKernel(unittest.TestCase):
+    """Test the in-process BabelDOC kernel with BabelDOC's pipeline mocked."""
 
-    @patch("pdf2zh.kernel.precise.subprocess.Popen")
-    @patch(
-        "pdf2zh.kernel.precise.PreciseKernel.is_available",
-        return_value=True,
-    )
-    @patch("pdf2zh.kernel.precise.PreciseKernel.ensure_venv")
-    def test_translate_single_file(self, mock_venv, mock_avail, mock_popen):
-        import json
+    def test_pages_to_babeldoc(self):
+        from pdf2zh.kernel.babeldoc_kernel import pages_to_babeldoc
 
-        mock_proc = MagicMock()
-        mock_proc.stdin = MagicMock()
-        mock_proc.stdout = MagicMock()
-        mock_proc.stdout.read.return_value = json.dumps(
-            {
-                "results": [{"mono_pdf": "/tmp/mono.pdf", "dual_pdf": "/tmp/dual.pdf"}],
-                "time_cost": 1.5,
-            }
-        )
-        mock_proc.stderr = iter([])
-        mock_proc.returncode = 0
-        mock_proc.wait.return_value = 0
-        mock_popen.return_value = mock_proc
+        self.assertIsNone(pages_to_babeldoc(None))
+        self.assertIsNone(pages_to_babeldoc([]))
+        self.assertEqual(pages_to_babeldoc([0, 2, 3]), "1,3,4")
 
-        from pdf2zh.kernel.precise import PreciseKernel
+    def test_version_is_babeldoc_version(self):
+        from importlib.metadata import version
+        from pdf2zh.kernel.babeldoc_kernel import BabelDOCKernel
+
+        self.assertEqual(BabelDOCKernel().version, version("babeldoc"))
+
+    def _run(self, events, **request_kwargs):
+        # patch() can only replace attributes of modules that are imported.
+        import babeldoc.format.pdf.high_level  # noqa: F401
+        import babeldoc.format.pdf.translation_config  # noqa: F401
+        from pdf2zh.kernel.babeldoc_kernel import BabelDOCKernel
         from pdf2zh.kernel.protocol import TranslateRequest
 
-        k = PreciseKernel()
-        req = TranslateRequest(files=["test.pdf"], service="google")
-        results = k.translate(req)
+        async def fake_translate(config):
+            for event in events:
+                yield event
 
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0].mono_pdf, Path("/tmp/mono.pdf"))
-        self.assertAlmostEqual(results[0].time_cost, 1.5)
-
-    @patch("pdf2zh.kernel.precise.subprocess.Popen")
-    @patch("pdf2zh.kernel.precise.PreciseKernel.ensure_venv")
-    def test_translate_subprocess_failure_raises(self, mock_venv, mock_popen):
-        mock_proc = MagicMock()
-        mock_proc.stdin = MagicMock()
-        mock_proc.stdout = MagicMock()
-        mock_proc.stdout.read.return_value = ""
-        mock_proc.stderr = iter([])
-        mock_proc.returncode = 1
-        mock_proc.wait.return_value = 1
-        mock_popen.return_value = mock_proc
-
-        from pdf2zh.kernel.precise import PreciseKernel
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        k = PreciseKernel()
-        req = TranslateRequest(files=["test.pdf"])
-        with self.assertRaises(RuntimeError):
-            k.translate(req)
-
-    @patch("pdf2zh.kernel.precise.subprocess.Popen")
-    @patch(
-        "pdf2zh.kernel.precise.PreciseKernel.is_available",
-        return_value=True,
-    )
-    @patch("pdf2zh.kernel.precise.PreciseKernel.ensure_venv")
-    def test_translate_progress_callback(self, mock_venv, mock_avail, mock_popen):
-        import json
-
-        progress_event = json.dumps(
-            {
-                "type": "progress_update",
-                "stage": "Translating",
-                "stage_progress": 50.0,
-                "stage_current": 5,
-                "stage_total": 10,
-                "overall_progress": 25.0,
-                "part_index": 1,
-                "total_parts": 1,
-            }
-        )
-        mock_proc = MagicMock()
-        mock_proc.stdin = MagicMock()
-        mock_proc.stdout = MagicMock()
-        mock_proc.stdout.read.return_value = json.dumps(
-            {"results": [], "time_cost": 0.5}
-        )
-        mock_proc.stderr = iter([progress_event + "\n"])
-        mock_proc.returncode = 0
-        mock_proc.wait.return_value = 0
-        mock_popen.return_value = mock_proc
-
-        from pdf2zh.kernel.precise import PreciseKernel
-        from pdf2zh.kernel.protocol import TranslateRequest
-
+        config_cls = MagicMock(name="TranslationConfig")
         callback = MagicMock()
-        k = PreciseKernel()
-        req = TranslateRequest(files=["test.pdf"])
-        k.translate(req, callback=callback)
-
-        callback.assert_called_once()
-        event_arg = callback.call_args[0][0]
-        self.assertEqual(event_arg["type"], "progress_update")
-        self.assertEqual(event_arg["stage"], "Translating")
-
-
-class TestV2BridgeEndToEnd(unittest.TestCase):
-    """End-to-end v2 bridge tests."""
-
-    def test_all_services_produce_cli_flag(self):
-        from pdf2zh.kernel.v2_bridge import SERVICE_NAME_MAP, request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        for v1_name, v2_flag in SERVICE_NAME_MAP.items():
-            req = TranslateRequest(files=["test.pdf"], service=v1_name)
-            args = request_to_cli_args(req)
-            expected_flag = f"--{v2_flag.replace('_', '-')}"
-            self.assertIn(
-                expected_flag,
-                args,
-                f"Missing CLI flag {expected_flag} for service {v1_name}",
+        with (
+            patch("babeldoc.format.pdf.high_level.init"),
+            patch("babeldoc.format.pdf.high_level.async_translate", fake_translate),
+            patch(
+                "babeldoc.format.pdf.translation_config.TranslationConfig", config_cls
+            ),
+            patch("pdf2zh.translator.create_translator") as create,
+        ):
+            create.return_value = MagicMock(
+                name="google", lang_in="en", lang_out="zh", model=None
             )
+            create.return_value.name = "google"
+            request = TranslateRequest(files=["paper.pdf"], **request_kwargs)
+            results = BabelDOCKernel().translate(request, callback=callback)
+        return results, config_cls, callback, create
 
-    def test_cli_args_all_fields(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(
-            files=["test.pdf"],
-            service="deepseek:deepseek-chat",
-            lang_in="en",
-            lang_out="ja",
+    def test_translate_maps_request_and_collects_result(self):
+        finish = MagicMock(
+            mono_pdf_path="/out/a.mono.pdf",
+            dual_pdf_path="/out/a.dual.pdf",
+            total_seconds=2.0,
+        )
+        progress = {
+            "type": "progress_update",
+            "stage": "Translate",
+            "overall_progress": 50.0,
+        }
+        results, config_cls, callback, create = self._run(
+            [progress, {"type": "finish", "translate_result": finish}],
+            pages=[0, 1],
+            output="/out",
             thread=8,
-            compatible=True,
-            vfont="CMR",
-            vchar="[0-9]",
-            prompt="Be formal",
-            ignore_cache=True,
-            debug=True,
-            output="/tmp/out",
+            service="deepl",
+            lang_out="ja",
         )
-        args = request_to_cli_args(req)
 
-        self.assertIn("--deepseek", args)
-        self.assertIn("--enhance-compatibility", args)
-        self.assertIn("--lang-in", args)
-        self.assertIn("en", args)
-        self.assertIn("--lang-out", args)
-        self.assertIn("ja", args)
-        self.assertIn("--qps", args)
-        self.assertIn("8", args)
-        self.assertIn("--formular-font-pattern", args)
-        self.assertIn("CMR", args)
-        self.assertIn("--formular-char-pattern", args)
-        self.assertIn("[0-9]", args)
-        self.assertIn("--custom-system-prompt", args)
-        self.assertIn("Be formal", args)
-        self.assertIn("--ignore-cache", args)
-        self.assertIn("--debug", args)
-        self.assertIn("--output", args)
-        idx = args.index("--output")
-        from pathlib import Path
+        create.assert_called_once()
+        self.assertEqual(create.call_args[0][:3], ("deepl", "en", "ja"))
+        kwargs = config_cls.call_args.kwargs
+        self.assertEqual(kwargs["input_file"], "paper.pdf")
+        self.assertEqual(kwargs["pages"], "1,2")
+        self.assertEqual(kwargs["output_dir"], "/out")
+        self.assertEqual(kwargs["qps"], 8)
+        self.assertIsNone(kwargs["doc_layout_model"])
+        callback.assert_any_call(progress)
+        self.assertEqual(results[0].mono_pdf, Path("/out/a.mono.pdf"))
+        self.assertEqual(results[0].dual_pdf, Path("/out/a.dual.pdf"))
+        self.assertEqual(results[0].time_cost, 2.0)
 
-        self.assertEqual(args[idx + 1], str(Path("/tmp/out").resolve()))
+    def test_error_event_raises(self):
+        with self.assertRaisesRegex(RuntimeError, "boom"):
+            self._run([{"type": "error", "error": "boom"}])
 
-    def test_env_all_fields(self):
-        from pdf2zh.kernel.v2_bridge import request_to_env
-        from pdf2zh.kernel.protocol import TranslateRequest
 
-        req = TranslateRequest(
-            files=["a.pdf", "b.pdf"],
-            service="gemini:gemini-pro",
-            envs={"GEMINI_API_KEY": "key123"},
+class TestBabelDOCTranslatorAdapter(unittest.TestCase):
+    """BabelDOC uses do_llm_translate(None) to detect LLM support."""
+
+    def _inner(self, name="google", client=None):
+        inner = MagicMock()
+        inner.name = name
+        inner.lang_in, inner.lang_out, inner.model = "en", "zh", "m"
+        inner.client = client
+        inner.options = {"temperature": 0}
+        inner.think_filter_regex = None
+        inner.do_translate.return_value = "translated"
+        return inner
+
+    def test_non_llm_service_falls_back_to_do_translate(self):
+        from pdf2zh.kernel.babeldoc_kernel import create_babeldoc_translator
+
+        adapter = create_babeldoc_translator(self._inner(), ignore_cache=True)
+        with self.assertRaises(NotImplementedError):
+            adapter.do_llm_translate(None)
+        self.assertEqual(adapter.translate("hello"), "translated")
+        self.assertTrue(adapter.name.startswith("pdf2zh-google"))
+        self.assertLessEqual(len(adapter.name), 20)
+
+    def test_openai_compatible_service_supports_llm(self):
+        import openai
+        from pdf2zh.kernel.babeldoc_kernel import create_babeldoc_translator
+
+        client = MagicMock(spec=openai.OpenAI)
+        client.chat = MagicMock()
+        client.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content="  译文  "))
+        ]
+        adapter = create_babeldoc_translator(
+            self._inner("openai", client), ignore_cache=True
         )
-        env = request_to_env(req)
+        self.assertIsNone(adapter.do_llm_translate(None))
+        self.assertEqual(adapter.llm_translate("prompt"), "译文")
+        sent = client.chat.completions.create.call_args.kwargs
+        self.assertEqual(sent["model"], "m")
+        self.assertEqual(sent["messages"], [{"role": "user", "content": "prompt"}])
 
-        self.assertEqual(env["PDF2ZH_GEMINI_API_KEY"], "key123")
-        self.assertEqual(env["PDF2ZH_GEMINI_MODEL"], "gemini-pro")
+    def test_mt_model_with_openai_client_is_not_llm(self):
+        import openai
+        from pdf2zh.kernel.babeldoc_kernel import create_babeldoc_translator
 
-    def test_output_defaults_to_input_parent(self):
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["/some/dir/test.pdf"])
-        args = request_to_cli_args(req)
-        self.assertIn("--output", args)
-        idx = args.index("--output")
-        self.assertEqual(args[idx + 1], "/some/dir")
-
-    def test_output_resolved_to_absolute_path(self):
-        from pathlib import Path
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        # Relative input file → output should be resolved to absolute
-        req = TranslateRequest(files=["relative/test.pdf"])
-        args = request_to_cli_args(req)
-        idx = args.index("--output")
-        output_path = args[idx + 1]
-        self.assertTrue(Path(output_path).is_absolute())
-
-    def test_explicit_output_resolved_to_absolute(self):
-        from pathlib import Path
-        from pdf2zh.kernel.v2_bridge import request_to_cli_args
-        from pdf2zh.kernel.protocol import TranslateRequest
-
-        req = TranslateRequest(files=["test.pdf"], output="rel/out")
-        args = request_to_cli_args(req)
-        idx = args.index("--output")
-        output_path = args[idx + 1]
-        self.assertTrue(Path(output_path).is_absolute())
+        adapter = create_babeldoc_translator(
+            self._inner("qwen-mt", MagicMock(spec=openai.OpenAI)), ignore_cache=True
+        )
+        with self.assertRaises(NotImplementedError):
+            adapter.do_llm_translate(None)
 
 
 class TestCLIKernelPipeline(unittest.TestCase):
     """Test that CLI args correctly flow through the kernel layer."""
 
-    @patch("pdf2zh.kernel.registry.KernelRegistry.switch")
-    @patch("pdf2zh.kernel.registry.KernelRegistry.get")
-    @patch("pdf2zh.doclayout.set_backend")
-    @patch("pdf2zh.doclayout.OnnxModel")
-    @patch("pdf2zh.doclayout.ModelInstance")
-    def test_cli_fast_mode_routes_through_kernel(
-        self, mock_model_inst, mock_onnx, mock_set_backend, mock_get, mock_switch
-    ):
-        """Verify --mode fast goes through KernelRegistry."""
+    def _main(self, argv):
         mock_kernel = MagicMock()
         mock_kernel.translate.return_value = []
-        mock_get.return_value = mock_kernel
-        mock_model_inst.value = MagicMock()
+        with (
+            patch("pdf2zh.kernel.registry.KernelRegistry.switch") as switch,
+            patch(
+                "pdf2zh.kernel.registry.KernelRegistry.get", return_value=mock_kernel
+            ),
+            patch("pdf2zh.doclayout.set_backend"),
+            patch("pdf2zh.doclayout.OnnxModel"),
+            patch("pdf2zh.doclayout.ModelInstance"),
+        ):
+            from pdf2zh.pdf2zh import main
 
-        from pdf2zh.pdf2zh import main
+            self.assertEqual(main(argv), 0)
+        return switch, mock_kernel
 
-        main(["test.pdf", "--mode", "fast"])
+    def test_default_is_auto(self):
+        switch, kernel = self._main(["test.pdf"])
+        switch.assert_called_once_with("auto")
+        kernel.translate.assert_called_once()
 
-        mock_switch.assert_called_once_with("fast")
-        mock_kernel.translate.assert_called_once()
+    def test_kernel_flag(self):
+        switch, _ = self._main(["test.pdf", "--kernel", "legacy"])
+        switch.assert_called_once_with("legacy")
 
-    @patch("pdf2zh.kernel.registry.KernelRegistry.switch")
-    @patch("pdf2zh.kernel.registry.KernelRegistry.get")
-    @patch("pdf2zh.doclayout.set_backend")
-    @patch("pdf2zh.doclayout.OnnxModel")
-    @patch("pdf2zh.doclayout.ModelInstance")
-    def test_cli_precise_mode_routes_through_kernel(
-        self, mock_model_inst, mock_onnx, mock_set_backend, mock_get, mock_switch
-    ):
-        """Verify --mode precise goes through KernelRegistry."""
-        mock_kernel = MagicMock()
-        mock_kernel.translate.return_value = []
-        mock_get.return_value = mock_kernel
-        mock_model_inst.value = MagicMock()
+    def test_deprecated_mode_flags_map_to_kernels(self):
+        switch, _ = self._main(["test.pdf", "--mode", "fast"])
+        switch.assert_called_once_with("legacy")
+        switch, _ = self._main(["test.pdf", "--mode", "precise"])
+        switch.assert_called_once_with("babeldoc")
+        switch, _ = self._main(["test.pdf", "--babeldoc"])
+        switch.assert_called_once_with("babeldoc")
 
-        from pdf2zh.pdf2zh import main
+    def test_legacy_only_flags_pick_legacy(self):
+        from pdf2zh.pdf2zh import parse_args
 
-        main(["test.pdf", "--mode", "precise"])
+        self.assertEqual(parse_args(["--ultrafast"]).kernel, "legacy")
+        self.assertEqual(parse_args(["--onnx", "m.onnx"]).kernel, "legacy")
 
-        mock_switch.assert_called_once_with("precise")
-        mock_kernel.translate.assert_called_once()
+    def test_conflicting_kernel_flags_rejected(self):
+        from pdf2zh.pdf2zh import parse_args
 
-    @patch("pdf2zh.kernel.registry.KernelRegistry.switch")
-    @patch("pdf2zh.kernel.registry.KernelRegistry.get")
-    @patch("pdf2zh.doclayout.set_backend")
-    @patch("pdf2zh.doclayout.OnnxModel")
-    @patch("pdf2zh.doclayout.ModelInstance")
-    def test_cli_service_model_syntax_passed_through(
-        self, mock_model_inst, mock_onnx, mock_set_backend, mock_get, mock_switch
-    ):
-        """Verify 'openai:gpt-4' service syntax is passed to TranslateRequest."""
-        mock_kernel = MagicMock()
-        mock_kernel.translate.return_value = []
-        mock_get.return_value = mock_kernel
-        mock_model_inst.value = MagicMock()
+        for argv in (
+            ["--kernel", "legacy", "--babeldoc"],
+            ["--kernel", "babeldoc", "--onnx", "m.onnx"],
+        ):
+            with self.assertRaises(SystemExit):
+                parse_args(argv)
 
-        from pdf2zh.pdf2zh import main
+    def test_cli_service_model_syntax_passed_through(self):
+        _, kernel = self._main(["test.pdf", "-s", "openai:gpt-4"])
+        self.assertEqual(kernel.translate.call_args[0][0].service, "openai:gpt-4")
 
-        main(["test.pdf", "-s", "openai:gpt-4"])
+    def test_json_flag_prints_only_one_json_object(self):
+        import io
+        import json
+        from contextlib import redirect_stdout
+        from pdf2zh.kernel.protocol import TranslateResult
 
-        call_args = mock_kernel.translate.call_args[0][0]
-        self.assertEqual(call_args.service, "openai:gpt-4")
+        kernel = MagicMock()
+        kernel.name = "babeldoc"
+
+        def translate(request, callback=None):
+            print("noise from a kernel")  # must not reach stdout
+            return [TranslateResult(mono_pdf=Path("/o/a.mono.pdf"), dual_pdf=None)]
+
+        kernel.translate.side_effect = translate
+        out = io.StringIO()
+        with (
+            patch("pdf2zh.kernel.registry.KernelRegistry.switch"),
+            patch("pdf2zh.kernel.registry.KernelRegistry.get", return_value=kernel),
+            redirect_stdout(out),
+        ):
+            from pdf2zh.pdf2zh import main
+
+            self.assertEqual(main(["a.pdf", "--json"]), 0)
+        payload = json.loads(out.getvalue())
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["kernel"], "babeldoc")
+        self.assertEqual(payload["results"][0]["input"], "a.pdf")
+        self.assertTrue(payload["results"][0]["mono"].endswith("a.mono.pdf"))
+        self.assertIsNone(payload["results"][0]["dual"])
+
+    def test_json_flag_reports_failure(self):
+        import io
+        import json
+        from contextlib import redirect_stdout
+
+        kernel = MagicMock()
+        kernel.name = "legacy"
+        kernel.translate.side_effect = RuntimeError("boom")
+        out = io.StringIO()
+        with (
+            patch("pdf2zh.kernel.registry.KernelRegistry.switch"),
+            patch("pdf2zh.kernel.registry.KernelRegistry.get", return_value=kernel),
+            redirect_stdout(out),
+        ):
+            from pdf2zh.pdf2zh import main
+
+            self.assertEqual(main(["a.pdf", "--json"]), 1)
+        self.assertEqual(
+            json.loads(out.getvalue()),
+            {"ok": False, "kernel": "legacy", "error": "boom"},
+        )
 
 
 if __name__ == "__main__":

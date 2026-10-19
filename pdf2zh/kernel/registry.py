@@ -8,6 +8,16 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pdf2zh.kernel.protocol import KernelProtocol
 
+# Old names from the `--mode` flag, kept so existing commands keep working.
+ALIASES = {"fast": "legacy", "precise": "babeldoc"}
+# `auto` picks the first available kernel in this order.
+AUTO_ORDER = ("babeldoc", "legacy")
+
+INSTALL_HINTS = {
+    "babeldoc": "pip install pdf2zh",
+    "legacy": "pip install 'pdf2zh[legacy]'",
+}
+
 
 class KernelRegistry:
     _lock = threading.RLock()
@@ -20,31 +30,45 @@ class KernelRegistry:
             cls._kernels[kernel.name] = kernel
 
     @classmethod
+    def resolve(cls, name: str | None = None) -> str:
+        """Map an alias or "auto" to a registered kernel name."""
+        with cls._lock:
+            if not name or name == "auto":
+                for candidate in AUTO_ORDER:
+                    kernel = cls._kernels.get(candidate)
+                    if kernel and kernel.is_available():
+                        return candidate
+                raise RuntimeError(
+                    "No translation kernel is installed. Run: pip install pdf2zh"
+                )
+            return ALIASES.get(name, name)
+
+    @classmethod
     def get(cls, name: str | None = None) -> KernelProtocol:
         with cls._lock:
             if name:
-                return cls._kernels[name]
+                return cls._kernels[cls.resolve(name)]
             if cls._active:
                 return cls._active
-            return cls._kernels["fast"]
+            return cls._kernels[cls.resolve("auto")]
 
     @classmethod
     def switch(cls, name: str) -> None:
         with cls._lock:
-            kernel = cls._kernels[name]
-            if hasattr(kernel, "ensure_venv"):
-                kernel.ensure_venv()  # type: ignore[attr-defined]
+            resolved = cls.resolve(name)
+            kernel = cls._kernels[resolved]
             if not kernel.is_available():
+                hint = INSTALL_HINTS.get(resolved)
                 raise RuntimeError(
-                    f"Kernel '{name}' is not available. "
-                    "Check that the submodule is initialized and venv is set up."
+                    f"Kernel '{resolved}' is not available."
+                    + (f" Install it with: {hint}" if hint else "")
                 )
             cls._active = kernel
 
     @classmethod
     def active_name(cls) -> str:
         with cls._lock:
-            return cls._active.name if cls._active else "fast"
+            return cls._active.name if cls._active else cls.resolve("auto")
 
     @classmethod
     def available(cls) -> list[str]:

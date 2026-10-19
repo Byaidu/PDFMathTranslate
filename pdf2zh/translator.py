@@ -1187,3 +1187,54 @@ class QwenMtTranslator(OpenAITranslator):
             extra_body={"translation_options": translation_options},
         )
         return response.choices[0].message.content.strip()
+
+
+TRANSLATORS: list[type[BaseTranslator]] = [
+    GoogleTranslator,
+    BingTranslator,
+    DeepLTranslator,
+    DeepLXTranslator,
+    OllamaTranslator,
+    XinferenceTranslator,
+    AzureOpenAITranslator,
+    OpenAITranslator,
+    ZhipuTranslator,
+    ModelScopeTranslator,
+    SiliconTranslator,
+    GeminiTranslator,
+    AzureTranslator,
+    TencentTranslator,
+    DifyTranslator,
+    AnythingLLMTranslator,
+    ArgosTranslator,
+    GrokTranslator,
+    GroqTranslator,
+    DeepseekTranslator,
+    MiniMaxTranslator,
+    OpenAIlikedTranslator,
+    QwenMtTranslator,
+    X302AITranslator,
+]
+
+
+def create_translator(
+    service: str,
+    lang_in: str,
+    lang_out: str,
+    envs: dict | None = None,
+    prompt: Template | None = None,
+    ignore_cache: bool = False,
+) -> BaseTranslator:
+    """Build a translator from a service spec such as "ollama:gemma2:9b"."""
+    service_name, _, service_model = service.partition(":")
+    for translator in TRANSLATORS:
+        if translator.name == service_name:
+            return translator(
+                lang_in,
+                lang_out,
+                service_model or None,
+                envs=envs or {},
+                prompt=prompt,
+                ignore_cache=ignore_cache,
+            )
+    raise ValueError("Unsupported translation service")

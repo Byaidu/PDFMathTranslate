@@ -1,0 +1,11 @@
+{
+  "name": "pdf2zh",
+  "owner": { "name": "PDFMathTranslate" },
+  "plugins": [
+    {
+      "name": "pdf2zh",
+      "source": "./pdf2zh",
+      "description": "Translate scientific PDFs and keep formulas, figures and layout."
+    }
+  ]
+}

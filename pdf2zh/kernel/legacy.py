@@ -1,8 +1,9 @@
-"""Fast kernel adapter — wraps existing pdf2zh.high_level.translate()."""
+"""Legacy kernel adapter — wraps the original pdf2zh.high_level.translate()."""
 
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 import logging
 from pathlib import Path
 from typing import Any, Optional
@@ -13,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 class LegacyKernel:
-    """Kernel adapter for the original pdf2zh translation pipeline (fast mode)."""
+    """Kernel adapter for the original pdf2zh v1 translation pipeline."""
 
     @property
     def name(self) -> str:
-        return "fast"
+        return "legacy"
 
     @property
     def version(self) -> str:
@@ -26,7 +27,10 @@ class LegacyKernel:
         return __version__
 
     def is_available(self) -> bool:
-        return True
+        return all(
+            importlib.util.find_spec(module) is not None
+            for module in ("pdfminer", "pikepdf", "onnxruntime")
+        )
 
     def translate(
         self,

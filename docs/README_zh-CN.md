@@ -33,257 +33,147 @@
 
 </div>
 
-科学 PDF 文档翻译及双语对照工具
+科学 PDF 文档翻译工具，保留公式、图表、目录和注释。
 
-- 📊 保留公式、图表、目录和注释 *([预览效果](#preview))*
-- 🌐 支持 [多种语言](./ADVANCED.md#language) 和 [诸多翻译服务](./ADVANCED.md#services)
-- 🤖 提供 [命令行工具](#usage)，[图形交互界面](#gui)，以及 [容器化部署](#docker)
+本仓库是 PDFMathTranslate 生态的**统一接入口**：一个包同时提供命令行、Python API 和 MCP 服务，背后可以选用两个翻译核心。客户端和插件直接基于它开发，不需要再 fork。
 
-欢迎在 [GitHub Issues](https://github.com/Byaidu/PDFMathTranslate/issues) 或 [Telegram 用户群](https://t.me/+Z9_SgnxmsmA5NzBl)
-
-有关如何贡献的详细信息，请查阅 [贡献指南](https://github.com/Byaidu/PDFMathTranslate/wiki/Contribution-Guide---%E8%B4%A1%E7%8C%AE%E6%8C%87%E5%8D%97)
-
-<h2 id="updates">更新</h2>
-
-
-- [2026年10月2日] 新增命令行 `--ultrafast` 模式：使用 `pdf-inspector` 提供的 PDF 原生文本位置进行启发式布局，跳过 ONNX 布局解析和 OCR，适用于包含原生文本的 PDF。
-- [2026年3月23日] 实验性支持 v2.0 翻译内核，使用隔离环境运行（`--mode precise`）。（由[@reycn](https://github.com/reycn) 提交）
-
-- [2026年3月22日] 支持 MiniMax（由[@octo-patch](https://github.com/octo-patch) 提交的PR）
-
-- [2026年3月22日] 修复与 OpenAI 相关的问题（由[@samqin123](https://github.com/samqin123) 提交的PR）
-
-- [2026年3月22日] 修复与 HTTP 相关的问题（由[@soukouki](https://github.com/soukouki) 提交的PR）
-
-- [2026年3月22日] 在 mac 和 OONX 平台上加快模型加载速度，GUI 启动，版本打印和持续集成。（由[@reycn](https://github.com/reycn) 提交）
-- [2025 年 2 月 22 日] 更好的发布 CI 和精心打包的 windows-amd64 exe (由 [@awwaawwa](https://github.com/awwaawwa) 提供)
-- [2024 年 12 月 24 日] 翻译器现在支持在 [Xinference](https://github.com/xorbitsai/inference) 上使用本地模型 _(由 [@imClumsyPanda](https://github.com/imClumsyPanda) 提供)_
-
-<h2 id="preview">预览</h2>
 <div align="center">
 <img src="./images/preview.gif" width="80%"/>
 </div>
 
-<h2 id="demo">在线演示 🌟</h2>
+<h2 id="choose">选择合适的工具</h2>
 
-<h2 id="demo">在线服务 🌟</h2>
+| 我想要… | 去这里 |
+| --- | --- |
+| 用桌面或手机应用阅读和翻译论文 | **[PDFMathReader](https://github.com/PDFMathTranslate/PDFMathReader)**：官方客户端，支持 macOS、Windows、Linux 和 [iOS](https://github.com/PDFMathTranslate/PDFMathReader-iOS) |
+| 不装任何东西，在线或在浏览器里翻译 | **[沉浸式翻译 · BabelDOC](https://app.immersivetranslate.com/babel-doc/)**：每月有免费额度 |
+| 在 Zotero 里翻译 | **[zotero-pdf2zh](https://github.com/guaguastandup/zotero-pdf2zh)** |
+| 让 AI 智能体（Claude、DeepSeek Harness 等）翻译 PDF | 本仓库的 **`pdf2zh --mcp`**，见 [MCP](#mcp) |
+| 用命令行、在 Python 里调用，或者自己部署 | **本仓库**，继续往下看 |
 
-您可以通过以下演示尝试我们的应用程序：
+<h3 id="ecosystem">各项目的关系</h3>
 
-- [公共免费服务](https://pdf2zh.com/) 在线使用，无需安装 _(推荐)_。
-- [沉浸式翻译 - BabelDOC](https://app.immersivetranslate.com/babel-doc/) 每月免费 1000 页 _(推荐)_
-- [在 HuggingFace 上托管的演示](https://huggingface.co/spaces/reycn/PDFMathTranslate-Docker)
-- [在 ModelScope 上托管的演示](https://www.modelscope.cn/studios/AI-ModelScope/PDFMathTranslate) 无需安装。
+```
+BabelDOC（排版引擎，funstory.ai）           pdf2zh v1 流程
+                 \                          /
+       babeldoc 核心（默认）          legacy 核心（可选）
+                        \                /
+      PDFMathTranslate：pdf2zh 命令行 · Python API · MCP   <- 本仓库
+                 |                |                 |
+          PDFMathReader     zotero-pdf2zh     AI 智能体 / dsh 插件
+```
 
-请注意演示的计算资源有限，请避免滥用它们。
 <h2 id="install">安装和使用</h2>
 
-### 方法
-
-针对不同的使用案例，我们提供不同的方法来使用我们的程序：
-
-<details open>
-  <summary>1. UV 安装</summary>
-
-1. 安装 Python (3.11 <= 版本 <= 3.12)
-2. 安装我们的包：
-
-   ```bash
-   pip install uv
-   uv tool install --python 3.12 pdf2zh
-   ```
-
-3. 执行翻译，文件生成在 [当前工作目录](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444)：
-
-   ```bash
-   pdf2zh document.pdf
-   ```
-
-</details>
-
-<details>
-  <summary>2. Windows exe</summary>
-
-1. 从 [发布页面](https://github.com/Byaidu/PDFMathTranslate/releases) 下载 pdf2zh-version-win64.zip
-
-2. 解压缩并双击 `pdf2zh.exe` 运行。
-
-</details>
-
-<details>
-  <summary id="gui">3. 图形用户界面</summary>
-1. 安装 Python (3.11 <= 版本 <= 3.12)
-2. 安装我们的包：
+需要 Python 3.11 到 3.13。
 
 ```bash
-pip install pdf2zh
+pip install pdf2zh                # 命令行、Python API 和 BabelDOC 核心
+pdf2zh document.pdf               # 生成 document.zh.mono.pdf 和 document.zh.dual.pdf
 ```
 
-3. 在浏览器中开始使用：
+可选组件：
 
-   ```bash
-   pdf2zh -i
-   ```
+| 安装 | 增加的功能 |
+| --- | --- |
+| `pdf2zh[legacy]` | 原 pdf2zh v1 核心（`--kernel legacy`） |
+| `pdf2zh[ultrafast]`、`pdf2zh[ocr]` | legacy 核心的[极速模式](./ADVANCED.md#ultrafast)和[自动 OCR](./ADVANCED.md#ocr) |
+| `pdf2zh[mcp]` | MCP 服务（`pdf2zh --mcp`） |
+| `pdf2zh[gui]` | Gradio 网页界面（`pdf2zh -i`） |
+| `pdf2zh[backend]` | Flask/Celery HTTP 后端（[接口说明](./APIS.md#api-http)） |
 
-4. 如果您的浏览器没有自动启动，请访问
-
-   ```bash
-   http://localhost:7860/
-   ```
-
-   <img src="./images/gui.gif" width="500"/>
-
-有关更多详细信息，请参阅 [GUI 文档](./README_GUI.md)。
-
-</details>
+带网页界面的 Docker 镜像：`docker run -d -p 7860:7860 byaidu/pdf2zh`，也可以从 [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate) 拉取。
 
 <details>
-  <summary id="docker">4. Docker</summary>
+<summary>下载模型时网络不通</summary>
 
-1. 拉取并运行：
+两个核心第一次运行时都会从 Hugging Face 下载版面识别模型。如果所在地区下载失败，可以设置镜像：
 
-   ```bash
-   docker pull byaidu/pdf2zh
-   docker run -d -p 7860:7860 byaidu/pdf2zh
-   ```
-
-2. 在浏览器中打开：
-
-   ```
-   http://localhost:7860/
-   ```
-
-对于云服务上的 docker 部署：
-
-<div>
-<a href="https://www.heroku.com/deploy?template=https://github.com/Byaidu/PDFMathTranslate">
-  <img src="https://www.herokucdn.com/deploy/button.svg" alt="部署" height="26"></a>
-<a href="https://render.com/deploy">
-  <img src="https://render.com/images/deploy-to-render-button.svg" alt="部署到 Koyeb" height="26"></a>
-<a href="https://zeabur.com/templates/5FQIGX?referralCode=reycn">
-  <img src="https://zeabur.com/button.svg" alt="在 Zeabur 上部署" height="26"></a>
-<a href="https://template.sealos.io/deploy?templateName=pdf2zh">
-  <img src="https://sealos.io/Deploy-on-Sealos.svg" alt="在 Sealos 上部署" height="26"></a>
-<a href="https://app.koyeb.com/deploy?type=git&builder=buildpack&repository=github.com/Byaidu/PDFMathTranslate&branch=main&name=pdf-math-translate">
-  <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="部署到 Koyeb" height="26"></a>
-</div>
-
-</details>
-
-<details>
-  <summary>5. Zotero 插件</summary>
-
-有关更多细节，请参见 [Zotero PDF2zh](https://github.com/guaguastandup/zotero-pdf2zh)。
-
-</details>
-
-<details>
-  <summary>6. 命令行</summary>
-
-1. 已安装 Python（3.11 <= 版本 <= 3.12）
-2. 安装我们的包：
-
-   ```bash
-   pip install pdf2zh
-   ```
-
-3. 执行翻译，文件生成在 [当前工作目录](https://chatgpt.com/share/6745ed36-9acc-800e-8a90-59204bd13444):
-
-   ```bash
-   pdf2zh document.pdf
-   ```
-
-</details>
-
-> [!TIP]
->
-> - 如果你使用 Windows 并在下载后无法打开文件，请安装 [vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe) 并重试。
->
-> - 如果你无法访问 Docker Hub，请尝试在 [GitHub 容器注册中心](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate) 上使用该镜像。
-> ```bash
-> docker pull ghcr.io/byaidu/pdfmathtranslate
-> docker run -d -p 7860:7860 ghcr.io/byaidu/pdfmathtranslate
-> ```
-
-### 无法安装？
-
-当前程序在工作前需要一个 AI 模型 (`wybxc/DocLayout-YOLO-DocStructBench-onnx`)，一些用户由于网络问题无法下载。如果你在下载此模型时遇到问题，我们提供以下环境变量的解决方法：
-
-```shell
-set HF_ENDPOINT=https://hf-mirror.com
+```bash
+export HF_ENDPOINT=https://hf-mirror.com
 ```
 
-对于 PowerShell 用户：
+其他问题请看[常见问题](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)。
+</details>
 
-```shell
-$env:HF_ENDPOINT = https://hf-mirror.com
+<h3 id="kernels">翻译核心</h3>
+
+| 核心 | 安装 | 适合 |
+| --- | --- | --- |
+| `babeldoc`（默认） | 已包含 | 版面还原度最高，由 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 驱动 |
+| `legacy` | `pdf2zh[legacy]` | 更轻更快；支持极速模式、OCR 和自定义 ONNX 模型 |
+
+默认的 `--kernel auto` 在装了 BabelDOC 时使用 BabelDOC。旧的 `--mode fast` / `--mode precise` 和 `--babeldoc` 仍然可用，分别等同于 `--kernel legacy` / `--kernel babeldoc`。
+
+<h3 id="usage">命令行</h3>
+
+```bash
+pdf2zh paper.pdf -li en -lo ja -s deepl          # 指定源语言、目标语言和翻译服务
+pdf2zh paper.pdf -s openai:gpt-4o-mini -p 1-3    # 服务:模型，只翻译部分页面
+pdf2zh paper.pdf --kernel legacy --ultrafast     # legacy 核心的原生文本极速模式
+pdf2zh --dir ./papers -o ./out                   # 批量翻译整个文件夹
 ```
 
-如果此解决方案对您无效或您遇到其他问题，请参阅 [常见问题解答](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)。
+| 参数 | 作用 |
+| --- | --- |
+| `files` | 本地文件或 URL |
+| `-k`、`--kernel` | `auto`、`babeldoc` 或 `legacy` |
+| `-li`、`-lo` | [源语言和目标语言](./ADVANCED.md#language) |
+| `-s` | [翻译服务](./ADVANCED.md#services)，可写成 `服务:模型` |
+| `-p` | [页码](./ADVANCED.md#partial)，如 `1,3-5` |
+| `-o` | 输出目录 |
+| `-t` | [线程数](./ADVANCED.md#threads) |
+| `-f`、`-c` | [公式字体 / 字符正则](./ADVANCED.md#exceptions) |
+| `--prompt` | [自定义提示词](./ADVANCED.md#prompt) |
+| `--config` | [配置文件](./ADVANCED.md#cofig) |
+| `--ignore-cache` | [跳过翻译缓存](./ADVANCED.md#cache) |
+| `--ultrafast`、`--onnx`、`--skip-subset-fonts` | legacy 核心专用参数 |
+| `-i`、`--flask`、`--celery` | 网页界面和 HTTP 后端（使用 legacy 核心） |
+| `--mcp`、`--sse` | [MCP 服务](#mcp) |
+| `--json` | 在 stdout 输出一行包含结果路径的 JSON，供以子进程方式调用 pdf2zh 的程序使用 |
 
+完整说明见[高级用法](./ADVANCED.md)。
 
-<h2 id="usage">高级选项</h2>
+<h3 id="python">Python API</h3>
 
-在命令行中执行翻译命令，在当前工作目录下生成译文文档 `example-mono.pdf` 和双语对照文档 `example-dual.pdf`，默认使用 Google 翻译服务，更多支持的服务在[这里](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services))。
+```python
+from pdf2zh import TranslateRequest, get_kernel
 
-<img src="./images/cmd.explained.png" width="580px"  alt="cmd"/>  
+kernel = get_kernel()                     # "auto"、"babeldoc" 或 "legacy"
+request = TranslateRequest(files=["paper.pdf"], lang_in="en", lang_out="zh", service="google")
+for result in kernel.translate(request):  # 或：await kernel.translate_async(request)
+    print(result.mono_pdf, result.dual_pdf)
+```
 
-在下表中，我们列出了所有高级选项供参考：
+`pdf2zh.translate` 和 `pdf2zh.translate_stream` 继续保留，用于 legacy 核心，见[接口说明](./APIS.md)。
 
-| 选项         | 功能                                                                                                          | 示例                                           |
-| ------------ | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| files        | 本地文件                                                                                                     | `pdf2zh ~/local.pdf`                           |
-| links        | 在线文件                                                                                                     | `pdf2zh http://arxiv.org/paper.pdf`            |
-| `-i`         | [进入 GUI](#gui)                                                                                            | `pdf2zh -i`                                    |
-| `-p`         | [部分文档翻译](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#partial)                | `pdf2zh example.pdf -p 1`                      |
-| `-li`        | [源语言](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)                    | `pdf2zh example.pdf -li en`                    |
-| `-lo`        | [目标语言](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#languages)                  | `pdf2zh example.pdf -lo zh`                    |
-| `-s`         | [翻译服务](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services)                   | `pdf2zh example.pdf -s deepl`                  |
-| `-t`         | [多线程](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#threads)                      | `pdf2zh example.pdf -t 1`                      |
-| `-o`         | 输出目录                                                                                                     | `pdf2zh example.pdf -o output`                 |
-| `-f`, `-c`   | [异常](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                     | `pdf2zh example.pdf -f "(MS.*)"`               |
-| `-cp`        | 兼容模式                                                                                                     | `pdf2zh example.pdf --compatible`              |
-| `--ultrafast` | 使用 `pdf-inspector` 的 PDF 原生文本位置进行启发式布局，跳过 ONNX 布局解析和 OCR（适用于包含原生文本的 PDF） | `pdf2zh example.pdf --ultrafast`              |
-| `--share`    | 公开链接                                                                                                     | `pdf2zh -i --share`                            |
-| `--authorized` | [授权](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#auth)                         | `pdf2zh -i --authorized users.txt [auth.html]` |
-| `--prompt`   | [自定义提示](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#prompt)                   | `pdf2zh --prompt [prompt.txt]`                 |
-| `--onnx`     | [使用自定义 DocLayout-YOLO ONNX 模型]                                                                        | `pdf2zh --onnx [onnx/model/path]`              |
-| `--serverport` | [使用自定义 WebUI 端口]                                                                                    | `pdf2zh --serverport 7860`                     |
-| `--dir`      | [批量翻译]                                                                                                   | `pdf2zh --dir /path/to/translate/`             |
-| `--config`   | [配置文件](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cofig)                       | `pdf2zh --config /path/to/config/config.json`  |
-| `--serverport` | [自定义 gradio 服务器端口]                                                                                 | `pdf2zh --serverport 7860`                     |
-| `--mode`   | 翻译模式：`fast`（默认，v1）或 `precise`（v2，实验性，需要 pdf2zh_next 子模块）                                | `pdf2zh --mode precise example.pdf`            |
-| `--babeldoc`| 使用实验性后端 [BabelDOC](https://funstory-ai.github.io/BabelDOC/) 翻译 |`pdf2zh --babeldoc` -s openai example.pdf|
+<h3 id="mcp">MCP</h3>
 
-`--ultrafast` 需要 `pdf-inspector>=1.25.2,<2` 可选依赖：`pip install 'pdf2zh[ultrafast]'`。该模式使用 PDF 原生文本位置进行启发式布局；没有原生文本的页面会保留且不会执行 OCR。启发式文本分组仍保留常规的字体和字符公式保护规则；对于复杂表格或公式，请使用普通模式。该模式仅支持 fast 命令行模式，不能与 `--mode precise`、`--babeldoc`、服务器或 GUI 模式以及 `--onnx` 一起使用。它会自动跳过字体子集化，因此输出 PDF 更大，但仍会按需使用 BabelDOC 字体资源。`--ultrafast --ignore-cache` 会同时跳过翻译缓存的读取和写入；普通模式的 `--ignore-cache` 语义不变。Ultrafast 默认使用 16 个 worker 建立整篇文档共享的段落任务池，每次请求单个段落；`-t` 可覆盖该值，普通模式默认仍为 4。INFO 日志会自动输出 `[ultrafast perf]` 的分阶段和逐页耗时。`page_scan` 表示提交段落任务的扫描；`translation` 表示等待整篇文档共享任务池排空的耗时（包括 API 重试），不能通过相加逐页等待时间重建。`paragraph_parse` 覆盖两次解析，`typesetting` 在翻译完成后执行，`layout_extract` 会在字体设置前单独报告。`page_processing` 包含嵌套的 `layout_mask`、`paragraph_parse`、`translation` 和 `typesetting` 耗时，请勿将嵌套值再次相加。此路径不会导入 ONNX 或 OpenCV。
+在任意 MCP 宿主里注册 pdf2zh。宿主会在需要时自己启动它，不用另外开着服务：
 
-有关详细说明，请参阅我们的文档 [高级用法](./ADVANCED.md)，以获取每个选项的完整列表。
+```json
+{
+  "mcpServers": {
+    "pdf2zh": {
+      "command": "uvx",
+      "args": ["--from", "pdf2zh[mcp]", "pdf2zh", "--mcp"]
+    }
+  }
+}
+```
 
-<h2 id="downstream">二次开发 (API)</h2>
+提供的工具：`translate_pdf(file, lang_in, lang_out, service, kernel, pages, output_dir)` 和 `list_kernels()`。详见 [MCP](./ADVANCED.md#mcp)。
 
-当前的 pdf2zh API 暂时已弃用。API 将在 [pdf2zh 2.0](https://github.com/Byaidu/PDFMathTranslate/issues/586)发布后重新提供。对于需要程序化访问的用户，请使用[BabelDOC](https://github.com/funstory-ai/BabelDOC)的 `babeldoc.high_level.async_translate` 函数。
+<h3 id="examples">基于 pdf2zh 开发</h3>
 
-API 暂时弃用意味着：相关代码暂时不会被移除，但不会提供技术支持，也不会修复 bug。
+[`examples/`](../examples/) 里有可直接运行的接入原型：带 REST 接口、实时进度和远程 MCP 的[网页前端与服务端](../examples/server/)，以及 [Claude](../examples/claude/)、[ChatGPT](../examples/chatgpt/)、[Zotero](../examples/zotero/) 和 [DeepSeek Harness](../examples/dsh/) 的接入方式。
 
-<!-- 对于下游应用程序，请参阅我们的文档 [API 详细信息](./APIS.md)，以获取更多信息：
-- [Python API](./APIS.md#api-python)，如何在其他 Python 程序中使用该程序
-- [HTTP API](./APIS.md#api-http)，如何与已安装该程序的服务器进行通信 -->
+<h2 id="updates">更新</h2>
 
-<h2 id="todo">待办事项</h2>
-
-- [ ] 使用基于 DocLayNet 的模型解析布局，[PaddleX](https://github.com/PaddlePaddle/PaddleX/blob/17cc27ac3842e7880ca4aad92358d3ef8555429a/paddlex/repo_apis/PaddleDetection_api/object_det/official_categories.py#L81)，[PaperMage](https://github.com/allenai/papermage/blob/9cd4bb48cbedab45d0f7a455711438f1632abebe/README.md?plain=1#L102)，[SAM2](https://github.com/facebookresearch/sam2)
-
-- [ ] 修复页面旋转、目录、列表格式
-
-- [ ] 修复旧论文中的像素公式
-
-- [ ] 异步重试，除了 KeyboardInterrupt
-
-- [ ] 针对西方语言的 Knuth–Plass 算法
-
-- [ ] 支持非 PDF/A 文件
-
-- [ ] [Zotero](https://github.com/zotero/zotero) 和 [Obsidian](https://github.com/obsidianmd/obsidian-releases) 的插件
+- [2026 年 10 月] PDFMathTranslate 成为统一接入口：BabelDOC 作为默认核心在进程内运行，v1 流程改为可选的 `legacy` 核心；MCP 服务支持选择核心、翻译服务和页码；网页界面和 HTTP 后端改为可选安装；移除 `pdf2zh_next` 子模块。
+- [2026 年 10 月 3 日] legacy 核心在相邻的中日韩文字和拉丁字母之间自动加空格。
+- [2026 年 10 月 2 日] 新增 `--ultrafast` 原生文本极速模式（由 [@reycn](https://github.com/reycn) 提交）。
+- [2026 年 9 月 8 日] 实验性 OCR，支持段落重组和自适应排版（由 [@reycn](https://github.com/reycn) 提交）。
 
 <h2 id="acknowledgement">致谢</h2>
 

@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "pdf2zh",
+  "version": "0.1.0",
+  "description": "Translate PDF attachments with pdf2zh and keep formulas, figures and layout.",
+  "homepage_url": "https://github.com/PDFMathTranslate/PDFMathTranslate",
+  "applications": {
+    "zotero": {
+      "id": "pdf2zh@pdfmathtranslate.github.io",
+      "update_url": "https://raw.githubusercontent.com/PDFMathTranslate/PDFMathTranslate/main/examples/zotero/updates.json",
+      "strict_min_version": "7.0",
+      "strict_max_version": "10.*"
+    }
+  }
+}

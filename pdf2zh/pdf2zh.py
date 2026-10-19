@@ -9,13 +9,15 @@ import argparse
 import logging
 import os
 import sys
+from pathlib import Path
 from string import Template
 from typing import List, Optional
 
 from pdf2zh import __version__, log
-from pdf2zh.converter_docx import convert_to_pdf, is_convertible
 
 logger = logging.getLogger(__name__)
+
+KERNEL_ALIASES = {"fast": "legacy", "precise": "babeldoc"}
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -178,18 +180,28 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     parse_params.add_argument(
+        "--kernel",
+        "-k",
+        type=str,
+        choices=["auto", "babeldoc", "legacy"],
+        default=None,
+        help="Translation kernel: babeldoc (default when installed) or legacy "
+        "(pdf2zh v1, needs pdf2zh[legacy]). auto picks babeldoc first.",
+    )
+
+    parse_params.add_argument(
         "--mode",
         type=str,
         choices=["fast", "precise"],
-        default="fast",
-        help="Translation mode: fast (v1) or precise (v2, requires pdf2zh_next).",
+        default=None,
+        help="Deprecated alias of --kernel: fast = legacy, precise = babeldoc.",
     )
 
     parse_params.add_argument(
         "--babeldoc",
         default=False,
         action="store_true",
-        help="Use experimental backend babeldoc.",
+        help="Deprecated alias of --kernel babeldoc.",
     )
 
     parse_params.add_argument(
@@ -214,6 +226,13 @@ def create_parser() -> argparse.ArgumentParser:
         "--sse", action="store_true", help="Launch pdf2zh MCP server in SSE mode"
     )
 
+    parse_params.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the result as one JSON object on stdout, for programs that "
+        "run pdf2zh as a subprocess. Logs stay on stderr.",
+    )
+
     return parser
 
 
@@ -224,9 +243,26 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
         parsed_args.thread = 16 if parsed_args.ultrafast else 4
     if parsed_args.thread < 1:
         parser.error("--thread must be at least 1")
+    requested = {
+        k
+        for k in (
+            parsed_args.kernel,
+            KERNEL_ALIASES.get(parsed_args.mode),
+            "babeldoc" if parsed_args.babeldoc else None,
+        )
+        if k and k != "auto"
+    }
+    if len(requested) > 1:
+        parser.error("--kernel, --mode and --babeldoc select different kernels")
+    legacy_only = parsed_args.ultrafast or parsed_args.onnx
+    if requested:
+        parsed_args.kernel = requested.pop()
+    elif legacy_only:
+        parsed_args.kernel = "legacy"
+    else:
+        parsed_args.kernel = "auto"
     if parsed_args.ultrafast and (
-        parsed_args.mode != "fast"
-        or parsed_args.babeldoc
+        parsed_args.kernel != "legacy"
         or parsed_args.onnx
         or parsed_args.interactive
         or parsed_args.flask
@@ -235,8 +271,10 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
         or parsed_args.sse
     ):
         parser.error(
-            "--ultrafast requires fast CLI mode without --onnx or server options"
+            "--ultrafast requires the legacy kernel without --onnx or server options"
         )
+    if parsed_args.onnx and parsed_args.kernel == "babeldoc":
+        parser.error("--onnx requires the legacy kernel")
 
     if parsed_args.pages:
         pages = []
@@ -279,9 +317,13 @@ def find_all_files_in_directory(directory_path):
 def main(args: Optional[List[str]] = None) -> int:
     parsed_args = parse_args(args)
 
+    from rich.console import Console
     from rich.logging import RichHandler
 
-    logging.basicConfig(level=logging.INFO, handlers=[RichHandler()])
+    # Logs go to stderr: in MCP STDIO mode stdout carries the protocol.
+    logging.basicConfig(
+        level=logging.INFO, handlers=[RichHandler(console=Console(stderr=True))]
+    )
 
     # disable httpx, openai, httpcore, http11 logs
     logging.getLogger("httpx").setLevel("CRITICAL")
@@ -301,14 +343,13 @@ def main(args: Optional[List[str]] = None) -> int:
     if parsed_args.debug:
         log.setLevel(logging.DEBUG)
 
-    if not parsed_args.ultrafast:
-        from pdf2zh.doclayout import ModelInstance, OnnxModel, set_backend
-
-        set_backend(parsed_args.backend)
-        if parsed_args.onnx:
-            ModelInstance.value = OnnxModel(parsed_args.onnx)
-        else:
-            ModelInstance.value = OnnxModel.load_available()
+    if parsed_args.interactive or parsed_args.flask or parsed_args.celery:
+        # The web UI and the HTTP backend run on the legacy kernel.
+        _require_extra(
+            "gradio" if parsed_args.interactive else "flask",
+            "gui" if parsed_args.interactive else "backend",
+        )
+        _load_layout_model(parsed_args)
 
     if parsed_args.interactive:
         from pdf2zh.gui import setup_gui
@@ -343,29 +384,31 @@ def main(args: Optional[List[str]] = None) -> int:
 
     if parsed_args.mcp:
         logging.getLogger("mcp").setLevel(logging.ERROR)
-        from pdf2zh.mcp_server import create_mcp_app, create_starlette_app
+        from pdf2zh.mcp_server import create_mcp_app
 
         mcp = create_mcp_app()
         if parsed_args.sse:
             import uvicorn
 
-            starlette_app = create_starlette_app(mcp._mcp_server)
-            uvicorn.run(starlette_app)
+            uvicorn.run(mcp.sse_app())
             return 0
         mcp.run()
         return 0
 
-    print(parsed_args)
-
-    if parsed_args.babeldoc:
-        return yadt_main(parsed_args)
-
-    # Unified kernel routing — both fast and precise modes go through the registry
     from pdf2zh.kernel import KernelRegistry
     from pdf2zh.kernel.protocol import TranslateRequest
 
-    KernelRegistry.switch(parsed_args.mode)  # "fast" or "precise"
+    try:
+        KernelRegistry.switch(parsed_args.kernel)
+    except RuntimeError as e:
+        logger.error(str(e))
+        if parsed_args.json:
+            _print_json({"ok": False, "error": str(e)})
+        return 1
     kernel = KernelRegistry.get()
+    logger.info(f"Using kernel: {kernel.name} {kernel.version}")
+    if kernel.name == "legacy":
+        _load_layout_model(parsed_args)
 
     if parsed_args.dir:
         parsed_args.files = find_all_files_in_directory(parsed_args.files[0])
@@ -397,157 +440,65 @@ def main(args: Optional[List[str]] = None) -> int:
         debug=parsed_args.debug,
         ultrafast=parsed_args.ultrafast,
     )
-    kernel.translate(request)
+    if not parsed_args.json:
+        kernel.translate(request)
+        return 0
+
+    # Keep stdout to the single JSON object: no progress bars, and anything
+    # the kernels print goes to stderr.
+    import contextlib
+
+    try:
+        with contextlib.redirect_stdout(sys.stderr):
+            results = kernel.translate(request, callback=lambda *args: None)
+    except Exception as e:
+        logger.exception("Translation failed")
+        _print_json({"ok": False, "kernel": kernel.name, "error": str(e)})
+        return 1
+    _print_json(
+        {
+            "ok": True,
+            "kernel": kernel.name,
+            "results": [
+                {
+                    "input": str(source),
+                    "mono": str(Path(r.mono_pdf).resolve()) if r.mono_pdf else None,
+                    "dual": str(Path(r.dual_pdf).resolve()) if r.dual_pdf else None,
+                }
+                for source, r in zip(request.files, results)
+            ],
+        }
+    )
     return 0
 
 
-def yadt_main(parsed_args) -> int:
-    from babeldoc.high_level import async_translate as yadt_translate
-    from babeldoc.high_level import init as yadt_init
-    from babeldoc.main import create_progress_handler
-    from babeldoc.translation_config import TranslationConfig as YadtConfig
-    from pdf2zh.high_level import download_remote_fonts
+def _print_json(payload: dict) -> None:
+    import json
 
-    if parsed_args.dir:
-        untranlate_file = find_all_files_in_directory(parsed_args.files[0])
-    else:
-        untranlate_file = parsed_args.files
-    lang_in = parsed_args.lang_in
-    lang_out = parsed_args.lang_out
-    ignore_cache = parsed_args.ignore_cache
-    outputdir = None
-    if parsed_args.output:
-        outputdir = parsed_args.output
+    print(json.dumps(payload, ensure_ascii=False), flush=True)
 
-    # yadt require init before translate
-    yadt_init()
-    font_path = download_remote_fonts(lang_out.lower())
 
-    param = parsed_args.service.split(":", 1)
-    service_name = param[0]
-    service_model = param[1] if len(param) > 1 else None
+def _require_extra(module: str, extra: str) -> None:
+    import importlib.util
 
-    envs = {}
-    prompt = []
-
-    if parsed_args.prompt:
-        try:
-            with open(parsed_args.prompt, "r", encoding="utf-8") as file:
-                content = file.read()
-            prompt = Template(content)
-        except Exception:
-            raise ValueError("prompt error.")
-
-    from pdf2zh.translator import (
-        AzureOpenAITranslator,
-        GoogleTranslator,
-        BingTranslator,
-        DeepLTranslator,
-        DeepLXTranslator,
-        OllamaTranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
-        AnythingLLMTranslator,
-        XinferenceTranslator,
-        ArgosTranslator,
-        GrokTranslator,
-        GroqTranslator,
-        DeepseekTranslator,
-        OpenAIlikedTranslator,
-        QwenMtTranslator,
-        X302AITranslator,
-    )
-
-    for translator in [
-        GoogleTranslator,
-        BingTranslator,
-        DeepLTranslator,
-        DeepLXTranslator,
-        OllamaTranslator,
-        XinferenceTranslator,
-        AzureOpenAITranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
-        AnythingLLMTranslator,
-        ArgosTranslator,
-        GrokTranslator,
-        GroqTranslator,
-        DeepseekTranslator,
-        OpenAIlikedTranslator,
-        QwenMtTranslator,
-        X302AITranslator,
-    ]:
-        if service_name == translator.name:
-            translator = translator(
-                lang_in,
-                lang_out,
-                service_model,
-                envs=envs,
-                prompt=prompt,
-                ignore_cache=ignore_cache,
-            )
-            break
-    else:
-        raise ValueError("Unsupported translation service")
-    import asyncio
-
-    for file in untranlate_file:
-        file = file.strip("\"'")
-        _converted_pdf = None
-        if is_convertible(file):
-            _converted_pdf = convert_to_pdf(file)
-            file = _converted_pdf
-        yadt_config = YadtConfig(
-            input_file=file,
-            font=font_path,
-            pages=",".join((str(x) for x in getattr(parsed_args, "raw_pages", []))),
-            output_dir=outputdir,
-            doc_layout_model=None,
-            translator=translator,
-            debug=parsed_args.debug,
-            lang_in=lang_in,
-            lang_out=lang_out,
-            no_dual=False,
-            no_mono=False,
-            qps=parsed_args.thread,
+    if importlib.util.find_spec(module) is None:
+        raise SystemExit(
+            f"This mode needs an optional dependency. "
+            f"Install it with: pip install 'pdf2zh[{extra}]'"
         )
 
-        async def yadt_translate_coro(yadt_config):
-            progress_context, progress_handler = create_progress_handler(yadt_config)
-            # 开始翻译
-            with progress_context:
-                async for event in yadt_translate(yadt_config):
-                    progress_handler(event)
-                    if yadt_config.debug:
-                        logger.debug(event)
-                    if event["type"] == "finish":
-                        result = event["translate_result"]
-                        logger.info("Translation Result:")
-                        logger.info(f"  Original PDF: {result.original_pdf_path}")
-                        logger.info(f"  Time Cost: {result.total_seconds:.2f}s")
-                        logger.info(f"  Mono PDF: {result.mono_pdf_path or 'None'}")
-                        logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
-                        break
 
-        asyncio.run(yadt_translate_coro(yadt_config))
-        if _converted_pdf:
-            try:
-                os.unlink(_converted_pdf)
-            except OSError:
-                pass
-    return 0
+def _load_layout_model(parsed_args) -> None:
+    """Load the DocLayout-YOLO model used by the legacy kernel."""
+    if parsed_args.ultrafast:
+        return
+    from pdf2zh.doclayout import ModelInstance, OnnxModel, set_backend
+
+    set_backend(parsed_args.backend)
+    if parsed_args.onnx:
+        ModelInstance.value = OnnxModel(parsed_args.onnx)
+    else:
+        ModelInstance.value = OnnxModel.load_available()
 
 
 if __name__ == "__main__":

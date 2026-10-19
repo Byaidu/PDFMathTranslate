@@ -1,7 +1,5 @@
 # Experimental kernel files
 *.csv
-pdf2zh/kernel/PDFMathTranslate-next.git/*.csv
-pdf2zh/kernel/PDFMathTranslate-next.git/*.pdf
 
 # PDF Files
 pdf2zh_files

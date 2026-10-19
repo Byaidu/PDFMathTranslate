@@ -159,12 +159,20 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
         # self.device.paint_path(self.graphicstate, True, True, True, self.curpath)
         self.curpath = []
 
+    def _colorspaces(self):
+        """Object holding scs/ncs: the graphic state since pdfminer.six
+        20250506, the interpreter itself before."""
+        if hasattr(self.graphicstate, "ncs"):
+            return self.graphicstate
+        return self
+
     ############################################################
     # 重载返回调用参数（SCN）
     def do_SCN(self) -> None:
         """Set color for stroking operations."""
-        if self.scs:
-            n = self.scs.ncomponents
+        scs = self._colorspaces().scs
+        if scs:
+            n = scs.ncomponents
         else:
             if settings.STRICT:
                 raise PDFInterpreterError("No colorspace specified!")
@@ -175,8 +183,9 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
 
     def do_scn(self) -> None:
         """Set color for nonstroking operations"""
-        if self.ncs:
-            n = self.ncs.ncomponents
+        ncs = self._colorspaces().ncs
+        if ncs:
+            n = ncs.ncomponents
         else:
             if settings.STRICT:
                 raise PDFInterpreterError("No colorspace specified!")
@@ -224,8 +233,9 @@ class PDFPageInterpreterEx(PDFPageInterpreter):
                 [xobj],
                 ctm=ctm,
             )
-            self.ncs = interpreter.ncs
-            self.scs = interpreter.scs
+            target, source = self._colorspaces(), interpreter._colorspaces()
+            target.ncs = source.ncs
+            target.scs = source.scs
             try:  # 有的时候 form 字体加不上这里会烂掉
                 self.device.fontid = interpreter.fontid
                 self.device.fontmap = interpreter.fontmap

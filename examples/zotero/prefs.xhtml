@@ -1,0 +1,16 @@
+<vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+      xmlns:html="http://www.w3.org/1999/xhtml">
+  <groupbox>
+    <label><html:h2>pdf2zh</html:h2></label>
+    <html:label for="pdf2zh-command">Command</html:label>
+    <html:input id="pdf2zh-command" type="text" preference="extensions.pdf2zh.command"/>
+    <html:label for="pdf2zh-lang-in">Source language</html:label>
+    <html:input id="pdf2zh-lang-in" type="text" preference="extensions.pdf2zh.langIn"/>
+    <html:label for="pdf2zh-lang-out">Target language</html:label>
+    <html:input id="pdf2zh-lang-out" type="text" preference="extensions.pdf2zh.langOut"/>
+    <html:label for="pdf2zh-service">Translation service</html:label>
+    <html:input id="pdf2zh-service" type="text" preference="extensions.pdf2zh.service"/>
+    <html:label for="pdf2zh-kernel">Kernel (auto, babeldoc, legacy)</html:label>
+    <html:input id="pdf2zh-kernel" type="text" preference="extensions.pdf2zh.kernel"/>
+  </groupbox>
+</vbox>

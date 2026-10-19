@@ -1,13 +1,9 @@
-from mcp.server import Server
-from mcp.server.fastmcp import FastMCP, Context
-from mcp.server.sse import SseServerTransport
-from starlette.applications import Starlette
-from starlette.requests import Request
-from starlette.routing import Mount, Route
-from pdf2zh import translate_stream
-from pdf2zh.converter_docx import convert_to_pdf, is_convertible
-from pdf2zh.doclayout import ModelInstance
+try:  # mcp >= 2 renamed FastMCP to MCPServer
+    from mcp.server.mcpserver import Context, MCPServer as FastMCP
+except ImportError:  # mcp 1.x
+    from mcp.server.fastmcp import Context, FastMCP
 from pathlib import Path
+from typing import Optional
 
 import contextlib
 import io
@@ -19,84 +15,90 @@ def create_mcp_app() -> FastMCP:
 
     @mcp.tool()
     async def translate_pdf(
-        file: str, lang_in: str, lang_out: str, ctx: Context
+        file: str,
+        lang_in: str,
+        lang_out: str,
+        ctx: Context,
+        service: str = "google",
+        kernel: str = "auto",
+        pages: Optional[str] = None,
+        output_dir: Optional[str] = None,
     ) -> str:
         """
         translate given pdf or word document. Argument `file` is absolute path
         of input pdf/doc/docx, `lang_in` and `lang_out` is translate from and
         to language, and should be like google translate lang_code. `lang_in`
-        can be `auto` if you can't determine input language.
+        can be `auto` if you can't determine input language. `service` is the
+        translation service such as `google`, `deepl` or `openai:gpt-4o-mini`.
+        `kernel` is `auto`, `babeldoc` or `legacy`. `pages` is a 1-based page
+        list such as "1,3-5". Output goes next to the input unless
+        `output_dir` is given.
         """
+        from pdf2zh.kernel import KernelRegistry
+        from pdf2zh.kernel.protocol import TranslateRequest
 
-        _converted_pdf = None
-        if is_convertible(file):
-            _converted_pdf = convert_to_pdf(file)
-            original_name = os.path.splitext(os.path.basename(file))[0]
-            file = _converted_pdf
-        else:
-            original_name = None
-
-        with open(file, "rb") as f:
-            file_bytes = f.read()
-        await ctx.log(level="info", message=f"start translate {file}")
+        engine = KernelRegistry.get(kernel)
+        if not engine.is_available():
+            KernelRegistry.switch(engine.name)  # raises with an install hint
+        request = TranslateRequest(
+            files=[file],
+            lang_in=lang_in,
+            lang_out=lang_out,
+            service=service,
+            pages=_parse_pages(pages),
+            output=output_dir or os.path.dirname(file),
+        )
+        # Positional: mcp 1.x names the second argument message, 2.x data.
+        await ctx.log("info", f"start translate {file} with {engine.name}")
+        # stdout carries the MCP protocol in STDIO mode; keep kernels off it.
         with contextlib.redirect_stdout(io.StringIO()):
-            doc_mono_bytes, doc_dual_bytes = translate_stream(
-                file_bytes,
-                lang_in=lang_in,
-                lang_out=lang_out,
-                service="google",
-                model=ModelInstance.value,
-                thread=4,
-            )
-        await ctx.log(level="info", message="translate complete")
-        output_path = Path(os.path.dirname(file))
-        filename = original_name or os.path.splitext(os.path.basename(file))[0]
-        doc_mono = output_path / f"{filename}-mono.pdf"
-        doc_dual = output_path / f"{filename}-dual.pdf"
-        with open(doc_mono, "wb") as f:
-            f.write(doc_mono_bytes)
-        with open(doc_dual, "wb") as f:
-            f.write(doc_dual_bytes)
-        if _converted_pdf:
-            try:
-                os.unlink(_converted_pdf)
-            except OSError:
-                pass
-        return f"""------------
-    translate complete
-    mono pdf file: {doc_mono.absolute()}
-    dual pdf file: {doc_dual.absolute()}
-    """
+            results = await engine.translate_async(request, callback=_ignore)
+        await ctx.log("info", "translate complete")
+        lines = ["------------", "    translate complete"]
+        for result in results:
+            if result.mono_pdf:
+                lines.append(f"    mono pdf file: {Path(result.mono_pdf).absolute()}")
+            if result.dual_pdf:
+                lines.append(f"    dual pdf file: {Path(result.dual_pdf).absolute()}")
+        return "\n".join(lines) + "\n"
+
+    @mcp.tool()
+    def list_kernels() -> str:
+        """List translation kernels, their versions and whether they are installed."""
+        from pdf2zh.kernel import KernelRegistry
+        from pdf2zh.kernel.registry import INSTALL_HINTS
+
+        lines = []
+        for name in ("babeldoc", "legacy"):
+            engine = KernelRegistry.get(name)
+            if engine.is_available():
+                lines.append(f"{name}: installed, version {engine.version}")
+            else:
+                lines.append(f"{name}: not installed ({INSTALL_HINTS[name]})")
+        return "\n".join(lines)
 
     return mcp
 
 
-def create_starlette_app(mcp_server: Server, *, debug: bool = False) -> Starlette:
-    sse = SseServerTransport("/messages/")
+def _ignore(*args, **kwargs) -> None:
+    pass
 
-    async def handle_sse(request: Request) -> None:
-        async with sse.connect_sse(request.scope, request.receive, request._send) as (
-            read_stream,
-            write_stream,
-        ):
-            await mcp_server.run(
-                read_stream, write_stream, mcp_server.create_initialization_options()
-            )
 
-    return Starlette(
-        debug=debug,
-        routes=[
-            Route("/sse", endpoint=handle_sse),
-            Mount("/messages/", app=sse.handle_post_message),
-        ],
-    )
+def _parse_pages(pages: Optional[str]) -> Optional[list[int]]:
+    """Convert a 1-based "1,3-5" spec to 0-based page indexes."""
+    if not pages:
+        return None
+    result = []
+    for part in pages.split(","):
+        start, _, end = part.strip().partition("-")
+        result.extend(range(int(start) - 1, int(end or start)))
+    return result
 
 
 if __name__ == "__main__":
     import argparse
 
     mcp = create_mcp_app()
-    mcp_server = mcp._mcp_server
     parser = argparse.ArgumentParser(description="Run MCP SSE-based PDF2ZH server")
 
     parser.add_argument(
@@ -116,7 +118,6 @@ if __name__ == "__main__":
     if args.sse and args.host and args.port:
         import uvicorn
 
-        starlette_app = create_starlette_app(mcp_server, debug=True)
-        uvicorn.run(starlette_app, host=args.host, port=args.port)
+        uvicorn.run(mcp.sse_app(), host=args.host, port=args.port)
     else:
         mcp.run()

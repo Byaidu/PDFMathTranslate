@@ -92,7 +92,7 @@ def test_ultrafast_cli_without_models_rendering_or_ocr(tmp_path, rotation, caplo
             side_effect=AssertionError("fonts subsetted"),
         ),
         patch.object(high_level, "download_remote_fonts", return_value=str(font)),
-        patch("pdf2zh.converter.GoogleTranslator", factory),
+        patch("pdf2zh.converter.create_translator", factory),
         patch.object(ModelInstance, "value", None),
     ):
         assert (

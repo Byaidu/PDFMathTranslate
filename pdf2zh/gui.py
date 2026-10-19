@@ -1,9 +1,9 @@
 import asyncio
-import cgi
 import os
 import shutil
 import socket
 import uuid
+from email.message import Message
 from asyncio import CancelledError
 from pathlib import Path
 import typing as T
@@ -46,30 +46,11 @@ from pdf2zh.translator import (
     QwenMtTranslator,
     X302AITranslator,
 )
-from babeldoc.docvision.doclayout import OnnxModel
 from babeldoc import __version__ as babeldoc_version
 
 logger = logging.getLogger(__name__)
 
 
-class _LazyModel:
-    """Defers model loading until first access so the GUI starts instantly."""
-
-    def __init__(self):
-        self._model = None
-
-    def _ensure_loaded(self):
-        if self._model is None:
-            self._model = OnnxModel.load_available()
-
-    def __getattr__(self, name):
-        if name.startswith("_"):
-            raise AttributeError(name)
-        self._ensure_loaded()
-        return getattr(self._model, name)
-
-
-BABELDOC_MODEL = _LazyModel()
 # The following variables associate strings with translators
 service_map: dict[str, BaseTranslator] = {
     "Google": GoogleTranslator,
@@ -186,9 +167,12 @@ def download_with_limit(url: str, save_path: str, size_limit: int) -> str:
     with requests.get(url, stream=True, timeout=10) as response:
         response.raise_for_status()
         content = response.headers.get("Content-Disposition")
-        try:  # filename from header
-            _, params = cgi.parse_header(content)
-            filename = params["filename"]
+        try:  # filename from header (cgi.parse_header was removed in 3.13)
+            header = Message()
+            header["Content-Disposition"] = content
+            filename = header.get_param("filename", header="Content-Disposition")
+            if not filename:
+                raise ValueError("no filename")
         except Exception:  # filename from url
             filename = os.path.basename(url)
         filename = os.path.splitext(os.path.basename(filename))[0] + ".pdf"
@@ -322,7 +306,13 @@ def translate_file(
 
     print(f"Files before translation: {os.listdir(output)}")
 
-    def progress_bar(t: tqdm.tqdm):
+    def progress_bar(t: tqdm.tqdm | dict):
+        if isinstance(t, dict):  # BabelDOC progress event
+            if "overall_progress" in t:
+                progress(
+                    t["overall_progress"] / 100, desc=t.get("stage") or "Translating..."
+                )
+            return
         desc = getattr(t, "desc", "Translating...")
         if desc == "":
             desc = "Translating..."
@@ -371,11 +361,13 @@ def translate_file(
             ignore_cache=ignore_cache,
             vfont=vfont,
         )
-        kernel.translate(
+        results = kernel.translate(
             request,
             callback=progress_bar,
             cancellation_event=cancellation_event_map[session_id],
         )
+        if results and results[0].mono_pdf and results[0].dual_pdf:
+            file_mono, file_dual = Path(results[0].mono_pdf), Path(results[0].dual_pdf)
     except CancelledError:
         del cancellation_event_map[session_id]
         raise gr.Error("Translation cancelled")
@@ -394,112 +386,6 @@ def translate_file(
         gr.update(visible=True),
         gr.update(visible=True),
     )
-
-
-def babeldoc_translate_file(**kwargs):
-    from babeldoc.high_level import init as babeldoc_init
-
-    babeldoc_init()
-    from babeldoc.high_level import async_translate as babeldoc_translate
-    from babeldoc.translation_config import TranslationConfig as YadtConfig
-
-    for translator in [
-        GoogleTranslator,
-        BingTranslator,
-        DeepLTranslator,
-        DeepLXTranslator,
-        OllamaTranslator,
-        XinferenceTranslator,
-        AzureOpenAITranslator,
-        OpenAITranslator,
-        ZhipuTranslator,
-        ModelScopeTranslator,
-        SiliconTranslator,
-        GeminiTranslator,
-        AzureTranslator,
-        TencentTranslator,
-        DifyTranslator,
-        AnythingLLMTranslator,
-        ArgosTranslator,
-        GrokTranslator,
-        GroqTranslator,
-        DeepseekTranslator,
-        OpenAIlikedTranslator,
-        QwenMtTranslator,
-        X302AITranslator,
-    ]:
-        if kwargs["service"] == translator.name:
-            translator = translator(
-                kwargs["lang_in"],
-                kwargs["lang_out"],
-                "",
-                envs=kwargs["envs"],
-                prompt=kwargs["prompt"],
-                ignore_cache=kwargs["ignore_cache"],
-            )
-            break
-    else:
-        raise ValueError("Unsupported translation service")
-    import asyncio
-    from babeldoc.main import create_progress_handler
-
-    for file in kwargs["files"]:
-        file = file.strip("\"'")
-        yadt_config = YadtConfig(
-            input_file=file,
-            font=None,
-            pages=",".join((str(x) for x in getattr(kwargs, "raw_pages", []))),
-            output_dir=kwargs["output"],
-            doc_layout_model=BABELDOC_MODEL,
-            translator=translator,
-            debug=False,
-            lang_in=kwargs["lang_in"],
-            lang_out=kwargs["lang_out"],
-            no_dual=False,
-            no_mono=False,
-            qps=kwargs["thread"],
-            use_rich_pbar=False,
-            disable_rich_text_translate=not isinstance(translator, OpenAITranslator),
-            skip_clean=kwargs["skip_subset_fonts"],
-            report_interval=0.5,
-        )
-
-        async def yadt_translate_coro(yadt_config):
-            progress_context, progress_handler = create_progress_handler(yadt_config)
-
-            # 开始翻译
-            with progress_context:
-                async for event in babeldoc_translate(yadt_config):
-                    progress_handler(event)
-                    if yadt_config.debug:
-                        logger.debug(event)
-                    kwargs["callback"](progress_context)
-                    if kwargs["cancellation_event"].is_set():
-                        yadt_config.cancel_translation()
-                        raise CancelledError
-                    if event["type"] == "finish":
-                        result = event["translate_result"]
-                        logger.info("Translation Result:")
-                        logger.info(f"  Original PDF: {result.original_pdf_path}")
-                        logger.info(f"  Time Cost: {result.total_seconds:.2f}s")
-                        logger.info(f"  Mono PDF: {result.mono_pdf_path or 'None'}")
-                        logger.info(f"  Dual PDF: {result.dual_pdf_path or 'None'}")
-                        file_mono = result.mono_pdf_path
-                        file_dual = result.dual_pdf_path
-                        break
-            import gc
-
-            gc.collect()
-            return (
-                str(file_mono),
-                str(file_mono),
-                str(file_dual),
-                gr.update(visible=True),
-                gr.update(visible=True),
-                gr.update(visible=True),
-            )
-
-        return asyncio.run(yadt_translate_coro(yadt_config))
 
 
 # Global setup
@@ -658,9 +544,9 @@ with gr.Blocks(
                     label="Custom Prompt for llm", interactive=True, visible=False
                 )
                 mode_choice = gr.Dropdown(
-                    label="Translation Mode",
-                    choices=["fast", "precise"],
-                    value="fast",
+                    label="Translation Kernel",
+                    choices=["legacy", "babeldoc"],
+                    value="legacy",
                     interactive=True,
                 )
                 envs.append(prompt)

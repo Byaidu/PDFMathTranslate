@@ -1,0 +1,8 @@
+{
+  "name": "pdf2zh",
+  "version": "0.1.0",
+  "description": "Translate scientific PDFs and keep formulas, figures and layout, via the pdf2zh MCP server.",
+  "author": { "name": "PDFMathTranslate" },
+  "homepage": "https://github.com/PDFMathTranslate/PDFMathTranslate",
+  "license": "AGPL-3.0"
+}

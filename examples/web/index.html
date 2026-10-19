@@ -1,0 +1,183 @@
+<!doctype html>
+<!--
+  Minimal pdf2zh web frontend. No build step and no dependencies.
+  Served at / by examples/server/server.py. To use another server, open
+  index.html?api=https://your-server (that server must allow CORS).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDFMathTranslate</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1f; --muted: #6b6b70;
+    --border: #dcdcdf; --accent: #2457d6; --accent-text: #ffffff; --error: #c62828;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161618; --panel: #1f1f22; --text: #ececee; --muted: #9a9aa2;
+      --border: #34343a; --accent: #6b93ff; --accent-text: #0b0b0c; --error: #ff6b6b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 24px; }
+  form, .result {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+  }
+  .drop {
+    display: block; border: 1.5px dashed var(--border); border-radius: 8px; padding: 28px 16px;
+    text-align: center; color: var(--muted); cursor: pointer; margin-bottom: 16px;
+  }
+  .drop.over { border-color: var(--accent); color: var(--text); }
+  .drop strong { color: var(--text); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+  input, select {
+    font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px;
+  }
+  button {
+    margin-top: 16px; font: inherit; font-weight: 600; border: 0; border-radius: 6px;
+    padding: 9px 18px; background: var(--accent); color: var(--accent-text); cursor: pointer;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+  .result { margin-top: 16px; display: none; }
+  .bar { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; margin: 8px 0; }
+  .bar > div { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  .stage { color: var(--muted); font-size: 13px; }
+  .error { color: var(--error); }
+  .links a { margin-right: 16px; color: var(--accent); font-weight: 600; }
+  iframe { width: 100%; height: 70vh; border: 1px solid var(--border); border-radius: 6px; margin-top: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>PDFMathTranslate</h1>
+  <p class="lead">Translate a scientific PDF and keep its formulas, figures and layout.</p>
+
+  <form id="form">
+    <label class="drop" id="drop">
+      <input type="file" id="file" name="file" accept=".pdf,.doc,.docx" hidden>
+      <span id="drop-text"><strong>Choose a PDF</strong> or drop it here</span>
+    </label>
+    <div class="grid">
+      <label class="field">From
+        <select name="lang_in">
+          <option value="en" selected>English</option><option value="zh">Chinese</option>
+          <option value="ja">Japanese</option><option value="ko">Korean</option>
+          <option value="fr">French</option><option value="de">German</option>
+          <option value="es">Spanish</option><option value="ru">Russian</option>
+        </select>
+      </label>
+      <label class="field">To
+        <select name="lang_out">
+          <option value="zh" selected>Chinese</option><option value="en">English</option>
+          <option value="ja">Japanese</option><option value="ko">Korean</option>
+          <option value="fr">French</option><option value="de">German</option>
+          <option value="es">Spanish</option><option value="ru">Russian</option>
+        </select>
+      </label>
+      <label class="field">Service
+        <input name="service" value="google" placeholder="google, deepl, openai:gpt-4o-mini">
+      </label>
+      <label class="field">Kernel
+        <select name="kernel" id="kernel"><option value="auto">auto</option></select>
+      </label>
+      <label class="field">Pages
+        <input name="pages" placeholder="all, or 1,3-5">
+      </label>
+    </div>
+    <button id="submit" disabled>Translate</button>
+  </form>
+
+  <section class="result" id="result">
+    <div id="status">Uploading…</div>
+    <div class="bar"><div id="bar"></div></div>
+    <div class="stage" id="stage"></div>
+    <div class="links" id="links"></div>
+    <iframe id="preview" hidden></iframe>
+  </section>
+</main>
+
+<script>
+const API = (new URLSearchParams(location.search).get("api") || "").replace(/\/$/, "");
+const $ = (id) => document.getElementById(id);
+const fileInput = $("file");
+
+fetch(API + "/api/kernels").then((r) => r.json()).then(({ kernels }) => {
+  for (const name of kernels) $("kernel").add(new Option(name, name));
+}).catch(() => {});
+
+function pick(file) {
+  if (!file) return;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  fileInput.files = dt.files;
+  $("drop-text").textContent = file.name;
+  $("submit").disabled = false;
+}
+fileInput.addEventListener("change", () => pick(fileInput.files[0]));
+$("drop").addEventListener("dragover", (e) => { e.preventDefault(); $("drop").classList.add("over"); });
+$("drop").addEventListener("dragleave", () => $("drop").classList.remove("over"));
+$("drop").addEventListener("drop", (e) => {
+  e.preventDefault();
+  $("drop").classList.remove("over");
+  pick(e.dataTransfer.files[0]);
+});
+
+function show(job) {
+  const labels = { queued: "Waiting for the translator…", running: "Translating…",
+                   done: "Done", failed: "Failed" };
+  $("status").textContent = labels[job.state] || job.state;
+  $("status").className = job.state === "failed" ? "error" : "";
+  $("bar").style.width = Math.round(job.progress * 100) + "%";
+  $("stage").textContent = job.error || (job.state === "done" ? "" : job.stage) || "";
+  if (job.state === "done") {
+    $("links").innerHTML = "";
+    for (const [name, link] of Object.entries(job.files)) {
+      const a = document.createElement("a");
+      a.href = API + link;
+      a.download = "";
+      a.textContent = name === "mono" ? "Translated PDF" : "Bilingual PDF";
+      $("links").append(a);
+    }
+    const preview = job.files.dual || job.files.mono;
+    if (preview) { $("preview").src = API + preview; $("preview").hidden = false; }
+  }
+}
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("submit").disabled = true;
+  $("result").style.display = "block";
+  $("links").innerHTML = "";
+  $("preview").hidden = true;
+  show({ state: "queued", progress: 0 });
+  try {
+    const response = await fetch(API + "/api/jobs", { method: "POST", body: new FormData($("form")) });
+    const job = await response.json();
+    if (!response.ok) throw new Error(job.error || response.statusText);
+    const events = new EventSource(API + `/api/jobs/${job.id}/events`);
+    events.addEventListener("status", (msg) => {
+      const status = JSON.parse(msg.data);
+      show(status);
+      if (status.state === "done" || status.state === "failed") {
+        events.close();
+        $("submit").disabled = false;
+      }
+    });
+  } catch (err) {
+    show({ state: "failed", progress: 0, error: err.message });
+    $("submit").disabled = false;
+  }
+});
+</script>
+</body>
+</html>

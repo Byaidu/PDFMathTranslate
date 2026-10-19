@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "pdf2zh": {
+      "command": "uvx",
+      "args": ["--from", "pdf2zh[mcp]", "pdf2zh", "--mcp"]
+    }
+  }
+}

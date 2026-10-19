@@ -5,7 +5,9 @@
 <h3 id="toc">Table of Contents</h3>
 
 - [Full / partial translation](#partial)
+- [Choose a kernel](#kernel)
 - [Ultrafast mode](#ultrafast)
+- [Automatic OCR](#ocr)
 - [Specify source and target languages](#language)
 - [Translate with different services](#services)
 - [Translate wih exceptions](#exceptions)
@@ -15,6 +17,7 @@
 - [Custom configuration file](#cofig)
 - [Fonts Subseting](#fonts-subset)
 - [Translation cache](#cache)
+- [MCP](#mcp)
 
 ---
 
@@ -31,6 +34,26 @@
   ```bash
   pdf2zh example.pdf -p 1-3,5
   ```
+
+[⬆️ Back to top](#toc)
+
+---
+
+<h3 id="kernel">Choose a kernel</h3>
+
+`pdf2zh` runs one of two translation kernels:
+
+| Kernel | Install | Notes |
+| --- | --- | --- |
+| `babeldoc` (default) | `pip install pdf2zh` | [BabelDOC](https://github.com/funstory-ai/BabelDOC) engine, best layout fidelity. Output: `name.<lang>.mono.pdf` / `name.<lang>.dual.pdf` |
+| `legacy` | `pip install 'pdf2zh[legacy]'` | Original pdf2zh v1 pipeline. Lighter, supports `--ultrafast`, OCR and `--onnx`. Output: `name-mono.pdf` / `name-dual.pdf` |
+
+```bash
+pdf2zh example.pdf                   # auto: babeldoc when installed, else legacy
+pdf2zh example.pdf --kernel legacy
+```
+
+`--ultrafast` and `--onnx` select the legacy kernel automatically. The old `--mode fast` / `--mode precise` and `--babeldoc` flags still work as aliases of `--kernel legacy` / `--kernel babeldoc`.
 
 [⬆️ Back to top](#toc)
 
@@ -54,9 +77,9 @@ This mode uses native PDF text positions from `pdf-inspector` for heuristic
 layout and skips ONNX layout and OCR; pages without native text are preserved
 without OCR. Its heuristic text grouping retains the usual font and character
 formula safeguards. It is best suited to PDFs that already contain native text;
-use normal mode for complex tables or formulas. It is available only in fast
-CLI mode and cannot be combined with `--mode precise`, `--babeldoc`, server or
-GUI modes, or `--onnx`. It automatically skips font subsetting, so its output
+use normal mode for complex tables or formulas. It runs on the legacy kernel
+(`pip install 'pdf2zh[ultrafast]'`) and cannot be combined with
+`--kernel babeldoc`, server or GUI modes, or `--onnx`. It automatically skips font subsetting, so its output
 PDFs are larger, while still using BabelDOC font assets as needed. With
 `--ignore-cache`, it bypasses both translation-cache reads and writes; normal
 mode keeps its existing `--ignore-cache` behavior. Ultrafast uses a shared
@@ -70,6 +93,33 @@ it is not a sum of per-page waits. `paragraph_parse` covers both passes,
 reported separately before font setup. `page_processing` includes nested
 `layout_mask`, `paragraph_parse`, `translation`, and `typesetting` timings, so
 do not sum the nested values again. This path does not import ONNX or OpenCV.
+
+[⬆️ Back to top](#toc)
+
+---
+
+<h3 id="ocr">Automatic OCR</h3>
+
+Legacy kernel only. Fast mode automatically runs local OCR on selected image-only pages before
+translation. Native text, existing OCR layers, and blank pages are skipped;
+the original pages in dual output remain unchanged. Install with
+`pip install 'pdf2zh[ocr]'` (or `pip install -e '.[ocr]'` from this checkout).
+The first scanned page downloads the requested language data from Tesseract's
+`tessdata_fast` 4.1.0 release into `~/.cache/pdf2zh/tessdata/4.1.0`; subsequent
+runs reuse it offline. Native-text PDFs do not trigger downloads.
+OCR uses the input language; `PDF2ZH_OCR_LANGUAGE=eng+deu` overrides it with
+Tesseract language codes. Set `TESSDATA_PREFIX` to use your own data without
+automatic downloads.
+
+PyMuPDF supplies the OCR engine; the optional extra adds Pooch for cached downloads.
+No separate Tesseract executable is required.
+OCR words are regrouped into paragraphs within detected layout regions before
+translation, with wrapped lines and soft hyphens joined. Translated paragraphs
+start at the median source font size and shrink to fit their original boxes;
+detected figures, tables, and standalone formulas remain untouched.
+The initial implementation targets white-background scans: partial scans on
+pages that already contain text are skipped, and handwritten text or inline
+equations may be recognized incorrectly. Precise mode is unchanged.
 
 [⬆️ Back to top](#toc)
 
@@ -378,35 +428,26 @@ A usable configuration is as follows:
 
 <h3 id="mcp">MCP</h3>
 
-PDFMathTranslate can run as MCP server. To use this, you need to run `uv pip install pdf2zh`, and config `claude_desktop_config.json`, an example config is as follows:
+`pdf2zh --mcp` runs an MCP server over STDIO. The MCP host starts it as a subprocess, so nothing needs to be kept running. Register it in any MCP host (Claude Desktop, DeepSeek Harness, ...) with:
 
-``` json
+```json
 {
     "mcpServers": {
-        "filesystem": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@modelcontextprotocol/server-filesystem",
-                "/path/to/Document"
-            ]
-        },
-        "translate_pdf": {
-            "command": "uv",
-            "args": [
-                "run",
-                "pdf2zh",
-                "--mcp"
-            ]
+        "pdf2zh": {
+            "command": "uvx",
+            "args": ["--from", "pdf2zh[mcp]", "pdf2zh", "--mcp"]
         }
     }
 }
 ```
 
-[filesystem](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem) is a reuqired mcp server to find pdf file, and `translate_pdf` is our mcp server.
+`uvx` installs pdf2zh on first use. Add `--with pdf2zh[legacy]` before `pdf2zh` to make the legacy kernel available too.
 
-To test if the mcp server works, you can open claude desktop and tell
+Tools:
 
-```
-find the `test.pdf` in my Document folder and translate it to Chinese
-```
+- `translate_pdf(file, lang_in, lang_out, service="google", kernel="auto", pages=None, output_dir=None)`: `file` is an absolute path to a PDF/DOC/DOCX, `pages` a 1-based list such as `"1,3-5"`. Outputs are written next to the input unless `output_dir` is given; the tool returns their paths.
+- `list_kernels()`: installed kernels and their versions.
+
+`pdf2zh --mcp --sse` serves the same tools over SSE instead.
+
+[⬆️ Back to top](#toc)

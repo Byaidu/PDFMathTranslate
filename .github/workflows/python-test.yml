@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
         runner:
           - ubuntu-latest
           - ubuntu-24.04-arm
@@ -65,7 +65,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync
+          uv sync --extra legacy --extra ultrafast --extra ocr --extra mcp --extra gui
 
       - name: Test - Unit Test
         run: |
@@ -76,6 +76,9 @@ jobs:
 
       - name: Test - Translate a PDF file figure
         run: uv run pdf2zh ./test/file/translate.cli.text.with.figure.pdf -o ./test/file
+
+      - name: Test - Translate a PDF file with the legacy kernel
+        run: uv run pdf2zh ./test/file/translate.cli.text.with.figure.pdf -o ./test/file --kernel legacy
 
       # - name: Test - Translate a PDF file with unknown font
       #   run:

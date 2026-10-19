@@ -1,0 +1,12 @@
+# Adds the pdf2zh MCP server to a dsh profile. dsh starts it on demand over
+# STDIO; the model sees mcp__pdf2zh__translate_pdf and mcp__pdf2zh__list_kernels.
+- insert:
+    - id: mcp-pdf2zh
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: pdf2zh
+        transport: stdio
+        command: uvx
+        args: ['--from', 'pdf2zh[mcp]', 'pdf2zh', '--mcp']
+        # A translation takes minutes; the client's default is 60 seconds.
+        toolCallTimeoutMs: 1800000
