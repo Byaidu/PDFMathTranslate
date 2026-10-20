@@ -46,7 +46,11 @@ from pdf2zh.translator import (
     QwenMtTranslator,
     X302AITranslator,
 )
-from babeldoc import __version__ as babeldoc_version
+
+try:
+    from babeldoc import __version__ as babeldoc_version
+except ImportError:  # BabelDOC is not installed on Python 3.14
+    babeldoc_version = "not installed"
 
 logger = logging.getLogger(__name__)
 

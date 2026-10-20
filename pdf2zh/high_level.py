@@ -691,10 +691,9 @@ def download_remote_fonts(lang: str):
     # docker
     font_path = ConfigManager.get("NOTO_FONT_PATH", Path("/app", font_name).as_posix())
     if not Path(font_path).exists():
-        from babeldoc.assets.assets import get_font_and_metadata
+        from pdf2zh.assets import font_path as get_font_path
 
-        font_path, _ = get_font_and_metadata(font_name)
-        font_path = font_path.as_posix()
+        font_path = get_font_path(font_name).as_posix()
 
     logger.info(f"use font: {font_path}")
 

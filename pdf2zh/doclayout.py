@@ -5,7 +5,7 @@ import os
 import cv2
 import numpy as np
 import ast
-from babeldoc.assets.assets import get_doclayout_onnx_model_path
+from pdf2zh.assets import doclayout_model_path
 
 try:
     import onnx
@@ -126,7 +126,7 @@ class OnnxModel(DocLayoutModel):
 
     @staticmethod
     def from_pretrained():
-        pth = get_doclayout_onnx_model_path()
+        pth = doclayout_model_path()
         return OnnxModel(pth)
 
     @property

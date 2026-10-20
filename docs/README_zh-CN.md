@@ -68,7 +68,7 @@ BabelDOC（排版引擎，funstory.ai）           pdf2zh v1 流程
 需要 Python 3.11 到 3.14；BabelDOC 核心需要 3.11 到 3.13。
 
 ```bash
-pip install pdf2zh                # 命令行、Python API 和两个核心
+pip install pdf2zh                # 命令行、Python API、legacy 核心（3.11-3.13 另含 BabelDOC）
 pdf2zh document.pdf               # 生成 document-mono.pdf 和 document-dual.pdf
 ```
 

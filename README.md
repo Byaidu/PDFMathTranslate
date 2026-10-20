@@ -71,7 +71,7 @@ BabelDOC (layout engine, by funstory.ai)         pdf2zh v1 pipeline
 Requires Python 3.11 to 3.14; the BabelDOC kernel needs 3.11 to 3.13.
 
 ```bash
-pip install pdf2zh                # CLI, Python API and both kernels
+pip install pdf2zh                # CLI, Python API, legacy kernel (+ BabelDOC on 3.11-3.13)
 pdf2zh document.pdf               # writes document-mono.pdf and document-dual.pdf
 ```
 

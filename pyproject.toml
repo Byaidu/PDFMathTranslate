@@ -11,7 +11,8 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 # Core: CLI, Python API, MCP entry points, translation services and both
-# kernels: legacy (default) and BabelDOC. The GUI and HTTP backend are extras.
+# kernels: legacy (default) and BabelDOC (Python <3.14). The GUI and HTTP
+# backend are extras.
 dependencies = [
     "requests",
     "googletrans>=4.0.2,<5",
@@ -36,11 +37,11 @@ dependencies = [
     # 3.1.129 removed the TextTranslate API
     "tencentcloud-sdk-python-tmt>=3.1.50,<=3.1.121",
     "peewee>=3.17.8",
-    # The legacy kernel uses BabelDOC's assets (layout model, fonts) on every
-    # Python; the BabelDOC kernel itself runs on Python 3.11 to 3.13.
-    "babeldoc>=0.6.4,<0.7.0",
+    # BabelDOC 0.6 supports Python <3.14. On 3.14 pdf2zh runs the legacy
+    # kernel only and fetches its model and fonts itself (pdf2zh/assets.py).
+    "babeldoc>=0.6.4,<0.7.0; python_version < '3.14'",
     # bitstring 5.0 removed BitStream, which babeldoc 0.6.4 imports
-    "bitstring<5",
+    "bitstring<5; python_version < '3.14'",
     "rich",
 ]
 

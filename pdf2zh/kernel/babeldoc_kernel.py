@@ -114,8 +114,8 @@ class BabelDOCKernel:
         return version("babeldoc")
 
     def is_available(self) -> bool:
-        # BabelDOC 0.6 installs on Python 3.14 but fails on import there: it
-        # subclasses a private class of concurrent.futures that changed.
+        # BabelDOC 0.6 supports Python <3.14; installed there anyway (uv ignores
+        # its upper bound), it fails on import.
         return (
             sys.version_info < (3, 14)
             and importlib.util.find_spec("babeldoc") is not None

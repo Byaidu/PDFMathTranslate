@@ -381,6 +381,7 @@ class TestBabelDOCKernel(unittest.TestCase):
             self._run([{"type": "error", "error": "boom"}])
 
 
+@unittest.skipUnless(BABELDOC_RUNS, "the BabelDOC kernel needs Python < 3.14")
 class TestBabelDOCTranslatorAdapter(unittest.TestCase):
     """BabelDOC uses do_llm_translate(None) to detect LLM support."""
 
