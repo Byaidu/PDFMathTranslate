@@ -5,18 +5,25 @@ description = "Latex PDF Translator"
 authors = [{ name = "Byaidu", email = "byaidux@gmail.com" }]
 license = "AGPL-3.0"
 readme = "README.md"
-requires-python = ">=3.11,<3.14"  # babeldoc supports <3.14
+requires-python = ">=3.11,<3.15"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-# Core: CLI, Python API, MCP entry points, translation services and the
-# default BabelDOC kernel. The legacy kernel, GUI and HTTP backend are extras.
+# Core: CLI, Python API, MCP entry points, translation services and both
+# kernels: legacy (default) and BabelDOC. The GUI and HTTP backend are extras.
 dependencies = [
     "requests",
     "googletrans>=4.0.2,<5",
     # babeldoc 0.6 requires >=1.26.7; 1.26.7 ships linux aarch64 wheels
     "pymupdf>=1.26.7",
+    "huggingface_hub",
+    "onnx",
+    "onnxruntime",
+    "opencv-python-headless",
+    "pdfminer-six>=20250416",
+    "pikepdf",
+    "fontTools",
     "tqdm",
     "tenacity",
     "numpy",
@@ -29,6 +36,8 @@ dependencies = [
     # 3.1.129 removed the TextTranslate API
     "tencentcloud-sdk-python-tmt>=3.1.50,<=3.1.121",
     "peewee>=3.17.8",
+    # The legacy kernel uses BabelDOC's assets (layout model, fonts) on every
+    # Python; the BabelDOC kernel itself runs on Python 3.11 to 3.13.
     "babeldoc>=0.6.4,<0.7.0",
     # bitstring 5.0 removed BitStream, which babeldoc 0.6.4 imports
     "bitstring<5",
@@ -36,28 +45,17 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-legacy = [
-    "huggingface_hub",
-    "onnx",
-    "onnxruntime",
-    "opencv-python-headless",
-    "pdfminer-six>=20250416",
-    "pikepdf",
-    "fontTools",
-]
-ultrafast = ["pdf2zh[legacy]", "pdf-inspector>=1.25.2,<2"]
+legacy = []  # the legacy kernel is part of the core install; kept for old commands
+ultrafast = ["pdf-inspector>=1.25.2,<2"]
 ocr = [
-    "pdf2zh[legacy]",
     "pooch>=1.8,<2",  # first-use downloads for PyMuPDF's built-in OCR
 ]
 gui = [
-    "pdf2zh[legacy]",
     # >=6.16.0 fixes the gradio 5.x advisories (e.g. CVE-2026-28414)
     "gradio>=6.16.0,<7",
     "gradio_pdf>=0.0.24",  # first release supporting gradio 6
 ]
 backend = [
-    "pdf2zh[legacy]",
     "flask",
     "celery",
     "redis"

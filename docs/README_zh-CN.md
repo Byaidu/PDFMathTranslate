@@ -65,18 +65,17 @@ BabelDOC（排版引擎，funstory.ai）           pdf2zh v1 流程
 
 <h2 id="install">安装和使用</h2>
 
-需要 Python 3.11 到 3.13。
+需要 Python 3.11 到 3.14；BabelDOC 核心需要 3.11 到 3.13。
 
 ```bash
-pip install pdf2zh                # 命令行、Python API 和 BabelDOC 核心
-pdf2zh document.pdf               # 生成 document.zh.mono.pdf 和 document.zh.dual.pdf
+pip install pdf2zh                # 命令行、Python API 和两个核心
+pdf2zh document.pdf               # 生成 document-mono.pdf 和 document-dual.pdf
 ```
 
 可选组件：
 
 | 安装 | 增加的功能 |
 | --- | --- |
-| `pdf2zh[legacy]` | 原 pdf2zh v1 核心（`--kernel legacy`） |
 | `pdf2zh[ultrafast]`、`pdf2zh[ocr]` | legacy 核心的[极速模式](./ADVANCED.md#ultrafast)和[自动 OCR](./ADVANCED.md#ocr) |
 | `pdf2zh[mcp]` | MCP 服务（`pdf2zh --mcp`） |
 | `pdf2zh[gui]` | Gradio 网页界面（`pdf2zh -i`） |
@@ -100,10 +99,10 @@ export HF_ENDPOINT=https://hf-mirror.com
 
 | 核心 | 安装 | 适合 |
 | --- | --- | --- |
-| `babeldoc`（默认） | 已包含 | 版面还原度最高，由 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 驱动 |
-| `legacy` | `pdf2zh[legacy]` | 更轻更快；支持极速模式、OCR 和自定义 ONNX 模型 |
+| `legacy`（默认） | 已包含 | 原 pdf2zh v1 流程：更轻，支持 Python 3.14；支持极速模式、OCR 和自定义 ONNX 模型 |
+| `babeldoc` | 已包含 | 版面还原度更高，由 [BabelDOC](https://github.com/funstory-ai/BabelDOC) 驱动；需要 Python 3.11 到 3.13 |
 
-默认的 `--kernel auto` 在装了 BabelDOC 时使用 BabelDOC。旧的 `--mode fast` / `--mode precise` 和 `--babeldoc` 仍然可用，分别等同于 `--kernel legacy` / `--kernel babeldoc`。
+默认的 `--kernel auto` 使用 legacy，只有 legacy 不可用时才用 BabelDOC；要用 BabelDOC 请加 `--kernel babeldoc`。旧的 `--mode fast` / `--mode precise` 和 `--babeldoc` 仍然可用，分别等同于 `--kernel legacy` / `--kernel babeldoc`。
 
 <h3 id="usage">命令行</h3>
 

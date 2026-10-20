@@ -11,11 +11,11 @@ if TYPE_CHECKING:
 # Old names from the `--mode` flag, kept so existing commands keep working.
 ALIASES = {"fast": "legacy", "precise": "babeldoc"}
 # `auto` picks the first available kernel in this order.
-AUTO_ORDER = ("babeldoc", "legacy")
+AUTO_ORDER = ("legacy", "babeldoc")
 
 INSTALL_HINTS = {
-    "babeldoc": "pip install pdf2zh",
-    "legacy": "pip install 'pdf2zh[legacy]'",
+    "babeldoc": "pip install pdf2zh, on Python 3.11 to 3.13",
+    "legacy": "pip install pdf2zh",
 }
 
 

@@ -185,8 +185,8 @@ def create_parser() -> argparse.ArgumentParser:
         type=str,
         choices=["auto", "babeldoc", "legacy"],
         default=None,
-        help="Translation kernel: babeldoc (default when installed) or legacy "
-        "(pdf2zh v1, needs pdf2zh[legacy]). auto picks babeldoc first.",
+        help="Translation kernel: legacy (default) or babeldoc "
+        "(Python 3.11-3.13). auto picks legacy first.",
     )
 
     parse_params.add_argument(
@@ -394,7 +394,7 @@ def main(args: Optional[List[str]] = None) -> int:
         from pdf2zh.mcp_server import create_http_app, create_mcp_app
 
         mcp = create_mcp_app(http=parsed_args.http)
-        from pdf2zh.kernel.babeldoc_kernel import warm_up
+        from pdf2zh.kernel import warm_up
 
         warm_up()
         if parsed_args.http:

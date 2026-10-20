@@ -5,12 +5,26 @@ from __future__ import annotations
 import asyncio
 import importlib.util
 import logging
+import threading
 from pathlib import Path
 from typing import Any, Optional
 
 from pdf2zh.kernel.protocol import TranslateRequest, TranslateResult
 
 logger = logging.getLogger(__name__)
+
+
+_layout_lock = threading.Lock()
+
+
+def _layout_model():
+    """The DocLayout-YOLO model, loaded once per process."""
+    from pdf2zh.doclayout import ModelInstance, OnnxModel
+
+    with _layout_lock:
+        if ModelInstance.value is None:
+            ModelInstance.value = OnnxModel.load_available()
+        return ModelInstance.value
 
 
 class LegacyKernel:
@@ -32,6 +46,9 @@ class LegacyKernel:
             for module in ("pdfminer", "pikepdf", "onnxruntime")
         )
 
+    def warm_up(self) -> None:
+        _layout_model()
+
     def translate(
         self,
         request: TranslateRequest,
@@ -40,13 +57,7 @@ class LegacyKernel:
     ) -> list[TranslateResult]:
         from pdf2zh.high_level import translate
 
-        model = None
-        if not request.ultrafast:
-            from pdf2zh.doclayout import ModelInstance, OnnxModel
-
-            if ModelInstance.value is None:
-                ModelInstance.value = OnnxModel.load_available()
-            model = ModelInstance.value
+        model = None if request.ultrafast else _layout_model()
 
         # Build kwargs matching high_level.translate() signature
         kwargs: dict[str, Any] = {

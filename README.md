@@ -59,7 +59,7 @@ This repository is the **unified entry point** of the PDFMathTranslate ecosystem
 ```
 BabelDOC (layout engine, by funstory.ai)         pdf2zh v1 pipeline
                  \                               /
-          babeldoc kernel (default)        legacy kernel (optional)
+          babeldoc kernel (optional)        legacy kernel (default)
                           \                   /
          PDFMathTranslate: pdf2zh CLI · Python API · MCP   <- this repository
                  |                 |                  |
@@ -68,18 +68,17 @@ BabelDOC (layout engine, by funstory.ai)         pdf2zh v1 pipeline
 
 <h2 id="install">3. Install and use</h2>
 
-Requires Python 3.11 to 3.13.
+Requires Python 3.11 to 3.14; the BabelDOC kernel needs 3.11 to 3.13.
 
 ```bash
-pip install pdf2zh                # CLI, Python API and the BabelDOC kernel
-pdf2zh document.pdf               # writes document.zh.mono.pdf and document.zh.dual.pdf
+pip install pdf2zh                # CLI, Python API and both kernels
+pdf2zh document.pdf               # writes document-mono.pdf and document-dual.pdf
 ```
 
 Optional extras:
 
 | Extra | Adds |
 | --- | --- |
-| `pdf2zh[legacy]` | The original pdf2zh v1 kernel (`--kernel legacy`) |
 | `pdf2zh[ultrafast]`, `pdf2zh[ocr]` | [Ultrafast mode](./docs/ADVANCED.md#ultrafast) and [automatic OCR](./docs/ADVANCED.md#ocr) for the legacy kernel |
 | `pdf2zh[mcp]` | The MCP server (`pdf2zh --mcp`) |
 | `pdf2zh[gui]` | The Gradio web UI (`pdf2zh -i`) |
@@ -103,10 +102,10 @@ See the [FAQ](https://github.com/Byaidu/PDFMathTranslate/wiki#-faq--%E5%B8%B8%E8
 
 | Kernel | Install | Best for |
 | --- | --- | --- |
-| `babeldoc` (default) | included | Highest layout fidelity, powered by [BabelDOC](https://github.com/funstory-ai/BabelDOC) |
-| `legacy` | `pdf2zh[legacy]` | Lighter and faster; ultrafast mode, OCR and custom ONNX models |
+| `legacy` (default) | included | The pdf2zh v1 pipeline: lighter, runs on Python 3.14; ultrafast mode, OCR and custom ONNX models |
+| `babeldoc` | included | Higher layout fidelity, powered by [BabelDOC](https://github.com/funstory-ai/BabelDOC); Python 3.11 to 3.13 |
 
-`--kernel auto` (the default) uses BabelDOC when it is installed. `--mode fast` / `--mode precise` and `--babeldoc` still work as aliases. See [Choose a kernel](./docs/ADVANCED.md#kernel).
+`--kernel auto` (the default) uses legacy, and BabelDOC only when legacy is unavailable; pass `--kernel babeldoc` to use BabelDOC. `--mode fast` / `--mode precise` and `--babeldoc` still work as aliases. See [Choose a kernel](./docs/ADVANCED.md#kernel).
 
 <h3 id="usage">3.2 Command line</h3>
 
@@ -173,7 +172,7 @@ Tools: `translate_pdf(file, lang_in, lang_out, service, kernel, pages, output_di
 
 <h2 id="updates">4. Recent updates</h2>
 
-- [October 2026] PDFMathTranslate becomes the unified entry point: BabelDOC runs in-process as the default kernel, the v1 pipeline becomes the optional `legacy` kernel, the MCP server gains kernel, service and page selection, and the GUI and HTTP backend move to extras. The `pdf2zh_next` submodule is removed.
+- [October 2026] PDFMathTranslate becomes the unified entry point: BabelDOC runs in-process as an optional kernel next to the default `legacy` kernel (the v1 pipeline), the MCP server gains kernel, service and page selection, and the GUI and HTTP backend move to extras. The `pdf2zh_next` submodule is removed.
 - [October 3, 2026] Spaces between adjacent CJK and Latin letters in the legacy kernel.
 - [October 2, 2026] `--ultrafast` mode for native-text PDFs (by [@reycn](https://github.com/reycn)).
 - [September 8, 2026] Experimental OCR with paragraph regrouping and adaptive typesetting (by [@reycn](https://github.com/reycn)).

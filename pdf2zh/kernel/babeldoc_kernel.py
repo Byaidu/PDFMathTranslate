@@ -7,6 +7,7 @@ import importlib.util
 import logging
 import os
 import re
+import sys
 import threading
 from pathlib import Path
 from string import Template
@@ -34,23 +35,6 @@ def layout_model():
 
             _layout_model = DocLayoutModel.load_onnx()
         return _layout_model
-
-
-def warm_up() -> None:
-    """Load BabelDOC and its layout model in a background thread, so that a
-    long-running server's first translation does not pay for it."""
-
-    def load():
-        try:
-            from babeldoc.format.pdf.high_level import init
-
-            init()
-            layout_model()
-        except Exception:  # the first translation will report it
-            logger.debug("BabelDOC warm-up failed", exc_info=True)
-
-    if importlib.util.find_spec("babeldoc") is not None:
-        threading.Thread(target=load, name="babeldoc-warm-up", daemon=True).start()
 
 
 def pages_to_babeldoc(pages: Optional[list[int] | str]) -> Optional[str]:
@@ -115,7 +99,7 @@ def create_babeldoc_translator(translator: Any, ignore_cache: bool = False):
 
 
 class BabelDOCKernel:
-    """Kernel adapter for BabelDOC, the default layout-preserving engine."""
+    """Kernel adapter for BabelDOC, the optional layout-preserving engine."""
 
     @property
     def name(self) -> str:
@@ -130,7 +114,18 @@ class BabelDOCKernel:
         return version("babeldoc")
 
     def is_available(self) -> bool:
-        return importlib.util.find_spec("babeldoc") is not None
+        # BabelDOC 0.6 installs on Python 3.14 but fails on import there: it
+        # subclasses a private class of concurrent.futures that changed.
+        return (
+            sys.version_info < (3, 14)
+            and importlib.util.find_spec("babeldoc") is not None
+        )
+
+    def warm_up(self) -> None:
+        from babeldoc.format.pdf.high_level import init
+
+        init()
+        layout_model()
 
     def translate(
         self,

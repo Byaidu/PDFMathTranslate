@@ -12,7 +12,7 @@ KernelRegistry.register(LegacyKernel())
 
 
 def get_kernel(name: str = "auto") -> KernelProtocol:
-    """Return an installed kernel: "auto", "babeldoc" or "legacy"."""
+    """Return an installed kernel: "auto" (legacy, else babeldoc), "babeldoc" or "legacy"."""
     kernel = KernelRegistry.get(name)
     if not kernel.is_available():
         raise RuntimeError(
@@ -22,9 +22,26 @@ def get_kernel(name: str = "auto") -> KernelProtocol:
     return kernel
 
 
+def warm_up(name: str = "auto") -> None:
+    """Load a kernel's models in a background thread, so that a long-running
+    server's first translation does not wait for them."""
+    import logging
+    import threading
+
+    def load():
+        try:
+            kernel = get_kernel(name)
+            if hasattr(kernel, "warm_up"):
+                kernel.warm_up()
+        except Exception:  # the first translation reports it
+            logging.getLogger(__name__).debug("warm-up failed", exc_info=True)
+
+    threading.Thread(target=load, name="pdf2zh-warm-up", daemon=True).start()
+
+
 def available_kernels() -> list[str]:
     """Names of the installed kernels."""
     return KernelRegistry.available()
 
 
-__all__ = ["KernelRegistry", "available_kernels", "get_kernel"]
+__all__ = ["KernelRegistry", "available_kernels", "get_kernel", "warm_up"]

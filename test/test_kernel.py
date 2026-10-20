@@ -123,7 +123,7 @@ class TestKernelRegistry(unittest.TestCase):
         self.assertEqual(KernelRegistry.resolve("precise"), "babeldoc")
         self.assertEqual(KernelRegistry.resolve("legacy"), "legacy")
 
-    def test_auto_prefers_babeldoc_then_legacy(self):
+    def test_auto_prefers_legacy_then_babeldoc(self):
         from pdf2zh.kernel.registry import KernelRegistry
 
         babeldoc, legacy = MagicMock(), MagicMock()
@@ -132,24 +132,33 @@ class TestKernelRegistry(unittest.TestCase):
 
         babeldoc.is_available.return_value = True
         legacy.is_available.return_value = True
-        self.assertEqual(KernelRegistry.resolve("auto"), "babeldoc")
-
-        babeldoc.is_available.return_value = False
         self.assertEqual(KernelRegistry.resolve("auto"), "legacy")
 
         legacy.is_available.return_value = False
+        self.assertEqual(KernelRegistry.resolve("auto"), "babeldoc")
+
+        babeldoc.is_available.return_value = False
         with self.assertRaises(RuntimeError):
             KernelRegistry.resolve("auto")
 
     def test_switch_unavailable_names_install_command(self):
         from pdf2zh.kernel.registry import KernelRegistry
 
-        legacy = MagicMock()
-        legacy.name = "legacy"
-        legacy.is_available.return_value = False
-        KernelRegistry._kernels = {"legacy": legacy}
-        with self.assertRaisesRegex(RuntimeError, r"pdf2zh\[legacy\]"):
-            KernelRegistry.switch("fast")
+        babeldoc = MagicMock()
+        babeldoc.name = "babeldoc"
+        babeldoc.is_available.return_value = False
+        KernelRegistry._kernels = {"babeldoc": babeldoc}
+        with self.assertRaisesRegex(RuntimeError, r"Python 3\.11 to 3\.13"):
+            KernelRegistry.switch("precise")
+
+    def test_babeldoc_unavailable_on_python_314(self):
+        from pdf2zh.kernel.babeldoc_kernel import BabelDOCKernel
+
+        with patch("importlib.util.find_spec", return_value=object()):
+            with patch("sys.version_info", (3, 14, 0)):
+                self.assertFalse(BabelDOCKernel().is_available())
+            with patch("sys.version_info", (3, 13, 5)):
+                self.assertTrue(BabelDOCKernel().is_available())
 
 
 class TestLegacyKernelVersion(unittest.TestCase):
@@ -191,8 +200,8 @@ class TestKernelInit(unittest.TestCase):
     def test_package_exports_unified_api(self):
         import pdf2zh
 
-        self.assertIn("babeldoc", pdf2zh.available_kernels())
-        self.assertEqual(pdf2zh.get_kernel("babeldoc").name, "babeldoc")
+        self.assertIn("legacy", pdf2zh.available_kernels())
+        self.assertEqual(pdf2zh.get_kernel("auto").name, "legacy")
         request = pdf2zh.TranslateRequest(files=["a.pdf"])
         self.assertEqual(request.files, ["a.pdf"])
 
@@ -277,6 +286,11 @@ class TestLegacyKernelTranslation(unittest.TestCase):
         self.assertEqual(call_kwargs["prompt"].template, "Be formal")
 
 
+# BabelDOC 0.6 fails to import on Python 3.14; its kernel is unavailable there.
+BABELDOC_RUNS = sys.version_info < (3, 14)
+
+
+@unittest.skipUnless(BABELDOC_RUNS, "the BabelDOC kernel needs Python < 3.14")
 class TestBabelDOCKernel(unittest.TestCase):
     """Test the in-process BabelDOC kernel with BabelDOC's pipeline mocked."""
 

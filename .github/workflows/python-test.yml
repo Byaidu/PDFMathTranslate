@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         runner:
           - ubuntu-latest
           - ubuntu-24.04-arm
@@ -65,7 +65,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --extra legacy --extra ultrafast --extra ocr --extra mcp --extra gui
+          uv sync --extra ultrafast --extra ocr --extra mcp --extra gui
 
       - name: Test - Unit Test
         run: |

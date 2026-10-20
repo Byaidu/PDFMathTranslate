@@ -45,12 +45,12 @@
 
 | Kernel | Install | Notes |
 | --- | --- | --- |
-| `babeldoc` (default) | `pip install pdf2zh` | [BabelDOC](https://github.com/funstory-ai/BabelDOC) engine, best layout fidelity. Output: `name.<lang>.mono.pdf` / `name.<lang>.dual.pdf` |
-| `legacy` | `pip install 'pdf2zh[legacy]'` | Original pdf2zh v1 pipeline. Lighter, supports `--ultrafast`, OCR and `--onnx`. Output: `name-mono.pdf` / `name-dual.pdf` |
+| `legacy` (default) | `pip install pdf2zh` | Original pdf2zh v1 pipeline. Lighter, runs on Python 3.14, supports `--ultrafast`, OCR and `--onnx`. Output: `name-mono.pdf` / `name-dual.pdf` |
+| `babeldoc` | `pip install pdf2zh` | [BabelDOC](https://github.com/funstory-ai/BabelDOC) engine, best layout fidelity; Python 3.11 to 3.13. Output: `name.<lang>.mono.pdf` / `name.<lang>.dual.pdf` |
 
 ```bash
-pdf2zh example.pdf                   # auto: babeldoc when installed, else legacy
-pdf2zh example.pdf --kernel legacy
+pdf2zh example.pdf                   # auto: legacy
+pdf2zh example.pdf --kernel babeldoc
 ```
 
 `--ultrafast` and `--onnx` select the legacy kernel automatically. The old `--mode fast` / `--mode precise` and `--babeldoc` flags still work as aliases of `--kernel legacy` / `--kernel babeldoc`.
@@ -441,7 +441,7 @@ A usable configuration is as follows:
 }
 ```
 
-`uvx` installs pdf2zh on first use. Add `--with pdf2zh[legacy]` before `pdf2zh` to make the legacy kernel available too.
+`uvx` installs pdf2zh on first use.
 
 Tools:
 
