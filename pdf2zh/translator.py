@@ -1022,7 +1022,7 @@ class MiniMaxTranslator(OpenAITranslator):
     name = "minimax"
     envs = {
         "MINIMAX_API_KEY": None,
-        "MINIMAX_MODEL": "MiniMax-M3",
+        "MINIMAX_MODEL": "MiniMax-M3.1-Flash",
         # Configurable base URL. Defaults to the global endpoint; set to
         # "https://api.minimaxi.com/v1" to use the China endpoint.
         "MINIMAX_BASE_URL": "https://api.minimax.io/v1",

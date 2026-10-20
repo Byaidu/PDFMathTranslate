@@ -1,5 +1,10 @@
+import json
+import os
 import unittest
 from textwrap import dedent
+
+import httpx
+import openai
 from unittest import mock
 
 from ollama import ResponseError as OllamaResponseError
@@ -181,40 +186,163 @@ class TestOpenAIlikedTranslator(unittest.TestCase):
 
 class TestMiniMaxTranslator(unittest.TestCase):
     def setUp(self) -> None:
-        self.api_key_envs = {"MINIMAX_API_KEY": "test_api_key"}
+        # Exercise the real config methods without reading or writing user settings.
+        config = object.__new__(ConfigManager)
+        config._config_data = {}
+        self.enterContext(mock.patch.object(ConfigManager, "_instance", config))
+        self.enterContext(mock.patch.object(ConfigManager, "_save_config"))
+        self.enterContext(mock.patch.dict(os.environ, {}, clear=True))
+        self.test_db = cache.init_test_db()
+        self.addCleanup(cache.clean_test_db, self.test_db)
 
-    def test_default_model_and_endpoint(self):
-        """The default model is MiniMax-M3 on the global endpoint."""
-        ConfigManager.clear()
-        translator = MiniMaxTranslator(
-            lang_in="en", lang_out="zh", model=None, envs=self.api_key_envs
-        )
-        self.assertEqual(translator.model, "MiniMax-M3")
-        self.assertEqual(
-            str(translator.client.base_url).rstrip("/"),
-            "https://api.minimax.io/v1",
-        )
-
-    def test_previous_model_selectable(self):
-        """The previous MiniMax-M2.7 model can still be selected explicitly."""
-        ConfigManager.clear()
-        envs = {**self.api_key_envs, "MINIMAX_MODEL": "MiniMax-M2.7"}
-        translator = MiniMaxTranslator(
-            lang_in="en", lang_out="zh", model=None, envs=envs
-        )
-        self.assertEqual(translator.model, "MiniMax-M2.7")
-
-    def test_china_endpoint_selectable(self):
-        """The China endpoint can be selected via MINIMAX_BASE_URL."""
-        ConfigManager.clear()
-        envs = {**self.api_key_envs, "MINIMAX_BASE_URL": "https://api.minimaxi.com/v1"}
-        translator = MiniMaxTranslator(
-            lang_in="en", lang_out="zh", model=None, envs=envs
-        )
-        self.assertEqual(
-            str(translator.client.base_url).rstrip("/"),
+    def test_serialized_translation_requests(self):
+        """The SDK sends defaults and overrides unchanged through both response modes."""
+        endpoints = (
+            None,
             "https://api.minimaxi.com/v1",
+            "https://translation.example/v1",
         )
+        models = ("MiniMax-M3.1-Flash", "MiniMax-M3", "MiniMax-M2.7", "custom-model")
+        cases = [("default", None)] + [
+            (source, model)
+            for source in ("saved", "environment", "explicit")
+            for model in models
+        ]
+        real_client = openai.OpenAI
+        for endpoint in endpoints:
+            for stream in (True, False):
+                for source, model in cases:
+                    with self.subTest(
+                        endpoint=endpoint, stream=stream, source=source, model=model
+                    ):
+                        ConfigManager.clear()
+                        envs = {"MINIMAX_API_KEY": "test_api_key"}
+                        if endpoint:
+                            envs["MINIMAX_BASE_URL"] = endpoint
+                        if not stream:
+                            envs["OPENAI_STREAM"] = "false"
+                        if source == "saved":
+                            envs["MINIMAX_MODEL"] = model
+                        elif source in ("environment", "explicit"):
+                            envs["MINIMAX_MODEL"] = "saved-model"
+                        if source != "default":
+                            ConfigManager.set_translator_by_name("minimax", envs)
+                        expected_model = model or "MiniMax-M3.1-Flash"
+                        requests = []
+
+                        def respond(request):
+                            requests.append(request)
+                            body = json.loads(request.content)
+                            self.assertEqual(request.method, "POST")
+                            self.assertEqual(
+                                str(request.url),
+                                (endpoint or "https://api.minimax.io/v1")
+                                + "/chat/completions",
+                            )
+                            self.assertEqual(
+                                body,
+                                {
+                                    "model": expected_model,
+                                    "messages": translator.prompt("Hello {v0}", None),
+                                    "temperature": 0.1,
+                                    "stream": stream,
+                                },
+                            )
+                            if stream:
+                                chunk = json.dumps(
+                                    {
+                                        "choices": [
+                                            {
+                                                "index": 0,
+                                                "delta": {"content": "Translated {v0}"},
+                                                "finish_reason": None,
+                                            }
+                                        ]
+                                    }
+                                )
+                                return httpx.Response(
+                                    200,
+                                    headers={"content-type": "text/event-stream"},
+                                    text=f"data: {chunk}\n\ndata: [DONE]\n\n",
+                                )
+                            return httpx.Response(
+                                200,
+                                json={
+                                    "choices": [
+                                        {
+                                            "message": {
+                                                "role": "assistant",
+                                                "content": "Translated {v0}",
+                                            }
+                                        }
+                                    ],
+                                },
+                            )
+
+                        def client(**kwargs):
+                            return real_client(
+                                **kwargs,
+                                http_client=httpx.Client(
+                                    transport=httpx.MockTransport(respond)
+                                ),
+                            )
+
+                        override = (
+                            {"MINIMAX_MODEL": model} if source == "environment" else {}
+                        )
+                        with (
+                            mock.patch.dict(os.environ, override),
+                            mock.patch(
+                                "pdf2zh.translator.openai.OpenAI", side_effect=client
+                            ),
+                        ):
+                            translator = MiniMaxTranslator(
+                                "en",
+                                "zh",
+                                model if source == "explicit" else None,
+                                envs=envs if source == "default" else None,
+                                ignore_cache=True,
+                            )
+                            try:
+                                self.assertEqual(
+                                    translator.translate("Hello {v0}"),
+                                    "Translated {v0}",
+                                )
+                                self.assertEqual(len(requests), 1)
+                                self.assertEqual(
+                                    translator.cache.params["model"], expected_model
+                                )
+                                if source == "explicit":
+                                    self.assertEqual(
+                                        ConfigManager.get_translator_by_name("minimax")[
+                                            "MINIMAX_MODEL"
+                                        ],
+                                        "saved-model",
+                                    )
+                            finally:
+                                translator.client.close()
+
+    def test_gui_defaults_preserve_legacy_configuration(self):
+        """New provider fields are backfilled without resetting saved model IDs."""
+        self.assertEqual(
+            ConfigManager.get_env_by_translatername(
+                MiniMaxTranslator,
+                "MINIMAX_MODEL",
+                MiniMaxTranslator.envs["MINIMAX_MODEL"],
+            ),
+            "MiniMax-M3.1-Flash",
+        )
+        saved = {"MINIMAX_API_KEY": "test_api_key", "MINIMAX_MODEL": "MiniMax-M2.7"}
+        ConfigManager.set_translator_by_name("minimax", saved)
+        for name, default in MiniMaxTranslator.envs.items():
+            value = ConfigManager.get_env_by_translatername(
+                MiniMaxTranslator, name, default
+            )
+            self.assertEqual(value, saved.get(name, default))
+        persisted = ConfigManager.get_translator_by_name("minimax")
+        self.assertEqual(persisted["MINIMAX_MODEL"], "MiniMax-M2.7")
+        self.assertEqual(persisted["MINIMAX_API_KEY"], "test_api_key")
+        self.assertEqual(persisted["MINIMAX_BASE_URL"], "https://api.minimax.io/v1")
 
 
 class TestOllamaTranslator(unittest.TestCase):
@@ -222,13 +350,15 @@ class TestOllamaTranslator(unittest.TestCase):
         translator = OllamaTranslator(lang_in="en", lang_out="zh", model="test:3b")
         with mock.patch.object(translator, "client") as mock_client:
             chat_response = mock_client.chat.return_value
-            chat_response.message.content = dedent("""\
+            chat_response.message.content = dedent(
+                """\
                 <think>
                 Thinking...
                 </think>
 
                 天空呈现蓝色是因为...
-                """)
+                """
+            )
 
             text = "The sky appears blue because of..."
             translated_result = translator.do_translate(text)
@@ -248,12 +378,14 @@ class TestOllamaTranslator(unittest.TestCase):
                 mock_client.chat()
 
     def test_remove_cot_content(self):
-        fake_cot_resp_text = dedent("""\
+        fake_cot_resp_text = dedent(
+            """\
             <think>
 
             </think>
 
-            The sky appears blue because of...""")
+            The sky appears blue because of..."""
+        )
         removed_cot_content = OllamaTranslator._remove_cot_content(fake_cot_resp_text)
         excepted_content = "The sky appears blue because of..."
         self.assertEqual(excepted_content, removed_cot_content.strip())
