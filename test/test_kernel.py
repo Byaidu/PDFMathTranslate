@@ -129,7 +129,7 @@ class TestLegacyKernelVersion(unittest.TestCase):
         from pdf2zh.kernel.legacy import LegacyKernel
 
         k = LegacyKernel()
-        self.assertEqual(k.version, "1.9.11")
+        self.assertEqual(k.version, "1.9.12")
 
     def test_is_available(self):
         from pdf2zh.kernel.legacy import LegacyKernel

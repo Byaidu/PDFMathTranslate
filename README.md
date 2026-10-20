@@ -62,6 +62,10 @@ Scientific PDF document translation preserving layouts.
 
 <h2 id="updates">2. Recent Updates</h2>
 
+- [October 3, 2026] Translated PDFs automatically add spaces between adjacent CJK and Latin letters, including accented letters, in normal and `--ultrafast` modes.
+
+- [October 2, 2026] Added the `--ultrafast` CLI mode for native-text PDFs. It uses `pdf-inspector` text positions for heuristic layout and skips ONNX layout and OCR.  (by [@reycn](https://github.com/reycn))
+- [September 8, 2026] Experimental OCR support, with paragraph regrouping and adaptive typesetting. (by [@reycn](https://github.com/reycn))
 - [March 23, 2026] Experimental support for v2.0 translation kernel using isolated environment (`--mode precise`). (by [@reycn](https://github.com/reycn))
 - [March 22, 2026] Supporting MiniMax (PR by [@octo-patch](https://github.com/octo-patch))
 - [March 22, 2026] Fixing OpenAI-related issues (PR by [@samqin123](https://github.com/samqin123))
@@ -244,6 +248,59 @@ For docker deployment on cloud service:
 
 <h2 id="usage">4. Technical Details</h2>
 
+### Experimental automatic OCR (fast mode)
+
+Fast mode automatically runs local OCR on selected image-only pages before
+translation. Native text, existing OCR layers, and blank pages are skipped;
+the original pages in dual output remain unchanged. Install with
+`pip install 'pdf2zh[ocr]'` (or `pip install -e '.[ocr]'` from this checkout).
+The first scanned page downloads the requested language data from Tesseract's
+`tessdata_fast` 4.1.0 release into `~/.cache/pdf2zh/tessdata/4.1.0`; subsequent
+runs reuse it offline. Native-text PDFs do not trigger downloads.
+OCR uses the input language; `PDF2ZH_OCR_LANGUAGE=eng+deu` overrides it with
+Tesseract language codes. Set `TESSDATA_PREFIX` to use your own data without
+automatic downloads.
+
+PyMuPDF supplies the OCR engine; the optional extra adds Pooch for cached downloads.
+No separate Tesseract executable is required.
+OCR words are regrouped into paragraphs within detected layout regions before
+translation, with wrapped lines and soft hyphens joined. Translated paragraphs
+start at the median source font size and shrink to fit their original boxes;
+detected figures, tables, and standalone formulas remain untouched.
+The initial implementation targets white-background scans: partial scans on
+pages that already contain text are skipped, and handwritten text or inline
+equations may be recognized incorrectly. Precise mode is unchanged.
+
+### Ultrafast mode
+
+Install the optional `pdf-inspector>=1.25.2,<2` dependency with
+`pip install 'pdf2zh[ultrafast]'`, then run:
+
+```bash
+pdf2zh example.pdf --ultrafast
+```
+
+`--ultrafast` uses native PDF text positions from `pdf-inspector` for heuristic
+layout. It skips ONNX layout and OCR; pages without native text are preserved
+without OCR. Its heuristic text grouping retains the usual font and character
+formula safeguards. It is best suited to PDFs that already contain native text;
+use normal mode for complex tables or formulas. It is available only in fast
+CLI mode and cannot be combined with `--mode precise`, `--babeldoc`, server or
+GUI modes, or `--onnx`. It automatically skips font subsetting, so its output
+PDFs are larger, while still using BabelDOC font assets as needed. With
+`--ignore-cache`, it bypasses both translation-cache reads and writes; normal
+mode keeps its existing `--ignore-cache` behavior. Ultrafast uses a shared
+whole-document paragraph worker pool with 16 workers by default and submits
+individual paragraph requests; `-t` overrides this value, while normal mode
+keeps its default of 4. `[ultrafast perf]` INFO logs report stage and per-page
+timings. `page_scan` is the paragraph-submission scan; `translation` is the
+elapsed wait for the whole-document pool to drain, including API retries, so
+it is not a sum of per-page waits. `paragraph_parse` covers both passes,
+`typesetting` runs after translation completes, and `layout_extract` is
+reported separately before font setup. `page_processing` includes nested
+`layout_mask`, `paragraph_parse`, `translation`, and `typesetting` timings, so
+do not sum the nested values again. This path does not import ONNX or OpenCV.
+
 ### 4.1 Advanced options
 
 Execute the translation command in the command line to generate the translated document `example-mono.pdf` and the bilingual document `example-dual.pdf` in the current working directory. Use Google as the default translation service. More support translation services can find [HERE](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#services).
@@ -265,6 +322,7 @@ In the following table, we list all advanced options for reference:
 | `-o`                  | Output dir                                                                                                    | `pdf2zh example.pdf -o output`                 |
 | `-f`, `-c`            | [Exceptions](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#exceptions)                | `pdf2zh example.pdf -f "(MS.*)"`               |
 | `-cp`                 | Compatibility Mode                                                                                            | `pdf2zh example.pdf --compatible`              |
+| `--ultrafast`         | [Use native PDF text positions for heuristic layout; skip ONNX layout and OCR](./docs/ADVANCED.md#ultrafast) | `pdf2zh example.pdf --ultrafast`               |
 | `--skip-subset-fonts` | [Skip font subset](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#font-subset)         | `pdf2zh example.pdf --skip-subset-fonts`       |
 | `--ignore-cache`      | [Ignore translate cache](https://github.com/Byaidu/PDFMathTranslate/blob/main/docs/ADVANCED.md#cache)         | `pdf2zh example.pdf --ignore-cache`            |
 | `--share`             | Public link                                                                                                   | `pdf2zh -i --share`                            |
@@ -356,11 +414,9 @@ For details on how to contribute, please consult the [Contribution Guide](https:
 
 
 <h3 id="star_hist">5.4 Star History</h3>
-
-<a href="https://star-history.com/#Byaidu/PDFMathTranslate&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Byaidu/PDFMathTranslate&type=Date"/>
- </picture>
-</a>
+<!-- star-history:start -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/star-history/star-history-dark.svg">
+  <img alt="Star history" src="assets/star-history/star-history-light.svg">
+</picture>
+<!-- star-history:end -->

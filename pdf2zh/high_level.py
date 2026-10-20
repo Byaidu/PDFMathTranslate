@@ -1,5 +1,7 @@
 """Functions that can be used for the most common use-cases for pdf2zh.six"""
 
+from __future__ import annotations
+
 import asyncio
 import io
 import os
@@ -7,10 +9,14 @@ import re
 import sys
 import tempfile
 import logging
+from time import perf_counter
 from asyncio import CancelledError
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import nullcontext
 from pathlib import Path
 from string import Template
-from typing import Any, BinaryIO, List, Optional, Dict
+from typing import Any, BinaryIO, List, Optional, Dict, TYPE_CHECKING
 
 import numpy as np
 import requests
@@ -25,11 +31,12 @@ from pdfminer.pdfparser import PDFParser
 from pymupdf import Document, Font
 
 from pdf2zh.converter import TranslateConverter
-from pdf2zh.doclayout import OnnxModel
+
+if TYPE_CHECKING:
+    from pdf2zh.doclayout import OnnxModel
 from pdf2zh.pdfinterp import PDFPageInterpreterEx
 
 from pdf2zh.config import ConfigManager
-from babeldoc.assets.assets import get_font_and_metadata
 
 NOTO_NAME = "noto"
 
@@ -87,8 +94,14 @@ def translate_patch(
     envs: Dict = None,
     prompt: Template = None,
     ignore_cache: bool = False,
+    ocr_pages: Optional[set[int]] = None,
+    ultrafast: bool = False,
+    perf=None,
+    text_items=None,
     **kwarg: Any,
 ) -> None:
+    if ultrafast and not thread:
+        thread = 16
     rsrcmgr = PDFResourceManager()
     layout = {}
     device = TranslateConverter(
@@ -108,6 +121,8 @@ def translate_patch(
     )
 
     assert device is not None
+    device.perf = perf
+    device.translator.no_cache = ultrafast and ignore_cache
     obj_patch = {}
     interpreter = PDFPageInterpreterEx(rsrcmgr, device, obj_patch)
     if pages:
@@ -117,7 +132,24 @@ def translate_patch(
 
     parser = PDFParser(inf)
     doc = PDFDocument(parser)
-    with tqdm.tqdm(total=total_pages) as progress:
+    if ultrafast:
+        from pdf2zh.ultrafast import extract_layout, layout_mask
+
+        if text_items is None:
+            inf.seek(0)
+            started = perf_counter()
+            text_items = extract_layout(inf.read(), pages)
+            if perf:
+                perf.add("layout_extract", perf_counter() - started)
+            inf.seek(0)
+    pending_pages = []
+    with (
+        tqdm.tqdm(total=total_pages) as progress,
+        ThreadPoolExecutor(max_workers=thread) if ultrafast else nullcontext() as pool,
+    ):
+        if ultrafast:
+            device.translation_pool = pool
+            device.translation_futures = deque()
         for pageno, page in enumerate(PDFPage.create_pages(doc)):
             if cancellation_event and cancellation_event.is_set():
                 raise CancelledError("task cancelled")
@@ -127,45 +159,216 @@ def translate_patch(
             if callback:
                 callback(progress)
             page.pageno = pageno
-            pix = doc_zh[page.pageno].get_pixmap()
-            image = np.frombuffer(pix.samples, np.uint8).reshape(
-                pix.height, pix.width, 3
-            )[:, :, ::-1]
-            page_layout = model.predict(image, imgsz=int(pix.height / 32) * 32)[0]
-            # kdtree 是不可能 kdtree 的，不如直接渲染成图片，用空间换时间
-            box = np.ones((pix.height, pix.width))
-            h, w = box.shape
-            vcls = ["abandon", "figure", "table", "isolate_formula", "formula_caption"]
-            for i, d in enumerate(page_layout.boxes):
-                if page_layout.names[int(d.cls)] not in vcls:
-                    x0, y0, x1, y1 = d.xyxy.squeeze()
-                    x0, y0, x1, y1 = (
-                        np.clip(int(x0 - 1), 0, w - 1),
-                        np.clip(int(h - y1 - 1), 0, h - 1),
-                        np.clip(int(x1 + 1), 0, w - 1),
-                        np.clip(int(h - y0 + 1), 0, h - 1),
+            page_started = perf_counter() if perf else 0
+            if ultrafast:
+                if not text_items.get(pageno):
+                    logger.info(
+                        "[ultrafast perf] page_scan %d: skipped (no native text)",
+                        pageno + 1,
                     )
-                    box[y0:y1, x0:x1] = i + 2
-            for i, d in enumerate(page_layout.boxes):
-                if page_layout.names[int(d.cls)] in vcls:
-                    x0, y0, x1, y1 = d.xyxy.squeeze()
-                    x0, y0, x1, y1 = (
-                        np.clip(int(x0 - 1), 0, w - 1),
-                        np.clip(int(h - y1 - 1), 0, h - 1),
-                        np.clip(int(x1 + 1), 0, w - 1),
-                        np.clip(int(h - y0 + 1), 0, h - 1),
+                    continue
+                # Inspector coordinates ignore /Rotate; keep content in that frame.
+                # The output page retains its original rotation metadata.
+                page.rotate = 0
+                started = perf_counter()
+                layout[page.pageno] = layout_mask(page, text_items.get(pageno, []))
+                if perf:
+                    perf.add("layout_mask", perf_counter() - started)
+            else:
+                pix = doc_zh[page.pageno].get_pixmap()
+                image = np.frombuffer(pix.samples, np.uint8).reshape(
+                    pix.height, pix.width, 3
+                )[:, :, ::-1]
+                page_layout = model.predict(image, imgsz=int(pix.height / 32) * 32)[0]
+                if ocr_pages and pageno in ocr_pages:
+                    from pdf2zh.ocr import translate_ocr_page
+
+                    translate_ocr_page(
+                        doc_zh[pageno],
+                        page_layout,
+                        device.translator,
+                        noto,
+                        thread,
+                        cancellation_event,
                     )
-                    box[y0:y1, x0:x1] = 0
-            layout[page.pageno] = box
+                    continue
+                # kdtree 是不可能 kdtree 的，不如直接渲染成图片，用空间换时间
+                box = np.ones((pix.height, pix.width))
+                h, w = box.shape
+                vcls = [
+                    "abandon",
+                    "figure",
+                    "table",
+                    "isolate_formula",
+                    "formula_caption",
+                ]
+                for i, d in enumerate(page_layout.boxes):
+                    if page_layout.names[int(d.cls)] not in vcls:
+                        x0, y0, x1, y1 = d.xyxy.squeeze()
+                        x0, y0, x1, y1 = (
+                            np.clip(int(x0 - 1), 0, w - 1),
+                            np.clip(int(h - y1 - 1), 0, h - 1),
+                            np.clip(int(x1 + 1), 0, w - 1),
+                            np.clip(int(h - y0 + 1), 0, h - 1),
+                        )
+                        box[y0:y1, x0:x1] = i + 2
+                for i, d in enumerate(page_layout.boxes):
+                    if page_layout.names[int(d.cls)] in vcls:
+                        x0, y0, x1, y1 = d.xyxy.squeeze()
+                        x0, y0, x1, y1 = (
+                            np.clip(int(x0 - 1), 0, w - 1),
+                            np.clip(int(h - y1 - 1), 0, h - 1),
+                            np.clip(int(x1 + 1), 0, w - 1),
+                            np.clip(int(h - y0 + 1), 0, h - 1),
+                        )
+                        box[y0:y1, x0:x1] = 0
+                layout[page.pageno] = box
             # 新建一个 xref 存放新指令流
             page.page_xref = doc_zh.get_new_xref()  # hack 插入页面的新 xref
             doc_zh.update_object(page.page_xref, "<<>>")
             doc_zh.update_stream(page.page_xref, b"")
             doc_zh[page.pageno].set_contents(page.page_xref)
             interpreter.process_page(page)
+            if ultrafast:
+                pending_pages.append(page)
+            if perf:
+                logger.info(
+                    "[ultrafast perf] page_scan %d: %.3fs",
+                    pageno + 1,
+                    perf_counter() - page_started,
+                )
+        if ultrafast:
+            logger.info(
+                "[ultrafast perf] document pool: %d tasks, %d workers",
+                len(device.translation_futures),
+                thread,
+            )
+            started = perf_counter()
+            progress.reset(total=len(device.translation_futures))
+            progress.set_description("Translate paragraphs")
+            for future in as_completed(device.translation_futures):
+                future.result()  # Surface failures before the interpreter's form guards.
+                if cancellation_event and cancellation_event.is_set():
+                    raise CancelledError("task cancelled")
+                progress.update()
+                if callback:
+                    callback(progress)
+            if perf:
+                perf.add("translation", perf_counter() - started)
+            device.translation_pool = None
+            # ponytail: replay the cheap parser to retain per-page/form font state.
+            # A stored paragraph plan is only worthwhile if parsing becomes costly.
+            progress.reset(total=len(pending_pages))
+            progress.set_description("Typeset pages")
+            for page in pending_pages:
+                if cancellation_event and cancellation_event.is_set():
+                    raise CancelledError("task cancelled")
+                started = perf_counter()
+                interpreter.process_page(page)
+                progress.update()
+                if callback:
+                    callback(progress)
+                if perf:
+                    logger.info(
+                        "[ultrafast perf] page_render %d: %.3fs",
+                        page.pageno + 1,
+                        perf_counter() - started,
+                    )
+            assert not device.translation_futures
 
     device.close()
     return obj_patch
+
+
+def _ocr_tessdata(language):
+    """Use explicit local data, or download requested languages once on demand."""
+    if not re.fullmatch(r"[A-Za-z0-9_]+(?:\+[A-Za-z0-9_]+)*", language):
+        raise ValueError("Invalid OCR language; use Tesseract codes such as eng+deu")
+    if tessdata := os.environ.get("TESSDATA_PREFIX"):
+        return tessdata
+    try:
+        import pooch
+    except ImportError as exc:
+        raise RuntimeError(
+            "Automatic OCR downloads require pip install 'pdf2zh[ocr]'. "
+            "Alternatively, set TESSDATA_PREFIX to existing language data."
+        ) from exc
+    cache = Path.home() / ".cache/pdf2zh/tessdata/4.1.0"
+    for code in dict.fromkeys(language.split("+")):
+        filename = f"{code}.traineddata"
+        try:
+            pooch.retrieve(
+                url=f"https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/4.1.0/{filename}",
+                known_hash=None,
+                fname=filename,
+                path=cache,
+                downloader=pooch.HTTPDownloader(timeout=60),
+            )
+        except (requests.RequestException, OSError) as exc:
+            raise RuntimeError(
+                f"Could not download OCR data for '{code}'. Check the language code "
+                "and network connection, or set TESSDATA_PREFIX to local data."
+            ) from exc
+    return str(cache)
+
+
+def _ocr_pages(doc, pages, lang_in, cancellation_event):
+    """Add a text layer only to selected image-only pages in the working copy."""
+    language = os.environ.get("PDF2ZH_OCR_LANGUAGE") or {
+        "en": "eng",
+        "zh": "chi_sim",
+        "zh-cn": "chi_sim",
+        "zh-tw": "chi_tra",
+        "ja": "jpn",
+        "ko": "kor",
+        "de": "deu",
+        "fr": "fra",
+        "es": "spa",
+        "it": "ita",
+        "pt": "por",
+        "ru": "rus",
+    }.get(lang_in.lower(), lang_in or "eng")
+    ocr_pages = set()
+    tessdata = None
+    for pageno in range(len(doc)):
+        if cancellation_event and cancellation_event.is_set():
+            raise CancelledError("task cancelled")
+        if pages and pageno not in pages:
+            continue
+        page = doc[pageno]
+        # ponytail: image-only pages; partial scans need region-level OCR later.
+        if page.get_text().strip() or not page.get_image_info():
+            continue
+        logger.info("OCR page %d (%s)", pageno + 1, language)
+        if tessdata is None:
+            tessdata = _ocr_tessdata(language)
+        try:
+            data = page.get_pixmap(dpi=300, alpha=False, annots=False).pdfocr_tobytes(
+                language=language,
+                tessdata=tessdata,
+            )
+        except RuntimeError as exc:
+            raise RuntimeError(
+                f"OCR failed on page {pageno + 1} using '{language}' data in {tessdata}. "
+                "Check the language data and any TESSDATA_PREFIX override. "
+                "Use PDF2ZH_OCR_LANGUAGE to override the OCR language."
+            ) from exc
+        with Document(stream=data) as recognized:
+            if not recognized[0].get_text().strip():
+                logger.warning("OCR found no text on page %d", pageno + 1)
+                continue
+            contents = doc.get_new_xref()
+            doc.update_object(contents, "<<>>")
+            doc.update_stream(contents, b"")
+            page.set_contents(contents)
+            page.show_pdf_page(
+                page.rect * page.derotation_matrix,
+                recognized,
+                0,
+                rotate=page.rotation,
+            )
+        ocr_pages.add(pageno)
+    return ocr_pages
 
 
 def translate_stream(
@@ -184,23 +387,55 @@ def translate_stream(
     prompt: Template = None,
     skip_subset_fonts: bool = False,
     ignore_cache: bool = False,
+    ultrafast: bool = False,
+    perf=None,
     **kwarg: Any,
 ):
+    if ultrafast and not thread:
+        thread = 16
+    own_perf = perf is None
+    text_items = None
+    if ultrafast:
+        from pdf2zh.ultrafast import PerfTimer, extract_layout
+
+        if own_perf:
+            perf = PerfTimer()
+        logger.info(
+            "[ultrafast perf] skipped: layout models, rasterization, OCR, font subsetting; "
+            "translation cache: %s",
+            "off (read/write)" if ignore_cache else "on",
+        )
+        text_items = extract_layout(stream, pages)
+        perf.step("layout_extract")
     font_list = [("tiro", None)]
 
     font_path = download_remote_fonts(lang_out.lower())
     noto_name = NOTO_NAME
     noto = Font(noto_name, font_path)
     font_list.append((noto_name, font_path))
+    if perf:
+        perf.step("font_setup")
 
     doc_en = Document(stream=stream)
-    stream = io.BytesIO()
-    doc_en.save(stream)
-    doc_zh = Document(stream=stream)
+    if ultrafast:
+        doc_zh = Document(stream=stream)
+    else:
+        stream = io.BytesIO()
+        doc_en.save(stream)
+        doc_zh = Document(stream=stream)
+    ocr_pages = (
+        set() if ultrafast else _ocr_pages(doc_zh, pages, lang_in, cancellation_event)
+    )
     page_count = doc_zh.page_count
+    if perf:
+        perf.step("document_open")
     # font_list = [("GoNotoKurrent-Regular.ttf", font_path), ("tiro", None)]
     font_id = {}
-    for page in doc_zh:
+    for pageno, page in enumerate(doc_zh):
+        if ultrafast and (
+            (pages and pageno not in pages) or not text_items.get(pageno)
+        ):
+            continue
         for font in font_list:
             font_id[font[0]] = page.insert_font(font[0], font[1])
     xreflen = doc_zh.xref_length()
@@ -228,10 +463,16 @@ def translate_stream(
             except Exception:
                 pass
 
+    if perf:
+        perf.step("font_resources")
     fp = io.BytesIO()
 
     doc_zh.save(fp)
+    if perf:
+        perf.step("working_copy_save")
     obj_patch: dict = translate_patch(fp, **locals())
+    if perf:
+        perf.step("page_processing")
 
     for obj_id, ops_new in obj_patch.items():
         # ops_old=doc_en.xref_stream(obj_id)
@@ -239,17 +480,28 @@ def translate_stream(
         # print(ops_old)
         # print(ops_new.encode())
         doc_zh.update_stream(obj_id, ops_new.encode())
+    if perf:
+        perf.step("apply_patches")
 
     doc_en.insert_file(doc_zh)
     for id in range(page_count):
         doc_en.move_page(page_count + id, id * 2 + 1)
-    if not skip_subset_fonts:
+    if perf:
+        perf.step("bilingual_assembly")
+    if not (skip_subset_fonts or ultrafast):
         doc_zh.subset_fonts(fallback=True)
         doc_en.subset_fonts(fallback=True)
-    return (
+    if perf:
+        perf.step("font_subset")
+    result = (
         doc_zh.write(deflate=True, garbage=3, use_objstms=1),
         doc_en.write(deflate=True, garbage=3, use_objstms=1),
     )
+    if perf:
+        perf.step("pdf_serialize")
+        if own_perf:
+            perf.report()
+    return result
 
 
 def convert_to_pdfa(input_path, output_path):
@@ -319,6 +571,7 @@ def translate(
     prompt: Template = None,
     skip_subset_fonts: bool = False,
     ignore_cache: bool = False,
+    ultrafast: bool = False,
     **kwarg: Any,
 ):
     if not files:
@@ -335,6 +588,11 @@ def translate(
     result_files = []
 
     for file in files:
+        perf = None
+        if ultrafast:
+            from pdf2zh.ultrafast import PerfTimer
+
+            perf = PerfTimer()
         if type(file) is str and (
             file.startswith("http://") or file.startswith("https://")
         ):
@@ -378,6 +636,8 @@ def translate(
             doc_raw = open(file, "rb")
         s_raw = doc_raw.read()
         doc_raw.close()
+        if perf:
+            perf.step("input_read")
 
         temp_dir = Path(tempfile.gettempdir())
         file_path = Path(file)
@@ -402,6 +662,9 @@ def translate(
         doc_dual.write(s_dual)
         doc_mono.close()
         doc_dual.close()
+        if perf:
+            perf.step("output_write")
+            perf.report()
         result_files.append((str(file_mono), str(file_dual)))
 
     return result_files
@@ -427,6 +690,8 @@ def download_remote_fonts(lang: str):
     # docker
     font_path = ConfigManager.get("NOTO_FONT_PATH", Path("/app", font_name).as_posix())
     if not Path(font_path).exists():
+        from babeldoc.assets.assets import get_font_and_metadata
+
         font_path, _ = get_font_and_metadata(font_name)
         font_path = font_path.as_posix()
 

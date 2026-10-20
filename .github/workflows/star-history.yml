@@ -1,0 +1,24 @@
+name: Star History
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours; see interval table below
+  watch:
+    types: [started]        # optional: also refresh right after a new star
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: star-history
+  cancel-in-progress: true  # collapse a burst of stars into one run
+
+jobs:
+  star-history:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: narayann7/star-history-action@v1
+        with:
+          repos: ${{ github.repository }}   # or a list: owner/repo,owner/repo2

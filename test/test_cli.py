@@ -4,7 +4,7 @@ import unittest
 
 
 class TestCliVersion(unittest.TestCase):
-    def tearDown(self):
+    def setUp(self):
         for module_name in [
             "pdf2zh",
             "pdf2zh.pdf2zh",
@@ -13,10 +13,13 @@ class TestCliVersion(unittest.TestCase):
         ]:
             sys.modules.pop(module_name, None)
 
+    def tearDown(self):
+        self.setUp()
+
     def test_importing_package_does_not_eagerly_load_translation_pipeline(self):
         pkg = importlib.import_module("pdf2zh")
 
-        self.assertEqual(pkg.__version__, "1.9.11")
+        self.assertEqual(pkg.__version__, "1.9.12")
         self.assertNotIn("pdf2zh.high_level", sys.modules)
 
     def test_version_flag_exits_before_loading_heavy_modules(self):
