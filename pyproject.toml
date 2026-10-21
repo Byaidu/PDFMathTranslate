@@ -12,8 +12,7 @@ classifiers = [
 ]
 # One install for everything users run: CLI, Python API, MCP server, plugin
 # worker, web UI, both kernels (legacy default; BabelDOC on Python <3.14),
-# ultrafast mode and automatic OCR. Extras are only for the HTTP backend
-# and offline translation.
+# ultrafast mode and automatic OCR. The one extra is offline translation.
 dependencies = [
     "requests",
     "googletrans>=4.0.2,<5",
@@ -53,11 +52,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-backend = [
-    "flask",
-    "celery",
-    "redis"
-]
 argostranslate = [
     "argostranslate"
 ]

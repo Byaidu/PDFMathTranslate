@@ -331,28 +331,7 @@ with open("example.pdf", "rb") as f:
 
 ### HTTP
 
-```bash
-pip install pdf2zh[backend]
-pdf2zh --flask
-pdf2zh --celery worker
-```
-
-```bash
-curl http://localhost:11008/v1/translate -F "file=@example.pdf" -F "data={\"lang_in\":\"en\",\"lang_out\":\"ko\",\"service\":\"google\",\"thread\":4}"
-{"id":"d9894125-2f4e-45ea-9d93-1a9068d2045a"}
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
-{"info":{"n":13,"total":506},"state":"PROGRESS"}
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a
-{"state":"SUCCESS"}
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/mono --output example-mono.pdf
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a/dual --output example-dual.pdf
-
-curl http://localhost:11008/v1/translate/d9894125-2f4e-45ea-9d93-1a9068d2045a -X DELETE
-```
+Flask/Celery HTTP 백엔드(`pdf2zh --flask`)는 제거되었습니다. HTTP로 사용하려면 [예제 서버](../examples/server/)를, 플러그인에서는 `pdf2zh --worker`를 사용하세요([설명](../examples/README.md)).
 
 <h2 id="acknowledgement">감사의 말</h2>
 

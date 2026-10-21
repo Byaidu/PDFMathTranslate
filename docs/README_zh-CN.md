@@ -72,7 +72,7 @@ pip install pdf2zh                # 下面这些全都包含
 pdf2zh document.pdf               # 生成 document-mono.pdf 和 document-dual.pdf
 ```
 
-一次安装就包含命令行、Python API、网页界面（`pdf2zh -i`）、MCP 服务（`pdf2zh --mcp`）、插件用的 worker（`pdf2zh --worker`）、两个翻译核心（BabelDOC 需 Python 3.11 到 3.13）、[极速模式](./ADVANCED.md#ultrafast)和[自动 OCR](./ADVANCED.md#ocr)。只有少见的用法才需要额外组件：`pdf2zh[backend]` 是 Flask/Celery HTTP 后端（[接口说明](./APIS.md#api-http)），`pdf2zh[argostranslate]` 用于离线翻译。
+一次安装就包含命令行、Python API、网页界面（`pdf2zh -i`）、MCP 服务（`pdf2zh --mcp`）、插件用的 worker（`pdf2zh --worker`）、两个翻译核心（BabelDOC 需 Python 3.11 到 3.13）、[极速模式](./ADVANCED.md#ultrafast)和[自动 OCR](./ADVANCED.md#ocr)。唯一的可选组件是 `pdf2zh[argostranslate]`，用于离线翻译。需要 HTTP 服务请参考[示例服务器](../examples/server/)。
 
 带网页界面的 Docker 镜像：`docker run -d -p 7860:7860 byaidu/pdf2zh`，也可以从 [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate) 拉取。
 
@@ -120,7 +120,7 @@ pdf2zh --dir ./papers -o ./out                   # 批量翻译整个文件夹
 | `--config` | [配置文件](./ADVANCED.md#cofig) |
 | `--ignore-cache` | [跳过翻译缓存](./ADVANCED.md#cache) |
 | `--ultrafast`、`--onnx`、`--skip-subset-fonts` | legacy 核心专用参数 |
-| `-i`、`--flask`、`--celery` | 网页界面和 HTTP 后端（使用 legacy 核心） |
+| `-i` | 网页界面（使用 legacy 核心） |
 | `--mcp`、`--sse` | [MCP 服务](#mcp) |
 | `--json` | 在 stdout 输出一行包含结果路径的 JSON，供以子进程方式调用 pdf2zh 的程序使用 |
 | `--worker` | 常驻运行，从 stdin 接收 JSON 翻译请求，供插件使用（[协议](../examples/README.md#pdf2zh---worker)） |

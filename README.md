@@ -75,7 +75,7 @@ pip install pdf2zh                # everything below
 pdf2zh document.pdf               # writes document-mono.pdf and document-dual.pdf
 ```
 
-One install has the command line, the Python API, the web UI (`pdf2zh -i`), the MCP server (`pdf2zh --mcp`), the plugin worker (`pdf2zh --worker`), both kernels (BabelDOC on Python 3.11 to 3.13), [ultrafast mode](./docs/ADVANCED.md#ultrafast) and [automatic OCR](./docs/ADVANCED.md#ocr). Only rarer setups take an extra: `pdf2zh[backend]` for the Flask/Celery HTTP backend ([API details](./docs/APIS.md#api-http)) and `pdf2zh[argostranslate]` for offline translation.
+One install has the command line, the Python API, the web UI (`pdf2zh -i`), the MCP server (`pdf2zh --mcp`), the plugin worker (`pdf2zh --worker`), both kernels (BabelDOC on Python 3.11 to 3.13), [ultrafast mode](./docs/ADVANCED.md#ultrafast) and [automatic OCR](./docs/ADVANCED.md#ocr). The one extra is `pdf2zh[argostranslate]`, for offline translation. For an HTTP service, see the [example server](./examples/server/).
 
 Docker images with the web UI: `docker run -d -p 7860:7860 byaidu/pdf2zh`, also on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
 
@@ -123,7 +123,7 @@ pdf2zh --dir ./papers -o ./out                   # batch translate a folder
 | `--config` | [Configuration file](./docs/ADVANCED.md#cofig) |
 | `--ignore-cache` | [Bypass the translation cache](./docs/ADVANCED.md#cache) |
 | `--ultrafast`, `--onnx`, `--skip-subset-fonts` | Legacy kernel options |
-| `-i`, `--flask`, `--celery` | Web UI and HTTP backend (legacy kernel) |
+| `-i` | Web UI (legacy kernel) |
 | `--mcp`, `--sse` | [MCP server](#mcp) |
 | `--json` | Print one JSON line with the output paths on stdout, for programs that run pdf2zh |
 | `--worker` | Stay running and take JSON translation requests on stdin, for plugins ([protocol](./examples/README.md#pdf2zh---worker)) |

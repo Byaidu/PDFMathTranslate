@@ -9,7 +9,6 @@ import argparse
 import logging
 import os
 import sys
-from pathlib import Path
 from string import Template
 from typing import List, Optional
 
@@ -111,16 +110,6 @@ def create_parser() -> argparse.ArgumentParser:
         "--share",
         action="store_true",
         help="Enable Gradio Share",
-    )
-    parse_params.add_argument(
-        "--flask",
-        action="store_true",
-        help="flask",
-    )
-    parse_params.add_argument(
-        "--celery",
-        action="store_true",
-        help="celery",
     )
     parse_params.add_argument(
         "--authorized",
@@ -279,8 +268,6 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
         parsed_args.kernel != "legacy"
         or parsed_args.onnx
         or parsed_args.interactive
-        or parsed_args.flask
-        or parsed_args.celery
         or parsed_args.mcp
         or parsed_args.sse
     ):
@@ -352,13 +339,9 @@ def main(args: Optional[List[str]] = None) -> int:
     if parsed_args.debug:
         log.setLevel(logging.DEBUG)
 
-    if parsed_args.interactive or parsed_args.flask or parsed_args.celery:
-        # The web UI and the HTTP backend run on the legacy kernel.
-        if not parsed_args.interactive:
-            _require_extra("flask", "backend")
-        _load_layout_model(parsed_args)
-
     if parsed_args.interactive:
+        # The web UI runs on the legacy kernel.
+        _load_layout_model(parsed_args)
         from pdf2zh.gui import setup_gui
 
         if parsed_args.serverport:
@@ -367,18 +350,6 @@ def main(args: Optional[List[str]] = None) -> int:
             )
         else:
             setup_gui(parsed_args.share, parsed_args.authorized)
-        return 0
-
-    if parsed_args.flask:
-        from pdf2zh.backend import flask_app
-
-        flask_app.run(port=11008)
-        return 0
-
-    if parsed_args.celery:
-        from pdf2zh.backend import celery_app
-
-        celery_app.start(argv=sys.argv[2:])
         return 0
 
     if parsed_args.prompt:
@@ -487,16 +458,6 @@ def _print_json(payload: dict) -> None:
     import json
 
     print(json.dumps(payload, ensure_ascii=False), flush=True)
-
-
-def _require_extra(module: str, extra: str) -> None:
-    import importlib.util
-
-    if importlib.util.find_spec(module) is None:
-        raise SystemExit(
-            f"This mode needs an optional dependency. "
-            f"Install it with: pip install 'pdf2zh[{extra}]'"
-        )
 
 
 def _backend(value: str) -> str:
