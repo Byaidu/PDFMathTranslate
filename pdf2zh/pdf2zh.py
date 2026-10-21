@@ -155,10 +155,10 @@ def create_parser() -> argparse.ArgumentParser:
 
     parse_params.add_argument(
         "--backend",
-        type=str,
-        choices=["auto", "cpu", "cuda", "dml"],
+        type=_backend,
+        choices=["auto", "cpu"],
         default="auto",
-        help="ONNX Runtime execution provider: auto, cpu, cuda, dml.",
+        help="Layout model runtime: auto (what the installed onnxruntime offers) or cpu.",
     )
 
     parse_params.add_argument(
@@ -497,6 +497,19 @@ def _require_extra(module: str, extra: str) -> None:
             f"This mode needs an optional dependency. "
             f"Install it with: pip install 'pdf2zh[{extra}]'"
         )
+
+
+def _backend(value: str) -> str:
+    """--backend value; the removed GPU values become auto, so saved settings
+    (e.g. in PDFMathReader) keep working."""
+    if value in ("cuda", "dml"):
+        logger.warning(
+            "--backend %s was removed (GPU builds of onnxruntime conflict with the "
+            "CPU build pdf2zh needs); using auto",
+            value,
+        )
+        return "auto"
+    return value
 
 
 def _load_layout_model(parsed_args) -> None:

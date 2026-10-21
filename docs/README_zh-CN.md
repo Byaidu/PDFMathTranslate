@@ -72,7 +72,7 @@ pip install pdf2zh                # 下面这些全都包含
 pdf2zh document.pdf               # 生成 document-mono.pdf 和 document-dual.pdf
 ```
 
-一次安装就包含命令行、Python API、网页界面（`pdf2zh -i`）、MCP 服务（`pdf2zh --mcp`）、插件用的 worker（`pdf2zh --worker`）、两个翻译核心（BabelDOC 需 Python 3.11 到 3.13）、[极速模式](./ADVANCED.md#ultrafast)和[自动 OCR](./ADVANCED.md#ocr)。只有少见的用法才需要额外组件：`pdf2zh[backend]` 是 Flask/Celery HTTP 后端（[接口说明](./APIS.md#api-http)），`pdf2zh[argostranslate]` 用于离线翻译，`pdf2zh[cuda]` 或 `pdf2zh[dml]` 用 GPU 做版面识别。
+一次安装就包含命令行、Python API、网页界面（`pdf2zh -i`）、MCP 服务（`pdf2zh --mcp`）、插件用的 worker（`pdf2zh --worker`）、两个翻译核心（BabelDOC 需 Python 3.11 到 3.13）、[极速模式](./ADVANCED.md#ultrafast)和[自动 OCR](./ADVANCED.md#ocr)。只有少见的用法才需要额外组件：`pdf2zh[backend]` 是 Flask/Celery HTTP 后端（[接口说明](./APIS.md#api-http)），`pdf2zh[argostranslate]` 用于离线翻译。
 
 带网页界面的 Docker 镜像：`docker run -d -p 7860:7860 byaidu/pdf2zh`，也可以从 [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate) 拉取。
 

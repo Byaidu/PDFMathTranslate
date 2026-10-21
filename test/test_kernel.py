@@ -471,6 +471,26 @@ class TestCLIKernelPipeline(unittest.TestCase):
         switch, _ = self._main(["test.pdf", "--babeldoc"])
         switch.assert_called_once_with("babeldoc")
 
+    def test_backend_cpu_and_removed_gpu_values(self):
+        from pdf2zh.pdf2zh import _load_layout_model, create_parser, parse_args
+
+        for value, expected in (
+            ("cpu", "cpu"),
+            ("auto", "auto"),
+            ("cuda", "auto"),
+            ("dml", "auto"),
+        ):
+            with (
+                patch("pdf2zh.doclayout.set_backend") as set_backend,
+                patch("pdf2zh.doclayout.OnnxModel"),
+                patch("pdf2zh.doclayout.ModelInstance"),
+            ):
+                _load_layout_model(parse_args(["a.pdf", "--backend", value]))
+            set_backend.assert_called_once_with(expected)
+        # Downstream UIs list the parser's choices: only the supported ones.
+        action = next(a for a in create_parser()._actions if a.dest == "backend")
+        self.assertEqual(action.choices, ["auto", "cpu"])
+
     def test_legacy_only_flags_pick_legacy(self):
         from pdf2zh.pdf2zh import parse_args
 

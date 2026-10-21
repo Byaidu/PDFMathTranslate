@@ -75,7 +75,7 @@ pip install pdf2zh                # everything below
 pdf2zh document.pdf               # writes document-mono.pdf and document-dual.pdf
 ```
 
-One install has the command line, the Python API, the web UI (`pdf2zh -i`), the MCP server (`pdf2zh --mcp`), the plugin worker (`pdf2zh --worker`), both kernels (BabelDOC on Python 3.11 to 3.13), [ultrafast mode](./docs/ADVANCED.md#ultrafast) and [automatic OCR](./docs/ADVANCED.md#ocr). Only rarer setups take an extra: `pdf2zh[backend]` for the Flask/Celery HTTP backend ([API details](./docs/APIS.md#api-http)), `pdf2zh[argostranslate]` for offline translation, and `pdf2zh[cuda]` or `pdf2zh[dml]` for GPU layout detection.
+One install has the command line, the Python API, the web UI (`pdf2zh -i`), the MCP server (`pdf2zh --mcp`), the plugin worker (`pdf2zh --worker`), both kernels (BabelDOC on Python 3.11 to 3.13), [ultrafast mode](./docs/ADVANCED.md#ultrafast) and [automatic OCR](./docs/ADVANCED.md#ocr). Only rarer setups take an extra: `pdf2zh[backend]` for the Flask/Celery HTTP backend ([API details](./docs/APIS.md#api-http)) and `pdf2zh[argostranslate]` for offline translation.
 
 Docker images with the web UI: `docker run -d -p 7860:7860 byaidu/pdf2zh`, also on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
 

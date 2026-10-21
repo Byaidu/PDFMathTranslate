@@ -12,8 +12,8 @@ classifiers = [
 ]
 # One install for everything users run: CLI, Python API, MCP server, plugin
 # worker, web UI, both kernels (legacy default; BabelDOC on Python <3.14),
-# ultrafast mode and automatic OCR. Extras are only for the HTTP backend,
-# offline translation and GPU builds of onnxruntime.
+# ultrafast mode and automatic OCR. Extras are only for the HTTP backend
+# and offline translation.
 dependencies = [
     "requests",
     "googletrans>=4.0.2,<5",
@@ -60,12 +60,6 @@ backend = [
 ]
 argostranslate = [
     "argostranslate"
-]
-cuda = [
-    "onnxruntime-gpu",
-]
-dml = [
-    "onnxruntime-directml",
 ]
 # Now part of the base install; kept so existing commands such as
 # `pip install 'pdf2zh[mcp]'` keep working.

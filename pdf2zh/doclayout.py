@@ -22,18 +22,17 @@ logger = logging.getLogger(__name__)
 
 _BACKEND_PROVIDERS = {
     "cpu": ["CPUExecutionProvider"],
-    "cuda": ["CUDAExecutionProvider", "CPUExecutionProvider"],
-    "dml": ["DmlExecutionProvider", "CPUExecutionProvider"],
 }
 
 _preferred_backend: str | None = None
 
 
 def set_backend(name: str) -> None:
-    """Set the ONNX Runtime execution provider backend.
+    """Choose the layout model's ONNX Runtime providers.
 
     Args:
-        name: One of 'auto', 'cpu', 'cuda', 'dml'.
+        name: 'auto' (whatever the installed onnxruntime offers, e.g. CoreML
+            on macOS) or 'cpu'.
     """
     global _preferred_backend
     _preferred_backend = None if name == "auto" else name
