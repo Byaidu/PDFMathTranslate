@@ -1,12 +1,14 @@
 /* Translate Zotero PDF attachments with pdf2zh: whole files from the item
  * menu, and page by page in the PDF reader (reader.js).
  *
- * pdf2zh runs as a subprocess with --json, which prints exactly one JSON line
- * on stdout ({"ok": true, "results": [{"mono": ..., "dual": ...}]}) and keeps
- * logs on stderr. No server has to be kept running.
+ * Translations go to one resident `pdf2zh --worker` process, started on first
+ * use and stopped when idle or when the plugin shuts down, so Python and the
+ * layout model load once. Its protocol (pdf2zh/worker.py) is one JSON object
+ * per line: {"ready": true, "protocol": 1, ...} first, then one
+ * {"id", "result"} or {"id", "error"} per {"id", "method", "params"} request.
  *
- * The helpers at the top are plain JavaScript and are unit-tested with Node
- * (test.mjs); the rest needs Zotero.
+ * The helpers at the top, WorkerClient included, are plain JavaScript and are
+ * unit-tested with Node (test.mjs); the rest needs Zotero.
  */
 
 var PDF2ZH = {
@@ -24,19 +26,17 @@ var PDF2ZH = {
     return parts;
   },
 
-  /** Arguments after the command for one translation; `options.pages` is "1,3-5". */
-  buildArgs(file, outputDir, options) {
-    const args = [
+  /** Worker params for one translation; `options.pages` is "1,3-5". */
+  translateParams(file, output, options) {
+    return {
       file,
-      "--lang-in", options.langIn || "en",
-      "--lang-out", options.langOut || "zh",
-      "--service", options.service || "google",
-      "--kernel", options.kernel || "auto",
-      "--output", outputDir,
-    ];
-    if (options.pages) args.push("--pages", options.pages);
-    args.push("--json");
-    return args;
+      output,
+      lang_in: options.langIn || "en",
+      lang_out: options.langOut || "zh",
+      service: options.service || "google",
+      kernel: options.kernel || "auto",
+      ...(options.pages ? { pages: options.pages } : {}),
+    };
   },
 
   /** Pages to translate in the reader: the visible ones, then `ahead` more. */
@@ -55,19 +55,127 @@ var PDF2ZH = {
       .join("--");
   },
 
-  /** The result object from pdf2zh --json stdout. */
-  parseResult(stdout) {
-    const lines = String(stdout).trim().split(/\r?\n/).reverse();
-    for (const line of lines) {
-      if (!line.startsWith("{")) continue;
+  /** Client for one `pdf2zh --worker` process. `start(onLine, onExit)`
+   * launches the process and resolves with { write(text), close() }; it calls
+   * onLine(line) for each stdout line and onExit(code, stderrTail) once. The
+   * process is started on demand, and again after it exits. */
+  WorkerClient: class {
+    constructor(start, { idleMs = 10 * 60 * 1000, readyTimeoutMs = 120 * 1000, timers = globalThis } = {}) {
+      this.start = start;
+      this.idleMs = idleMs;
+      this.readyTimeoutMs = readyTimeoutMs;
+      this.timers = timers;
+      this.transport = null;
+      this.ready = null;
+      this.pending = new Map();
+      this.nextId = 1;
+      this.idleTimer = null;
+    }
+
+    async translate(params) {
+      this.timers.clearTimeout(this.idleTimer);
+      await this.ensure();
+      const transport = this.transport;
+      if (!transport) throw new Error("pdf2zh worker stopped");
+      const id = this.nextId++;
       try {
-        const result = JSON.parse(line);
-        if (typeof result.ok === "boolean") return result;
-      } catch (e) {
-        // not the result line
+        return await new Promise((resolve, reject) => {
+          this.pending.set(id, { resolve, reject });
+          transport.write(JSON.stringify({ id, method: "translate", params }) + "\n");
+        });
+      } finally {
+        if (this.pending.size === 0 && this.idleMs) {
+          this.timers.clearTimeout(this.idleTimer);
+          this.idleTimer = this.timers.setTimeout(() => this.close(), this.idleMs);
+        }
       }
     }
-    throw new Error("pdf2zh printed no result; update pdf2zh to a version with --json");
+
+    ensure() {
+      if (this.ready) return this.ready;
+      let started = false;
+      let settle;
+      const ready = new Promise((resolve, reject) => {
+        settle = (error) => {
+          this.timers.clearTimeout(timer);
+          error ? reject(error) : resolve();
+        };
+      });
+      ready.catch(() => {});
+      this.ready = ready;
+      const timer = this.timers.setTimeout(() => {
+        settle(new Error("pdf2zh --worker did not start in time"));
+        this.close();
+      }, this.readyTimeoutMs);
+
+      const onLine = (line) => {
+        let message;
+        try {
+          message = JSON.parse(line);
+        } catch (e) {
+          return; // not protocol output
+        }
+        if (!started) {
+          if (!message || !message.ready) return;
+          started = true;
+          if (message.protocol !== 1) {
+            settle(new Error(`pdf2zh worker speaks protocol ${message.protocol}; this plugin needs 1`));
+            this.close();
+          } else {
+            settle();
+          }
+          return;
+        }
+        const entry = this.pending.get(message.id);
+        if (!entry) return;
+        this.pending.delete(message.id);
+        if (message.error) {
+          const error = new Error(message.error.message || "pdf2zh failed");
+          error.cancelled = Boolean(message.error.cancelled);
+          entry.reject(error);
+        } else {
+          entry.resolve(message.result);
+        }
+      };
+      const onExit = (code, stderr) => {
+        const last = String(stderr || "").trim().split("\n").pop();
+        const error = /unrecognized arguments: .*--worker/.test(stderr || "")
+          ? new Error("This pdf2zh is too old for the plugin: update pdf2zh to a version with --worker.")
+          : new Error(`pdf2zh worker exited with ${code}${last ? `: ${last}` : ""}`);
+        if (this.ready === ready) {
+          this.ready = null;
+          this.transport = null;
+        }
+        settle(error);
+        this.failAll(error);
+      };
+      Promise.resolve()
+        .then(() => this.start(onLine, onExit))
+        .then((transport) => {
+          if (this.ready === ready) this.transport = transport;
+          else transport.close(); // closed while starting
+        }, (error) => {
+          if (this.ready === ready) this.ready = null;
+          settle(error);
+        });
+      return ready;
+    }
+
+    /** Stop the worker: it exits when its stdin closes. */
+    close() {
+      this.timers.clearTimeout(this.idleTimer);
+      const transport = this.transport;
+      this.transport = null;
+      this.ready = null;
+      this.failAll(new Error("pdf2zh worker stopped"));
+      transport?.close();
+    }
+
+    failAll(error) {
+      const entries = [...this.pending.values()];
+      this.pending.clear();
+      for (const entry of entries) entry.reject(error);
+    }
   },
 
   /** Extra directories where uv, pip and Homebrew put commands. GUI apps on
@@ -155,8 +263,7 @@ var PDF2ZH = {
         service: this.pref("service"),
         kernel: this.pref("kernel"),
       };
-      const result = await this.run(this.buildArgs(file, outputDir, options));
-      if (!result.ok) throw new Error(result.error || "pdf2zh failed");
+      const result = await this.translate(this.translateParams(file, outputDir, options));
       let added = 0;
       for (const [kind, label] of [["dual", "bilingual"], ["mono", "translated"]]) {
         const path = result.results[0]?.[kind];
@@ -183,12 +290,30 @@ var PDF2ZH = {
     await item.saveTx();
   },
 
-  /** Run pdf2zh and return its parsed --json result. */
-  async run(args) {
+  /** Translate with the resident worker; resolves with the `--json` result. */
+  translate(params) {
+    const command = this.pref("command") || "pdf2zh";
+    if (this._worker && this._workerCommand !== command) this.stopWorker();
+    if (!this._worker) {
+      const timers = ChromeUtils.importESModule("resource://gre/modules/Timer.sys.mjs");
+      this._worker = new this.WorkerClient((onLine, onExit) => this.startWorker(command, onLine, onExit), { timers });
+      this._workerCommand = command;
+    }
+    return this._worker.translate(params);
+  },
+
+  stopWorker() {
+    this._worker?.close();
+    this._worker = null;
+  },
+
+  /** Start `<command> --worker` with Zotero's Subprocess module. */
+  async startWorker(commandLine, onLine, onExit) {
     const { Subprocess } = ChromeUtils.importESModule(
       "resource://gre/modules/Subprocess.sys.mjs",
     );
-    const [commandName, ...prefix] = this.splitCommand(this.pref("command") || "pdf2zh");
+    const { setTimeout } = ChromeUtils.importESModule("resource://gre/modules/Timer.sys.mjs");
+    const [commandName, ...prefix] = this.splitCommand(commandLine);
     const sep = Zotero.isWin ? ";" : ":";
     const environment = Subprocess.getEnvironment();
     environment.PATH = [environment.PATH, ...this.extraPath(PathUtils.homeDir, Zotero.isWin)]
@@ -198,28 +323,49 @@ var PDF2ZH = {
     const command = await Subprocess.pathSearch(commandName, environment).catch(() => {
       throw new Error(`Cannot find "${commandName}". Set the full path in pdf2zh's settings.`);
     });
-
     const proc = await Subprocess.call({
       command,
-      arguments: [...prefix, ...args],
+      arguments: [...prefix, "--worker"],
       environment,
+      stdin: "pipe",
       stderr: "pipe",
     });
+
     // Read both pipes: pdf2zh logs a lot on stderr and would block on a full pipe.
-    const readAll = async (pipe) => {
-      let text = "";
+    let stderr = "";
+    const readStdout = async () => {
+      let buffer = "";
       let chunk;
-      while ((chunk = await pipe.readString())) text += chunk;
-      return text;
+      while ((chunk = await proc.stdout.readString())) {
+        buffer += chunk;
+        let newline;
+        while ((newline = buffer.indexOf("\n")) >= 0) {
+          const line = buffer.slice(0, newline).trim();
+          buffer = buffer.slice(newline + 1);
+          if (line) onLine(line);
+        }
+      }
     };
-    const [stdout, stderr] = await Promise.all([readAll(proc.stdout), readAll(proc.stderr)]);
-    const { exitCode } = await proc.wait();
-    try {
-      return this.parseResult(stdout);
-    } catch (e) {
-      Zotero.debug(`pdf2zh exited with ${exitCode}:\n${stderr}`);
-      throw new Error(`pdf2zh exited with ${exitCode}: ${stderr.trim().split("\n").pop() || e.message}`);
-    }
+    const readStderr = async () => {
+      let chunk;
+      while ((chunk = await proc.stderr.readString())) stderr = (stderr + chunk).slice(-20000);
+    };
+    Promise.resolve().then(() =>
+      Promise.all([readStdout(), readStderr(), proc.wait()]).then(
+        ([, , { exitCode }]) => {
+          if (exitCode) Zotero.debug(`pdf2zh worker exited with ${exitCode}:\n${stderr}`);
+          onExit(exitCode, stderr);
+        },
+        (error) => onExit(String(error), stderr),
+      ),
+    );
+    return {
+      write: (text) => proc.stdin.write(text),
+      close: () => {
+        proc.stdin.close().catch(() => {});
+        setTimeout(() => proc.kill(), 5000);
+      },
+    };
   },
 };
 

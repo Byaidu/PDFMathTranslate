@@ -1,9 +1,10 @@
 // dsh-pdf2zh: a native DeepSeek Harness plugin that translates PDFs with pdf2zh.
 //
 // Host half (this file):
-// - the pdf2zh_translate tool, which runs `pdf2zh <file> --json` as a
-//   subprocess (pdf2zh prints one JSON result line on stdout, logs on stderr);
+// - the pdf2zh_translate tool;
 // - the PDF reader's HTTP routes (viewer.js), which translate pages on demand.
+// Both send their translations to one resident `pdf2zh --worker` process
+// (pdf2zh.js), started on first use and stopped when idle or on dispose.
 // Browser half (client.js): a PDF reader for dsh's right-sidebar document
 // preview that requests translated pages as they scroll into view.
 //
@@ -11,10 +12,10 @@
 
 import { dirname, isAbsolute, resolve } from 'node:path'
 import Schema from '@deepseek-ai/schemastery'
-import { buildArgs, runPdf2zh } from './pdf2zh.js'
+import { Pdf2zhWorker, translateParams } from './pdf2zh.js'
 import { createViewer } from './viewer.js'
 
-export { buildArgs, parseResult, runPdf2zh, searchPath, splitCommand } from './pdf2zh.js'
+export { Pdf2zhWorker, searchPath, splitCommand, translateParams } from './pdf2zh.js'
 
 export const name = 'pdf2zh'
 export const inject = ['tools']
@@ -34,14 +35,20 @@ export const Config = Schema.object({
     .description('PDF reader: most pages translated by one pdf2zh run.'),
   viewerMaxMb: Schema.natural().min(1).default(200)
     .description('PDF reader: largest document it accepts, in MB.'),
+  idleMinutes: Schema.natural().default(10)
+    .description('Stop the background pdf2zh worker after this many idle minutes (0: keep it).'),
 })
 
 // ------------------------------------------------------------------ plugin
 
 export function apply(ctx, config) {
+  const worker = new Pdf2zhWorker({ command: config.command, idleMs: config.idleMinutes * 60_000 })
+  ctx.effect(() => () => worker.close())
+  const translate = (params, signal) => worker.translate(params, { signal, timeoutMs: config.timeoutMs })
+
   // The reader's routes need dsh's web server, present in Web and Desktop.
   ctx.inject(['webServer'], (ctx) => {
-    const handler = createViewer(config)
+    const handler = createViewer(config, { translate })
     ctx.effect(() => ctx.webServer.register({ kind: 'prefix', path: '/pdf2zh', handler }))
   })
 
@@ -89,14 +96,13 @@ export function apply(ctx, config) {
       const outputDir = args.output_dir
         ? (isAbsolute(args.output_dir) ? args.output_dir : resolve(base, args.output_dir))
         : dirname(file)
-      const result = await runPdf2zh(config.command, buildArgs(file, outputDir, {
+      const result = await translate(translateParams(file, outputDir, {
         langIn: args.lang_in || config.langIn,
         langOut: args.lang_out || config.langOut,
         service: args.service || config.service,
         kernel: args.kernel || config.kernel,
         pages: args.pages,
-      }), { signal: exec?.signal, timeoutMs: config.timeoutMs })
-      if (!result.ok) throw new Error(result.error || 'pdf2zh failed')
+      }), exec?.signal)
       const first = result.results?.[0] ?? {}
       return {
         kernel: result.kernel,

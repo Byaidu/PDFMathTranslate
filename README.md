@@ -133,6 +133,7 @@ pdf2zh --dir ./papers -o ./out                   # batch translate a folder
 | `-i`, `--flask`, `--celery` | Web UI and HTTP backend (legacy kernel) |
 | `--mcp`, `--sse` | [MCP server](#mcp) |
 | `--json` | Print one JSON line with the output paths on stdout, for programs that run pdf2zh |
+| `--worker` | Stay running and take JSON translation requests on stdin, for plugins ([protocol](./examples/README.md#pdf2zh---worker)) |
 
 All options are described in [Advanced Usage](./docs/ADVANCED.md).
 

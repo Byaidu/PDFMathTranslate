@@ -234,6 +234,13 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     parse_params.add_argument(
+        "--worker",
+        action="store_true",
+        help="Run as a resident worker for apps and plugins: JSON requests on "
+        "stdin, one JSON response per line on stdout (see pdf2zh/worker.py).",
+    )
+
+    parse_params.add_argument(
         "--json",
         action="store_true",
         help="Print the result as one JSON object on stdout, for programs that "
@@ -284,15 +291,10 @@ def parse_args(args: Optional[List[str]]) -> argparse.Namespace:
         parser.error("--onnx requires the legacy kernel")
 
     if parsed_args.pages:
-        pages = []
-        for p in parsed_args.pages.split(","):
-            if "-" in p:
-                start, end = p.split("-")
-                pages.extend(range(int(start) - 1, int(end)))
-            else:
-                pages.append(int(p) - 1)
+        from pdf2zh.kernel.protocol import parse_pages
+
         parsed_args.raw_pages = parsed_args.pages
-        parsed_args.pages = pages
+        parsed_args.pages = parse_pages(parsed_args.pages)
 
     return parsed_args
 
@@ -389,6 +391,11 @@ def main(args: Optional[List[str]] = None) -> int:
         except Exception:
             raise ValueError("prompt error.")
 
+    if parsed_args.worker:
+        from pdf2zh.worker import main as worker_main
+
+        return worker_main()
+
     if parsed_args.mcp:
         logging.getLogger("mcp").setLevel(logging.ERROR)
         from pdf2zh.mcp_server import create_http_app, create_mcp_app
@@ -472,20 +479,9 @@ def main(args: Optional[List[str]] = None) -> int:
         logger.exception("Translation failed")
         _print_json({"ok": False, "kernel": kernel.name, "error": str(e)})
         return 1
-    _print_json(
-        {
-            "ok": True,
-            "kernel": kernel.name,
-            "results": [
-                {
-                    "input": str(source),
-                    "mono": str(Path(r.mono_pdf).resolve()) if r.mono_pdf else None,
-                    "dual": str(Path(r.dual_pdf).resolve()) if r.dual_pdf else None,
-                }
-                for source, r in zip(request.files, results)
-            ],
-        }
-    )
+    from pdf2zh.worker import result_payload
+
+    _print_json(result_payload(kernel.name, request.files, results))
     return 0
 
 

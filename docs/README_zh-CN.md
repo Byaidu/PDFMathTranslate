@@ -130,6 +130,7 @@ pdf2zh --dir ./papers -o ./out                   # 批量翻译整个文件夹
 | `-i`、`--flask`、`--celery` | 网页界面和 HTTP 后端（使用 legacy 核心） |
 | `--mcp`、`--sse` | [MCP 服务](#mcp) |
 | `--json` | 在 stdout 输出一行包含结果路径的 JSON，供以子进程方式调用 pdf2zh 的程序使用 |
+| `--worker` | 常驻运行，从 stdin 接收 JSON 翻译请求，供插件使用（[协议](../examples/README.md#pdf2zh---worker)） |
 
 完整说明见[高级用法](./ADVANCED.md)。
 

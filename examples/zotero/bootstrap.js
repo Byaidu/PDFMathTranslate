@@ -30,6 +30,7 @@ function onMainWindowUnload({ window }) {
 
 function shutdown() {
   PDF2ZH_READER?.shutdown();
+  PDF2ZH?.stopWorker();
   for (const window of Zotero.getMainWindows()) PDF2ZH?.removeFromWindow(window);
   PDF2ZH = undefined;
   PDF2ZH_READER = undefined;

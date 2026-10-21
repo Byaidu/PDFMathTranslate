@@ -8,6 +8,17 @@ from pathlib import Path
 from typing import Any, Optional, Protocol, runtime_checkable
 
 
+def parse_pages(pages: Optional[str]) -> Optional[list[int]]:
+    """Convert a 1-based "1,3-5" spec to 0-based page indexes."""
+    if not pages:
+        return None
+    result = []
+    for part in str(pages).split(","):
+        start, _, end = part.strip().partition("-")
+        result.extend(range(int(start) - 1, int(end or start)))
+    return result
+
+
 @dataclass
 class TranslateRequest:
     """Unified translation request bridging CLI args to kernel-specific config."""

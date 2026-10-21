@@ -18,7 +18,7 @@ const plugin = resolve(here, '..')
 const pdf = resolve(process.argv[2] || join(plugin, '..', '..', 'test', 'file', 'translate.cli.plain.text.pdf'))
 const bin = process.env.PDF2ZH_BIN
 const app = process.env.ZOTERO_APP || '/Applications/Zotero.app/Contents/MacOS/zotero'
-if (!bin) throw new Error('set PDF2ZH_BIN to a pdf2zh executable with --json')
+if (!bin) throw new Error('set PDF2ZH_BIN to a pdf2zh executable with --worker')
 
 const root = mkdtempSync(join(tmpdir(), 'pdf2zh-zotero-'))
 const profile = join(root, 'profile')

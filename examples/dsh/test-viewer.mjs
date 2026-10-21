@@ -65,17 +65,16 @@ test('splitPages copies single pages', async () => {
 
 test('routes: upload, translate a page, guards, static pdf.js', async () => {
   const runs = []
-  // Stand-in for pdf2zh: "translates" by copying the input to the output dir.
-  const run = async (command, args) => {
-    const input = args[0]
-    const out = join(args[args.indexOf('--output') + 1], 'out.mono.pdf')
-    runs.push(args[args.indexOf('--pages') + 1])
-    await copyFile(input, out)
-    return { ok: true, kernel: 'babeldoc', results: [{ mono: out }] }
+  // Stand-in for the pdf2zh worker: "translates" by copying the input.
+  const translate = async (params) => {
+    const out = join(params.output, 'out.mono.pdf')
+    runs.push(params.pages)
+    await copyFile(params.file, out)
+    return { ok: true, kernel: 'legacy', results: [{ mono: out }] }
   }
   const config = { command: 'pdf2zh', langIn: 'en', langOut: 'zh', service: 'google', kernel: 'auto',
     timeoutMs: 60_000, viewerBatch: 4, viewerMaxMb: 10 }
-  const handler = createViewer(config, { cacheDir: await mkdtemp(join(tmpdir(), 'pdf2zh-viewer-')), run })
+  const handler = createViewer(config, { cacheDir: await mkdtemp(join(tmpdir(), 'pdf2zh-viewer-')), translate })
   const server = createServer(handler).listen(0, '127.0.0.1')
   await new Promise(r => server.once('listening', r))
   const base = `http://127.0.0.1:${server.address().port}/pdf2zh`

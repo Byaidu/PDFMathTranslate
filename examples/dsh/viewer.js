@@ -5,9 +5,9 @@
 //   POST /pdf2zh/documents                    body: PDF bytes -> { id }
 //   POST /pdf2zh/documents/<id>/pages/<n>     -> one translated page as application/pdf
 //
-// Page requests are queued. While pdf2zh runs, requests for other pages of the
-// same document pile up and the next run translates them together
-// (`pdf2zh --pages 3,4,5`), so pages stream in without one pdf2zh start per page.
+// Page requests are queued. While pdf2zh translates, requests for other pages
+// of the same document pile up and the next run translates them together
+// (pages "3,4,5" in one request to the resident pdf2zh worker).
 // Results are cached per document hash, page and translation options.
 
 import { createHash } from 'node:crypto'
@@ -17,7 +17,7 @@ import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, extname, join, normalize, sep } from 'node:path'
 import { PDFDocument } from 'pdf-lib'
-import { buildArgs, runPdf2zh } from './pdf2zh.js'
+import { translateParams } from './pdf2zh.js'
 
 const require = createRequire(import.meta.url)
 const PREFIX = '/pdf2zh'
@@ -107,8 +107,8 @@ export async function splitPages(bytes, pages) {
   return out
 }
 
-/** Create the reader's route handler. */
-export function createViewer(config, { cacheDir = join(tmpdir(), 'dsh-pdf2zh'), run = runPdf2zh } = {}) {
+/** Create the reader's route handler; `translate(params)` runs one worker request. */
+export function createViewer(config, { cacheDir = join(tmpdir(), 'dsh-pdf2zh'), translate }) {
   const docs = join(cacheDir, 'documents')
   const pageDir = (id, key) => join(cacheDir, 'pages', id, key)
   const pdfjsRoot = dirname(require.resolve('pdfjs-dist/package.json'))
@@ -116,9 +116,7 @@ export function createViewer(config, { cacheDir = join(tmpdir(), 'dsh-pdf2zh'), 
   const queue = new PageQueue(async (id, options, pages) => {
     const work = await mkdtemp(join(cacheDir, 'run-'))
     try {
-      const args = buildArgs(join(docs, `${id}.pdf`), work, { ...options, pages: pages.join(',') })
-      const result = await run(config.command, args, { timeoutMs: config.timeoutMs })
-      if (!result.ok) throw new Error(result.error || 'pdf2zh failed')
+      const result = await translate(translateParams(join(docs, `${id}.pdf`), work, { ...options, pages: pages.join(',') }))
       const mono = result.results?.[0]?.mono
       if (!mono) throw new Error('pdf2zh returned no translated PDF')
       const split = await splitPages(await readFile(mono), pages)

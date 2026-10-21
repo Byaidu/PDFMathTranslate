@@ -66,7 +66,7 @@ def create_mcp_app(http: bool = False) -> FastMCP:
         `output_dir` is given.
         """
         from pdf2zh.kernel import KernelRegistry
-        from pdf2zh.kernel.protocol import TranslateRequest
+        from pdf2zh.kernel.protocol import TranslateRequest, parse_pages
 
         engine = KernelRegistry.get(kernel)
         if not engine.is_available():
@@ -76,7 +76,7 @@ def create_mcp_app(http: bool = False) -> FastMCP:
             lang_in=lang_in,
             lang_out=lang_out,
             service=service,
-            pages=_parse_pages(pages),
+            pages=parse_pages(pages),
             output=output_dir or os.path.dirname(file),
         )
         # Positional: mcp 1.x names the second argument message, 2.x data.
@@ -150,17 +150,6 @@ def create_http_app(mcp: FastMCP):
 
 def _ignore(*args, **kwargs) -> None:
     pass
-
-
-def _parse_pages(pages: Optional[str]) -> Optional[list[int]]:
-    """Convert a 1-based "1,3-5" spec to 0-based page indexes."""
-    if not pages:
-        return None
-    result = []
-    for part in pages.split(","):
-        start, _, end = part.strip().partition("-")
-        result.extend(range(int(start) - 1, int(end or start)))
-    return result
 
 
 if __name__ == "__main__":

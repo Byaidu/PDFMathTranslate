@@ -5,11 +5,11 @@
  * pdf2zh for them and hands the results back for content.js to draw over the
  * originals.
  *
- * One pdf2zh process runs at a time. Pages requested while it runs are
- * translated together in the next run (`pdf2zh --pages 3,4,5 --json`); pages
- * that scrolled away before their turn are dropped. Results are kept under the
- * Zotero data directory, per file hash and translation options, so reopening
- * a PDF shows its translated pages at once.
+ * One translation runs at a time, in the resident pdf2zh worker (pdf2zh.js).
+ * Pages requested while it runs are translated together in the next request
+ * (pages "3,4,5"); pages that scrolled away before their turn are dropped.
+ * Results are kept under the Zotero data directory, per file hash and
+ * translation options, so reopening a PDF shows its translated pages at once.
  */
 
 var PDF2ZH_READER = {
@@ -192,8 +192,7 @@ var PDF2ZH_READER = {
       const run = `run-${Date.now()}`;
       const dir = PathUtils.join(this.cacheDir(first.hash, first.key), run);
       await IOUtils.makeDirectory(dir, { createAncestors: true });
-      const result = await PDF2ZH.run(PDF2ZH.buildArgs(first.file, dir, { ...first.options, pages: pages.join(",") }));
-      if (!result.ok) throw new Error(result.error || "pdf2zh failed");
+      const result = await PDF2ZH.translate(PDF2ZH.translateParams(first.file, dir, { ...first.options, pages: pages.join(",") }));
       const mono = result.results?.[0]?.mono;
       if (!mono) throw new Error("pdf2zh returned no translated PDF");
       const index = await this.readIndex(first.hash, first.key);
