@@ -41,7 +41,7 @@ def extract_layout(data, pages=None):
         from pdf_inspector import extract_text_with_positions_bytes
     except ImportError as exc:
         raise RuntimeError(
-            "--ultrafast requires pip install 'pdf2zh[ultrafast]'"
+            "--ultrafast needs pdf-inspector, part of pdf2zh's install: reinstall pdf2zh"
         ) from exc
     items = defaultdict(list)
     for item in extract_text_with_positions_bytes(

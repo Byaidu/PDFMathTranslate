@@ -354,10 +354,8 @@ def main(args: Optional[List[str]] = None) -> int:
 
     if parsed_args.interactive or parsed_args.flask or parsed_args.celery:
         # The web UI and the HTTP backend run on the legacy kernel.
-        _require_extra(
-            "gradio" if parsed_args.interactive else "flask",
-            "gui" if parsed_args.interactive else "backend",
-        )
+        if not parsed_args.interactive:
+            _require_extra("flask", "backend")
         _load_layout_model(parsed_args)
 
     if parsed_args.interactive:

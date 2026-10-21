@@ -65,7 +65,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --extra ultrafast --extra ocr --extra mcp --extra gui
+          uv sync
 
       - name: Test - Unit Test
         run: |

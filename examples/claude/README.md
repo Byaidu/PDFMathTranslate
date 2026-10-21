@@ -8,7 +8,7 @@ Three ways to give Claude the pdf2zh tools. All of them use the MCP server that 
 | Claude Code | the [`pdf2zh` plugin](pdf2zh/) or one command | your computer |
 | claude.ai (web, mobile) | a custom connector to the [example server](../server/) | a public URL |
 
-The `uvx --from pdf2zh[mcp]` commands below need a pdf2zh release that includes the unified entry point. Until it is on PyPI, replace `pdf2zh[mcp]` with `pdf2zh[mcp] @ git+https://github.com/PDFMathTranslate/PDFMathTranslate` or with the path of a local checkout.
+The `uvx pdf2zh` commands below need a pdf2zh release that includes the unified entry point. Until it is on PyPI, use `uvx --from git+https://github.com/PDFMathTranslate/PDFMathTranslate pdf2zh` (or `--from` the path of a local checkout) instead.
 
 ## Claude Desktop
 
@@ -23,7 +23,7 @@ Or: *"Open ~/Downloads/paper.pdf in the pdf2zh reader."* Claude calls `open_pdf_
 Quickest, one command:
 
 ```bash
-claude mcp add pdf2zh -- uvx --from "pdf2zh[mcp]" pdf2zh --mcp
+claude mcp add pdf2zh -- uvx pdf2zh --mcp
 ```
 
 Or install the plugin, which adds the MCP server and a `translate-pdf` skill that tells Claude how to call it:

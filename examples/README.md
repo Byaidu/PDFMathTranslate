@@ -21,7 +21,7 @@ Working starting points for building on pdf2zh. Each folder has its own README w
 | Something for an AI agent | `pdf2zh --mcp` (the host starts it) |
 | A web app or a cloud service | The [example server](server/), or your own built the same way |
 
-Prefer these over importing BabelDOC or pdf2zh internals: they are the interfaces this repository keeps stable. None of them needs anything beyond `pip install pdf2zh`, except `--mcp` (`pdf2zh[mcp]`).
+Prefer these over importing BabelDOC or pdf2zh internals: they are the interfaces this repository keeps stable. None of them needs anything beyond `pip install pdf2zh`.
 
 ### `pdf2zh --worker`
 

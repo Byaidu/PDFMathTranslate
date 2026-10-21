@@ -68,18 +68,11 @@ BabelDOC（排版引擎，funstory.ai）           pdf2zh v1 流程
 需要 Python 3.11 到 3.14；BabelDOC 核心需要 3.11 到 3.13。
 
 ```bash
-pip install pdf2zh                # 命令行、Python API、legacy 核心（3.11-3.13 另含 BabelDOC）
+pip install pdf2zh                # 下面这些全都包含
 pdf2zh document.pdf               # 生成 document-mono.pdf 和 document-dual.pdf
 ```
 
-可选组件：
-
-| 安装 | 增加的功能 |
-| --- | --- |
-| `pdf2zh[ultrafast]`、`pdf2zh[ocr]` | legacy 核心的[极速模式](./ADVANCED.md#ultrafast)和[自动 OCR](./ADVANCED.md#ocr) |
-| `pdf2zh[mcp]` | MCP 服务（`pdf2zh --mcp`） |
-| `pdf2zh[gui]` | Gradio 网页界面（`pdf2zh -i`） |
-| `pdf2zh[backend]` | Flask/Celery HTTP 后端（[接口说明](./APIS.md#api-http)） |
+一次安装就包含命令行、Python API、网页界面（`pdf2zh -i`）、MCP 服务（`pdf2zh --mcp`）、插件用的 worker（`pdf2zh --worker`）、两个翻译核心（BabelDOC 需 Python 3.11 到 3.13）、[极速模式](./ADVANCED.md#ultrafast)和[自动 OCR](./ADVANCED.md#ocr)。只有少见的用法才需要额外组件：`pdf2zh[backend]` 是 Flask/Celery HTTP 后端（[接口说明](./APIS.md#api-http)），`pdf2zh[argostranslate]` 用于离线翻译，`pdf2zh[cuda]` 或 `pdf2zh[dml]` 用 GPU 做版面识别。
 
 带网页界面的 Docker 镜像：`docker run -d -p 7860:7860 byaidu/pdf2zh`，也可以从 [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate) 拉取。
 
@@ -156,7 +149,7 @@ for result in kernel.translate(request):  # 或：await kernel.translate_async(r
   "mcpServers": {
     "pdf2zh": {
       "command": "uvx",
-      "args": ["--from", "pdf2zh[mcp]", "pdf2zh", "--mcp"]
+      "args": ["pdf2zh", "--mcp"]
     }
   }
 }

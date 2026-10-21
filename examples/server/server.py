@@ -8,7 +8,7 @@ One process serves three kinds of client:
 
 Run it with:
 
-    pip install 'pdf2zh[mcp]'
+    pip install pdf2zh
     python examples/server/server.py --port 7861
 
 This is a prototype. It has no authentication and keeps jobs in memory, so

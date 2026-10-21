@@ -71,18 +71,11 @@ BabelDOC (layout engine, by funstory.ai)         pdf2zh v1 pipeline
 Requires Python 3.11 to 3.14; the BabelDOC kernel needs 3.11 to 3.13.
 
 ```bash
-pip install pdf2zh                # CLI, Python API, legacy kernel (+ BabelDOC on 3.11-3.13)
+pip install pdf2zh                # everything below
 pdf2zh document.pdf               # writes document-mono.pdf and document-dual.pdf
 ```
 
-Optional extras:
-
-| Extra | Adds |
-| --- | --- |
-| `pdf2zh[ultrafast]`, `pdf2zh[ocr]` | [Ultrafast mode](./docs/ADVANCED.md#ultrafast) and [automatic OCR](./docs/ADVANCED.md#ocr) for the legacy kernel |
-| `pdf2zh[mcp]` | The MCP server (`pdf2zh --mcp`) |
-| `pdf2zh[gui]` | The Gradio web UI (`pdf2zh -i`) |
-| `pdf2zh[backend]` | The Flask/Celery HTTP backend ([API details](./docs/APIS.md#api-http)) |
+One install has the command line, the Python API, the web UI (`pdf2zh -i`), the MCP server (`pdf2zh --mcp`), the plugin worker (`pdf2zh --worker`), both kernels (BabelDOC on Python 3.11 to 3.13), [ultrafast mode](./docs/ADVANCED.md#ultrafast) and [automatic OCR](./docs/ADVANCED.md#ocr). Only rarer setups take an extra: `pdf2zh[backend]` for the Flask/Celery HTTP backend ([API details](./docs/APIS.md#api-http)), `pdf2zh[argostranslate]` for offline translation, and `pdf2zh[cuda]` or `pdf2zh[dml]` for GPU layout detection.
 
 Docker images with the web UI: `docker run -d -p 7860:7860 byaidu/pdf2zh`, also on [GitHub Container Registry](https://github.com/Byaidu/PDFMathTranslate/pkgs/container/pdfmathtranslate).
 
@@ -159,7 +152,7 @@ Register pdf2zh in any MCP host. The host starts it on demand; nothing has to be
   "mcpServers": {
     "pdf2zh": {
       "command": "uvx",
-      "args": ["--from", "pdf2zh[mcp]", "pdf2zh", "--mcp"]
+      "args": ["pdf2zh", "--mcp"]
     }
   }
 }

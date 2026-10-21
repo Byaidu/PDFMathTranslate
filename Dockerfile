@@ -19,10 +19,10 @@ RUN apt-get update && \
      rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml .
-RUN uv pip install --system --no-cache -r pyproject.toml --extra gui && babeldoc --version && babeldoc --warmup
+RUN uv pip install --system --no-cache -r pyproject.toml && babeldoc --version && babeldoc --warmup
 
 COPY . .
 
-RUN uv pip install --system --no-cache ".[gui]" && babeldoc --version && babeldoc --warmup
+RUN uv pip install --system --no-cache . && babeldoc --version && babeldoc --warmup
 
 CMD ["pdf2zh", "-i"]

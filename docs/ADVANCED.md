@@ -61,13 +61,7 @@ pdf2zh example.pdf --kernel babeldoc
 
 <h3 id="ultrafast">Ultrafast mode</h3>
 
-Install the optional `pdf-inspector>=1.25.2,<2` dependency:
-
-```bash
-pip install 'pdf2zh[ultrafast]'
-```
-
-Then run the CLI with `--ultrafast`:
+Run the CLI with `--ultrafast` (its `pdf-inspector` dependency is part of `pip install pdf2zh`):
 
 ```bash
 pdf2zh example.pdf --ultrafast
@@ -77,8 +71,7 @@ This mode uses native PDF text positions from `pdf-inspector` for heuristic
 layout and skips ONNX layout and OCR; pages without native text are preserved
 without OCR. Its heuristic text grouping retains the usual font and character
 formula safeguards. It is best suited to PDFs that already contain native text;
-use normal mode for complex tables or formulas. It runs on the legacy kernel
-(`pip install 'pdf2zh[ultrafast]'`) and cannot be combined with
+use normal mode for complex tables or formulas. It runs on the legacy kernel and cannot be combined with
 `--kernel babeldoc`, server or GUI modes, or `--onnx`. It automatically skips font subsetting, so its output
 PDFs are larger, while still using BabelDOC font assets as needed. With
 `--ignore-cache`, it bypasses both translation-cache reads and writes; normal
@@ -102,9 +95,8 @@ do not sum the nested values again. This path does not import ONNX or OpenCV.
 
 Legacy kernel only. Fast mode automatically runs local OCR on selected image-only pages before
 translation. Native text, existing OCR layers, and blank pages are skipped;
-the original pages in dual output remain unchanged. Install with
-`pip install 'pdf2zh[ocr]'` (or `pip install -e '.[ocr]'` from this checkout).
-The first scanned page downloads the requested language data from Tesseract's
+the original pages in dual output remain unchanged; it needs nothing beyond
+`pip install pdf2zh`. The first scanned page downloads the requested language data from Tesseract's
 `tessdata_fast` 4.1.0 release into `~/.cache/pdf2zh/tessdata/4.1.0`; subsequent
 runs reuse it offline. Native-text PDFs do not trigger downloads.
 OCR uses the input language; `PDF2ZH_OCR_LANGUAGE=eng+deu` overrides it with
@@ -435,7 +427,7 @@ A usable configuration is as follows:
     "mcpServers": {
         "pdf2zh": {
             "command": "uvx",
-            "args": ["--from", "pdf2zh[mcp]", "pdf2zh", "--mcp"]
+            "args": ["pdf2zh", "--mcp"]
         }
     }
 }

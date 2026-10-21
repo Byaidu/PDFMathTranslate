@@ -7,7 +7,7 @@ ChatGPT connects to MCP servers over HTTPS, so it uses the [example server](../s
 1. Start the example server and expose it with a tunnel (or deploy it behind your own HTTPS reverse proxy):
 
    ```bash
-   pip install 'pdf2zh[mcp]'
+   pip install pdf2zh
    cloudflared tunnel --url http://127.0.0.1:7861        # prints https://<tunnel-host>
    PDF2ZH_PUBLIC_URL=https://<tunnel-host> \
    PDF2ZH_ALLOWED_HOSTS=<tunnel-host> \
@@ -25,7 +25,7 @@ ChatGPT connects to MCP servers over HTTPS, so it uses the [example server](../s
 ChatGPT also shows `open_pdf_reader` from pdf2zh's own MCP server: the PDF appears in the chat and pages are translated as you scroll. Run it on your computer over HTTP and expose it with a tunnel; the reader then opens PDFs on your computer by path, as well as links:
 
 ```bash
-pip install 'pdf2zh[mcp]'
+pip install pdf2zh
 cloudflared tunnel --url http://127.0.0.1:7862        # prints https://<tunnel-host>
 PDF2ZH_ALLOWED_HOSTS=<tunnel-host> pdf2zh --mcp --http
 ```

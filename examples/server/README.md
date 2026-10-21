@@ -13,7 +13,7 @@ It builds on the public Python API (`pdf2zh.get_kernel`, `TranslateRequest`), so
 ## Run
 
 ```bash
-pip install 'pdf2zh[mcp]'            # mcp brings Starlette and Uvicorn
+pip install pdf2zh                   # includes MCP, Starlette and Uvicorn
 python examples/server/server.py --port 7861
 ```
 

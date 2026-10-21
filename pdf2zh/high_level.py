@@ -290,7 +290,8 @@ def _ocr_tessdata(language):
         import pooch
     except ImportError as exc:
         raise RuntimeError(
-            "Automatic OCR downloads require pip install 'pdf2zh[ocr]'. "
+            "Automatic OCR downloads need pooch, part of pdf2zh's install: "
+            "reinstall pdf2zh. "
             "Alternatively, set TESSDATA_PREFIX to existing language data."
         ) from exc
     cache = Path.home() / ".cache/pdf2zh/tessdata/4.1.0"

@@ -174,7 +174,7 @@ class TestOCRPages(unittest.TestCase):
             with patch.dict(os.environ, {"TESSDATA_PREFIX": ""}):
                 with patch.object(high_level.Path, "home", return_value=Path(home)):
                     with patch.dict(sys.modules, {"pooch": None}):
-                        with self.assertRaisesRegex(RuntimeError, r"pdf2zh\[ocr\]"):
+                        with self.assertRaisesRegex(RuntimeError, r"reinstall pdf2zh"):
                             high_level._ocr_tessdata("eng")
 
     def test_tessdata_downloads_each_language_and_reuses_cache(self):

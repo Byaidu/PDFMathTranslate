@@ -10,9 +10,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-# Core: CLI, Python API, MCP entry points, translation services and both
-# kernels: legacy (default) and BabelDOC (Python <3.14). The GUI and HTTP
-# backend are extras.
+# One install for everything users run: CLI, Python API, MCP server, plugin
+# worker, web UI, both kernels (legacy default; BabelDOC on Python <3.14),
+# ultrafast mode and automatic OCR. Extras are only for the HTTP backend,
+# offline translation and GPU builds of onnxruntime.
 dependencies = [
     "requests",
     "googletrans>=4.0.2,<5",
@@ -43,19 +44,15 @@ dependencies = [
     # bitstring 5.0 removed BitStream, which babeldoc 0.6.4 imports
     "bitstring<5; python_version < '3.14'",
     "rich",
-]
-
-[project.optional-dependencies]
-legacy = []  # the legacy kernel is part of the core install; kept for old commands
-ultrafast = ["pdf-inspector>=1.25.2,<2"]
-ocr = [
+    "mcp>=1.26.0",  # resource meta for MCP Apps; older fail with pydantic 2.14
+    "pdf-inspector>=1.25.2,<2",  # ultrafast mode
     "pooch>=1.8,<2",  # first-use downloads for PyMuPDF's built-in OCR
-]
-gui = [
     # >=6.16.0 fixes the gradio 5.x advisories (e.g. CVE-2026-28414)
     "gradio>=6.16.0,<7",
     "gradio_pdf>=0.0.24",  # first release supporting gradio 6
 ]
+
+[project.optional-dependencies]
 backend = [
     "flask",
     "celery",
@@ -64,15 +61,19 @@ backend = [
 argostranslate = [
     "argostranslate"
 ]
-mcp = [
-    "mcp>=1.26.0",  # resource meta for MCP Apps; older fail with pydantic 2.14
-]
 cuda = [
     "onnxruntime-gpu",
 ]
 dml = [
     "onnxruntime-directml",
 ]
+# Now part of the base install; kept so existing commands such as
+# `pip install 'pdf2zh[mcp]'` keep working.
+legacy = []
+mcp = []
+ultrafast = []
+ocr = []
+gui = []
 
 [dependency-groups]
 dev = [
